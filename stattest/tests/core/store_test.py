@@ -2,9 +2,9 @@ import os
 
 import pytest
 
-from stattest.core.store import JsonStoreService
+from stattest.src.core.store import JsonStoreService
 
-filename = 'cache.json'
+filename = 'caches.json'
 
 
 class TestJsonStoreService:
@@ -13,7 +13,8 @@ class TestJsonStoreService:
     def store(self):
         return JsonStoreService(filename=filename)
 
-    def teardown_method(self, method):
+    @staticmethod
+    def teardown_method():
         try:
             os.remove(filename)
         except OSError:

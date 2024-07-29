@@ -1,2 +1,0 @@
-from ._test import *
-
