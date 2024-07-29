@@ -33,13 +33,13 @@ if __name__ == '__main__':
     lock = manager.Lock()
     #powers = read_json("result/result.json")
     power_dict = manager.dict()
-    caches = ThreadSafeCacheResultService(caches=power_dict, lock=lock)
+    cache_services = ThreadSafeCacheResultService(cache_services=power_dict, lock=lock)
     alpha = [0.05, 0.1, 0.01]
     tests = [cls() for cls in ExponentialityTest.__subclasses__()]
     tests_chunks = np.array_split(np.array(tests), cpu_count)
 
     with multiprocessing.Pool(cpu_count) as pool:
-        pool.starmap(execute_powers, zip(tests_chunks, repeat(alpha), repeat(True), repeat(caches)))
+        pool.starmap(execute_powers, zip(tests_chunks, repeat(alpha), repeat(True), repeat(cache_services)))
     '''
 
     '''
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     cr_dict = manager.dict()
     cache = ThreadSafeMonteCarloCacheService(lock=lock, cache=cr_dict)
     tests = [AHSTestExp(), RSTestExp()]
-    #tests = [cls(caches) for cls in ExponentialityTest.__subclasses__()]
+    #tests = [cls(cache_services) for cls in ExponentialityTest.__subclasses__()]
     tests_chunks = np.array_split(np.array(tests), cpu_count)
     with multiprocessing.Pool(cpu_count) as pool:
         pool.starmap(run, zip(tests_chunks, repeat(sizes)))

@@ -4,7 +4,7 @@ import pytest
 
 from stattest.src.core.store import JsonStoreService
 
-filename = 'caches.json'
+filename = 'cache_services.json'
 
 
 class TestJsonStoreService:

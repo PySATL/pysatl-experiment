@@ -53,10 +53,10 @@ class ThreadSafeCacheResultService(CacheResultService):
 
     def put(self, key: str, value):
         """
-        Put object to caches.
+        Put object to cache_services.
 
-        :param key: caches key
-        :param value: caches value
+        :param key: cache_services key
+        :param value: cache_services value
         """
         with self.lock:
             self.cache[key] = value

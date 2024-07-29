@@ -6,7 +6,7 @@ from stattest.src.core.store import FastJsonStoreService, write_json  # TODO: js
 
 class MonteCarloCacheService(FastJsonStoreService):
 
-    def __init__(self, filename='caches.json', separator=':', csv_delimiter=';', dir_path='test_distribution'):
+    def __init__(self, filename='cache_services.json', separator=':', csv_delimiter=';', dir_path='test_distribution'):
         super().__init__(filename, separator)
         self.csv_delimiter = csv_delimiter
         self.dir_path = dir_path
@@ -51,7 +51,7 @@ class MonteCarloCacheService(FastJsonStoreService):
 
 class ThreadSafeMonteCarloCacheService(MonteCarloCacheService):
 
-    def __init__(self, lock, filename='caches.json', separator=':', csv_delimiter=';',
+    def __init__(self, lock, filename='cache_services.json', separator=':', csv_delimiter=';',
                  dir_path='test_distribution', cache=None):
         super().__init__(filename, separator, csv_delimiter, dir_path)
         self.lock = lock
@@ -68,10 +68,10 @@ class ThreadSafeMonteCarloCacheService(MonteCarloCacheService):
 
     def put(self, key: str, value):
         """
-        Put object to caches.
+        Put object to cache_services.
 
-        :param key: caches key
-        :param value: caches value
+        :param key: cache_services key
+        :param value: cache_services value
         """
         with self.lock:
             self.cache[key] = value

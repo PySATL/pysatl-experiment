@@ -18,16 +18,16 @@ class StoreService:
         """
         Get cached value if exists, else return None.
 
-        :param key: caches key
+        :param key: cache_services key
         """
         raise NotImplementedError("Method is not implemented")
 
     def put(self, key: str, value):
         """
-        Put object to caches.
+        Put object to cache_services.
 
-        :param key: caches key
-        :param value: caches value
+        :param key: cache_services key
+        :param value: cache_services value
         """
         raise NotImplementedError("Method is not implemented")
 
@@ -44,7 +44,7 @@ class InMemoryStoreService(StoreService):
         """
         Get cached value if exists, else return None.
 
-        :param key: caches key
+        :param key: cache_services key
         """
 
         if key not in self.cache.keys():
@@ -64,10 +64,10 @@ class InMemoryStoreService(StoreService):
 
     def put(self, key: str, value):
         """
-        Put object to caches.
+        Put object to cache_services.
 
-        :param key: caches key
-        :param value: caches value
+        :param key: cache_services key
+        :param value: cache_services value
         """
 
         self.cache[key] = value
@@ -100,10 +100,10 @@ class JsonStoreService(InMemoryStoreService):
 
     def put(self, key: str, value):
         """
-        Put object to caches.
+        Put object to cache_services.
 
-        :param key: caches key
-        :param value: caches value
+        :param key: cache_services key
+        :param value: cache_services value
         """
         super().put(key, value)
         write_json(self.filename, self.cache)
@@ -146,3 +146,5 @@ class FastJsonStoreService(FastStoreService):
         """
 
         write_json(self.filename, self.cache)
+
+# TODO: stattest-ext.src.core.distribution??
