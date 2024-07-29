@@ -6,7 +6,7 @@ from stattest.test.AbstractTest import AbstractTest
 from stattest.test.normality import KSTest
 
 
-def monte_carlo(test: AbstractTest, rvs_size, count=100000):
+def monte_carlo(test: AbstractTest, rvs_size, count=100000):  # TODO: relocate to tests
     result = np.zeros(count)
 
     for i in range(count):

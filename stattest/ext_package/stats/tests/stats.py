@@ -1,8 +1,7 @@
 import scipy.stats as sts
 import numpy as np
 import unittest
-import stattest.stats as stats
-from stattest.test import KSTest
+import stattest.ext_package.stats as stats
 from stattest.test.normality import ADTest
 
 

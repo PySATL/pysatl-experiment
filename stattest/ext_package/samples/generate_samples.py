@@ -1,8 +1,8 @@
 import json
 import os
-from os.path import exists, abspath
+from os.path import exists
 import numpy as np
-from stattest.experiment._distribution_type_enum import Distribution
+from stattest.ext_package.experiment import Distribution
 
 
 def generate_samples(dist_type: Distribution = None,

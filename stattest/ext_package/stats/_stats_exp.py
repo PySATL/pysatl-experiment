@@ -1,6 +1,6 @@
 from scipy.stats import norm
 import numpy as np
-from stattest._utils import _check_sample_length, _scale_sample
+from stattest.ext_package._utils import _check_sample_length, _scale_sample
 
 
 def eptest_exp(x):
