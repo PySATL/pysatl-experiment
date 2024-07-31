@@ -1,6 +1,7 @@
 import math
 from typing import override
 
+from stattest_ext.src.core.distribution.norm import pdf_norm
 from stattest_std.src.stat_tests.goodness_test import GoodnessOfFitTest
 from stattest_std.src.cache_services.cache import MonteCarloCacheService
 
@@ -16,6 +17,11 @@ class NormalityTest(GoodnessOfFitTest):
         self.mean = 0
         self.var = 1
         self.cache = cache
+
+    @staticmethod
+    @override
+    def code():
+        return super(NormalityTest, NormalityTest).code() + '_norm'
 
     def calculate_critical_value(self, rvs_size, alpha, count=1_000_000):
         keys_cr = [self.code(), str(rvs_size), str(alpha)]
@@ -61,8 +67,9 @@ class NormalityTest(GoodnessOfFitTest):
 class KSTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'KS'
+        return 'KS' + super(KSTest, KSTest).code()
 
     def execute_statistic(self, rvs, alternative='two-sided', mode='auto'):
         """
@@ -91,35 +98,37 @@ class KSTest(NormalityTest):
 
         if alternative == 'greater':
             d_plus, d_location = KSTest.__compute_dplus(cdf_vals, rvs)
-            return d_plus  # KstestResult(Dplus, distributions.ksone.sf(Dplus, N), statistic_location=d_location, statistic_sign=1)
+            return d_plus  # KStestResult(Dplus, distributions.ksone.sf(Dplus, N),
+            # statistic_location=d_location, statistic_sign=1)
         if alternative == 'less':
             d_minus, d_location = KSTest.__compute_dminus(cdf_vals, rvs)
-            return d_minus  # KstestResult(Dminus, distributions.ksone.sf(Dminus, N), statistic_location=d_location, statistic_sign=-1)
+            return d_minus  # KStestResult(Dminus, distributions.ksone.sf(Dminus, N),
+            # statistic_location=d_location, statistic_sign=-1)
 
         # alternative == 'two-sided':
         d_plus, d_plus_location = KSTest.__compute_dplus(cdf_vals, rvs)
         d_minus, d_minus_location = KSTest.__compute_dminus(cdf_vals, rvs)
         if d_plus > d_minus:
-            D = d_plus
+            d = d_plus
             d_location = d_plus_location
             d_sign = 1
         else:
-            D = d_minus
+            d = d_minus
             d_location = d_minus_location
             d_sign = -1
 
         if mode == 'auto':  # Always select exact
             mode = 'exact'
         if mode == 'exact':
-            prob = scipy_stats.distributions.kstwo.sf(D, n)
+            prob = scipy_stats.distributions.kstwo.sf(d, n)
         elif mode == 'asymp':
-            prob = scipy_stats.distributions.kstwobign.sf(D * np.sqrt(n))
+            prob = scipy_stats.distributions.kstwobign.sf(d * np.sqrt(n))
         else:
             # mode == 'approx'
-            prob = 2 * scipy_stats.distributions.ksone.sf(D, n)
+            prob = 2 * scipy_stats.distributions.ksone.sf(d, n)
         # print('PROB', prob)
         prob = np.clip(prob, 0, 1)
-        return D
+        return d
 
     def calculate_critical_value(self, rvs_size, alpha, count=500_000):
         return scipy_stats.distributions.kstwo.ppf(1 - alpha, rvs_size)
@@ -141,37 +150,32 @@ class KSTest(NormalityTest):
         return d_minus[a_max], loc_max
 
 
-"""""
-class ChiSquareTest(NormalityTest):
+class ChiSquareTest(NormalityTest):  # TODO: check test correctness
 
     @staticmethod
+    @override
     def code():
-        return 'CHI2'
+        return 'CHI2' + super(ChiSquareTest, ChiSquareTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         rvs = np.sort(rvs)
 
         f_obs = np.asanyarray(rvs)
         f_obs_float = f_obs.astype(np.float64)
-        f_exp = pdf_norm(rvs)
-        scipy_stats.chi2_contingency()
+        f_exp = pdf_norm(rvs)  # TODO: remove link to ext package
+        scipy_stats.chi2_contingency()  # TODO: fix warning!!
         terms = (f_obs_float - f_exp) ** 2 / f_exp
         return terms.sum(axis=0)
-"""""
-
-# Values from Stephens, M A, "EDF Statistics for Goodness of Fit and
-#             Some Comparisons", Journal of the American Statistical
-#             Association, Vol. 69, Issue 347, Sept. 1974, pp 730-737
-_Avals_norm = np.array([0.576, 0.656, 0.787, 0.918, 1.092])
 
 
 class ADTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'AD'
+        return 'AD' + super(ADTest, ADTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         """
         Title: The Anderson-Darling test Ref. (book or article): See package nortest and also Table 4.9 p. 127 in M.
         A. Stephens, “Tests Based on EDF Statistics,” In: R. B. D’Agostino and M. A. Stephens, Eds., Goodness-of-Fit
@@ -179,6 +183,10 @@ class ADTest(NormalityTest):
 
         :param rvs:
         :return:
+
+        Parameters
+        ----------
+        **kwargs
         """
         n = len(rvs)
 
@@ -190,26 +198,29 @@ class ADTest(NormalityTest):
         log_sf = scipy_stats.distributions.norm.logsf(w)
 
         i = np.arange(1, n + 1)
-        A2 = -n - np.sum((2 * i - 1.0) / n * (log_cdf + log_sf[::-1]), axis=0)
-        return A2
+        a2 = -n - np.sum((2 * i - 1.0) / n * (log_cdf + log_sf[::-1]), axis=0)
+        return a2
 
+    def calculate_critical_value(self, rvs_size, alpha, count=500_000):  # TODO: check correctness
+        # # Values from Stephens, M A, "EDF Statistics for Goodness of Fit and
+        # #             Some Comparisons", Journal of the American Statistical
+        # #             Association, Vol. 69, Issue 347, Sept. 1974, pp 730-737
+        # _avals_norm = np.array([0.576, 0.656, 0.787, 0.918, 1.092])
 
-"""
-    def calculate_critical_value(self, rvs_size, alpha, count=500_000):
         # sig = [0.15, 0.10, 0.05, 0.025, 0.01].index(alpha)
-        # critical = np.around(_Avals_norm / (1.0 + 4.0 / rvs_size - 25.0 / rvs_size / rvs_size), 3)
+        # critical = np.around(_avals_norm / (1.0 + 4.0 / rvs_size - 25.0 / rvs_size / rvs_size), 3)
         # print(critical[sig])
         return super().calculate_critical_value(rvs_size, alpha)
-"""
 
 
 class SWTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'SW'
+        return 'SW' + super(SWTest, SWTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         f_obs = np.asanyarray(rvs)
         f_obs_sorted = np.sort(f_obs)
         x_mean = np.mean(f_obs)
@@ -238,14 +249,15 @@ class SWTest(NormalityTest):
         u = 1 / np.sqrt(n)
 
         wn = np.polyval(p1, u)
-        # wn = np.array([p1[0] * (u ** 5), p1[1] * (u ** 4), p1[2] * (u ** 3), p1[3] * (u ** 2), p1[4] * (u ** 1), p1[5]]).sum()
+        # wn = np.array([p1[0] * (u ** 5), p1[1] * (u ** 4),
+        # p1[2] * (u ** 3), p1[3] * (u ** 2), p1[4] * (u ** 1), p1[5]]).sum()
         w1 = -wn
 
         if n == 4 or n == 5:
             phi = (m2.sum() - 2 * m[-1] ** 2) / (1 - 2 * wn ** 2)
             phi_sqrt = np.sqrt(phi)
             result = np.array([m[k] / phi_sqrt for k in range(1, n - 1)])
-            return np.concatenate([[w1], result, [wn]])
+            return np.concatenate([[w1], result, [wn]])  # TODO: ???
 
         p2 = [-3.582633, 5.682633, -1.752461, -0.293762, 0.042981, cn1]
 
@@ -255,16 +267,17 @@ class SWTest(NormalityTest):
             phi = (m2.sum() - 2 * m[-1] ** 2 - 2 * m[-2] ** 2) / (1 - 2 * wn ** 2 - 2 * wn1 ** 2)
             phi_sqrt = np.sqrt(phi)
             result = np.array([m[k] / phi_sqrt for k in range(2, n - 2)])
-            return np.concatenate([[w1, w2], result, [wn1, wn]])
+            return np.concatenate([[w1, w2], result, [wn1, wn]])  # TODO: ???
 
 
 class SWMTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'SWM'
+        return 'SWM' + super(SWMTest, SWMTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
         rvs = np.sort(rvs)
@@ -272,17 +285,18 @@ class SWMTest(NormalityTest):
         cdf_vals = scipy_stats.norm.cdf(vals)
 
         u = (2 * np.arange(1, n + 1) - 1) / (2 * n)
-        CM = 1 / (12 * n) + np.sum((u - cdf_vals) ** 2)
-        return CM
+        cm = 1 / (12 * n) + np.sum((u - cdf_vals) ** 2)
+        return cm
 
 
 class LillieforsTest(KSTest):
 
     @staticmethod
+    @override
     def code():
-        return 'LILLIE'
+        return 'LILLIE' + super(LillieforsTest, LillieforsTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         x = np.asarray(rvs)
         z = (x - x.mean()) / x.std(ddof=1)
 
@@ -291,15 +305,14 @@ class LillieforsTest(KSTest):
         return d_ks
 
 
-# TODO: What is it
-"""
-class DATest(NormalityTest):
+class DATest(NormalityTest):  # TODO: check for correctness
 
     @staticmethod
+    @override
     def code():
-        return 'DA'
+        return 'DA' + super(DATest, DATest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         x = np.asanyarray(rvs)
         y = np.sort(x)
         n = len(x)
@@ -311,16 +324,16 @@ class DATest(NormalityTest):
         terms = (i - c) * y
         stat = terms.sum() / (n ** 2 * np.sqrt(m2))
         return stat
-"""
 
 
 class JBTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'JB'
+        return 'JB' + super(JBTest, JBTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         x = np.asarray(rvs)
         x = x.ravel()
         axis = 0
@@ -340,10 +353,11 @@ class JBTest(NormalityTest):
 class SkewTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'SKEW'
+        return 'SKEW' + super(SkewTest, SkewTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         x = np.asanyarray(rvs)
         y = np.sort(x)
 
@@ -360,10 +374,10 @@ class SkewTest(NormalityTest):
         y = b2 * math.sqrt(((n + 1) * (n + 3)) / (6.0 * (n - 2)))
         beta2 = (3.0 * (n ** 2 + 27 * n - 70) * (n + 1) * (n + 3) /
                  ((n - 2.0) * (n + 5) * (n + 7) * (n + 9)))
-        W2 = -1 + math.sqrt(2 * (beta2 - 1))
-        delta = 1 / math.sqrt(0.5 * math.log(W2))
-        alpha = math.sqrt(2.0 / (W2 - 1))
-        y = np.where(y == 0, 1, y)
+        w2 = -1 + math.sqrt(2 * (beta2 - 1))
+        delta = 1 / math.sqrt(0.5 * math.log(w2))
+        alpha = math.sqrt(2.0 / (w2 - 1))
+        y = np.where(y == 0, 1, y)  # TODO: ???
         z = delta * np.log(y / alpha + np.sqrt((y / alpha) ** 2 + 1))
 
         return z
@@ -372,10 +386,11 @@ class SkewTest(NormalityTest):
 class KurtosisTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'KURTOSIS'
+        return 'KURTOSIS' + super(KurtosisTest, KurtosisTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         x = np.asanyarray(rvs)
         y = np.sort(x)
 
@@ -394,35 +409,36 @@ class KurtosisTest(NormalityTest):
         #                  stacklevel=2)
         b2 = scipy_stats.kurtosis(a, axis=0, fisher=False)
 
-        E = 3.0 * (n - 1) / (n + 1)
-        varb2 = 24.0 * n * (n - 2) * (n - 3) / ((n + 1) * (n + 1.) * (n + 3) * (n + 5))  # [1]_ Eq. 1
-        x = (b2 - E) / np.sqrt(varb2)  # [1]_ Eq. 4
+        e = 3.0 * (n - 1) / (n + 1)
+        var_b2 = 24.0 * n * (n - 2) * (n - 3) / ((n + 1) * (n + 1.) * (n + 3) * (n + 5))  # [1]_ Eq. 1
+        x = (b2 - e) / np.sqrt(var_b2)  # [1]_ Eq. 4
         # [1]_ Eq. 2:
-        sqrtbeta1 = 6.0 * (n * n - 5 * n + 2) / ((n + 7) * (n + 9)) * np.sqrt((6.0 * (n + 3) * (n + 5)) /
-                                                                              (n * (n - 2) * (n - 3)))
+        sqrt_beta1 = 6.0 * (n * n - 5 * n + 2) / ((n + 7) * (n + 9)) * np.sqrt((6.0 * (n + 3) * (n + 5)) /
+                                                                               (n * (n - 2) * (n - 3)))
         # [1]_ Eq. 3:
-        A = 6.0 + 8.0 / sqrtbeta1 * (2.0 / sqrtbeta1 + np.sqrt(1 + 4.0 / (sqrtbeta1 ** 2)))
-        term1 = 1 - 2 / (9.0 * A)
-        denom = 1 + x * np.sqrt(2 / (A - 4.0))
+        a = 6.0 + 8.0 / sqrt_beta1 * (2.0 / sqrt_beta1 + np.sqrt(1 + 4.0 / (sqrt_beta1 ** 2)))
+        term1 = 1 - 2 / (9.0 * a)
+        denom = 1 + x * np.sqrt(2 / (a - 4.0))
         term2 = np.sign(denom) * np.where(denom == 0.0, np.nan,
-                                          np.power((1 - 2.0 / A) / np.abs(denom), 1 / 3.0))
+                                          np.power((1 - 2.0 / a) / np.abs(denom), 1 / 3.0))
         # if np.any(denom == 0):
         #    msg = ("Test statistic not defined in some cases due to division by "
         #           "zero. Return nan in that case...")
         #    warnings.warn(msg, RuntimeWarning, stacklevel=2)
 
-        Z = (term1 - term2) / np.sqrt(2 / (9.0 * A))  # [1]_ Eq. 5
+        z = (term1 - term2) / np.sqrt(2 / (9.0 * a))  # [1]_ Eq. 5
 
-        return Z
+        return z
 
 
 class DAPTest(SkewTest, KurtosisTest):
 
     @staticmethod
+    @override
     def code():
-        return 'DAP'
+        return 'DAP' + super(DAPTest, DAPTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         x = np.asanyarray(rvs)
         y = np.sort(x)
 
@@ -436,10 +452,11 @@ class DAPTest(SkewTest, KurtosisTest):
 class FilliTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'Filli'
+        return 'Filli' + super(FilliTest, FilliTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         uniform_order = self._uniform_order_medians(len(rvs))
         zi = self._normal_order_medians(uniform_order)
         x_data = np.sort(rvs)
@@ -470,10 +487,11 @@ class FilliTest(NormalityTest):
 class LooneyGulledgeTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'LG'
+        return 'LG' + super(LooneyGulledgeTest, LooneyGulledgeTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         # ordering
         x_data = np.sort(rvs)
 
@@ -528,10 +546,11 @@ class RyanJoinerTest(NormalityTest):
         self.cte_alpha = cte_alpha
 
     @staticmethod
+    @override
     def code():
-        return 'RJ'
+        return 'RJ' + super(RyanJoinerTest, RyanJoinerTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         # ordering
         x_data = np.sort(rvs)
 
@@ -588,10 +607,11 @@ class RyanJoinerTest(NormalityTest):
 class SFTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'SF'
+        return 'SF' + super(SFTest, SFTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
         rvs = np.sort(rvs)
 
@@ -608,66 +628,69 @@ class SFTest(NormalityTest):
 class EPTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'EP'
+        return 'EP' + super(EPTest, EPTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
-        X = np.sort(rvs)
-        X_mean = np.mean(X)
-        m2 = np.var(X, ddof=0)
+        x = np.sort(rvs)
+        x_mean = np.mean(x)
+        m2 = np.var(x, ddof=0)
 
-        A = np.sqrt(2) * np.sum([np.exp(-(X[i] - X_mean) ** 2 / (4 * m2)) for i in range(n)])
-        B = 2 / n * np.sum(
-            [np.sum([np.exp(-(X[j] - X[k]) ** 2 / (2 * m2)) for j in range(0, k)])
+        a = np.sqrt(2) * np.sum([np.exp(-(x[i] - x_mean) ** 2 / (4 * m2)) for i in range(n)])
+        b = 2 / n * np.sum(
+            [np.sum([np.exp(-(x[j] - x[k]) ** 2 / (2 * m2)) for j in range(0, k)])
              for k in range(1, n)])
-        t = 1 + n / np.sqrt(3) + B - A
+        t = 1 + n / np.sqrt(3) + b - a
         return t
 
 
 class Hosking2Test(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'HOSKING2'
+        return 'HOSKING2' + super(Hosking2Test, Hosking2Test).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
         if n > 3:
 
-            xtmp = [0] * n
+            x_tmp = [0] * n
             l21, l31, l41 = 0.0, 0.0, 0.0
-            mutau41, vtau31, vtau41 = 0.0, 0.0, 0.0
+            mu_tau41, v_tau31, v_tau41 = 0.0, 0.0, 0.0
             for i in range(n):
-                xtmp[i] = rvs[i]
-            xtmp = np.sort(xtmp)
+                x_tmp[i] = rvs[i]
+            x_tmp = np.sort(x_tmp)
             for i in range(2, n):
-                l21 += xtmp[i - 1] * self.pstarmod1(2, n, i)
-                l31 += xtmp[i - 1] * self.pstarmod1(3, n, i)
-                l41 += xtmp[i - 1] * self.pstarmod1(4, n, i)
+                l21 += x_tmp[i - 1] * self.pstarmod1(2, n, i)
+                l31 += x_tmp[i - 1] * self.pstarmod1(3, n, i)
+                l41 += x_tmp[i - 1] * self.pstarmod1(4, n, i)
             l21 = l21 / (2.0 * math.comb(n, 4))
             l31 = l31 / (3.0 * math.comb(n, 5))
             l41 = l41 / (4.0 * math.comb(n, 6))
             tau31 = l31 / l21
             tau41 = l41 / l21
             if 1 <= n <= 25:
-                mutau41 = 0.067077
-                vtau31 = 0.0081391
-                vtau41 = 0.0042752
+                mu_tau41 = 0.067077
+                v_tau31 = 0.0081391
+                v_tau41 = 0.0042752
             if 25 < n <= 50:
-                mutau41 = 0.064456
-                vtau31 = 0.0034657
-                vtau41 = 0.0015699
+                mu_tau41 = 0.064456
+                v_tau31 = 0.0034657
+                v_tau41 = 0.0015699
             if 50 < n:
-                mutau41 = 0.063424
-                vtau31 = 0.0016064
-                vtau41 = 0.00068100
-            return pow(tau31, 2.0) / vtau31 + pow(tau41 - mutau41, 2.0) / vtau41
+                mu_tau41 = 0.063424
+                v_tau31 = 0.0016064
+                v_tau41 = 0.00068100
+            return pow(tau31, 2.0) / v_tau31 + pow(tau41 - mu_tau41, 2.0) / v_tau41
 
         return 0
 
-    def pstarmod1(self, r, n, i):
+    @staticmethod
+    def pstarmod1(r, n, i):
         res = 0.0
         for k in range(r):
             res = res + (-1.0) ** k * math.comb(r - 1, k) * math.comb(i - 1, r + 1 - 1 - k) * math.comb(n - i, 1 + k)
@@ -678,25 +701,27 @@ class Hosking2Test(NormalityTest):
 class Hosking1Test(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'HOSKING1'
+        return 'HOSKING1' + super(Hosking1Test, Hosking1Test).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat10(rvs)
 
-    def stat10(self, x):
+    @staticmethod
+    def stat10(x):
         n = len(x)
 
         if n > 3:
-            xtmp = x[:n].copy()
-            xtmp.sort()
+            x_tmp = x[:n].copy()
+            x_tmp.sort()
             tmp1 = n * (n - 1)
             tmp2 = tmp1 * (n - 2)
             tmp3 = tmp2 * (n - 3)
-            b0 = sum(xtmp[:3]) + sum(xtmp[3:])
-            b1 = 1.0 * xtmp[1] + 2.0 * xtmp[2] + sum(i * xtmp[i] for i in range(3, n))
-            b2 = 2.0 * xtmp[2] + sum((i * (i - 1)) * xtmp[i] for i in range(3, n))
-            b3 = sum((i * (i - 1) * (i - 2)) * xtmp[i] for i in range(3, n))
+            b0 = sum(x_tmp[:3]) + sum(x_tmp[3:])
+            b1 = 1.0 * x_tmp[1] + 2.0 * x_tmp[2] + sum(i * x_tmp[i] for i in range(3, n))
+            b2 = 2.0 * x_tmp[2] + sum((i * (i - 1)) * x_tmp[i] for i in range(3, n))
+            b3 = sum((i * (i - 1) * (i - 2)) * x_tmp[i] for i in range(3, n))
             b0 /= n
             b1 /= tmp1
             b2 /= tmp2
@@ -708,44 +733,45 @@ class Hosking1Test(NormalityTest):
             tau4 = l4 / l2
 
             if 1 <= n <= 25:
-                mutau4 = 0.12383
-                vtau3 = 0.0088038
-                vtau4 = 0.0049295
+                mu_tau4 = 0.12383
+                v_tau3 = 0.0088038
+                v_tau4 = 0.0049295
             elif 25 < n <= 50:
-                mutau4 = 0.12321
-                vtau3 = 0.0040493
-                vtau4 = 0.0020802
+                mu_tau4 = 0.12321
+                v_tau3 = 0.0040493
+                v_tau4 = 0.0020802
             else:
-                mutau4 = 0.12291
-                vtau3 = 0.0019434
-                vtau4 = 0.00095785
+                mu_tau4 = 0.12291
+                v_tau3 = 0.0019434
+                v_tau4 = 0.00095785
 
-            statTLmom = (tau3 ** 2) / vtau3 + (tau4 - mutau4) ** 2 / vtau4
-            return statTLmom
+            stat_tl_mom = (tau3 ** 2) / v_tau3 + (tau4 - mu_tau4) ** 2 / v_tau4
+            return stat_tl_mom
 
 
 class Hosking3Test(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'HOSKING3'
+        return 'HOSKING3' + super(Hosking3Test, Hosking3Test).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat12(rvs)
 
     def stat12(self, x):
         n = len(x)
 
         if n > 3:
-            xtmp = x[:n]
-            xtmp.sort()
+            x_tmp = x[:n]
+            x_tmp.sort()
             l22 = 0.0
             l32 = 0.0
             l42 = 0.0
             for i in range(2, n):
-                l22 += xtmp[i - 1] * self.pstarmod2(2, n, i)
-                l32 += xtmp[i - 1] * self.pstarmod2(3, n, i)
-                l42 += xtmp[i - 1] * self.pstarmod2(4, n, i)
+                l22 += x_tmp[i - 1] * self.pstarmod2(2, n, i)
+                l32 += x_tmp[i - 1] * self.pstarmod2(3, n, i)
+                l42 += x_tmp[i - 1] * self.pstarmod2(4, n, i)
             l22 /= 2.0 * math.comb(n, 6)
             l32 /= 3.0 * math.comb(n, 7)
             l42 /= 4.0 * math.comb(n, 8)
@@ -753,22 +779,23 @@ class Hosking3Test(NormalityTest):
             tau42 = l42 / l22
 
             if 1 <= n <= 25:
-                mutau42 = 0.044174
-                vtau32 = 0.0086570
-                vtau42 = 0.0042066
+                mu_tau42 = 0.044174
+                v_tau32 = 0.0086570
+                v_tau42 = 0.0042066
             elif 25 < n <= 50:
-                mutau42 = 0.040389
-                vtau32 = 0.0033818
-                vtau42 = 0.0013301
+                mu_tau42 = 0.040389
+                v_tau32 = 0.0033818
+                v_tau42 = 0.0013301
             else:
-                mutau42 = 0.039030
-                vtau32 = 0.0015120
-                vtau42 = 0.00054207
+                mu_tau42 = 0.039030
+                v_tau32 = 0.0015120
+                v_tau42 = 0.00054207
 
-            statTLmom2 = (tau32 ** 2) / vtau32 + (tau42 - mutau42) ** 2 / vtau42
-            return statTLmom2
+            stat_tl_mom2 = (tau32 ** 2) / v_tau32 + (tau42 - mu_tau42) ** 2 / v_tau42
+            return stat_tl_mom2
 
-    def pstarmod2(self, r, n, i):
+    @staticmethod
+    def pstarmod2(r, n, i):
         res = 0.0
         for k in range(r):
             res += (-1) ** k * math.comb(r - 1, k) * math.comb(i - 1, r + 2 - 1 - k) * math.comb(n - i, 2 + k)
@@ -778,25 +805,26 @@ class Hosking3Test(NormalityTest):
 class Hosking4Test(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'HOSKING4'
+        return 'HOSKING4' + super(Hosking4Test, Hosking4Test).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat13(rvs)
 
     def stat13(self, x):
         n = len(x)
 
         if n > 3:
-            xtmp = x[:n]
-            xtmp.sort()
+            x_tmp = x[:n]
+            x_tmp.sort()
             l23 = 0.0
             l33 = 0.0
             l43 = 0.0
             for i in range(2, n):
-                l23 += xtmp[i - 1] * self.pstarmod3(2, n, i)
-                l33 += xtmp[i - 1] * self.pstarmod3(3, n, i)
-                l43 += xtmp[i - 1] * self.pstarmod3(4, n, i)
+                l23 += x_tmp[i - 1] * self.pstarmod3(2, n, i)
+                l33 += x_tmp[i - 1] * self.pstarmod3(3, n, i)
+                l43 += x_tmp[i - 1] * self.pstarmod3(4, n, i)
             l23 /= 2.0 * math.comb(n, 8)
             l33 /= 3.0 * math.comb(n, 9)
             l43 /= 4.0 * math.comb(n, 10)
@@ -804,22 +832,23 @@ class Hosking4Test(NormalityTest):
             tau43 = l43 / l23
 
             if 1 <= n <= 25:
-                mutau43 = 0.033180
-                vtau33 = 0.0095765
-                vtau43 = 0.0044609
+                mu_tau43 = 0.033180
+                v_tau33 = 0.0095765
+                v_tau43 = 0.0044609
             elif 25 < n <= 50:
-                mutau43 = 0.028224
-                vtau33 = 0.0033813
-                vtau43 = 0.0011823
+                mu_tau43 = 0.028224
+                v_tau33 = 0.0033813
+                v_tau43 = 0.0011823
             else:
-                mutau43 = 0.026645
-                vtau33 = 0.0014547
-                vtau43 = 0.00045107
+                mu_tau43 = 0.026645
+                v_tau33 = 0.0014547
+                v_tau43 = 0.00045107
 
-            statTLmom3 = (tau33 ** 2) / vtau33 + (tau43 - mutau43) ** 2 / vtau43
-            return statTLmom3
+            stat_tl_mom3 = (tau33 ** 2) / v_tau33 + (tau43 - mu_tau43) ** 2 / v_tau43
+            return stat_tl_mom3
 
-    def pstarmod3(self, r, n, i):
+    @staticmethod
+    def pstarmod3(r, n, i):
         res = 0.0
         for k in range(r):
             res += (-1) ** k * math.comb(r - 1, k) * math.comb(i - 1, r + 3 - 1 - k) * math.comb(n - i, 3 + k)
@@ -829,84 +858,88 @@ class Hosking4Test(NormalityTest):
 class ZhangWuCTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'ZWC'
+        return 'ZWC' + super(ZhangWuCTest, ZhangWuCTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
         if n > 3:
-            Phiz = np.zeros(n)
-            meanX = np.mean(rvs)
-            varX = np.var(rvs, ddof=1)
-            sdX = np.sqrt(varX)
+            phiz = np.zeros(n)
+            mean_x = np.mean(rvs)
+            var_x = np.var(rvs, ddof=1)
+            sd_x = np.sqrt(var_x)
             for i in range(n):
-                Phiz[i] = scipy_stats.norm.cdf((rvs[i] - meanX) / sdX)
-            Phiz.sort()
-            statZC = 0.0
+                phiz[i] = scipy_stats.norm.cdf((rvs[i] - mean_x) / sd_x)
+            phiz.sort()
+            stat_zc = 0.0
             for i in range(1, n + 1):
-                statZC += np.log((1.0 / Phiz[i - 1] - 1.0) / ((n - 0.5) / (i - 0.75) - 1.0)) ** 2
-            return statZC
+                stat_zc += np.log((1.0 / phiz[i - 1] - 1.0) / ((n - 0.5) / (i - 0.75) - 1.0)) ** 2
+            return stat_zc
 
 
 class ZhangWuATest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'ZWA'
+        return 'ZWA' + super(ZhangWuATest, ZhangWuATest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
         if n > 3:
-            Phiz = np.zeros(n)
-            meanX = np.mean(rvs)
-            varX = np.var(rvs)
-            sdX = np.sqrt(varX)
+            phiz = np.zeros(n)
+            mean_x = np.mean(rvs)
+            var_x = np.var(rvs)
+            sd_x = np.sqrt(var_x)
             for i in range(n):
-                Phiz[i] = scipy_stats.norm.cdf((rvs[i] - meanX) / sdX)
-            Phiz.sort()
-            statZA = 0.0
+                phiz[i] = scipy_stats.norm.cdf((rvs[i] - mean_x) / sd_x)
+            phiz.sort()
+            stat_za = 0.0
             for i in range(1, n + 1):
-                statZA += np.log(Phiz[i - 1]) / ((n - i) + 0.5) + np.log(1.0 - Phiz[i - 1]) / ((i - 0.5))
-            statZA = -statZA
-            statZA = 10.0 * statZA - 32.0
-            return statZA
+                stat_za += np.log(phiz[i - 1]) / ((n - i) + 0.5) + np.log(1.0 - phiz[i - 1]) / (i - 0.5)
+            stat_za = -stat_za
+            stat_za = 10.0 * stat_za - 32.0
+            return stat_za
 
 
 class GlenLeemisBarrTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'GLB'
+        return 'GLB' + super(GlenLeemisBarrTest, GlenLeemisBarrTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
         if n > 3:
-            Phiz = np.zeros(n)
-            meanX = np.mean(rvs)
-            varX = np.var(rvs, ddof=1)
-            sdX = np.sqrt(varX)
+            phiz = np.zeros(n)
+            mean_x = np.mean(rvs)
+            var_x = np.var(rvs, ddof=1)
+            sd_x = np.sqrt(var_x)
             for i in range(n):
-                Phiz[i] = scipy_stats.norm.cdf((rvs[i] - meanX) / sdX)
-            Phiz.sort()
+                phiz[i] = scipy_stats.norm.cdf((rvs[i] - mean_x) / sd_x)
+            phiz.sort()
             for i in range(1, n + 1):
-                Phiz[i - 1] = scipy_stats.beta.cdf(Phiz[i - 1], i, n - i + 1)
-            Phiz.sort()
-            statPS = 0
+                phiz[i - 1] = scipy_stats.beta.cdf(phiz[i - 1], i, n - i + 1)
+            phiz.sort()
+            stat_ps = 0
             for i in range(1, n + 1):
-                statPS += (2 * n + 1 - 2 * i) * np.log(Phiz[i - 1]) + (2 * i - 1) * np.log(1 - Phiz[i - 1])
-            return -n - statPS / n
+                stat_ps += (2 * n + 1 - 2 * i) * np.log(phiz[i - 1]) + (2 * i - 1) * np.log(1 - phiz[i - 1])
+            return -n - stat_ps / n
 
 
 class DoornikHansenTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'DH'
+        return 'DH' + super(DoornikHansenTest, DoornikHansenTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.doornik_hansen(rvs)
 
     def doornik_hansen(self, x):
@@ -924,7 +957,8 @@ class DoornikHansenTest(NormalityTest):
         stat = z1 ** 2 + z2 ** 2
         return stat
 
-    def skewness_to_z1(self, skew, n):
+    @staticmethod
+    def skewness_to_z1(skew, n):
         b = 3 * ((n ** 2) + 27 * n - 70) * (n + 1) * (n + 3) / ((n - 2) * (n + 5) * (n + 7) * (n + 9))
         w2 = -1 + math.sqrt(2 * (b - 1))
         d = 1 / math.sqrt(math.log(math.sqrt(w2)))
@@ -933,7 +967,8 @@ class DoornikHansenTest(NormalityTest):
         z = d * math.log((y / a) + math.sqrt((y / a) ** 2 + 1))
         return z
 
-    def kurtosis_to_z2(self, skew, kurt, n):
+    @staticmethod
+    def kurtosis_to_z2(skew, kurt, n):
         n2 = n ** 2
         n3 = n ** 3
         p1 = n2 + 15 * n - 4
@@ -954,292 +989,310 @@ class DoornikHansenTest(NormalityTest):
 class RobustJarqueBeraTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'RJB'
+        return 'RJB' + super(RobustJarqueBeraTest, RobustJarqueBeraTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         y = np.sort(rvs)
         n = len(rvs)
-        M = np.median(y)
+        m = np.median(y)
         c = np.sqrt(math.pi / 2)
-        J = (c / n) * np.sum(np.abs(rvs - M))
+        j = (c / n) * np.sum(np.abs(rvs - m))
         m_3 = scipy_stats.moment(y, moment=3)
         m_4 = scipy_stats.moment(y, moment=4)
-        RJB = (n / 6) * (m_3 / J ** 3) ** 2 + (n / 64) * (m_4 / J ** 4 - 3) ** 2
-        return RJB
+        rjb = (n / 6) * (m_3 / j ** 3) ** 2 + (n / 64) * (m_4 / j ** 4 - 3) ** 2
+        return rjb
 
 
 class BontempsMeddahi1Test(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'BM1'
+        return 'BM1' + super(BontempsMeddahi1Test, BontempsMeddahi1Test).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
         if n > 3:
             z = [0.0] * n
-            varX = 0.0
-            meanX = 0.0
+            var_x = 0.0
+            mean_x = 0.0
             tmp3 = 0.0
             tmp4 = 0.0
 
             for i in range(n):
-                meanX += rvs[i]
-            meanX /= n
+                mean_x += rvs[i]
+            mean_x /= n
 
             for i in range(n):
-                varX += rvs[i] ** 2
-            varX = (n * (varX / n - meanX ** 2)) / (n - 1)
-            sdX = math.sqrt(varX)
+                var_x += rvs[i] ** 2
+            var_x = (n * (var_x / n - mean_x ** 2)) / (n - 1)
+            sd_x = math.sqrt(var_x)
 
             for i in range(n):
-                z[i] = (rvs[i] - meanX) / sdX
+                z[i] = (rvs[i] - mean_x) / sd_x
 
             for i in range(n):
                 tmp3 += (z[i] ** 3 - 3 * z[i]) / math.sqrt(6)
                 tmp4 += (z[i] ** 4 - 6 * z[i] ** 2 + 3) / (2 * math.sqrt(6))
 
-            statBM34 = (tmp3 ** 2 + tmp4 ** 2) / n
-            return statBM34
+            stat_bm34 = (tmp3 ** 2 + tmp4 ** 2) / n
+            return stat_bm34
 
 
 class BontempsMeddahi2Test(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'BM2'
+        return 'BM2' + super(BontempsMeddahi2Test, BontempsMeddahi2Test).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat15(rvs)
 
-    def stat15(self, x):
+    @staticmethod
+    def stat15(x):
         n = len(x)
 
         if n > 3:
             z = np.zeros(n)
-            meanX = np.mean(x)
-            varX = np.var(x, ddof=1)
-            sdX = np.sqrt(varX)
+            mean_x = np.mean(x)
+            var_x = np.var(x, ddof=1)
+            sd_x = np.sqrt(var_x)
             for i in range(n):
-                z[i] = (x[i] - meanX) / sdX
+                z[i] = (x[i] - mean_x) / sd_x
             tmp3 = np.sum((z ** 3 - 3 * z) / np.sqrt(6))
             tmp4 = np.sum((z ** 4 - 6 * z ** 2 + 3) / (2 * np.sqrt(6)))
             tmp5 = np.sum((z ** 5 - 10 * z ** 3 + 15 * z) / (2 * np.sqrt(30)))
             tmp6 = np.sum((z ** 6 - 15 * z ** 4 + 45 * z ** 2 - 15) / (12 * np.sqrt(5)))
-            statBM36 = (tmp3 ** 2 + tmp4 ** 2 + tmp5 ** 2 + tmp6 ** 2) / n
-            return statBM36
+            stat_bm36 = (tmp3 ** 2 + tmp4 ** 2 + tmp5 ** 2 + tmp6 ** 2) / n
+            return stat_bm36
 
 
 class BonettSeierTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'BS'
+        return 'BS' + super(BonettSeierTest, BonettSeierTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat17(rvs)
 
-    def stat17(self, x):
+    @staticmethod
+    def stat17(x):
         n = len(x)
 
         if n > 3:
             m2 = 0.0
-            meanX = 0.0
+            mean_x = 0.0
             term = 0.0
 
             for i in range(n):
-                meanX += x[i]
+                mean_x += x[i]
 
-            meanX = meanX / float(n)
+            mean_x = mean_x / float(n)
 
             for i in range(n):
-                m2 += (x[i] - meanX) ** 2
-                term += abs(x[i] - meanX)
+                m2 += (x[i] - mean_x) ** 2
+                term += abs(x[i] - mean_x)
 
             m2 = m2 / float(n)
             term = term / float(n)
             omega = 13.29 * (math.log(math.sqrt(m2)) - math.log(term))
-            statTw = math.sqrt(float(n + 2)) * (omega - 3.0) / 3.54
-            return statTw
+            stat_tw = math.sqrt(float(n + 2)) * (omega - 3.0) / 3.54
+            return stat_tw
 
 
 class MartinezIglewiczTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'MI'
+        return 'MI' + super(MartinezIglewiczTest, MartinezIglewiczTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat32(rvs)
 
-    def stat32(self, x):
+    @staticmethod
+    def stat32(x):
         n = len(x)
 
         if n > 3:
-            xtmp = np.copy(x)
-            xtmp.sort()
+            x_tmp = np.copy(x)
+            x_tmp.sort()
             if n % 2 == 0:
-                M = (xtmp[n // 2] + xtmp[n // 2 - 1]) / 2.0
+                m = (x_tmp[n // 2] + x_tmp[n // 2 - 1]) / 2.0
             else:
-                M = xtmp[n // 2]
+                m = x_tmp[n // 2]
 
-            aux1 = x - M
-            xtmp = np.abs(aux1)
-            xtmp.sort()
+            aux1 = x - m
+            x_tmp = np.abs(aux1)
+            x_tmp.sort()
             if n % 2 == 0:
-                A = (xtmp[n // 2] + xtmp[n // 2 - 1]) / 2.0
+                a = (x_tmp[n // 2] + x_tmp[n // 2 - 1]) / 2.0
             else:
-                A = xtmp[n // 2]
-            A = 9.0 * A
+                a = x_tmp[n // 2]
+            a = 9.0 * a
 
-            z = aux1 / A
+            z = aux1 / a
             term1 = np.sum(aux1 ** 2 * (1 - z ** 2) ** 4)
             term2 = np.sum((1 - z ** 2) * (1 - 5 * z ** 2))
             term3 = np.sum(aux1 ** 2)
 
-            Sb2 = (n * term1) / term2 ** 2
-            statIn = (term3 / (n - 1)) / Sb2
-            return statIn
+            sb2 = (n * term1) / term2 ** 2
+            stat_in = (term3 / (n - 1)) / sb2
+            return stat_in
 
 
 class CabanaCabana1Test(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'CC1'
+        return 'CC1' + super(CabanaCabana1Test, CabanaCabana1Test).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat19(rvs)
 
-    def stat19(self, x):
+    @staticmethod
+    def stat19(x):
         n = len(x)
 
         if n > 3:
-            zdata = (x - np.mean(x)) / np.std(x, ddof=1)
-            meanH3 = np.sum(zdata ** 3 - 3 * zdata) / (np.sqrt(6) * np.sqrt(n))
-            meanH4 = np.sum(zdata ** 4 - 6 * zdata ** 2 + 3) / (2 * np.sqrt(6) * np.sqrt(n))
-            meanH5 = np.sum(zdata ** 5 - 10 * zdata ** 3 + 15 * zdata) / (2 * np.sqrt(30) * np.sqrt(n))
-            meanH6 = np.sum(zdata ** 6 - 15 * zdata ** 4 + 45 * zdata ** 2 - 15) / (12 * np.sqrt(5) * np.sqrt(n))
-            meanH7 = np.sum(zdata ** 7 - 21 * zdata ** 5 + 105 * zdata ** 3 - 105 * zdata) / (
+            z_data = (x - np.mean(x)) / np.std(x, ddof=1)
+            mean_h3 = np.sum(z_data ** 3 - 3 * z_data) / (np.sqrt(6) * np.sqrt(n))
+            mean_h4 = np.sum(z_data ** 4 - 6 * z_data ** 2 + 3) / (2 * np.sqrt(6) * np.sqrt(n))
+            mean_h5 = np.sum(z_data ** 5 - 10 * z_data ** 3 + 15 * z_data) / (2 * np.sqrt(30) * np.sqrt(n))
+            mean_h6 = np.sum(z_data ** 6 - 15 * z_data ** 4 + 45 * z_data ** 2 - 15) / (12 * np.sqrt(5) * np.sqrt(n))
+            mean_h7 = np.sum(z_data ** 7 - 21 * z_data ** 5 + 105 * z_data ** 3 - 105 * z_data) / (
                     12 * np.sqrt(35) * np.sqrt(n))
-            meanH8 = np.sum(zdata ** 8 - 28 * zdata ** 6 + 210 * zdata ** 4 - 420 * zdata ** 2 + 105) / (
+            mean_h8 = np.sum(z_data ** 8 - 28 * z_data ** 6 + 210 * z_data ** 4 - 420 * z_data ** 2 + 105) / (
                     24 * np.sqrt(70) * np.sqrt(n))
-            vectoraux1 = meanH4 + meanH5 * zdata / np.sqrt(2) + meanH6 * (zdata ** 2 - 1) / np.sqrt(6) + meanH7 * (
-                    zdata ** 3 - 3 * zdata) / (2 * np.sqrt(6)) + meanH8 * (zdata ** 4 - 6 * zdata ** 2 + 3) / (
-                                 2 * np.sqrt(30))
-            statTSl = np.max(np.abs(scipy_stats.norm.cdf(zdata) * meanH3 - scipy_stats.norm.pdf(zdata) * vectoraux1))
-            return statTSl
+            vector_aux1 = (mean_h4 + mean_h5 * z_data / np.sqrt(2)
+                           + mean_h6 * (z_data ** 2 - 1) / np.sqrt(6) + mean_h7 * (z_data ** 3 - 3 * z_data)
+                           / (2 * np.sqrt(6)) + mean_h8 * (z_data ** 4 - 6 * z_data ** 2 + 3) / (
+                                 2 * np.sqrt(30)))
+            stat_tsl = np.max(np.abs(scipy_stats.norm.cdf(z_data) * mean_h3
+                                     - scipy_stats.norm.pdf(z_data) * vector_aux1))
+            return stat_tsl
 
 
 class CabanaCabana2Test(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'CC2'
+        return 'CC2' + super(CabanaCabana2Test, CabanaCabana2Test).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat20(rvs)
 
-    def stat20(self, x):
+    @staticmethod
+    def stat20(x):
         n = len(x)
 
         if n > 3:
             # TODO: Move variance calculation
-            varX = n * np.var(x) / (n - 1)
-            sdX = np.sqrt(varX)
-            z = (x - np.mean(x)) / sdX
-            H0 = np.zeros(n)
-            H1 = np.zeros(n)
-            H2 = np.zeros(n)
-            H3 = np.zeros(n)
-            H4 = np.zeros(n)
-            H5 = np.zeros(n)
-            H6 = np.zeros(n)
-            H7 = np.zeros(n)
-            H8 = np.zeros(n)
+            var_x = n * np.var(x) / (n - 1)
+            sd_x = np.sqrt(var_x)
+            z = (x - np.mean(x)) / sd_x
+            h0 = np.zeros(n)
+            h1 = np.zeros(n)
+            h2 = np.zeros(n)
+            h3 = np.zeros(n)
+            h4 = np.zeros(n)
+            h5 = np.zeros(n)
+            h6 = np.zeros(n)
+            h7 = np.zeros(n)
+            h8 = np.zeros(n)
 
-            H3tilde = 0
-            H4tilde = 0
-            H5tilde = 0
-            H6tilde = 0
-            H7tilde = 0
-            H8tilde = 0
+            h3_tilde = 0
+            h4_tilde = 0
+            h5_tilde = 0
+            h6_tilde = 0
+            h7_tilde = 0
+            h8_tilde = 0
 
             for i in range(n):
-                H0[i] = 1
-                H1[i] = z[i]
-                H2[i] = (math.pow(z[i], 2.0) - 1.0) / np.sqrt(2.0)
-                H3[i] = (math.pow(z[i], 3.0) - 3.0 * z[i]) / np.sqrt(6.0)
-                H4[i] = (math.pow(z[i], 4.0) - 6.0 * math.pow(z[i], 2.0) + 3.0) / (2.0 * np.sqrt(6.0))
-                H5[i] = (math.pow(z[i], 5.0) - 10.0 * math.pow(z[i], 3.0) + 15.0 * z[i]) / (2.0 * np.sqrt(30.0))
-                H6[i] = (math.pow(z[i], 6.0) - 15.0 * math.pow(z[i], 4.0) + 45.0 * math.pow(z[i], 2.0) - 15.0) / (
+                h0[i] = 1
+                h1[i] = z[i]
+                h2[i] = (math.pow(z[i], 2.0) - 1.0) / np.sqrt(2.0)
+                h3[i] = (math.pow(z[i], 3.0) - 3.0 * z[i]) / np.sqrt(6.0)
+                h4[i] = (math.pow(z[i], 4.0) - 6.0 * math.pow(z[i], 2.0) + 3.0) / (2.0 * np.sqrt(6.0))
+                h5[i] = (math.pow(z[i], 5.0) - 10.0 * math.pow(z[i], 3.0) + 15.0 * z[i]) / (2.0 * np.sqrt(30.0))
+                h6[i] = (math.pow(z[i], 6.0) - 15.0 * math.pow(z[i], 4.0) + 45.0 * math.pow(z[i], 2.0) - 15.0) / (
                         12.0 * np.sqrt(5.0))
-                H7[i] = (math.pow(z[i], 7.0) - 21.0 * math.pow(z[i], 5.0) + 105.0 * math.pow(z[i], 3.0) - 105.0 * z[
+                h7[i] = (math.pow(z[i], 7.0) - 21.0 * math.pow(z[i], 5.0) + 105.0 * math.pow(z[i], 3.0) - 105.0 * z[
                     i]) / (
                                 12.0 * np.sqrt(35.0))
-                H8[i] = (math.pow(z[i], 8.0) - 28.0 * math.pow(z[i], 6.0) + 210.0 * math.pow(z[i],
+                h8[i] = (math.pow(z[i], 8.0) - 28.0 * math.pow(z[i], 6.0) + 210.0 * math.pow(z[i],
                                                                                              4.0) - 420.0 * math.pow(
                     z[i],
                     2.0) + 105.0) / (
                                 24.0 * np.sqrt(70.0))
 
-                H3tilde = H3tilde + H3[i]
-                H4tilde = H4tilde + H4[i]
-                H5tilde = H5tilde + H5[i]
-                H6tilde = H6tilde + H6[i]
-                H7tilde = H7tilde + H7[i]
-                H8tilde = H8tilde + H8[i]
+                h3_tilde = h3_tilde + h3[i]
+                h4_tilde = h4_tilde + h4[i]
+                h5_tilde = h5_tilde + h5[i]
+                h6_tilde = h6_tilde + h6[i]
+                h7_tilde = h7_tilde + h7[i]
+                h8_tilde = h8_tilde + h8[i]
 
-            H3tilde = H3tilde / np.sqrt(n)
-            H4tilde = H4tilde / np.sqrt(n)
-            H5tilde = H5tilde / np.sqrt(n)
-            H6tilde = H6tilde / np.sqrt(n)
-            H7tilde = H7tilde / np.sqrt(n)
-            H8tilde = H8tilde / np.sqrt(n)
+            h3_tilde = h3_tilde / np.sqrt(n)
+            h4_tilde = h4_tilde / np.sqrt(n)
+            h5_tilde = h5_tilde / np.sqrt(n)
+            h6_tilde = h6_tilde / np.sqrt(n)
+            h7_tilde = h7_tilde / np.sqrt(n)
+            h8_tilde = h8_tilde / np.sqrt(n)
 
-            vectoraux2 = (np.sqrt(2) * H0 + H2) * H5tilde + (np.sqrt(3 / 2) * H1 + H3) * H6tilde + (
-                    np.sqrt(4 / 3) * H2 + H4) * H7tilde + (np.sqrt(5 / 4) * H3 + H5) * H8tilde + (
-                                 np.sqrt(5 / 4) * H3 + H5) * H8tilde
-            statTKl = np.max(np.abs(-scipy_stats.norm.pdf(z) * H3tilde + (
-                    scipy_stats.norm.cdf(z) - z * scipy_stats.norm.pdf(z)) * H4tilde - scipy_stats.norm.pdf(
-                z) * vectoraux2))
-            return statTKl
+            vector_aux2 = (np.sqrt(2) * h0 + h2) * h5_tilde + (np.sqrt(3 / 2) * h1 + h3) * h6_tilde + (
+                    np.sqrt(4 / 3) * h2 + h4) * h7_tilde + (np.sqrt(5 / 4) * h3 + h5) * h8_tilde + (
+                                 np.sqrt(5 / 4) * h3 + h5) * h8_tilde
+            stat_tkl = np.max(np.abs(-scipy_stats.norm.pdf(z) * h3_tilde + (
+                    scipy_stats.norm.cdf(z) - z * scipy_stats.norm.pdf(z)) * h4_tilde - scipy_stats.norm.pdf(
+                z) * vector_aux2))
+            return stat_tkl
 
 
 class ChenShapiroTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'CS'
+        return 'CS' + super(ChenShapiroTest, ChenShapiroTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat26(rvs)
 
-    def stat26(self, x):
+    @staticmethod
+    def stat26(x):
         n = len(x)
 
         if n > 3:
             xs = np.sort(x)
-            meanX = np.mean(x)
-            varX = np.var(x, ddof=1)
-            M = scipy_stats.norm.ppf(np.arange(1, n + 1) / (n + 0.25) - 0.375 / (n + 0.25))
-            statCS = np.sum((xs[1:] - xs[:-1]) / (M[1:] - M[:-1])) / ((n - 1) * np.sqrt(varX))
-            statCS = np.sqrt(n) * (1.0 - statCS)
-            return statCS
+            mean_x = np.mean(x)
+            var_x = np.var(x, ddof=1)
+            m = scipy_stats.norm.ppf(np.arange(1, n + 1) / (n + 0.25) - 0.375 / (n + 0.25))
+            stat_cs = np.sum((xs[1:] - xs[:-1]) / (m[1:] - m[:-1])) / ((n - 1) * np.sqrt(var_x))
+            stat_cs = np.sqrt(n) * (1.0 - stat_cs)
+            return stat_cs
 
 
 class ZhangQTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'ZQ'
+        return 'ZQ' + super(ZhangQTest, ZhangQTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat27(rvs)
 
-    def stat27(self, x):
+    @staticmethod
+    def stat27(x):
         n = len(x)
 
         if n > 3:
@@ -1264,17 +1317,18 @@ class ZhangQTest(NormalityTest):
                 b[i - 1] = (1.0 / (u[i - 1] - u[i + 3]) - 1.0 / (u[i - 5] - u[i - 1])) / (n - 4)
             q1 = np.dot(a, xs)
             q2 = np.dot(b, xs)
-            statQ = np.log(q1 / q2)
-            return statQ
+            stat_q = np.log(q1 / q2)
+            return stat_q
 
 
 class CoinTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'COIN'
+        return 'COIN' + super(CoinTest, CoinTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat30(rvs)
 
     def stat30(self, x):
@@ -1282,11 +1336,11 @@ class CoinTest(NormalityTest):
 
         if n > 3:
             z = [0] * n
-            M = [n // 2]
-            sp = [0] * M[0]
+            m = [n // 2]
+            sp = [0] * m[0]
             a = [0] * n
-            varX = 0.0
-            meanX = 0.0
+            var_x = 0.0
+            mean_x = 0.0
             term1 = 0.0
             term2 = 0.0
             term3 = 0.0
@@ -1294,19 +1348,19 @@ class CoinTest(NormalityTest):
             term6 = 0.0
 
             for i in range(n):
-                meanX += x[i]
-            meanX /= n
+                mean_x += x[i]
+            mean_x /= n
 
             for i in range(n):
-                varX += x[i] ** 2
-            varX = (n * (varX / n - meanX ** 2)) / (n - 1)
-            sdX = math.sqrt(varX)
+                var_x += x[i] ** 2
+            var_x = (n * (var_x / n - mean_x ** 2)) / (n - 1)
+            sd_x = math.sqrt(var_x)
 
             for i in range(n):
-                z[i] = (x[i] - meanX) / sdX
+                z[i] = (x[i] - mean_x) / sd_x
 
             z.sort()
-            self.nscor2(sp, n, M)
+            self.nscor2(sp, n, m)
 
             if n % 2 == 0:
                 for i in range(n // 2):
@@ -1316,7 +1370,7 @@ class CoinTest(NormalityTest):
             else:
                 for i in range(n // 2):
                     a[i] = -sp[i]
-                a[n // 2] = 0.0
+                a[n // 2] = 0.0  # TODO: ???
                 for i in range(n // 2 + 1, n):
                     a[i] = sp[n - i - 1]
 
@@ -1327,10 +1381,11 @@ class CoinTest(NormalityTest):
                 term4 += a[i] ** 3 * z[i]
                 term6 += a[i] ** 6
 
-            statbeta32 = ((term1 * term2 - term3 * term4) / (term1 * term1 - term3 * term6)) ** 2
-            return statbeta32
+            stat_beta32 = ((term1 * term2 - term3 * term4) / (term1 * term1 - term3 * term6)) ** 2
+            return stat_beta32
 
-    def correc(self, i, n):
+    @staticmethod
+    def correc(i, n):
         c1 = [9.5, 28.7, 1.9, 0., -7., -6.2, -1.6]
         c2 = [-6195., -9569., -6728., -17614., -8278., -3570., 1075.]
         c3 = [93380., 175160., 410400., 2157600., 2.376e6, 2.065e6, 2.065e6]
@@ -1398,29 +1453,31 @@ class CoinTest(NormalityTest):
 class DagostinoTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'D'
+        return 'D' + super(DagostinoTest, DagostinoTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
         if n > 3:
             xs = np.sort(rvs)  # We sort the data
-            meanX = sum(xs) / n
-            varX = sum(x_i ** 2 for x_i in xs) / n - meanX ** 2
-            T = sum((i - 0.5 * (n + 1)) * xs[i - 1] for i in range(1, n + 1))
-            D = T / ((n ** 2) * math.sqrt(varX))
-            statDa = math.sqrt(n) * (D - 0.28209479) / 0.02998598
+            mean_x = sum(xs) / n
+            var_x = sum(x_i ** 2 for x_i in xs) / n - mean_x ** 2
+            t = sum((i - 0.5 * (n + 1)) * xs[i - 1] for i in range(1, n + 1))
+            d = t / ((n ** 2) * math.sqrt(var_x))
+            stat_da = math.sqrt(n) * (d - 0.28209479) / 0.02998598
 
-            return statDa  # Here is the test statistic value
+            return stat_da  # Here is the test statistic value
 
 
 class ZhangQStarTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'ZQS'
+        return 'ZQS' + super(ZhangQStarTest, ZhangQStarTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
         if n > 3:
@@ -1444,24 +1501,25 @@ class ZhangQStarTest(NormalityTest):
             for i in range(4, n - 4):
                 b[i] = (1 / (u[i] - u[i + 4]) - 1 / (u[i - 4] - u[i])) / (n - 4)
 
-            q1star = -np.dot(a, xs[::-1])
-            q2star = -np.dot(b, xs[::-1])
+            q1_star = -np.dot(a, xs[::-1])
+            q2_star = -np.dot(b, xs[::-1])
 
-            Qstar = np.log(q1star / q2star)
-            return Qstar
+            q_star = np.log(q1_star / q2_star)
+            return q_star
 
 
-"""
-class ZhangQQStarTest(NormalityTest):
+class ZhangQQStarTest(NormalityTest):  # TODO: check for correctness
 
     @staticmethod
+    @override
     def code():
-        return 'ZQQ'
+        return 'ZQQ' + super(ZhangQQStarTest, ZhangQQStarTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat28(rvs)
 
-    def stat28(self, x):
+    @staticmethod
+    def stat28(x):
         n = len(x)
 
         if n > 3:
@@ -1472,36 +1530,36 @@ class ZhangQQStarTest(NormalityTest):
             def stat34(x):
                 pass
 
-            pvalue27 = [1.0]
-            pvalue34 = [1.0]
+            p_value27 = [1.0]
+            p_value34 = [1.0]
 
             stat27(x)  # stat Q de Zhang
 
-            if pvalue27[0] > 0.5:
-                pval1 = 1.0 - pvalue27[0]
+            if p_value27[0] > 0.5:
+                p_val1 = 1.0 - p_value27[0]
             else:
-                pval1 = pvalue27[0]
+                p_val1 = p_value27[0]
 
             stat34(x)  # stat Q* de Zhang
 
-            if pvalue34[0] > 0.5:
-                pval2 = 1.0 - pvalue34[0]
+            if p_value34[0] > 0.5:
+                p_val2 = 1.0 - p_value34[0]
             else:
-                pval2 = pvalue34[0]
+                p_val2 = p_value34[0]
 
-            stat = -2.0 * (np.log(pval1) + np.log(pval2))  # Combinaison des valeurs-p (Fisher, 1932)
+            stat = -2.0 * (np.log(p_val1) + np.log(p_val2))  # Combinaison des valeurs-p (Fisher, 1932)
 
             return stat  # Here is the test statistic value
-"""
 
 
 class SWRGTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'SWRG'
+        return 'SWRG' + super(SWRGTest, SWRGTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
         if n > 3:
@@ -1512,78 +1570,80 @@ class SWRGTest(NormalityTest):
             aux1 = np.concatenate(([0], mi[:-1] * fi[:-1]))
             aux3 = np.concatenate((mi[1:] * fi[1:], [0]))
             aux4 = aux1 - aux2 + aux3
-            aistar = -((n + 1) * (n + 2)) * fi * aux4
-            norm2 = np.sum(aistar ** 2)
-            ai = aistar / np.sqrt(norm2)
+            ai_star = -((n + 1) * (n + 2)) * fi * aux4
+            norm2 = np.sum(ai_star ** 2)
+            ai = ai_star / np.sqrt(norm2)
 
             xs = np.sort(rvs)
-            meanX = np.mean(xs)
-            aux6 = np.sum((xs - meanX) ** 2)
-            statWRG = np.sum(ai * xs) ** 2 / aux6
+            mean_x = np.mean(xs)
+            aux6 = np.sum((xs - mean_x) ** 2)
+            stat_wrg = np.sum(ai * xs) ** 2 / aux6
 
-            return statWRG  # Here is the test statistic value
+            return stat_wrg  # Here is the test statistic value
 
 
 class GMGTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'GMG'
+        return 'GMG' + super(GMGTest, GMGTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat33(rvs)
 
-    def stat33(self, x):
+    @staticmethod
+    def stat33(x):
         n = len(x)
 
         if n > 3:
             import math
-            xtmp = [0] * n
-            varX = 0.0
-            meanX = 0.0
-            Jn = 0.0
+            x_tmp = [0] * n
+            var_x = 0.0
+            mean_x = 0.0
+            jn = 0.0
             pi = 4.0 * math.atan(1.0)  # or use pi = M_PI, where M_PI is defined in math.h
 
             # calculate sample mean
             for i in range(n):
-                meanX += x[i]
-            meanX = meanX / n
+                mean_x += x[i]
+            mean_x = mean_x / n
 
             # calculate sample var and standard deviation
             for i in range(n):
-                varX += (x[i] - meanX) ** 2
-            varX = varX / n
-            sdX = math.sqrt(varX)
+                var_x += (x[i] - mean_x) ** 2
+            var_x = var_x / n
+            sd_x = math.sqrt(var_x)
 
             # calculate sample median
             for i in range(n):
-                xtmp[i] = x[i]
+                x_tmp[i] = x[i]
 
-            xtmp = np.sort(xtmp)  # We sort the data
+            x_tmp = np.sort(x_tmp)  # We sort the data
 
             if n % 2 == 0:
-                M = (xtmp[n // 2] + xtmp[n // 2 - 1]) / 2.0
+                m = (x_tmp[n // 2] + x_tmp[n // 2 - 1]) / 2.0
             else:
-                M = xtmp[n // 2]  # sample median
+                m = x_tmp[n // 2]  # sample median
 
             # calculate statRsJ
             for i in range(n):
-                Jn += abs(x[i] - M)
-            Jn = math.sqrt(pi / 2.0) * Jn / n
+                jn += abs(x[i] - m)
+            jn = math.sqrt(pi / 2.0) * jn / n
 
-            statRsJ = sdX / Jn
+            stat_rsj = sd_x / jn
 
-            return statRsJ  # Here is the test statistic value
+            return stat_rsj  # Here is the test statistic value
 
 
-"""
-class BHSTest(NormalityTest):
+class BHSTest(NormalityTest):  # TODO: check for correctness
 
     @staticmethod
+    @override
     def code():
-        return 'BHS'
+        return 'BHS' + super(BHSTest, BHSTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat16(rvs)
 
     def stat16(self, x):
@@ -1606,11 +1666,11 @@ class BHSTest(NormalityTest):
 
             eps = [2.220446e-16, 2.225074e-308]
             iter = [1000, 0]
-            w1 = self.mc_C_d(x1, n, eps, iter)
+            w1 = self.mc_c_d(x1, n, eps, iter)
             iter = [1000, 0]
-            w2 = self.mc_C_d(x2, in2, eps, iter)
+            w2 = self.mc_c_d(x2, in2, eps, iter)
             iter = [1000, 0]
-            w3 = self.mc_C_d(x3, in3, eps, iter)
+            w3 = self.mc_c_d(x3, in3, eps, iter)
 
             omega1 = 0.0
             omega2 = 0.198828
@@ -1620,75 +1680,75 @@ class BHSTest(NormalityTest):
             vec2 = -w2 - omega2
             vec3 = w3 - omega3
 
-            invV11 = 0.8571890822945882
-            invV12 = -0.1051268907484579
-            invV13 = 0.1051268907484580
-            invV21 = -0.1051268907484579
-            invV22 = 0.3944817329840534
-            invV23 = -0.01109532299714422
-            invV31 = 0.1051268907484579
-            invV32 = -0.01109532299714422
-            invV33 = 0.3944817329840535
+            inv_v11 = 0.8571890822945882
+            inv_v12 = -0.1051268907484579
+            inv_v13 = 0.1051268907484580
+            inv_v21 = -0.1051268907484579
+            inv_v22 = 0.3944817329840534
+            inv_v23 = -0.01109532299714422
+            inv_v31 = 0.1051268907484579
+            inv_v32 = -0.01109532299714422
+            inv_v33 = 0.3944817329840535
 
-            statTMCLR = n * ((vec1 * invV11 + vec2 * invV21 + vec3 * invV31) * vec1 + (
-                    vec1 * invV12 + vec2 * invV22 + vec3 * invV32) * vec2 + (
-                                     vec1 * invV13 + vec2 * invV23 + vec3 * invV33) * vec3)
-            return statTMCLR  # Here is the test statistic value
+            stat_tmclr = n * ((vec1 * inv_v11 + vec2 * inv_v21 + vec3 * inv_v31) * vec1 + (
+                    vec1 * inv_v12 + vec2 * inv_v22 + vec3 * inv_v32) * vec2 + (
+                                     vec1 * inv_v13 + vec2 * inv_v23 + vec3 * inv_v33) * vec3)
+            return stat_tmclr  # Here is the test statistic value
 
-    def mc_C_d(self, z, n, eps, iter):
+    def mc_c_d(self, z, n, eps, iter):
         trace_lev = iter[0]
         it = 0
         converged = True
-        medc = 0.0
-        Large = float('inf') / 4.0
+        med_c = 0.0
+        large = float('inf') / 4.0
 
         if n < 3:
-            medc = 0.0
+            med_c = 0.0
             iter[0] = it
             iter[1] = converged
-            return medc
+            return med_c
 
         x = [0.0] * (n + 1)
         for i in range(n):
             zi = z[i]
-            x[i + 1] = -Large if zi == float('inf') else (-Large if zi == float('-inf') else zi)
+            x[i + 1] = -large if zi == float('inf') else (-large if zi == float('-inf') else zi)
 
         x.sort()
 
-        xmed = 0.0
+        x_med = 0.0
         if n % 2:
-            xmed = x[(n // 2) + 1]
+            x_med = x[(n // 2) + 1]
         else:
             ind = n // 2
-            xmed = (x[ind] + x[ind + 1]) / 2
+            x_med = (x[ind] + x[ind + 1]) / 2
 
-        if abs(x[1] - xmed) < eps[0] * (eps[0] + abs(xmed)):
-            medc = -1.0
+        if abs(x[1] - x_med) < eps[0] * (eps[0] + abs(x_med)):
+            med_c = -1.0
             iter[0] = it
             iter[1] = converged
-            return medc
-        elif abs(x[n] - xmed) < eps[0] * (eps[0] + abs(xmed)):
-            medc = 1.0
+            return med_c
+        elif abs(x[n] - x_med) < eps[0] * (eps[0] + abs(x_med)):
+            med_c = 1.0
             iter[0] = it
             iter[1] = converged
-            return medc
+            return med_c
 
         if trace_lev:
-            print(f"mc_C_d(z[1:{n}], trace_lev={trace_lev}): Median = {xmed} (not at the border)")
+            print(f"mc_C_d(z[1:{n}], trace_lev={trace_lev}): Median = {x_med} (not at the border)")
 
         i, j = 0, 0
         for i in range(1, n + 1):
-            x[i] -= xmed
+            x[i] -= x_med
 
-        xden = -2 * max(-x[1], x[n])
+        x_den = -2 * max(-x[1], x[n])
         for i in range(1, n + 1):
-            x[i] /= xden
-        xmed /= xden
+            x[i] /= x_den
+        x_med /= x_den
         if trace_lev >= 2:
-            print(f" x[] has been rescaled (* 1/s) with s = {xden}")
+            print(f" x[] has been rescaled (* 1/s) with s = {x_den}")
 
         j = 1
-        x_eps = eps[0] * (eps[0] + abs(xmed))
+        x_eps = eps[0] * (eps[0] + abs(x_med))
         while j <= n and x[j] > x_eps:
             j += 1
 
@@ -1710,7 +1770,7 @@ class BHSTest(NormalityTest):
         if trace_lev:
             print(f"  now allocating 2+5 work arrays of size (1+) h2={h2} each:")
 
-        acand = [0.0] * h2
+        a_cand = [0.0] * h2
         a_srt = [0.0] * h2
         iw_cand = [0] * h2
         left = [1] * (h2 + 1)
@@ -1731,11 +1791,11 @@ class BHSTest(NormalityTest):
         trial = -2.0
         work = [0.0] * n
         iwt = [0] * n
-        IsFound = False
+        is_found = False
         nl = 0
         neq = 0
 
-        while not IsFound and (nr - nl + neq > n) and it < iter[0]:
+        while not is_found and (nr - nl + neq > n) and it < iter[0]:
             it += 1
             j = 0
             for i in range(h2):
@@ -1746,7 +1806,7 @@ class BHSTest(NormalityTest):
                     j += 1
 
             if trace_lev >= 4:
-                print(f" before whimed(): work and iwt, each [0:{j - 1}]:")
+                print(f" before whi_med(): work and iwt, each [0:{j - 1}]:")
                 if j >= 100:
                     for i in range(90):
                         print(f" {work[i]}", end="")
@@ -1768,10 +1828,10 @@ class BHSTest(NormalityTest):
                         print(f" {iwt[i]}", end="")
                     print()
 
-            trial = self.whimed_i(work, iwt, j, acand, a_srt, iw_cand)
+            trial = self.whi_med_i(work, iwt, j, a_cand, a_srt, iw_cand)
             eps_trial = eps[0] * (eps[0] + abs(trial))
             if trace_lev >= 3:
-                print(f"  it={it}, whimed(*, n={j})= {trial} ", end="")
+                print(f"  it={it}, whi_med(*, n={j})= {trial} ", end="")
 
             j = 1
             for i in range(h2, 0, -1):
@@ -1812,11 +1872,11 @@ class BHSTest(NormalityTest):
                         neq += left[i + 1] - right[i + 1] - 1
                 nr = sum(p)
             else:
-                IsFound = knew <= sum(q)
+                is_found = knew <= sum(q)
                 if trace_lev >= 3:
-                    print(f"; s_p < kn ?<=? s_q: {'TRUE' if IsFound else 'no'}")
-                if IsFound:
-                    medc = trial
+                    print(f"; s_p < kn ?<=? s_q: {'TRUE' if is_found else 'no'}")
+                if is_found:
+                    med_c = trial
                 else:
                     for i in range(h2):
                         left[i + 1] = q[i + 1]
@@ -1824,10 +1884,10 @@ class BHSTest(NormalityTest):
                             neq += left[i + 1] - right[i + 1] - 1
                     nl = sum(q)
 
-        converged = IsFound or (nr - nl + neq <= n)
+        converged = is_found or (nr - nl + neq <= n)
         if not converged:
             print(f"maximal number of iterations ({iter[0]} =? {it}) reached prematurely")
-            medc = trial
+            med_c = trial
 
         if converged and trace_lev >= 2:
             print(f"converged in {it} iterations")
@@ -1835,15 +1895,17 @@ class BHSTest(NormalityTest):
         iter[0] = it
         iter[1] = converged
 
-        return medc
+        return med_c
 
-    def h_kern(self, a, b, ai, bi, ab, eps):
+    @staticmethod
+    def h_kern(a, b, ai, bi, ab, eps):
         if abs(a - b) < 2.0 * eps or b > 0:
             return math.copysign(1, ab - (ai + bi))
         else:
             return (a + b) / (a - b)
 
-    def whimed_i(self, a, w, n, a_cand, a_srt, w_cand):
+    @staticmethod
+    def whi_med_i(a, w, n, a_cand, a_srt, w_cand):
         w_tot = sum(w)
         wrest = 0
 
@@ -1854,55 +1916,56 @@ class BHSTest(NormalityTest):
             a_srt.sort()
             trial = a_srt[n2]
 
-            wleft = 0
-            wmid = 0
+            w_left = 0
+            w_mid = 0
             wright = 0
             for i in range(n):
                 if a[i] < trial:
-                    wleft += w[i]
+                    w_left += w[i]
                 elif a[i] > trial:
                     wright += w[i]
                 else:
-                    wmid += w[i]
+                    w_mid += w[i]
 
-            kcand = 0
-            if 2 * (wrest + wleft) > w_tot:
+            k_cand = 0
+            if 2 * (wrest + w_left) > w_tot:
                 for i in range(n):
                     if a[i] < trial:
-                        a_cand[kcand] = a[i]
-                        w_cand[kcand] = w[i]
-                        kcand += 1
-            elif 2 * (wrest + wleft + wmid) <= w_tot:
+                        a_cand[k_cand] = a[i]
+                        w_cand[k_cand] = w[i]
+                        k_cand += 1
+            elif 2 * (wrest + w_left + w_mid) <= w_tot:
                 for i in range(n):
                     if a[i] > trial:
-                        a_cand[kcand] = a[i]
-                        w_cand[kcand] = w[i]
-                        kcand += 1
-                wrest += wleft + wmid
+                        a_cand[k_cand] = a[i]
+                        w_cand[k_cand] = w[i]
+                        k_cand += 1
+                wrest += w_left + w_mid
             else:
                 return trial
 
-            n = kcand
+            n = k_cand
             for i in range(n):
                 a[i] = a_cand[i]
                 w[i] = w_cand[i]
-"""
 
 
 class SpiegelhalterTest(NormalityTest):
 
     @staticmethod
+    @override
     def code():
-        return 'SH'
+        return 'SH' + super(SpiegelhalterTest, SpiegelhalterTest).code()
 
-    def execute_statistic(self, rvs):
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat41(rvs)
 
-    def stat41(self, x):
+    @staticmethod
+    def stat41(x):
         n = len(x)
 
         if n > 3:
-            statSp, varX, mean = 0.0, 0.0, 0.0
+            stat_sp, var_x, mean = 0.0, 0.0, 0.0
             max_val, min_val = x[0], x[0]
             for i in range(1, n):
                 if x[i] > max_val:
@@ -1913,9 +1976,9 @@ class SpiegelhalterTest(NormalityTest):
                 mean += x[i]
             mean /= n
             for i in range(n):
-                varX += (x[i] - mean) ** 2
-            varX /= (n - 1)
-            sd = math.sqrt(varX)
+                var_x += (x[i] - mean) ** 2
+            var_x /= (n - 1)
+            sd = math.sqrt(var_x)
             u = (max_val - min_val) / sd
             g = 0.0
             for i in range(n):
@@ -1927,6 +1990,9 @@ class SpiegelhalterTest(NormalityTest):
                 cn = (2 * math.pi) ** (1 / (2 * (n - 1))) * ((n * math.sqrt(n)) / math.e) ** (1 / (n - 1)) / (
                         2 * math.e)  # Stirling approximation
 
-            statSp = ((cn * u) ** (-(n - 1)) + g ** (-(n - 1))) ** (1 / (n - 1))
+            stat_sp = ((cn * u) ** (-(n - 1)) + g ** (-(n - 1))) ** (1 / (n - 1))
 
-            return statSp  # Here is the test statistic value
+            return stat_sp  # Here is the test statistic value
+
+# TODO: fix all weak warnings
+# TODO: check tests

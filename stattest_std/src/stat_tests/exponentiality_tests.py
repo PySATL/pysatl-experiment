@@ -21,7 +21,7 @@ class ExponentialityTest(GoodnessOfFitTest):
     @staticmethod
     @override
     def code():
-        return '_exp'
+        return super(ExponentialityTest, ExponentialityTest).code() + '_exp'
 
     def calculate_critical_value(self, rvs_size, alpha, count=1_000_000):
         keys_cr = [self.code(), str(rvs_size), str(alpha)]
@@ -855,3 +855,5 @@ class HG2TestExp(ExponentialityTest):
         hg = (n ** (-1)) * np.sum((rvs - b) ** 2)
 
         return hg
+
+# TODO: check all mistype warnings
