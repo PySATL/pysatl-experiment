@@ -146,5 +146,3 @@ class FastJsonStoreService(FastStoreService):
         """
 
         write_json(self.filename, self.cache)
-
-# TODO: stattest_ext.src.core.distribution??

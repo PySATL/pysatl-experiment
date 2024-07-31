@@ -1,6 +1,6 @@
 import pytest as pytest
 
-from stattest_std.src.stat_tests.normality_tests import BHSTest  # TODO:????
+from stattest_std.src.stat_tests.normality_tests import BHSTest
 from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
 
 
@@ -12,8 +12,7 @@ from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
           1.0786708, -0.1585859, -1.0140335, 1.0448026], -0.5880094),
     ],
 )
-# TODO: remove skip
-@pytest.mark.skip(reason="no way of currently testing this")
+@pytest.mark.skip(reason="no way of currently testing this")  # TODO: remove skip when ready
 class TestCaseBHSTest(AbstractTestCase):
 
     @pytest.fixture
