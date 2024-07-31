@@ -1,4 +1,5 @@
 import math
+from typing import override
 
 from stattest_std.src.stat_tests.goodness_test import GoodnessOfFitTest
 from stattest_std.src.cache_services.cache import MonteCarloCacheService
@@ -45,6 +46,7 @@ class NormalityTest(GoodnessOfFitTest):
         self.cache.flush()
         return x_cr
 
+    @override
     def test(self, rvs, alpha):
         x_cr = self.calculate_critical_value(len(rvs), alpha)
         statistic = self.execute_statistic(rvs)

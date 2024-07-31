@@ -53,6 +53,7 @@ class ExponentialityTest(GoodnessOfFitTest):
         self.cache.flush()
         return x_cr
 
+    @override
     def test(self, rvs, alpha, calculate_time=False):
         rvs_len = len(rvs)
 
