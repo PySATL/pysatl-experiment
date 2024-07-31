@@ -2,6 +2,7 @@ from stattest_ext.src.time_cache.time_cache import TimeCacheService
 from stattest_std.src.stat_tests.goodness_test import GoodnessOfFitTest
 
 
+# TODO: extend to AbstractTest later
 class TimeTest:
     def __init__(self, test=GoodnessOfFitTest(), time_cache=TimeCacheService()):
         self.test = test

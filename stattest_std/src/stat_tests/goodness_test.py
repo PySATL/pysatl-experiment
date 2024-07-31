@@ -46,10 +46,7 @@ class GoodnessOfFitTest(AbstractTest):
 
     @override
     def test(self, rvs, alpha):
-        print("Calculating cvs")  # TODO remove
         x_cr = self.calculate_critical_value(len(rvs), alpha)
-        print("Executing statistics")  # TODO remove
-
         statistic = self.execute_statistic(rvs)
 
         return False if statistic > x_cr else True
