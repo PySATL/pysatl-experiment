@@ -4,7 +4,6 @@ from stattest_std.src.stat_tests.normality_tests import SWTest
 from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
 
 
-
 @pytest.mark.parametrize(
     ("data", "result"),
     [

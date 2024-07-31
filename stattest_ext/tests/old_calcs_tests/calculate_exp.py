@@ -3,10 +3,11 @@ from itertools import repeat
 
 import numpy as np
 
-from stattest.src._ext_package.execution.cache import ThreadSafeCacheResultService
-from stattest.src.cr_tests.caches.cache import ThreadSafeMonteCarloCacheService
-from stattest.src.cr_tests.criteria.exponentiality_tests import ExponentialityTest, AHSTestExp, RSTestExp, KSTestExp
-from stattest.src.cr_tests._tests.generator import NormRVSGenerator
+from stattest_ext.src._ext_package.execution.cache import ThreadSafeCacheResultService
+from stattest_ext.src.core.generator import NormRVSGenerator
+
+from stattest_std.src.cache_services.cache import ThreadSafeMonteCarloCacheService
+from stattest_std.src.stat_tests.exponentiality_tests import ExponentialityTest, AHSTestExp, RSTestExp, KSTestExp
 
 sizes = [30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
 
@@ -25,7 +26,6 @@ def run(tests_to_run: [ExponentialityTest], sizes):
 
 
 if __name__ == '__main__':
-
     cpu_count = 2  # multiprocessing.cpu_count()
 
     '''
@@ -48,19 +48,17 @@ if __name__ == '__main__':
     report_generator.generate()
     '''
 
-
     manager = multiprocessing.Manager()
     lock = manager.Lock()
     cr_dict = manager.dict()
     cache = ThreadSafeMonteCarloCacheService(lock=lock, cache=cr_dict)
     tests = [AHSTestExp(), RSTestExp()]
-    #tests = [cls(cache_services) for cls in ExponentialityTest.__subclasses__()]
+    # tests = [cls(cache_services) for cls in ExponentialityTest.__subclasses__()]
     tests_chunks = np.array_split(np.array(tests), cpu_count)
     with multiprocessing.Pool(cpu_count) as pool:
         pool.starmap(run, zip(tests_chunks, repeat(sizes)))
 
-
-    '''
+"""
     rvs_generators = norm
     print('RVS generators count: ', len(rvs_generators))
     sizes_chunks = np.array_split(np.array(sizes), cpu_count)
@@ -70,4 +68,4 @@ if __name__ == '__main__':
     # prepare_rvs_data(rvs_generators, sizes)
     stop = timeit.default_timer()
     print('Time: ', stop - start)
-    '''
+"""

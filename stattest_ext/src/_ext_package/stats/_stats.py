@@ -24,18 +24,18 @@ def chisquare(f_obs: npt.ArrayLike, f_exp=None, ddof=0, axis=0):
 
 def kstest(rvs, cdfvals, alternative='two-sided', method='auto'):
     # x = np.sort(rvs)
-    Dplus, dplus_location = _compute_dplus(cdfvals, rvs)
-    Dminus, dminus_location = _compute_dminus(cdfvals, rvs)
-    if Dplus > Dminus:
-        D = Dplus
+    dplus, dplus_location = _compute_dplus(cdfvals, rvs)
+    dminus, dminus_location = _compute_dminus(cdfvals, rvs)
+    if dplus > dminus:
+        d = dplus
         d_location = dplus_location
         d_sign = 1
     else:
-        D = Dminus
+        d = dminus
         d_location = dminus_location
         d_sign = -1
 
-    return D
+    return d
 
 
 def adstest(x):
@@ -46,14 +46,14 @@ def adstest(x):
     xbar = np.mean(x, axis=0)
     w = (y - xbar) / s
     # fit_params = xbar, s
-    logcdf = sts.distributions.norm.logcdf(w)
-    logsf = sts.distributions.norm.logsf(w)
+    log_cdf = sts.distributions.norm.logcdf(w)
+    log_sf = sts.distributions.norm.logsf(w)
     # sig = np.array([15, 10, 5, 2.5, 1])
-    # critical = np.around(_Avals_norm / (1.0 + 4.0 / n - 25.0 / n / n), 3)
+    # critical = np.around(_avals_norm / (1.0 + 4.0 / n - 25.0 / n / n), 3)
 
     i = np.arange(1, n + 1)
-    A2 = -n - np.sum((2 * i - 1.0) / n * (logcdf + logsf[::-1]), axis=0)
-    return A2
+    a2 = -n - np.sum((2 * i - 1.0) / n * (log_cdf + log_sf[::-1]), axis=0)
+    return a2
 
 
 def cvmtest(x):
@@ -63,8 +63,8 @@ def cvmtest(x):
     cdfvals = sts.norm.cdf(vals)
 
     u = (2 * np.arange(1, n + 1) - 1) / (2 * n)
-    CM = 1 / (12 * n) + np.sum((u - cdfvals) ** 2)
-    return CM
+    cm = 1 / (12 * n) + np.sum((u - cdfvals) ** 2)
+    return cm
 
 
 def lilliefors(x):
@@ -138,21 +138,21 @@ def filli_test(x):
     n2 = n + 0.365
     i = (np.arange(2, n) - 0.3175) / n2
     m = np.concatenate([[1 - 0.5 ** n1], i, [0.5 ** n1]])
-    M = sts.norm.ppf(m)
+    ppf_m = sts.norm.ppf(m)
     var = np.var(y)
-    return np.sum(y * M) / (np.sqrt(np.sum(M ** 2) * (n - 1) * var))
+    return np.sum(y * ppf_m) / (np.sqrt(np.sum(ppf_m ** 2) * (n - 1) * var))
 
 
 def mi_test(x):
     n = len(x)
-    M = np.median(x)
-    A = np.median(np.abs(x - M))
-    z = (x - M) / (9 * A)
+    m = np.median(x)
+    a = np.median(np.abs(x - m))
+    z = (x - m) / (9 * a)
     i = (abs(z) < 1).nonzero()
     z1 = np.take(z, i)
     x1 = np.take(x, i)
-    S = (n * np.sum((x1 - M) ** 2 * (1 - z1 ** 2) ** 4)) / (np.sum((1 - z1 ** 2) * (1 - 5 * z1 ** 2)) ** 2)
-    return np.sum((x - M) ** 2) / ((n - 1) * S)
+    s = (n * np.sum((x1 - m) ** 2 * (1 - z1 ** 2) ** 4)) / (np.sum((1 - z1 ** 2) * (1 - 5 * z1 ** 2)) ** 2)
+    return np.sum((x - m) ** 2) / ((n - 1) * s)
 
 
 # https://doi.org/10.1007/BF02613501
@@ -166,8 +166,8 @@ def ep_test(x):
     for k in indexes:
         x1 = np.take(range(k))
         s += np.exp((-(x1 - x[k]) ** 2) / (2 * m_2))
-    T = 1 + n / np.cbrt(3) + 2 * s / n - np.sqrt(2) * np.sum(np.exp((-(x - mean) ** 2) / (4 * m_2)))
-    return T
+    t = 1 + n / np.cbrt(3) + 2 * s / n - np.sqrt(2) * np.sum(np.exp((-(x - mean) ** 2) / (4 * m_2)))
+    return t
 
 
 def jb_test(x):
@@ -178,8 +178,8 @@ def jb_test(x):
     m_4 = sts.moment(y, moment=4)
     s = m_3 ** 2 / m_2 ** 3
     k = m_4 / m_2 ** 3
-    JB = (n / 6) * (s + (k - 3) ** 2 / 4)
-    return JB
+    jb = (n / 6) * (s + (k - 3) ** 2 / 4)
+    return jb
 
 
 def hosking_test(x, variation=1):
@@ -194,28 +194,30 @@ def chen_s_test(x):
     y = np.sort(x)
     n = len(x)
     s = sts.tstd(x)
-    H = (np.arange(1, n + 1) - 3 / 8) / (n + 1 / 4)
+    h = (np.arange(1, n + 1) - 3 / 8) / (n + 1 / 4)
     t = np.zeros(n)
     for i in range(n):
-        t[i] = (y[i + 1] - y[i]) / (H[i + 1] - H[i])
-    SC = (1 / ((n - 1) * s)) * np.sum(t)
-    return SC
+        t[i] = (y[i + 1] - y[i]) / (h[i + 1] - h[i])
+    sc = (1 / ((n - 1) * s)) * np.sum(t)
+    return sc
 
 
-# Yulia R. Gel; Joseph L. Gastwirth (2008). A robust modification of the Jarque–Bera test of normality. , 99(1), 0–32.         doi:10.1016/j.econlet.2007.05.022
+# Yulia R. Gel; Joseph L. Gastwirth (2008).
+# A robust modification of the Jarque–Bera test of normality. , 99(1), 0–32. doi:10.1016/j.econlet.2007.05.022
 def rjb_test(x):
     y = np.sort(x)
     n = len(x)
-    M = np.median(y)
+    m = np.median(y)
     c = np.sqrt(math.pi / 2)
-    J = (c / n) * np.sum(np.abs(x - M))
+    j = (c / n) * np.sum(np.abs(x - m))
     m_3 = sts.moment(y, moment=3)
     m_4 = sts.moment(y, moment=4)
-    RJB = (n / 6) * (m_3 / J ** 3) ** 2 + (n / 64) * (m_4 / J ** 4 - 3) ** 2
-    return RJB
+    rjb = (n / 6) * (m_3 / j ** 3) ** 2 + (n / 64) * (m_4 / j ** 4 - 3) ** 2
+    return rjb
 
 
-# Rahman, M. Mahibbur; Govindarajulu, Z. (1997). A modification of the test of Shapiro and Wilk for normality. Journal of Applied Statistics, 24(2), 219–236. doi:10.1080/02664769723828
+# Rahman, M. Mahibbur; Govindarajulu, Z. (1997). A modification of the test of Shapiro and Wilk for normality.
+# Journal of Applied Statistics, 24(2), 219–236. doi:10.1080/02664769723828
 def swrg_test(x):
     f_obs = np.asanyarray(x)
     f_obs_sorted = np.sort(f_obs)
@@ -241,20 +243,20 @@ def swrg_test(x):
 def gmg_test(x):
     y = np.sort(x)
     n = len(x)
-    M = np.median(y)
+    m = np.median(y)
     c = np.sqrt(math.pi / 2)
-    J = (c / n) * np.sum(np.abs(x - M))
+    j = (c / n) * np.sum(np.abs(x - m))
     s = np.std(y)
-    return s / J
+    return s / j
 
 
 def glb_test(x):
     n = len(x)
-    p = np.array([])  # TODO:
+    p = np.array([])  # TODO: ??
     i = np.arange(1, n + 1)
     t = (2 * n + 1 - 2 * i) * np.log(p) + (2 * i - 1) * np.log(1 - p)
-    P = -n - (1 / n) * np.sum(t)
-    return P
+    res_p = -n - (1 / n) * np.sum(t)
+    return res_p
 
 
 def bs_test(x):
@@ -264,8 +266,8 @@ def bs_test(x):
     m2 = (1 / n) * np.sum(a)
     t = np.sum(np.abs(a))
     w = 13.29 * (np.log(m2) - np.log(t / n))
-    T = (np.sqrt(n + 2) * (w - 3)) / 3.54
-    return T
+    t = (np.sqrt(n + 2) * (w - 3)) / 3.54
+    return t
 
 
 def zw1_test(x):
@@ -273,8 +275,8 @@ def zw1_test(x):
     i = np.arange(1, n + 1)
     f = (i - 0.5) / n
     t = np.log(f) / (n - i + 0.5) + (np.log(1 - f)) / (i - 0.5)
-    Z = -np.sum(t)
-    return Z
+    z = -np.sum(t)
+    return z
 
 
 def zw2_test(x):
@@ -282,8 +284,8 @@ def zw2_test(x):
     i = np.arange(1, n + 1)
     f = (i - 0.5) / n
     t = (1 / f - 1) / ((n - 0.5) / (i - 0.75) - 1)
-    Z = np.sum(np.log(t) ** 2)
-    return Z
+    z = np.sum(np.log(t) ** 2)
+    return z
 
 
 def dh_test(x):
@@ -304,14 +306,14 @@ def dh_test(x):
     delta1 = (n - 3) * (n + 1) * (n ** 2 + 15 * n - 4)
     a = ((n - 2) * (n + 5) * (n + 7) * (n ** 2 + 27 * n - 70)) / (6 * delta1)
     c = ((n - 7) * (n + 5) * (n + 7) * (n ** 2 + 2 * n - 5)) / (6 * delta1)
-    l = ((n + 5) * (n + 7) * (n ** 3 + 37 * n ** 2 + 11 * n - 313)) / (12 * delta1)
-    hi = 2 * l * (k - 1 - s ** 2)
+    l_ = ((n + 5) * (n + 7) * (n ** 3 + 37 * n ** 2 + 11 * n - 313)) / (12 * delta1)
+    hi = 2 * l_ * (k - 1 - s ** 2)
     alpha = a + c * s ** 2
     z2 = np.sqrt(2 * alpha) * (
             1 / (9 * alpha) - 1 + np.cbrt(hi / (2 * alpha)))  # TODO: np.sqrt(2 * alpha) vs np.sqrt(9 * alpha)
 
-    DH = z1 ** 2 + z2 ** 2
-    return DH
+    dh = z1 ** 2 + z2 ** 2
+    return dh
 
 
 def _compute_dplus(cdfvals, x):
@@ -319,7 +321,7 @@ def _compute_dplus(cdfvals, x):
     dplus = (np.arange(1.0, n + 1) / n - cdfvals)
     amax = dplus.argmax()
     loc_max = x[amax]
-    return (dplus[amax], loc_max)
+    return dplus[amax], loc_max
 
 
 def _compute_dminus(cdfvals, x):
@@ -327,7 +329,7 @@ def _compute_dminus(cdfvals, x):
     dminus = (cdfvals - np.arange(0.0, n) / n)
     amax = dminus.argmax()
     loc_max = x[amax]
-    return (dminus[amax], loc_max)
+    return dminus[amax], loc_max
 
 
 def _compute_m2(x, n: int):
@@ -358,7 +360,8 @@ def ordered_statistic(n):
     u = 1 / np.sqrt(n)
 
     wn = np.polyval(p1, u)
-    # wn = np.array([p1[0] * (u ** 5), p1[1] * (u ** 4), p1[2] * (u ** 3), p1[3] * (u ** 2), p1[4] * (u ** 1), p1[5]]).sum()
+    # wn = np.array([p1[0] * (u ** 5), p1[1] *
+    # (u ** 4), p1[2] * (u ** 3), p1[3] * (u ** 2), p1[4] * (u ** 1), p1[5]]).sum()
     w1 = -wn
 
     if n == 4 or n == 5:
@@ -376,3 +379,5 @@ def ordered_statistic(n):
         phi_sqrt = np.sqrt(phi)
         result = np.array([m[k] / phi_sqrt for k in range(2, n - 2)])
         return np.concatenate([[w1, w2], result, [wn1, wn]])
+
+# TODO: check all warnings

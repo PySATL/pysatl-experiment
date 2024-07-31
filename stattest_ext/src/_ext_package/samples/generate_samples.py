@@ -2,7 +2,7 @@ import json
 import os
 from os.path import exists
 import numpy as np
-from stattest.src._ext_package.experiment._distribution_type_enum import Distribution
+from stattest_ext.src._ext_package.experiment._distribution_type_enum import Distribution
 
 
 def generate_samples(dist_type: Distribution = None,

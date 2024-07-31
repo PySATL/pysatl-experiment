@@ -1,4 +1,4 @@
-from stattest.src.core.store import FastJsonStoreService, write_json
+from stattest_std.src.cache_services.store import FastJsonStoreService, write_json
 
 
 class CacheResultService(FastJsonStoreService):

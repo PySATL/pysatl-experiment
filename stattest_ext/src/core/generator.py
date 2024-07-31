@@ -1,19 +1,20 @@
-from stattest.src.core.distribution.beta import generate_beta
-from stattest.src.core.distribution.cauchy import generate_cauchy
-from stattest.src.core.distribution.chi2 import generate_chi2
-from stattest.src.core.distribution.gamma import generate_gamma
-from stattest.src.core.distribution.gumbel import generate_gumbel
-from stattest.src.core.distribution.laplace import generate_laplace
-from stattest.src.core.distribution.lo_con_norm import generate_lo_con_norm
-from stattest.src.core.distribution.logistic import generate_logistic
-from stattest.src.core.distribution.lognormal import generate_lognorm
-from stattest.src.core.distribution.mix_con_norm import generate_mix_con_norm
-from stattest.src.core.distribution.scale_con_norm import generate_scale_con_norm
-from stattest.src.core.distribution.student import generate_t
-from stattest.src.core.distribution.truncnormal import generate_truncnorm
-from stattest.src.core.distribution.tukey import generate_tukey
-from stattest.src.core.distribution.weibull import generate_weibull
-from stattest.src.core.distribution.norm import generate_norm
+from stattest_ext.src.core.distribution.beta import generate_beta
+from stattest_ext.src.core.distribution.cauchy import generate_cauchy
+from stattest_ext.src.core.distribution.chi2 import generate_chi2
+from stattest_ext.src.core.distribution.gamma import generate_gamma
+from stattest_ext.src.core.distribution.gumbel import generate_gumbel
+from stattest_ext.src.core.distribution.laplace import generate_laplace
+from stattest_ext.src.core.distribution.lo_con_norm import generate_lo_con_norm
+from stattest_ext.src.core.distribution.logistic import generate_logistic
+from stattest_ext.src.core.distribution.lognormal import generate_lognorm
+from stattest_ext.src.core.distribution.mix_con_norm import generate_mix_con_norm
+from stattest_ext.src.core.distribution.scale_con_norm import generate_scale_con_norm
+from stattest_ext.src.core.distribution.student import generate_t
+from stattest_ext.src.core.distribution.truncnormal import generate_truncnorm
+from stattest_ext.src.core.distribution.tukey import generate_tukey
+from stattest_ext.src.core.distribution.weibull import generate_weibull
+from stattest_ext.src.core.distribution.norm import generate_norm
+
 
 # TODO: relocate to execution in ext_package!
 
@@ -163,15 +164,15 @@ class GumbelGenerator(AbstractRVSGenerator):
 
 
 class WeibullGenerator(AbstractRVSGenerator):
-    def __init__(self, l=0, k=1):
-        self.l = l
+    def __init__(self, lam=0, k=1):
+        self.lam = lam
         self.k = k
 
     def code(self):
-        return super()._convert_to_code(['weibull', self.l, self.k])
+        return super()._convert_to_code(['weibull', self.lam, self.k])
 
     def generate(self, size):
-        return generate_weibull(size=size, l=self.l, k=self.k)
+        return generate_weibull(size=size, lam=self.lam, k=self.k)
 
 
 class LoConNormGenerator(AbstractRVSGenerator):

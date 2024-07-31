@@ -1,9 +1,9 @@
 import csv
 import os
 
-import stattest.src._ext_package.execution.utils as utils
-from stattest.src._ext_package.execution.utils import build_rvs_file_name
-from stattest.src.cr_tests._tests.generator import AbstractRVSGenerator, BetaRVSGenerator
+import stattest_ext.src._ext_package.execution.utils as utils
+from stattest_ext.src._ext_package.execution.utils import build_rvs_file_name
+from stattest_ext.src.core.generator import AbstractRVSGenerator, BetaRVSGenerator
 import pandas as pd
 
 

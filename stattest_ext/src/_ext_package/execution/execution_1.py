@@ -1,14 +1,15 @@
 import io
 
-from stattest.src.cr_tests.criteria.abstract_test import AbstractTest
-from stattest.src.cr_tests.criteria.normality_tests import KSTest, ADTest
+from stattest_std.src.stat_tests.abstract_test import AbstractTest
+from stattest_std.src.stat_tests.normality_tests import KSTest, ADTest
 import matplotlib.pyplot as plt
 from fpdf import FPDF
 import numpy as np
 
-from stattest.src.cr_tests._tests.generator import AbstractRVSGenerator, BetaRVSGenerator, CauchyRVSGenerator, LaplaceRVSGenerator, \
-    LogisticRVSGenerator, TRVSGenerator, TukeyRVSGenerator
-from stattest.src.cr_tests._tests.power import calculate_mean_test_power
+from stattest_ext.src.core.generator import (AbstractRVSGenerator, BetaRVSGenerator, CauchyRVSGenerator,
+                                             LaplaceRVSGenerator, LogisticRVSGenerator,
+                                             TRVSGenerator, TukeyRVSGenerator)
+from stattest_ext.src.core.power import calculate_mean_test_power
 
 
 class AbstractReportBlockGenerator:

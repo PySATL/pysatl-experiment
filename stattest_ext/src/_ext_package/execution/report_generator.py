@@ -1,6 +1,6 @@
 from fpdf import FPDF
 
-from stattest.src._ext_package.execution.cache import CacheResultService
+from stattest_ext.src._ext_package.execution.cache import CacheResultService
 
 
 class AbstractReportBlockGenerator:

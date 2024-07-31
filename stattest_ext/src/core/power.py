@@ -1,9 +1,9 @@
 import pandas as pd
 
-from stattest.src.cr_tests.criteria.abstract_test import AbstractTest
+from stattest_std.src.stat_tests.abstract_test import AbstractTest
 from tqdm import tqdm
 
-from stattest.src.cr_tests._tests.generator import AbstractRVSGenerator
+from stattest_ext.src.core.generator import AbstractRVSGenerator
 
 
 # TODO: relocate to execution in ext_package!

@@ -2,16 +2,16 @@ import scipy.stats as scipy_stats
 import numpy as np
 import matplotlib.pyplot as plt
 
-from stattest.src.cr_tests.criteria.abstract_test import AbstractTest
-from stattest.src.cr_tests.criteria.normality_tests import KSTest
+from stattest_std.src.stat_tests.abstract_test import AbstractTest
+from stattest_std.src.stat_tests.normality_tests import KSTest
 
 
-def monte_carlo(test: AbstractTest, rvs_size, count=100000):  # TODO: relocate to tests
+def monte_carlo(_test: AbstractTest, rvs_size, count=100000):
     result = np.zeros(count)
 
     for i in range(count):
-        x = test.generate(size=rvs_size)
-        result[i] = test.execute_statistic(x)
+        x = _test.generate(size=rvs_size)
+        result[i] = _test.execute_statistic(x)
 
     result.sort()
 
@@ -31,9 +31,9 @@ def monte_carlo(test: AbstractTest, rvs_size, count=100000):  # TODO: relocate t
     plt.show()
 
 
-def test(test: AbstractTest, rvs_size, count=5):
+def test(_test: AbstractTest, rvs_size, count=5):
     for i in range(count):
-        x = test.test(scipy_stats.uniform.rvs(size=rvs_size), 0.05)
+        x = _test.test(scipy_stats.uniform.rvs(size=rvs_size), 0.05)
         print(x)
 
 

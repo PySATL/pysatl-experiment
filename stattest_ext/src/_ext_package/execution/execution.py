@@ -2,11 +2,11 @@ import csv
 import os
 from os import walk
 
-import stattest.src._ext_package.execution.utils as utils
-from stattest.src._ext_package.execution.cache import CacheResultService
-from stattest.src.cr_tests.criteria.abstract_test import AbstractTest
+import stattest_ext.src._ext_package.execution.utils as utils
+from stattest_ext.src._ext_package.execution.cache import CacheResultService
+from stattest_ext.src.core.power import calculate_powers
 
-from stattest.src.cr_tests._tests.power import calculate_powers
+from stattest_std.src.stat_tests.abstract_test import AbstractTest
 
 
 def update_result(headers: [str], cache: CacheResultService, alpha: float, rvs_code: str, size: int, result: []):
@@ -17,7 +17,8 @@ def update_result(headers: [str], cache: CacheResultService, alpha: float, rvs_c
         cache.put_with_level(keys, result[i])
 
 
-def execute_powers(tests: [AbstractTest], alpha: [float], calculate_time=False, cache=None, data_path='data', result_path='result', recalculate=False):
+def execute_powers(tests: [AbstractTest], alpha: [float], calculate_time=False, cache=None,
+                   data_path='data', result_path='result', recalculate=False):
     if not os.path.exists(result_path):
         os.makedirs(result_path)
 
@@ -44,7 +45,7 @@ def execute_powers(tests: [AbstractTest], alpha: [float], calculate_time=False, 
             cache.flush()
 
 
-#if __name__ == '__main__':
+# if __name__ == '__main__':
 #    tests = [ADTest()]
 #    alpha = [0.05]
 #    execute_powers(tests, alpha)
