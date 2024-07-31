@@ -14,29 +14,18 @@ import pandas as pd
 class NormalityTest(GoodnessOfFitTest):
 
     def __init__(self, cache=MonteCarloCacheService()):
+        super().__init__(cache)
+
         self.mean = 0
         self.var = 1
-        self.cache = cache
 
     @staticmethod
     @override
     def code():
         return super(NormalityTest, NormalityTest).code() + '_norm'
 
-    def calculate_critical_value(self, rvs_size, alpha, count=1_000_000):
-        keys_cr = [self.code(), str(rvs_size), str(alpha)]
-        x_cr = self.cache.get_with_level(keys_cr)
-        if x_cr is not None:
-            return x_cr
-
-        d = self.cache.get_distribution(self.code(), rvs_size)
-        if d is not None:
-            ecdf = scipy_stats.ecdf(d)
-            x_cr = np.quantile(ecdf.cdf.quantiles, q=1 - alpha)
-            self.cache.put_with_level(keys_cr, x_cr)
-            self.cache.flush()
-            return x_cr
-
+    @override
+    def __generate_statistic(self, rvs_size, alpha, keys_cr, count):  # TODO: move statistic generation to ext_package
         result = np.zeros(count)
 
         for i in range(count):

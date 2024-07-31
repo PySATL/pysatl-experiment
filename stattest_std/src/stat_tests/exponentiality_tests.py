@@ -4,7 +4,7 @@ from typing import override
 from stattest_std.src.stat_tests.goodness_test import GoodnessOfFitTest
 from stattest_std.src.cache_services.cache import MonteCarloCacheService
 
-from stattest_ext.src.core.distribution import expon  # TODO: other package
+from stattest_ext.src.core.distribution import expon  # TODO: move to other package
 import numpy as np
 import scipy.stats as scipy_stats
 import scipy.special as scipy_special
@@ -14,30 +14,18 @@ from stattest_ext.src.time_cache.time_cache import TimeCacheService
 class ExponentialityTest(GoodnessOfFitTest):
 
     def __init__(self, cache=MonteCarloCacheService(), time_cache=TimeCacheService()):
+        super().__init__(cache)
+
         self.lam = 1
-        self.cache = cache
-        self.time_cache = time_cache
+        self.time_cache = time_cache  # TODO: remove to handler
 
     @staticmethod
     @override
     def code():
         return super(ExponentialityTest, ExponentialityTest).code() + '_exp'
 
-    def calculate_critical_value(self, rvs_size, alpha, count=1_000_000):
-        keys_cr = [self.code(), str(rvs_size), str(alpha)]
-        x_cr = self.cache.get_with_level(keys_cr)  # кэш
-        if x_cr is not None:
-            return x_cr
-
-        d = self.cache.get_distribution(self.code(), rvs_size)  # подсчет статистики - тоже во второй пакет
-        if d is not None:
-            ecdf = scipy_stats.ecdf(d)
-            x_cr = np.quantile(ecdf.cdf.quantiles, q=1 - alpha)
-            self.cache.put_with_level(keys_cr, x_cr)
-            self.cache.flush()
-            return x_cr
-
-        # statistic generation - точно во второй пакет
+    @override
+    def __generate_statistic(self, rvs_size, alpha, keys_cr, count):  # TODO: move statistic generation to ext_package
         result = np.zeros(count)
 
         for i in range(count):
