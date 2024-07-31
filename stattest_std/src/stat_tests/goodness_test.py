@@ -16,6 +16,7 @@ class GoodnessOfFitTest(AbstractTest):
     def code():
         return '_gof'
 
+    @override
     def calculate_critical_value(self, rvs_size, alpha, count=1_000_000):
         keys_cr = [self.code(), str(rvs_size), str(alpha)]
         x_cr = self.cache.get_with_level(keys_cr)  # кэш
@@ -42,3 +43,13 @@ class GoodnessOfFitTest(AbstractTest):
 
     def __generate_statistic(self, rvs_size, alpha, keys_cr, count):  # TODO: move statistic generation to ext_package
         raise "Method is not implemented"
+
+    @override
+    def test(self, rvs, alpha):
+        print("Calculating cvs")  # TODO remove
+        x_cr = self.calculate_critical_value(len(rvs), alpha)
+        print("Executing statistics")  # TODO remove
+
+        statistic = self.execute_statistic(rvs)
+
+        return False if statistic > x_cr else True

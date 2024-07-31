@@ -1,23 +1,21 @@
 import math
 from typing import override
 
-from stattest_std.src.stat_tests.goodness_test import GoodnessOfFitTest
-from stattest_std.src.cache_services.cache import MonteCarloCacheService
+import numpy as np
+import scipy.special as scipy_special
+import scipy.stats as scipy_stats
 
 from stattest_ext.src.core.distribution import expon  # TODO: move to other package
-import numpy as np
-import scipy.stats as scipy_stats
-import scipy.special as scipy_special
-from stattest_ext.src.time_cache.time_cache import TimeCacheService
+from stattest_std.src.cache_services.cache import MonteCarloCacheService
+from stattest_std.src.stat_tests.goodness_test import GoodnessOfFitTest
 
 
 class ExponentialityTest(GoodnessOfFitTest):
 
-    def __init__(self, cache=MonteCarloCacheService(), time_cache=TimeCacheService()):
+    def __init__(self, cache=MonteCarloCacheService()):
         super().__init__(cache)
 
         self.lam = 1
-        self.time_cache = time_cache  # TODO: remove to handler
 
     @staticmethod
     @override
@@ -42,27 +40,6 @@ class ExponentialityTest(GoodnessOfFitTest):
         return x_cr
 
     @override
-    def test(self, rvs, alpha, calculate_time=False):
-        rvs_len = len(rvs)
-
-        print("Calculating cvs")  # TODO remove??
-
-        x_cr = self.calculate_critical_value(rvs_len, alpha)
-
-        print("Executing statistics")  # TODO remove??
-
-        if calculate_time:  # TODO: rewrite to ext_package
-            start = self.time_cache.count_time()
-            statistic = self.execute_statistic(rvs)
-            stop = self.time_cache.count_time()
-
-            time = stop - start
-            self.time_cache.put_time(self.code(), rvs_len, [time])
-        else:
-            statistic = self.execute_statistic(rvs)
-
-        return False if statistic > x_cr else True
-
     def generate(self, size, lam=1):
         return expon.generate_expon(size, lam)
 
@@ -74,6 +51,7 @@ class EPTestExp(ExponentialityTest):
     def code():
         return 'EP' + super(EPTestExp, EPTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Epps and Pulley test statistic for exponentiality.
@@ -103,6 +81,7 @@ class KSTestExp(ExponentialityTest):
     def code():
         return 'KS' + super(KSTestExp, KSTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Kolmogorov and Smirnov test statistic for exponentiality.
@@ -137,6 +116,7 @@ class AHSTestExp(ExponentialityTest):
     def code():
         return 'AHS' + super(AHSTestExp, AHSTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Statistic of the exponentiality test based on Ahsanullah characterization.
@@ -175,6 +155,7 @@ class ATKTestExp(ExponentialityTest):
     def code():
         return 'ATK' + super(ATKTestExp, ATKTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, p=0.99):
         """
         Atkinson test statistic for exponentiality.
@@ -208,6 +189,7 @@ class COTestExp(ExponentialityTest):
     def code():
         return 'CO' + super(COTestExp, COTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Cox and Oakes test statistic for exponentiality.

@@ -5,7 +5,7 @@ from stattest_ext.src.core.distribution.norm import pdf_norm
 from stattest_std.src.stat_tests.goodness_test import GoodnessOfFitTest
 from stattest_std.src.cache_services.cache import MonteCarloCacheService
 
-from stattest_ext.src.core.distribution import norm
+from stattest_ext.src.core.distribution import norm  # TODO: move to other package
 import numpy as np
 import scipy.stats as scipy_stats
 import pandas as pd
@@ -42,12 +42,6 @@ class NormalityTest(GoodnessOfFitTest):
         return x_cr
 
     @override
-    def test(self, rvs, alpha):
-        x_cr = self.calculate_critical_value(len(rvs), alpha)
-        statistic = self.execute_statistic(rvs)
-
-        return False if statistic > x_cr else True
-
     def generate(self, size, mean=0, var=1):
         return norm.generate_norm(size, mean, var)
 
