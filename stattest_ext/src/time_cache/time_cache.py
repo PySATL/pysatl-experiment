@@ -2,7 +2,7 @@ import csv
 import os
 import timeit
 
-from stattest.src.core.store import FastJsonStoreService, write_json   # TODO: json - other package??
+from stattest_std.src.cache_services.store import FastJsonStoreService, write_json
 
 
 class TimeCacheService(FastJsonStoreService):
