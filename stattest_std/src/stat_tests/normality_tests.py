@@ -54,6 +54,7 @@ class KSTest(NormalityTest):
     def code():
         return 'KS' + super(KSTest, KSTest).code()
 
+    @override
     def execute_statistic(self, rvs, alternative='two-sided', mode='auto'):
         """
         Title: The Kolmogorov-Smirnov statistic for the Laplace distribution Ref. (book or article): Puig,
@@ -113,6 +114,7 @@ class KSTest(NormalityTest):
         prob = np.clip(prob, 0, 1)
         return d
 
+    @override
     def calculate_critical_value(self, rvs_size, alpha, count=500_000):
         return scipy_stats.distributions.kstwo.ppf(1 - alpha, rvs_size)
 
@@ -140,6 +142,7 @@ class ChiSquareTest(NormalityTest):  # TODO: check test correctness
     def code():
         return 'CHI2' + super(ChiSquareTest, ChiSquareTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         rvs = np.sort(rvs)
 
@@ -158,6 +161,7 @@ class ADTest(NormalityTest):
     def code():
         return 'AD' + super(ADTest, ADTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Title: The Anderson-Darling test Ref. (book or article): See package nortest and also Table 4.9 p. 127 in M.
@@ -184,6 +188,7 @@ class ADTest(NormalityTest):
         a2 = -n - np.sum((2 * i - 1.0) / n * (log_cdf + log_sf[::-1]), axis=0)
         return a2
 
+    @override
     def calculate_critical_value(self, rvs_size, alpha, count=500_000):  # TODO: check correctness
         # # Values from Stephens, M A, "EDF Statistics for Goodness of Fit and
         # #             Some Comparisons", Journal of the American Statistical
@@ -203,6 +208,7 @@ class SWTest(NormalityTest):
     def code():
         return 'SW' + super(SWTest, SWTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         f_obs = np.asanyarray(rvs)
         f_obs_sorted = np.sort(f_obs)
@@ -260,6 +266,7 @@ class SWMTest(NormalityTest):
     def code():
         return 'SWM' + super(SWMTest, SWMTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
@@ -279,6 +286,7 @@ class LillieforsTest(KSTest):
     def code():
         return 'LILLIE' + super(LillieforsTest, LillieforsTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         x = np.asarray(rvs)
         z = (x - x.mean()) / x.std(ddof=1)
@@ -295,6 +303,7 @@ class DATest(NormalityTest):  # TODO: check for correctness
     def code():
         return 'DA' + super(DATest, DATest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         x = np.asanyarray(rvs)
         y = np.sort(x)
@@ -316,6 +325,7 @@ class JBTest(NormalityTest):
     def code():
         return 'JB' + super(JBTest, JBTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         x = np.asarray(rvs)
         x = x.ravel()
@@ -340,6 +350,7 @@ class SkewTest(NormalityTest):
     def code():
         return 'SKEW' + super(SkewTest, SkewTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         x = np.asanyarray(rvs)
         y = np.sort(x)
@@ -373,6 +384,7 @@ class KurtosisTest(NormalityTest):
     def code():
         return 'KURTOSIS' + super(KurtosisTest, KurtosisTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         x = np.asanyarray(rvs)
         y = np.sort(x)
@@ -421,6 +433,7 @@ class DAPTest(SkewTest, KurtosisTest):
     def code():
         return 'DAP' + super(DAPTest, DAPTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         x = np.asanyarray(rvs)
         y = np.sort(x)
@@ -439,6 +452,7 @@ class FilliTest(NormalityTest):
     def code():
         return 'Filli' + super(FilliTest, FilliTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         uniform_order = self._uniform_order_medians(len(rvs))
         zi = self._normal_order_medians(uniform_order)
@@ -474,6 +488,7 @@ class LooneyGulledgeTest(NormalityTest):
     def code():
         return 'LG' + super(LooneyGulledgeTest, LooneyGulledgeTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         # ordering
         x_data = np.sort(rvs)
@@ -533,6 +548,7 @@ class RyanJoinerTest(NormalityTest):
     def code():
         return 'RJ' + super(RyanJoinerTest, RyanJoinerTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         # ordering
         x_data = np.sort(rvs)
@@ -594,6 +610,7 @@ class SFTest(NormalityTest):
     def code():
         return 'SF' + super(SFTest, SFTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
         rvs = np.sort(rvs)
@@ -615,6 +632,7 @@ class EPTest(NormalityTest):
     def code():
         return 'EP' + super(EPTest, EPTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
         x = np.sort(rvs)
@@ -636,6 +654,7 @@ class Hosking2Test(NormalityTest):
     def code():
         return 'HOSKING2' + super(Hosking2Test, Hosking2Test).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
@@ -688,6 +707,7 @@ class Hosking1Test(NormalityTest):
     def code():
         return 'HOSKING1' + super(Hosking1Test, Hosking1Test).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat10(rvs)
 
@@ -739,6 +759,7 @@ class Hosking3Test(NormalityTest):
     def code():
         return 'HOSKING3' + super(Hosking3Test, Hosking3Test).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat12(rvs)
 
@@ -792,6 +813,7 @@ class Hosking4Test(NormalityTest):
     def code():
         return 'HOSKING4' + super(Hosking4Test, Hosking4Test).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat13(rvs)
 
@@ -845,6 +867,7 @@ class ZhangWuCTest(NormalityTest):
     def code():
         return 'ZWC' + super(ZhangWuCTest, ZhangWuCTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
@@ -869,6 +892,7 @@ class ZhangWuATest(NormalityTest):
     def code():
         return 'ZWA' + super(ZhangWuATest, ZhangWuATest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
@@ -895,6 +919,7 @@ class GlenLeemisBarrTest(NormalityTest):
     def code():
         return 'GLB' + super(GlenLeemisBarrTest, GlenLeemisBarrTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
@@ -922,6 +947,7 @@ class DoornikHansenTest(NormalityTest):
     def code():
         return 'DH' + super(DoornikHansenTest, DoornikHansenTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.doornik_hansen(rvs)
 
@@ -976,6 +1002,7 @@ class RobustJarqueBeraTest(NormalityTest):
     def code():
         return 'RJB' + super(RobustJarqueBeraTest, RobustJarqueBeraTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         y = np.sort(rvs)
         n = len(rvs)
@@ -995,6 +1022,7 @@ class BontempsMeddahi1Test(NormalityTest):
     def code():
         return 'BM1' + super(BontempsMeddahi1Test, BontempsMeddahi1Test).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
@@ -1032,6 +1060,7 @@ class BontempsMeddahi2Test(NormalityTest):
     def code():
         return 'BM2' + super(BontempsMeddahi2Test, BontempsMeddahi2Test).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat15(rvs)
 
@@ -1061,6 +1090,7 @@ class BonettSeierTest(NormalityTest):
     def code():
         return 'BS' + super(BonettSeierTest, BonettSeierTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat17(rvs)
 
@@ -1096,6 +1126,7 @@ class MartinezIglewiczTest(NormalityTest):
     def code():
         return 'MI' + super(MartinezIglewiczTest, MartinezIglewiczTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat32(rvs)
 
@@ -1137,6 +1168,7 @@ class CabanaCabana1Test(NormalityTest):
     def code():
         return 'CC1' + super(CabanaCabana1Test, CabanaCabana1Test).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat19(rvs)
 
@@ -1170,6 +1202,7 @@ class CabanaCabana2Test(NormalityTest):
     def code():
         return 'CC2' + super(CabanaCabana2Test, CabanaCabana2Test).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat20(rvs)
 
@@ -1247,6 +1280,7 @@ class ChenShapiroTest(NormalityTest):
     def code():
         return 'CS' + super(ChenShapiroTest, ChenShapiroTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat26(rvs)
 
@@ -1271,6 +1305,7 @@ class ZhangQTest(NormalityTest):
     def code():
         return 'ZQ' + super(ZhangQTest, ZhangQTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat27(rvs)
 
@@ -1311,6 +1346,7 @@ class CoinTest(NormalityTest):
     def code():
         return 'COIN' + super(CoinTest, CoinTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat30(rvs)
 
@@ -1440,6 +1476,7 @@ class DagostinoTest(NormalityTest):
     def code():
         return 'D' + super(DagostinoTest, DagostinoTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
         if n > 3:
@@ -1460,6 +1497,7 @@ class ZhangQStarTest(NormalityTest):
     def code():
         return 'ZQS' + super(ZhangQStarTest, ZhangQStarTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
@@ -1498,6 +1536,7 @@ class ZhangQQStarTest(NormalityTest):  # TODO: check for correctness
     def code():
         return 'ZQQ' + super(ZhangQQStarTest, ZhangQQStarTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat28(rvs)
 
@@ -1542,6 +1581,7 @@ class SWRGTest(NormalityTest):
     def code():
         return 'SWRG' + super(SWRGTest, SWRGTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
@@ -1572,6 +1612,7 @@ class GMGTest(NormalityTest):
     def code():
         return 'GMG' + super(GMGTest, GMGTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat33(rvs)
 
@@ -1626,6 +1667,7 @@ class BHSTest(NormalityTest):  # TODO: check for correctness
     def code():
         return 'BHS' + super(BHSTest, BHSTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat16(rvs)
 
@@ -1940,6 +1982,7 @@ class SpiegelhalterTest(NormalityTest):
     def code():
         return 'SH' + super(SpiegelhalterTest, SpiegelhalterTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         return self.stat41(rvs)
 

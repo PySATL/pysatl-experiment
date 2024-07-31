@@ -221,6 +221,7 @@ class CVMTestExp(ExponentialityTest):
     def code():
         return 'CVM' + super(CVMTestExp, CVMTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Cramer-von Mises test statistic for exponentiality.
@@ -253,6 +254,7 @@ class DSPTestExp(ExponentialityTest):
     def code():
         return 'DSP' + super(DSPTestExp, DSPTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, b=0.44):
         """
         Deshpande test statistic for exponentiality.
@@ -288,6 +290,7 @@ class EPSTestExp(ExponentialityTest):
     def code():
         return 'EPS' + super(EPSTestExp, EPSTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Epstein test statistic for exponentiality.
@@ -319,6 +322,7 @@ class FZTestExp(ExponentialityTest):
     def code():
         return 'FZ' + super(FZTestExp, FZTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Frozini test statistic for exponentiality.
@@ -350,6 +354,7 @@ class GiniTestExp(ExponentialityTest):
     def code():
         return 'Gini' + super(GiniTestExp, GiniTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Gini test statistic for exponentiality.
@@ -383,6 +388,7 @@ class GDTestExp(ExponentialityTest):
     def code():
         return 'GD' + super(GDTestExp, GDTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, r=None):
         """
         Gnedenko F-test statistic for exponentiality.
@@ -417,6 +423,7 @@ class HMTestExp(ExponentialityTest):
     def code():
         return 'HM' + super(HMTestExp, HMTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, r=None):
         """
         Harris' modification of Gnedenko F-test.
@@ -451,6 +458,7 @@ class HG1TestExp(ExponentialityTest):
     def code():
         return 'HG1' + super(HG1TestExp, HG1TestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Hegazy-Green 1 test statistic for exponentiality.
@@ -481,6 +489,7 @@ class HPTestExp(ExponentialityTest):
     def code():
         return 'HP' + super(HPTestExp, HPTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Hollander-Proshan test statistic for exponentiality.
@@ -515,6 +524,7 @@ class KMTestExp(ExponentialityTest):
     def code():
         return 'KM' + super(KMTestExp, KMTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Kimber-Michael test statistic for exponentiality.
@@ -547,6 +557,7 @@ class KCTestExp(ExponentialityTest):
     def code():
         return 'KC' + super(KCTestExp, KCTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Kochar test statistic for exponentiality.
@@ -578,6 +589,7 @@ class LZTestExp(ExponentialityTest):
     def code():
         return 'LZ' + super(LZTestExp, LZTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, p=0.5):
         """
         Lorenz test statistic for exponentiality.
@@ -609,6 +621,7 @@ class MNTestExp(ExponentialityTest):
     def code():
         return 'MN' + super(MNTestExp, MNTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Moran test statistic for exponentiality.
@@ -638,6 +651,7 @@ class PTTestExp(ExponentialityTest):
     def code():
         return 'PT' + super(PTTestExp, PTTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Pietra test statistic for exponentiality.
@@ -667,6 +681,7 @@ class SWTestExp(ExponentialityTest):
     def code():
         return 'SW' + super(SWTestExp, SWTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Shapiro-Wilk test statistic for exponentiality.
@@ -697,6 +712,7 @@ class RSTestExp(ExponentialityTest):
     def code():
         return 'RS' + super(RSTestExp, RSTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Statistic of the exponentiality test based on Rossberg characterization.
@@ -746,6 +762,7 @@ class WETestExp(ExponentialityTest):
     def code():
         return 'WE' + super(WETestExp, WETestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         WE test statistic for exponentiality.
@@ -776,6 +793,7 @@ class WWTestExp(ExponentialityTest):
     def code():
         return 'WW' + super(WWTestExp, WWTestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Wong and Wong test statistic for exponentiality.
@@ -804,6 +822,7 @@ class HG2TestExp(ExponentialityTest):
     def code():
         return 'HG2' + super(HG2TestExp, HG2TestExp).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         """
         Hegazy-Green 2 test statistic for exponentiality.

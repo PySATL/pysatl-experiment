@@ -17,6 +17,7 @@ class ChiSquareTest(IndependenceTest):
     def code():
         return 'CHI2' + super(ChiSquareTest, ChiSquareTest).code()
 
+    @override
     def execute_statistic(self, rvs, **kwargs):
         print("Not implemented")  # stub from normality tests (should be two params)
         """
