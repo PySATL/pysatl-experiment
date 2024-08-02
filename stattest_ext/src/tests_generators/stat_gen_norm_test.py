@@ -5,9 +5,9 @@ from stattest_ext.src.tests_generators.stat_gen_goodness_test import StatGenGood
 from stattest_std.src.stat_tests.normality_tests import NormalityTest
 
 
-class StatGenNormalityTest(StatGenGoodnessOfFitTest, NormalityTest):
+class StatGenNormalityTest(StatGenGoodnessOfFitTest):
     def __init__(self, criterion: NormalityTest):
-        super().__init__()
+        super().__init__(criterion)
         self.criterion = criterion
 
     @override

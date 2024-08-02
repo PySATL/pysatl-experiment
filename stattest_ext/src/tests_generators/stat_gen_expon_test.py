@@ -5,9 +5,9 @@ from stattest_ext.src.tests_generators.stat_gen_goodness_test import StatGenGood
 from stattest_std.src.stat_tests.exponentiality_tests import ExponentialityTest
 
 
-class StatGenExponentialityTest(StatGenGoodnessOfFitTest, ExponentialityTest):
+class StatGenExponentialityTest(StatGenGoodnessOfFitTest):
     def __init__(self, criterion: ExponentialityTest):
-        super().__init__()
+        super().__init__(criterion)
         self.criterion = criterion
 
     @override
