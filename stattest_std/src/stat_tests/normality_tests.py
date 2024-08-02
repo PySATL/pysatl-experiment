@@ -1,52 +1,29 @@
 import math
 from typing import override
 
-from stattest_ext.src.core.distribution.norm import pdf_norm
-from stattest_std.src.stat_tests.goodness_test import GoodnessOfFitTest
-from stattest_std.src.cache_services.cache import MonteCarloCacheService
-
-from stattest_ext.src.core.distribution import norm  # TODO: move to other package
 import numpy as np
-import scipy.stats as scipy_stats
 import pandas as pd
+import scipy.stats as scipy_stats
+
+from stattest_ext.src.core.distribution.norm import pdf_norm  # TODO: extended test!!
+from stattest_std.src.cache_services.cache import MonteCarloCacheService
+from stattest_std.src.stat_tests.goodness_test import GoodnessOfFitTest
 
 
 class NormalityTest(GoodnessOfFitTest):
 
-    def __init__(self, cache=MonteCarloCacheService()):
+    def __init__(self, cache=MonteCarloCacheService(), mean=0, var=1):
         super().__init__(cache)
 
-        self.mean = 0
-        self.var = 1
+        self.mean = mean
+        self.var = var
 
     @staticmethod
     @override
     def code():
         return super(NormalityTest, NormalityTest).code() + '_norm'
 
-    @override
-    def __generate_statistic(self, rvs_size, alpha, keys_cr, count):  # TODO: move statistic generation to ext_package
-        result = np.zeros(count)
 
-        for i in range(count):
-            x = self.generate(size=rvs_size, mean=self.mean, var=self.var)
-            result[i] = self.execute_statistic(x)
-
-        result.sort()
-
-        ecdf = scipy_stats.ecdf(result)
-        x_cr = np.quantile(ecdf.cdf.quantiles, q=1 - alpha)
-        self.cache.put_with_level(keys_cr, x_cr)
-        self.cache.put_distribution(self.code(), rvs_size, result)
-        self.cache.flush()
-        return x_cr
-
-    @override
-    def generate(self, size, mean=0, var=1):
-        return norm.generate_norm(size, mean, var)
-
-
-# TODO: make common ??
 class KSTest(NormalityTest):
 
     @staticmethod

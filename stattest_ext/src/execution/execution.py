@@ -2,9 +2,9 @@ import csv
 import os
 from os import walk
 
-import stattest_ext.src._ext_package.execution.utils as utils
-from stattest_ext.src._ext_package.execution.cache import CacheResultService
-from stattest_ext.src.core.power import calculate_powers
+import stattest_ext.src.execution.utils as utils
+from stattest_ext.src.execution.cache import CacheResultService
+from stattest_ext.src.execution.power import calculate_powers
 
 from stattest_std.src.stat_tests.abstract_test import AbstractTest
 

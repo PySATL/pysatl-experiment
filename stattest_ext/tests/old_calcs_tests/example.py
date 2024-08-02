@@ -1,20 +1,17 @@
 import multiprocessing
-import timeit
 from itertools import repeat
 
 import numpy as np
 
-from stattest_ext.src._ext_package.execution.data import prepare_rvs_data
-from stattest_ext.src._ext_package.execution.execution import execute_powers
-from stattest_ext.src.core.generator import (BetaRVSGenerator, CauchyRVSGenerator,
-                                             LaplaceRVSGenerator, LogisticRVSGenerator,
-                                             TRVSGenerator, TukeyRVSGenerator, Chi2Generator, GammaGenerator,
-                                             GumbelGenerator, LognormGenerator,
-                                             WeibullGenerator, TruncnormGenerator, LoConNormGenerator,
-                                             ScConNormGenerator, MixConNormGenerator)
+from stattest_ext.src.execution.generator import (BetaRVSGenerator, CauchyRVSGenerator,
+                                                  LaplaceRVSGenerator, LogisticRVSGenerator,
+                                                  TRVSGenerator, TukeyRVSGenerator, Chi2Generator, GammaGenerator,
+                                                  GumbelGenerator, LognormGenerator,
+                                                  WeibullGenerator, TruncnormGenerator, LoConNormGenerator,
+                                                  ScConNormGenerator, MixConNormGenerator)
 
-from stattest_std.src.stat_tests.normality_tests import NormalityTest, KSTest
-from stattest_std.src.cache_services.cache import MonteCarloCacheService, ThreadSafeMonteCarloCacheService
+from stattest_std.src.stat_tests.normality_tests import NormalityTest
+from stattest_std.src.cache_services.cache import ThreadSafeMonteCarloCacheService
 
 sizes = [30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
 

@@ -6,10 +6,8 @@ import matplotlib.pyplot as plt
 from fpdf import FPDF
 import numpy as np
 
-from stattest_ext.src.core.generator import (AbstractRVSGenerator, BetaRVSGenerator, CauchyRVSGenerator,
-                                             LaplaceRVSGenerator, LogisticRVSGenerator,
-                                             TRVSGenerator, TukeyRVSGenerator)
-from stattest_ext.src.core.power import calculate_mean_test_power
+from stattest_ext.src.execution.generator import (AbstractRVSGenerator, BetaRVSGenerator)
+from stattest_ext.src.execution.power import calculate_mean_test_power
 
 
 class AbstractReportBlockGenerator:

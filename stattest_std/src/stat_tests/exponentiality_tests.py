@@ -3,45 +3,22 @@ from typing import override
 
 import numpy as np
 import scipy.special as scipy_special
-import scipy.stats as scipy_stats
 
-from stattest_ext.src.core.distribution import expon  # TODO: move to other package
 from stattest_std.src.cache_services.cache import MonteCarloCacheService
 from stattest_std.src.stat_tests.goodness_test import GoodnessOfFitTest
 
 
 class ExponentialityTest(GoodnessOfFitTest):
 
-    def __init__(self, cache=MonteCarloCacheService()):
+    def __init__(self, cache=MonteCarloCacheService(), lam=1):
         super().__init__(cache)
 
-        self.lam = 1
+        self.lam = lam
 
     @staticmethod
     @override
     def code():
         return super(ExponentialityTest, ExponentialityTest).code() + '_exp'
-
-    @override
-    def __generate_statistic(self, rvs_size, alpha, keys_cr, count):  # TODO: move statistic generation to ext_package
-        result = np.zeros(count)
-
-        for i in range(count):
-            x = self.generate(size=rvs_size, lam=1)
-            result[i] = self.execute_statistic(x)
-
-        result.sort()
-
-        ecdf = scipy_stats.ecdf(result)
-        x_cr = np.quantile(ecdf.cdf.quantiles, q=1 - alpha)
-        self.cache.put_with_level(keys_cr, x_cr)
-        self.cache.put_distribution(self.code(), rvs_size, result)
-        self.cache.flush()
-        return x_cr
-
-    @override
-    def generate(self, size, lam=1):
-        return expon.generate_expon(size, lam)
 
 
 class EPTestExp(ExponentialityTest):

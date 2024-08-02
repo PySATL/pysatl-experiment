@@ -1,12 +1,10 @@
-import pandas as pd
-
+from stattest_ext.src.time_cache.time_test import TimeTestHandler
 from stattest_std.src.stat_tests.abstract_test import AbstractTest
-from tqdm import tqdm
 
-from stattest_ext.src.core.generator import AbstractRVSGenerator
+from stattest_ext.src.execution.generator import AbstractRVSGenerator
 
 
-# TODO: relocate to execution in ext_package!
+# TODO: fix time_test && abstract_test usages!!
 
 def calculate_mean_test_power(test: AbstractTest, rvs_generators: [AbstractRVSGenerator], alpha=0.05, rvs_size=15,
                               count=1_000_000):
@@ -40,19 +38,24 @@ def calculate_test_power(test: AbstractTest, rvs_generator: AbstractRVSGenerator
     return k / count
 
 
-def calculate_power(test: AbstractTest, data: [[float]], alpha=0.05, calculate_time=False) -> float:
+def calculate_power(test: TimeTestHandler, data: [[float]], alpha=0.05, calculate_time=False) -> float:
     """
     Calculate statistic test power.
 
     :param test: statistic test
     :param data: rvs data of alternative hypothesis
     :param alpha: significant level
+    :param calculate_time: counting time flag
     :return: statistic test power
     """
     k = 0
     count = len(data[0])
     for i in range(count):
-        x = test.test(data[i], alpha=alpha, calculate_time=calculate_time)
+        if calculate_time:
+            x = test.test_with_time_counting(data[i], alpha=alpha)
+        else:
+            x = test.generator.test(data[i], alpha=alpha)
+
         if x is False:
             k = k + 1
     return k / count
@@ -65,6 +68,7 @@ def calculate_powers(tests: [AbstractTest], data: [[float]], alpha=0.05, calcula
     :param tests: statistic tests
     :param data: rvs data of alternative hypothesis
     :param alpha: significant level
+    :param calculate_time: counting time flag
     :return: statistic test power
     """
 

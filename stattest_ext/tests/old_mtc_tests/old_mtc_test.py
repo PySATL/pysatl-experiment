@@ -1,7 +1,8 @@
-import scipy.stats as scipy_stats
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import scipy.stats as scipy_stats
 
+from stattest_ext.src.tests_generators.stat_gen import StatisticGenerator
 from stattest_std.src.stat_tests.abstract_test import AbstractTest
 from stattest_std.src.stat_tests.normality_tests import KSTest
 
@@ -10,8 +11,9 @@ def monte_carlo(_test: AbstractTest, rvs_size, count=100000):
     result = np.zeros(count)
 
     for i in range(count):
-        x = _test.generate(size=rvs_size)
-        result[i] = _test.execute_statistic(x)
+        generator = StatisticGenerator(_test)
+        x = generator.generate(size=rvs_size)
+        result[i] = generator.execute_statistic(x)
 
     result.sort()
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable
-from stattest_ext.src._ext_package.experiment._distribution_type_enum import Distribution
-from stattest_ext.src._ext_package.experiment._hypothesis_enum import Hypothesis
+from stattest_ext.src.experiment._distribution_type_enum import Distribution
+from stattest_ext.src.experiment._hypothesis_enum import Hypothesis
 
 
 @dataclass

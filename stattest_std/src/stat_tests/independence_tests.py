@@ -19,7 +19,7 @@ class ChiSquareTest(IndependenceTest):
 
     @override
     def execute_statistic(self, rvs, **kwargs):
-        print("Not implemented")  # stub from normality tests (should be two params)
+        print("Not implemented")  # TODO: stub from normality tests (should be two params)
         """
         rvs = np.sort(rvs)
 

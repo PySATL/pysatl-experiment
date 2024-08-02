@@ -3,11 +3,10 @@ from itertools import repeat
 
 import numpy as np
 
-from stattest_ext.src._ext_package.execution.cache import ThreadSafeCacheResultService
-from stattest_ext.src.core.generator import NormRVSGenerator
+from stattest_ext.src.execution.generator import NormRVSGenerator
 
 from stattest_std.src.cache_services.cache import ThreadSafeMonteCarloCacheService
-from stattest_std.src.stat_tests.exponentiality_tests import ExponentialityTest, AHSTestExp, RSTestExp, KSTestExp
+from stattest_std.src.stat_tests.exponentiality_tests import ExponentialityTest, AHSTestExp, RSTestExp
 
 sizes = [30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
 

@@ -1,10 +1,9 @@
 import csv
 import os
 
-import stattest_ext.src._ext_package.execution.utils as utils
-from stattest_ext.src._ext_package.execution.utils import build_rvs_file_name
-from stattest_ext.src.core.generator import AbstractRVSGenerator, BetaRVSGenerator
-import pandas as pd
+import stattest_ext.src.execution.utils as utils
+from stattest_ext.src.execution.utils import build_rvs_file_name
+from stattest_ext.src.execution.generator import AbstractRVSGenerator
 
 
 def generate_rvs_data(rvs_generator: AbstractRVSGenerator, size, count=1_000):
