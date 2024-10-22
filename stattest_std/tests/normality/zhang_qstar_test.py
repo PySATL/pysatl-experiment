@@ -1,7 +1,7 @@
 import pytest as pytest
 
 from stattest_std.src.stat_tests.normality_tests import ZhangQStarTest
-from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
+from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(
@@ -13,7 +13,7 @@ from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
           1.0786708, -0.1585859, -1.0140335, 1.0448026], -0.5880094),
     ],
 )
-class TestCaseZhangQStarTest(AbstractTestCase):
+class TestCaseZhangQStarNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):

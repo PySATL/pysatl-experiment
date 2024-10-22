@@ -1,7 +1,7 @@
 import pytest as pytest
 
 from stattest_std.src.stat_tests.normality_tests import SWTest
-from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
+from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(
@@ -13,7 +13,7 @@ from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
         ([38.7, 41.5, 43.8, 44.5, 45.5, 46.0, 47.7, 58.0], 0.872973),
     ],
 )
-class TestCaseSWTest(AbstractTestCase):
+class TestCaseSWNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):

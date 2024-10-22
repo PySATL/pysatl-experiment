@@ -1,7 +1,7 @@
 import pytest as pytest
 
 from stattest_std.src.stat_tests.normality_tests import RyanJoinerTest
-from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
+from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(
@@ -11,7 +11,7 @@ from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
         ([6, 1, -4, 8, -2, 5, 0], 0.9844829186140105),
     ],
 )
-class TestCaseRJTest(AbstractTestCase):
+class TestCaseRJNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):

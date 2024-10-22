@@ -1,7 +1,7 @@
 import pytest as pytest
 
 from stattest_std.src.stat_tests.normality_tests import LillieforsTest
-from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
+from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(
@@ -13,7 +13,7 @@ from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
           1.25378956, -0.64296653, 0.25356762, 0.23345769], 0.1695222),
     ],
 )
-class TestCaseLillieforsTestTest(AbstractTestCase):
+class TestCaseLillieforsTestNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):

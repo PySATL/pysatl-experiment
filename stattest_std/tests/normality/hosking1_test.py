@@ -1,7 +1,7 @@
 import pytest as pytest
 
 from stattest_std.src.stat_tests.normality_tests import Hosking1Test
-from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
+from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(
@@ -12,7 +12,7 @@ from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
           -0.18712276, 0.12134652, 0.25866486], 3.347533),
     ],
 )
-class TestCaseHosking1Test(AbstractTestCase):
+class TestCaseHosking1NormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):

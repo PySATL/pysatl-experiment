@@ -1,7 +1,7 @@
 import pytest as pytest
 
 from stattest_std.src.stat_tests.normality_tests import DagostinoTest
-from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
+from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(
@@ -12,7 +12,7 @@ from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
           -1.47549650,  0.42478574,  0.91713384,  0.24491208], -0.7608445),
     ],
 )
-class TestCaseDagostinoTest(AbstractTestCase):
+class TestCaseDagostinoNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):

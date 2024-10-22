@@ -1,7 +1,7 @@
 import pytest as pytest
 
 from stattest_std.src.stat_tests.normality_tests import CoinTest
-from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
+from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(
@@ -12,7 +12,7 @@ from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
           0.28462605,  0.22804695, -0.29829152], 0.0009059856),
     ],
 )
-class TestCaseCoinTest(AbstractTestCase):
+class TestCaseCoinNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):

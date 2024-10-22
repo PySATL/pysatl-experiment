@@ -1,7 +1,7 @@
 import pytest as pytest
 
 from stattest_std.src.stat_tests.normality_tests import EPTest
-from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
+from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(
@@ -14,7 +14,7 @@ from stattest_std.tests.normality.abstract_test_case import AbstractTestCase
          ], 0.05191694742233466),
     ],
 )
-class TestCaseEPTest(AbstractTestCase):
+class TestCaseEPNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
