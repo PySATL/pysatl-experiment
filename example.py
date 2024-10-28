@@ -1,17 +1,8 @@
-import multiprocessing
-import timeit
-from itertools import repeat
-
-import numpy as np
-
-from stattest.execution.data import prepare_rvs_data
-from stattest.execution.execution import execute_powers
-from stattest.test import KSTest
-from stattest.test.cache import MonteCarloCacheService, ThreadSafeMonteCarloCacheService
+from stattest.execution.report_generator import ReportGenerator, TopTestTableReportBlockGenerator
 from stattest.test.generator import BetaRVSGenerator, CauchyRVSGenerator, LaplaceRVSGenerator, LogisticRVSGenerator, \
     TRVSGenerator, TukeyRVSGenerator, Chi2Generator, GammaGenerator, GumbelGenerator, LognormGenerator, \
     WeibullGenerator, TruncnormGenerator, LoConNormGenerator, ScConNormGenerator, MixConNormGenerator
-from stattest.test.normality import AbstractNormalityTest
+from stattest.test.normal import AbstractNormalityTestStatistic
 
 sizes = [30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
 
@@ -48,7 +39,7 @@ modified_generators = [TruncnormGenerator(a=-1, b=1), TruncnormGenerator(a=-2, b
                        MixConNormGenerator(p=0.4, a=3, b=4), MixConNormGenerator(p=0.5, a=3, b=4)]
 
 
-def run(tests_to_run: [AbstractNormalityTest], sizes):
+def run(tests_to_run: [AbstractNormalityTestStatistic], sizes):
     for test in tests_to_run:
         for size in sizes:
             print('Calculating...', test.code(), size)
@@ -69,20 +60,29 @@ if __name__ == '__main__':
     # prepare_rvs_data(rvs_generators, sizes)
     stop = timeit.default_timer()
     print('Time: ', stop - start)
-    """
-
-    """""
-    tests = [KSTest()]
-    alpha = [0.05, 0.1]
+    
+    cache = MonteCarloCacheService()
+    tests = [CoinTest()]
+    alpha = [0.05, 0.1, 0.01]
     start = timeit.default_timer()
     execute_powers(tests, alpha)
     stop = timeit.default_timer()
     print('Power calculation time: ', stop - start)
     """
+
+    """
     manager = multiprocessing.Manager()
     lock = manager.Lock()
     cache = ThreadSafeMonteCarloCacheService(lock=lock)
-    tests = [cls(cache) for cls in AbstractNormalityTest.__subclasses__()]
+    tests = [EPTest(cache=cache)]
     tests_chunks = np.array_split(np.array(tests), cpu_count)
     with multiprocessing.Pool(cpu_count) as pool:
         pool.starmap(run, zip(tests_chunks, repeat(sizes)))
+    """
+    symmetric = [x.code() for x in symmetric_generators]
+    asymmetric = [x.code() for x in asymmetric_generators]
+    modified = [x.code() for x in modified_generators]
+    print(len(symmetric + asymmetric + modified))
+    report_generator = ReportGenerator([TopTestTableReportBlockGenerator()])
+    report_generator.generate()
+
