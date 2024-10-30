@@ -1,5 +1,7 @@
 import numpy as np
 import scipy.stats as scipy_stats
+from scipy import special
+from typing_extensions import override
 
 from stattest.test.models import AbstractTestStatistic
 
@@ -42,10 +44,10 @@ class KSTestStatistic(AbstractTestStatistic):
 
         if self.alternative == 'greater':
             d_plus, d_location = KSTestStatistic.__compute_dplus(cdf_vals, rvs)
-            return d_plus  # KstestResult(Dplus, distributions.ksone.sf(Dplus, N), statistic_location=d_location, statistic_sign=1)
+            return d_plus
         if self.alternative == 'less':
             d_minus, d_location = KSTestStatistic.__compute_dminus(cdf_vals, rvs)
-            return d_minus  # KstestResult(Dminus, distributions.ksone.sf(Dminus, N), statistic_location=d_location, statistic_sign=-1)
+            return d_minus
 
         # alternative == 'two-sided':
         d_plus, d_plus_location = KSTestStatistic.__compute_dplus(cdf_vals, rvs)
@@ -125,6 +127,7 @@ class LillieforsTest(KSTestStatistic):
 
         return d_ks
 
+
 class CrammerVonMisesTestStatistic(AbstractTestStatistic):
     def execute_statistic(self, rvs, cdf_vals):
         n = len(rvs)
@@ -133,3 +136,52 @@ class CrammerVonMisesTestStatistic(AbstractTestStatistic):
         w = 1 / (12 * n) + np.sum((u - cdf_vals) ** 2)
 
         return w
+
+
+class Chi2TestStatistic(AbstractTestStatistic):
+
+    @staticmethod
+    def _m_sum(a, *, axis, preserve_mask, xp):
+        if np.ma.isMaskedArray(a):
+            sum = a.sum(axis)
+            return sum if preserve_mask else np.asarray(sum)
+        return xp.sum(a, axis=axis)
+
+    def execute_statistic(self, f_obs, f_exp, lambda_):
+        # `terms` is the array of terms that are summed along `axis` to create
+        # the test statistic.  We use some specialized code for a few special
+        # cases of lambda_.
+        f_obs = np.array(f_obs)
+        if lambda_ == 1:
+            # Pearson's chi-squared statistic
+            terms = (f_obs - f_exp) ** 2 / f_exp
+        elif lambda_ == 0:
+            # Log-likelihood ratio (i.e. G-test)
+            terms = 2.0 * special.xlogy(f_obs, f_obs / f_exp)
+        elif lambda_ == -1:
+            # Modified log-likelihood ratio
+            terms = 2.0 * special.xlogy(f_exp, f_exp / f_obs)
+        else:
+            # General Cressie-Read power divergence.
+            terms = f_obs * ((f_obs / f_exp) ** lambda_ - 1)
+            terms /= 0.5 * lambda_ * (lambda_ + 1)
+
+        return terms.sum()
+
+    def calculate_critical_value(self, rvs_size, sl):
+        return scipy_stats.distributions.chi2.ppf(1 - sl, rvs_size - 1)
+
+
+class MinToshiyukiTestStatistic(AbstractTestStatistic):
+
+    @override
+    def execute_statistic(self, cdf_vals):
+        n = len(cdf_vals)
+        d_plus = (np.arange(1.0, n + 1) / n - cdf_vals)
+        d_minus = (cdf_vals - np.arange(0.0, n) / n)
+        d = np.maximum.reduce([d_plus, d_minus])
+
+        fi = 1/(cdf_vals*(1-cdf_vals))
+
+        s = np.sum(d * np.sqrt(fi))
+        return s / np.sqrt(n)

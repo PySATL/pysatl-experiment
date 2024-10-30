@@ -1,17 +1,19 @@
 # statistic-test
 
-This is a test framework for goodness-of-fit statistic tests. 
+This is a test framework for goodness-of-fit statistic tests.
 
 ## Architecture
 
 Framework consists of 5 modules
+
 1. Core module - provides distributions, cdf, pdf etc.
 2. Persistence module - provides different stores to store data.
-3. Experiment module - provides pipeline for experiment and default components for pipeline.   
-4. Expert system module - provides expert system for goodness-of-fit testing.   
+3. Experiment module - provides pipeline for experiment and default components for pipeline.
+4. Expert system module - provides expert system for goodness-of-fit testing.
 5. Tests module - provides different goodness-of-fit tests.
 
 ### Experiment architecture
+
 ![PYSATL architecture](pysatl_flow.png "PYSATL architecture")
 
 ## Default components
@@ -21,6 +23,7 @@ Framework consists of 5 modules
 ### Storages
 
 ### Workers
+
 PowerCalculationWorker - calculates goodness-of-fit test power
 
 ### Report builders
@@ -32,11 +35,11 @@ PowerCalculationWorker - calculates goodness-of-fit test power
 | №  | Test                       | Status       |
 |----|----------------------------|--------------|
 | 1  | Anderson–Darling           | Done         |
-| 2  | Chi square                 | Content Cell |
+| 2  | Chi square                 | Done         |
 | 3  | Kolmogorov–Smirnov         | Done         |
 | 3  | Lilliefors                 | Done         |
 | 4  | Cramér–von Mises           | Done         |
-| 4  | Min-Toshiyuki              | Content Cell |
+| 4  | Min-Toshiyuki              | Done         |
 | 5  | Smith and Brian            | Content Cell |
 | 6  | Tiku-Singh                 | Content Cell |
 | 7  | Lockhart-O'Reilly-Stephens | Content Cell |
@@ -64,7 +67,5 @@ PowerCalculationWorker - calculates goodness-of-fit test power
 | kurtosis           | Content Cell  |
 
 ## Configuration
-
-
 
 ### Configuration example

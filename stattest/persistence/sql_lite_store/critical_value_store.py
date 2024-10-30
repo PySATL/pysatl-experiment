@@ -49,16 +49,15 @@ class CriticalValueSqlLiteStore(ICriticalValueStore):
 
     def __init__(self):
         super().__init__()
+
+    @override
+    def init(self):
         sqlite3.register_adapter(np.int64, lambda val: int(val))
         engine = init_db("sqlite:///pysatl.sqlite")
         CriticalValueSqlLiteStore.session = scoped_session(
             sessionmaker(bind=engine, autoflush=False), scopefunc=get_request_or_thread_id
         )
         ModelBase.metadata.create_all(engine)
-
-    @override
-    def init(self):
-        pass
 
     @override
     def insert_critical_value(self, code: str, size: int, sl: float, value: float):

@@ -31,6 +31,8 @@ class PowerResultSqlLiteStore(IPowerResultStore):
 
     def __init__(self):
         super().__init__()
+
+    def init(self, **kwargs):
         sqlite3.register_adapter(np.int64, lambda val: int(val))
         engine = init_db("sqlite:///pysatl.sqlite")
         PowerResultSqlLiteStore.session = scoped_session(

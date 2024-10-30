@@ -25,6 +25,8 @@ class StepListener:
 
 
 class TestWorker:
+    def init(self):
+        pass
     def execute(self, test: AbstractTestStatistic, data: [[float]], code, size: int) -> TestWorkerResult:
         pass
 

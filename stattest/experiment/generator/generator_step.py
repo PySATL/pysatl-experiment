@@ -1,7 +1,7 @@
+import logging
 import multiprocessing
 from itertools import repeat
 from multiprocessing import freeze_support, RLock
-from time import sleep
 
 import numpy as np
 from tqdm import tqdm, trange
@@ -9,6 +9,8 @@ from tqdm import tqdm, trange
 from stattest.experiment.configuration.configuration import AlternativeConfiguration
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.persistence.models import IRvsStore
+
+logger = logging.getLogger(__name__)
 
 
 def generate_rvs_data(rvs_generator: AbstractRVSGenerator, size, count):
@@ -45,7 +47,7 @@ def prepare_one_size_rvs_data(rvs_generators: [AbstractRVSGenerator], size, coun
             pbar.update(1)
 
 
-def prepare_rvs_data(rvs_generators: [AbstractRVSGenerator], sizes, count, store: IRvsStore, thread_count: int = None):
+def prepare_rvs_data(rvs_generators: [AbstractRVSGenerator], sizes, count, store: IRvsStore, thread_count: int = 0):
     """
         Generate data rvs and save it to store.
 
@@ -61,6 +63,7 @@ def prepare_rvs_data(rvs_generators: [AbstractRVSGenerator], sizes, count, store
     pbar = tqdm(total=len(sizes)*len(rvs_generators), desc=text, position=thread_count)
     for size in sizes:
         prepare_one_size_rvs_data(rvs_generators, size, count, store, pbar)
+    pbar.close()
 
 
 def data_generation_step(alternative_configuration: AlternativeConfiguration, store: IRvsStore):
@@ -74,8 +77,10 @@ def data_generation_step(alternative_configuration: AlternativeConfiguration, st
 
     # Skip step
     if alternative_configuration.skip_step:
+        logger.info('Skip data generation step')
         return
 
+    logger.info('Start data generation step')
     # Execute before all listeners
     for listener in alternative_configuration.listeners:
         listener.before()
@@ -104,3 +109,5 @@ def data_generation_step(alternative_configuration: AlternativeConfiguration, st
     # Execute after all listeners
     for listener in alternative_configuration.listeners:
         listener.after()
+
+    logger.info('End data generation step')

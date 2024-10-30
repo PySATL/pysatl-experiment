@@ -1,13 +1,53 @@
 import math
 
+from numpy import histogram
 from scipy.stats import distributions
+from typing_extensions import override
 
 from stattest.core.distribution.weibull import generate_weibull_cdf, generate_weibull_logcdf, generate_weibull_logsf
 import numpy as np
 from scipy.optimize import minimize_scalar
 from stattest.test.models import AbstractTestStatistic
-from stattest.test.common import KSTestStatistic, ADTestStatistic, LillieforsTest, CrammerVonMisesTestStatistic
+from stattest.test.common import KSTestStatistic, ADTestStatistic, LillieforsTest, CrammerVonMisesTestStatistic, \
+    Chi2TestStatistic, MinToshiyukiTestStatistic
 
+
+class MinToshiyukiWeibullTestStatistic(MinToshiyukiTestStatistic):
+    def __init__(self, l=1, k=5):
+        super().__init__()
+        self.l = l
+        self.k = k
+
+    @staticmethod
+    def code():
+        return 'MT_WEIBULL'
+
+    @override
+    def execute_statistic(self, rvs):
+        rvs = np.sort(rvs)
+        cdf_vals = generate_weibull_cdf(rvs, l=self.l, k=self.k)
+        return super().execute_statistic(cdf_vals)
+
+
+
+class Chi2PearsonWiebullTest(Chi2TestStatistic):
+    def __init__(self, l=1, k=5):
+        super().__init__()
+        self.l = l
+        self.k = k
+
+    @staticmethod
+    def code():
+        return 'CHI2_PEARSON_WEIBULL'
+
+    def execute_statistic(self, rvs):
+        rvs_sorted = np.sort(rvs)
+        n = len(rvs)
+        (observed, bin_edges) = histogram(rvs_sorted, bins=int(np.ceil(np.sqrt(n))))
+        observed = observed / n
+        expected = generate_weibull_cdf(bin_edges, l=self.l, k=self.k)
+        expected = np.diff(expected)
+        return super().execute_statistic(observed, expected, 1)
 
 class LillieforsWiebullTest(LillieforsTest):
     def __init__(self, l=1, k=5):

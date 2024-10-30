@@ -26,6 +26,11 @@ class PowerCalculationWorker(TestWorker):
         self.hypothesis = hypothesis
 
     @override
+    def init(self):
+        self.critical_value_store.init()
+        self.worker_result_store.init()
+
+    @override
     def execute(self, test: AbstractTestStatistic, data: [[float]], code: str, size: int) -> PowerWorkerResult:
 
         # 1. Check power result
