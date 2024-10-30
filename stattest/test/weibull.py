@@ -115,42 +115,6 @@ class KSWeibullTest(KSTestStatistic):
         return super().execute_statistic(rvs, cdf_vals)
 
 
-class OKTestStatistic(AbstractTestStatistic):
-
-    @staticmethod
-    def code():
-        return 'OK'
-
-    # Test statistic of Ozturk and Korukoglu
-    def execute_statistic(self, rvs):
-        """
-        On the W Test for the Extreme Value Distribution
-        Aydin Öztürk
-        Biometrika
-        Vol. 73, No. 3 (Dec., 1986), pp. 738-740 (3 pages)
-
-        :param rvs:
-        :return:
-        """
-        n = len(rvs)
-        lv = np.log(rvs)
-        y = np.sort(lv)
-        I = np.arange(1, n + 1)
-
-        l = I[:n - 1]
-        Sig = np.sum((2 * np.concatenate((l, [n])) - 1 - n) * y) / (0.693147 * (n - 1))
-        w = np.log((n + 1) / (n - l + 1))
-        Wi = np.concatenate((w, [n - np.sum(w)]))
-        Wn = w * (1 + np.log(w)) - 1
-        a = 0.4228 * n - np.sum(Wn)
-        Wn = np.concatenate((Wn, [a]))
-        b = (0.6079 * np.sum(Wn * y) - 0.2570 * np.sum(Wi * y))
-        stat = b / Sig
-        WPP_statistic = (stat - 1 - 0.13 / np.sqrt(n) + 1.18 / n) / (0.49 / np.sqrt(n) - 0.36 / n)
-
-        return WPP_statistic
-
-
 class SBTestStatistic(AbstractTestStatistic):
 
     @staticmethod
@@ -407,3 +371,96 @@ class MSFWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
         """
 
         return super().execute_statistic(rvs, 'MSF')
+
+class WPPWeibullTestStatistic(AbstractTestStatistic):
+    ##Family of the test statistics based on the probability plot and shapiro-Wilk type tests
+    @staticmethod
+    def execute_statistic(x, type_):
+        n = len(x)
+        lv = np.log(x)
+        y = np.sort(lv)
+        I = np.arange(1, n + 1)
+
+        WPP_statistic = 0
+        if type_ == "OK":
+            l = I[:-1]
+            Sig = np.sum((2 * np.concatenate((l, [n])) - 1 - n) * y) / (np.log(2) * (n - 1))
+            w = np.log((n + 1) / (n - l + 1))
+            Wi = np.concatenate((w, [n - np.sum(w)]))
+            Wn = w * (1 + np.log(w)) - 1
+            a = 0.4228 * n - np.sum(Wn)
+            Wn = np.concatenate((Wn, [a]))
+            b = (0.6079 * np.sum(Wn * y) - 0.2570 * np.sum(Wi * y))
+            stat = b / Sig
+            WPP_statistic = (stat - 1 - 0.13 / np.sqrt(n) + 1.18 / n) / (0.49 / np.sqrt(n) - 0.36 / n)
+
+        elif type_ == "SB":
+            yb = np.mean(y)
+            S2 = np.sum((y - yb) ** 2)
+            l = I[:-1]
+            w = np.log((n + 1) / (n - l + 1))
+            Wi = np.concatenate((w, [n - np.sum(w)]))
+            Wn = w * (1 + np.log(w)) - 1
+            a = 0.4228 * n - np.sum(Wn)
+            Wn = np.concatenate((Wn, [a]))
+            b = (0.6079 * np.sum(Wn * y) - 0.2570 * np.sum(Wi * y)) / n
+            WPP_statistic = n * b ** 2
+
+        elif type_ == "RSB":
+            m = I / (n + 1)
+            m = np.log(-np.log(1 - m))
+            mb = np.mean(m)
+            xb = np.mean(np.log(x))
+            R = (np.sum((np.log(x) - xb) * (m - mb))) ** 2
+            R /= np.sum((np.log(x) - xb) ** 2)
+            R /= np.sum((m - mb) ** 2)
+            WPP_statistic = n * (1 - R)
+
+        elif type_ == "REJG":
+            beta_shape = MLEst(x)['beta']
+            m = np.log(-(np.log(1 - (I - 0.3175) / (n + 0.365)))) / beta_shape
+            s = (np.sum((y - np.mean(y)) * m)) ** 2 / (np.sum((y - np.mean(y)) ** 2) * np.sum((m - np.mean(m)) ** 2))
+            WPP_statistic = s ** 2
+
+        elif type_ == "SPP":
+            y = MLEst(x)['y']
+            r = 2 / np.pi * np.arcsin(np.sqrt((I - 0.5) / n))
+            s = 2 / np.pi * np.arcsin(np.sqrt(1 - np.exp(-np.exp(y))))
+            WPP_statistic = np.max(np.abs(r - s))
+
+        elif type_ == "ST1":
+            x = np.sort(-y)
+            s = np.sum((x - np.mean(x)) ** 2) / n
+            b1 = np.sum(((x - np.mean(x)) / np.sqrt(s)) ** 3) / n
+            V3 = (b1 - 1.139547) / np.sqrt(20 / n)
+            WPP_statistic = V3 ** 2
+
+        elif type_ == "ST2":
+            x = np.sort(-y)
+            s = np.sum((x - np.mean(x)) ** 2) / n
+            b1 = np.sum(((x - np.mean(x)) / np.sqrt(s)) ** 3) / n
+            b2 = np.sum(((x - np.mean(x)) / np.sqrt(s)) ** 4) / n
+            V4 = (b2 - 7.55 * b1 + 3.21) / np.sqrt(219.72 / n)
+            WPP_statistic = V4 ** 2
+
+        return WPP_statistic
+
+class OKWeibullTestStatistic(WPPWeibullTestStatistic):
+
+    @staticmethod
+    def code():
+        return 'OK'
+
+    # Test statistic of Ozturk and Korukoglu
+    def execute_statistic(self, rvs):
+        """
+        On the W Test for the Extreme Value Distribution
+        Aydin Öztürk
+        Biometrika
+        Vol. 73, No. 3 (Dec., 1986), pp. 738-740 (3 pages)
+
+        :param rvs:
+        :return:
+        """
+
+        return super().execute_statistic(rvs, 'OK')
