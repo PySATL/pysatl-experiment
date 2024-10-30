@@ -373,6 +373,31 @@ class MSFWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
         return super().execute_statistic(rvs, 'MSF')
 
 class WPPWeibullTestStatistic(AbstractTestStatistic):
+    @staticmethod
+    def MLEst(x):
+        if np.min(x) <= 0:
+            raise ValueError("Data x is not a positive sample")
+
+        n = len(x)
+        lv = -np.log(x)
+        y = np.sort(lv)
+
+        def f1(toto, vect):
+            if toto != 0:
+                f1 = np.sum(vect) / len(vect)
+                f1 -= np.sum(vect * np.exp(-vect * toto)) / np.sum(np.exp(-vect * toto)) - 1 / toto
+            else:
+                f1 = 100
+            return abs(f1)
+
+        result = minimize_scalar(f1, bounds=(0.0001, 50), args=(y,), method='bounded')
+        t = result.x
+        aux = np.sum(np.exp(-y * t)) / len(x)
+        ksi = -(1 / t) * np.log(aux)
+
+        y = -(y - ksi) * t
+        return {'eta': np.exp(-ksi), 'beta': t, 'y': y}
+
     ##Family of the test statistics based on the probability plot and shapiro-Wilk type tests
     @staticmethod
     def execute_statistic(x, type_):
@@ -404,7 +429,7 @@ class WPPWeibullTestStatistic(AbstractTestStatistic):
             a = 0.4228 * n - np.sum(Wn)
             Wn = np.concatenate((Wn, [a]))
             b = (0.6079 * np.sum(Wn * y) - 0.2570 * np.sum(Wi * y)) / n
-            WPP_statistic = n * b ** 2
+            WPP_statistic = n * b ** 2/S2
 
         elif type_ == "RSB":
             m = I / (n + 1)
@@ -417,13 +442,13 @@ class WPPWeibullTestStatistic(AbstractTestStatistic):
             WPP_statistic = n * (1 - R)
 
         elif type_ == "REJG":
-            beta_shape = MLEst(x)['beta']
+            beta_shape = WPPWeibullTestStatistic.MLEst(x)['beta']
             m = np.log(-(np.log(1 - (I - 0.3175) / (n + 0.365)))) / beta_shape
             s = (np.sum((y - np.mean(y)) * m)) ** 2 / (np.sum((y - np.mean(y)) ** 2) * np.sum((m - np.mean(m)) ** 2))
             WPP_statistic = s ** 2
 
         elif type_ == "SPP":
-            y = MLEst(x)['y']
+            y = WPPWeibullTestStatistic.MLEst(x)['y']
             r = 2 / np.pi * np.arcsin(np.sqrt((I - 0.5) / n))
             s = 2 / np.pi * np.arcsin(np.sqrt(1 - np.exp(-np.exp(y))))
             WPP_statistic = np.max(np.abs(r - s))
@@ -464,3 +489,63 @@ class OKWeibullTestStatistic(WPPWeibullTestStatistic):
         """
 
         return super().execute_statistic(rvs, 'OK')
+
+class SBWeibullTestStatistic(WPPWeibullTestStatistic):
+
+    @staticmethod
+    def code():
+        return 'SB'
+
+    # Test statistic of Shapiro Wilk
+    def execute_statistic(self, rvs):
+        return super().execute_statistic(rvs, 'SB')
+
+class RSBWeibullTestStatistic(WPPWeibullTestStatistic):
+
+    @staticmethod
+    def code():
+        return 'RSB'
+
+    # Test statistic of Smith and Bain based on probability plot
+    def execute_statistic(self, rvs):
+        return super().execute_statistic(rvs, 'RSB')
+
+class ST2WeibullTestStatistic(WPPWeibullTestStatistic):
+
+    @staticmethod
+    def code():
+        return 'ST2'
+
+    # Smooth test statistic based on the kurtosis
+    def execute_statistic(self, rvs):
+        return super().execute_statistic(rvs, 'ST2')
+
+class ST1WeibullTestStatistic(WPPWeibullTestStatistic):
+
+    @staticmethod
+    def code():
+        return 'ST1'
+
+    # Smooth test statistic based on the skewness
+    def execute_statistic(self, rvs):
+        return super().execute_statistic(rvs, 'ST1')
+
+class REJGWeibullTestStatistic(WPPWeibullTestStatistic):
+
+    @staticmethod
+    def code():
+        return 'REJG'
+
+    # Test statistic of Evans, Johnson and Green based on probability plot
+    def execute_statistic(self, rvs):
+        return super().execute_statistic(rvs, 'REJG')
+
+class SPPWeibullTestStatistic(WPPWeibullTestStatistic):
+
+    @staticmethod
+    def code():
+        return 'SPP'
+
+    # Test statistic based on stabilized probability plot
+    def execute_statistic(self, rvs):
+        return super().execute_statistic(rvs, 'SPP')

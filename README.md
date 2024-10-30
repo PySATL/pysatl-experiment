@@ -32,22 +32,24 @@ PowerCalculationWorker - calculates goodness-of-fit test power
 
 ### Weibull distribution
 
-| №  | Test                       | Status       |
-|----|----------------------------|--------------|
-| 1  | Anderson–Darling           | Done         |
-| 2  | Chi square                 | Done         |
-| 3  | Kolmogorov–Smirnov         | Done         |
-| 3  | Lilliefors                 | Done         |
-| 4  | Cramér–von Mises           | Done         |
-| 4  | Min-Toshiyuki              | Done         |
-| 5  | Smith and Brian            | Content Cell |
-| 5  | Ozturk and Korukoglu       | Done         |
-| 6  | Tiku-Singh                 | Done         |
-| 7  | Lockhart-O'Reilly-Stephens | Done         |
-| 8  | Mann-Scheuer-Fertig        | Done         |
-| 9  | Evans, Johnson and Green   | Content Cell |
-| 10 | Skewness                   | Content Cell |
-| 11 | Kurtosis                   | Content Cell |
+| №  | Test                                           | Status |
+|----|------------------------------------------------|--------|
+| 1  | Anderson–Darling                               | Done   |
+| 2  | Chi square                                     | Done   |
+| 3  | Kolmogorov–Smirnov                             | Done   |
+| 4  | Lilliefors                                     | Done   |
+| 5  | Cramér–von Mises                               | Done   |
+| 6  | Min-Toshiyuki                                  | Done   |
+| 7  | Smith and Brian                                | Done   |
+| 8  | Ozturk and Korukoglu                           | Done   |
+| 9  | Tiku-Singh                                     | Done   |
+| 10 | Lockhart-O'Reilly-Stephens                     | Done   |
+| 11 | Mann-Scheuer-Fertig                            | Done   |
+| 12 | Evans, Johnson and Green                       | Done   |
+| 13 | Skewness                                       | Done   |
+| 14 | Kurtosis                                       | Done   |
+| 15 | Statistic based on stabilized probability plot | Done   |
+| 16 | Test statistic of Shapiro Wilk                 | Done   |
 
 ### Exponential distribution
 
