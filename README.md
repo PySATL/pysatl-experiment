@@ -41,9 +41,9 @@ PowerCalculationWorker - calculates goodness-of-fit test power
 | 4  | Cramér–von Mises           | Done         |
 | 4  | Min-Toshiyuki              | Done         |
 | 5  | Smith and Brian            | Content Cell |
-| 6  | Tiku-Singh                 | Content Cell |
-| 7  | Lockhart-O'Reilly-Stephens | Content Cell |
-| 8  | Mann-Scheuer-Fertig        | Content Cell |
+| 6  | Tiku-Singh                 | Done         |
+| 7  | Lockhart-O'Reilly-Stephens | Done         |
+| 8  | Mann-Scheuer-Fertig        | Done         |
 | 9  | Evans, Johnson and Green   | Content Cell |
 | 10 | Skewness                   | Content Cell |
 | 11 | Kurtosis                   | Content Cell |

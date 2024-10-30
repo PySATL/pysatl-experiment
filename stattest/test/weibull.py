@@ -29,7 +29,6 @@ class MinToshiyukiWeibullTestStatistic(MinToshiyukiTestStatistic):
         return super().execute_statistic(cdf_vals)
 
 
-
 class Chi2PearsonWiebullTest(Chi2TestStatistic):
     def __init__(self, l=1, k=5):
         super().__init__()
@@ -48,6 +47,7 @@ class Chi2PearsonWiebullTest(Chi2TestStatistic):
         expected = generate_weibull_cdf(bin_edges, l=self.l, k=self.k)
         expected = np.diff(expected)
         return super().execute_statistic(observed, expected, 1)
+
 
 class LillieforsWiebullTest(LillieforsTest):
     def __init__(self, l=1, k=5):
@@ -289,71 +289,71 @@ class RSBTestStatistic(AbstractTestStatistic):
         return WPP_statistic
 
 
-class MSFTestStatistic(AbstractTestStatistic):
-    def __init__(self, l=1, k=5):
-        super().__init__()
-        self.l = l
-        self.k = k
+class WeibullNormalizeSpaceTestStatistic(AbstractTestStatistic):
 
     @staticmethod
-    def code():
-        return 'MSF'
+    def GoFNS(t, n, m):
+        res = np.zeros(m)
+        for i in range(m):
+            p_r = (t + i) / (n + 1)
+            q_r = 1 - p_r
+            Q_r = np.log(-np.log(1 - p_r))
+            d_Q_r = -1 / ((1 - p_r) * np.log(1 - p_r))
+            d2_Q_r = d_Q_r / q_r - d_Q_r * d_Q_r
+            d3_Q_r = d2_Q_r / q_r + d_Q_r / (q_r * q_r) - 2 * (d_Q_r * d2_Q_r)
+            d4_Q_r = d3_Q_r / q_r + 2 * d2_Q_r / (q_r * q_r)
+            d4_Q_r += 2 * d_Q_r / (q_r * q_r * q_r) - 2 * (d2_Q_r * d2_Q_r + d_Q_r * d3_Q_r)
+            res[i] = Q_r + (p_r * q_r / (2 * (n + 2))) * d2_Q_r
+            res[i] += q_r * p_r / ((n + 2) * (n + 2)) * (1 / 3 * (q_r - p_r) * d3_Q_r + 1 / 8 * p_r * q_r * d4_Q_r)
+        return res
 
-    # Mann-Scheuer-Fertig statistic only right censoring
-    def execute_statistic(self, rvs):
-        """
-        Mann N.R., Scheuer E.M. and Fertig K.W., A new goodness-of-fit test for the two-parameter Weibull or
-        extreme-value distribution, Communications in Statistics, 2, 383-400, 1973.
-
-        :param rvs:
-        :return:
-        """
+    def execute_statistic(self, rvs, type_):
         m = len(rvs)
-        # n = m + s + r
+        s = 0  # can be defined
+        r = 0  # can be defined
+        n = m + s + r
         A = np.sort(np.log(rvs))
+        d1 = A[1:(m - 1)] - A[:(m - 2)]
+        d2 = A[1:m] - A[:(m - 1)]
+        X = TSWeibullTestStatistic.GoFNS(r + 1, n, m)
+        mu1 = X[1:(m - 1)] - X[:(m - 2)]
+        mu2 = X[1:m] - X[:(m - 1)]
+        l = np.arange(r + 1, n - s - 1)
 
-        l1 = math.floor(m / 2)
-        l2 = m - l1 - 1
-        S = sum((A[(l1 + 2):m] - A[(l1 + 1):(m - 1)]) / (X[(l1 + 2):m] - X[(l1 + 1):(m - 1)]))
-        S = S / sum((A[2:m] - A[1:(m - 1)]) / (X[2:m] - X[1:(m - 1)]))
-
-        return S
-
-
-class LOCTestStatistic(AbstractTestStatistic):
-
-    @staticmethod
-    def code():
-        return 'LOC'
-
-    # Lockhart-O'Reilly-Stephens test statistic
-    def execute_statistic(self, rvs):
-        """
-        Lockhart R.A., O'Reilly F. and Stephens M.A., Tests for the extreme-value and Weibull distributions based on
-        normalized spacings, Naval Research Logistics Quarterly, 33, 413-421, 1986.
-
-        :param rvs:
-        :return:
-        """
-        m = len(rvs)
-        A = np.sort(np.log(rvs))
-        d2 = A[2:m] - A[1:(m - 1)]
-        X = GoFNS(r + 1, n, m)
-        mu2 = X[2:m] - X[1:(m - 1)]
+        G1 = d1 / mu1
         G2 = d2 / mu2
 
-        z = []
-        for i in range(1, m - 1):
-            z.append(np.sum(G2[:i]) / np.sum(G2))
-        z = sorted(z)
-        z1 = sorted(z, reverse=True)
-        I = range(1, m - 1)
-        NS_statistic = -(m - 2) - (1 / (m - 2)) * np.sum((2 * np.array(I) - 1) * (np.log(z) + np.log(z1)))
+        w1 = 2 * (np.sum((n - s - 1 - l) * G1))
+        w2 = (m - 2) * np.sum(G2)
+
+        print(G1)
+        print(G2)
+
+        NS_statistic = 0
+        if type_ == "TS":
+            NS_statistic = w1 / w2
+        elif type_ == "LOS":
+            z = []
+            for i in range(1, m - 1):
+                z.append(np.sum(G2[:i]) / np.sum(G2))
+            z = sorted(z)
+            z1 = sorted(z, reverse=True)
+            I = range(1, m - 1)
+            NS_statistic = -(m - 2) - (1 / (m - 2)) * np.sum(
+                (2 * np.array(I) - 1) * (np.log(z) + np.log(1 - np.array(z1))))
+        elif type_ == "MSF":
+            if s != 0:
+                raise ValueError('the test is only applied for right censoring')
+            l1 = m // 2
+            l2 = m - l1 - 1
+            S = np.sum((A[(l1 + 1):m] - A[l1:(m - 1)]) / (X[(l1 + 1):m] - X[l1:(m - 1)]))
+            S = S / np.sum((A[1:m] - A[:(m - 1)]) / (X[1:m] - X[:(m - 1)]))
+            NS_statistic = S
 
         return NS_statistic
 
 
-class TSTestStatistic(AbstractTestStatistic):
+class TSWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
 
     @staticmethod
     def code():
@@ -368,17 +368,42 @@ class TSTestStatistic(AbstractTestStatistic):
         :param rvs:
         :return:
         """
-        m = len(rvs)
-        A = np.sort(np.log(rvs))
-        d1 = A[2:(m - 1)] - A[1:(m - 2)]
-        d2 = A[2:m] - A[1:(m - 1)]
-        X = GoFNS(r + 1, n, m)
-        mu1 = X[2:(m - 1)] - X[1:(m - 2)]
-        mu2 = X[2:m] - X[1:(m - 1)]
-        G1 = d1 / mu1
-        G2 = d2 / mu2
+        return super().execute_statistic(rvs, 'TS')
 
-        w1 = 2 * (sum((n - s - 1 - l) * G1))
-        w2 = (m - 2) * sum(G2)
 
-        return w1 / w2
+class LOSWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
+
+    @staticmethod
+    def code():
+        return 'LOS'
+
+    # Lockhart-O'Reilly-Stephens test statistic
+    def execute_statistic(self, rvs):
+        """
+        Lockhart R.A., O'Reilly F. and Stephens M.A., Tests for the extreme-value and Weibull distributions based on
+        normalized spacings, Naval Research Logistics Quarterly, 33, 413-421, 1986.
+
+        :param rvs:
+        :return:
+        """
+
+        return super().execute_statistic(rvs, 'LOS')
+
+
+class MSFWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
+
+    @staticmethod
+    def code():
+        return 'MSF'
+
+    # Lockhart-O'Reilly-Stephens test statistic
+    def execute_statistic(self, rvs):
+        """
+        Mann N.R., Scheuer E.M. and Fertig K.W., A new goodness-of-fit test for the two-parameter Weibull or
+        extreme-value distribution, Communications in Statistics, 2, 383-400, 1973.
+
+        :param rvs:
+        :return:
+        """
+
+        return super().execute_statistic(rvs, 'MSF')
