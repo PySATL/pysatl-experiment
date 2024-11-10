@@ -2,11 +2,12 @@ import csv
 import os
 from os import walk
 
-import stattest_ext.src.execution.utils as utils
-from stattest_ext.src.execution.cache import CacheResultService
-from stattest_ext.src.execution.power import calculate_powers
+import stattest.execution.utils as utils
+from stattest.execution.cache import CacheResultService
+from stattest.test import AbstractTestStatistic
+from tqdm import tqdm
 
-from stattest_std.src.stat_tests.abstract_test import AbstractTest
+from stattest.test.power import calculate_powers
 
 
 def update_result(headers: [str], cache: CacheResultService, alpha: float, rvs_code: str, size: int, result: []):
@@ -17,20 +18,15 @@ def update_result(headers: [str], cache: CacheResultService, alpha: float, rvs_c
         cache.put_with_level(keys, result[i])
 
 
-def execute_powers(tests: [AbstractTest], alpha: [float], calculate_time=False, cache=None,
-                   data_path='data', result_path='result', recalculate=False):
+def execute_powers(tests: [AbstractTestStatistic], alpha: [float], data_path='data', result_path='result', recalculate=False):
     if not os.path.exists(result_path):
         os.makedirs(result_path)
 
     headers = [x.code() for x in tests]
     file_path = os.path.join(result_path, 'result.json')
-    if cache is None:
-        cache = CacheResultService(filename=file_path, separator=':')
-    else:
-        cache.set_filename(file_path)
-        cache.set_separator(':')
-
+    cache = CacheResultService(filename=file_path, separator=':')
     filenames = next(walk(data_path), (None, None, []))[2]  # [] if no file
+    t = tqdm(total=len(tests)*len(alpha)*len(filenames))
 
     for filename in filenames:
         rvs_code, size = utils.parse_rvs_file_name(filename)
@@ -39,13 +35,13 @@ def execute_powers(tests: [AbstractTest], alpha: [float], calculate_time=False, 
             reader = csv.reader(f, delimiter=utils.CSV_SEPARATOR, quoting=csv.QUOTE_NONNUMERIC)
             data = list(reader)
             for level in alpha:
-                powers = calculate_powers(tests, data, level, calculate_time)
+                powers = calculate_powers(tests, data, t, level)
                 print('POWER CALCULATED', filename, str(level))
                 update_result(headers, cache, level, rvs_code, size, powers)
             cache.flush()
 
 
-# if __name__ == '__main__':
+#if __name__ == '__main__':
 #    tests = [ADTest()]
 #    alpha = [0.05]
 #    execute_powers(tests, alpha)

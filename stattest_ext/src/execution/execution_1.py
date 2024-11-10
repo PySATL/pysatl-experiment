@@ -1,13 +1,14 @@
 import io
 
-from stattest_std.src.stat_tests.abstract_test import AbstractTest
-from stattest_std.src.stat_tests.normality_tests import KSTest, ADTest
+from stattest.test import AbstractTestStatistic, KSTestStatistic
 import matplotlib.pyplot as plt
 from fpdf import FPDF
 import numpy as np
 
-from stattest_ext.src.execution.generator import (AbstractRVSGenerator, BetaRVSGenerator)
-from stattest_ext.src.execution.power import calculate_mean_test_power
+from stattest.test.generator import AbstractRVSGenerator, BetaRVSGenerator, CauchyRVSGenerator, LaplaceRVSGenerator, \
+    LogisticRVSGenerator, TRVSGenerator, TukeyRVSGenerator
+from stattest.test.normal import ADTestStatistic
+from stattest.test.power import calculate_mean_test_power
 
 
 class AbstractReportBlockGenerator:
@@ -42,7 +43,7 @@ class AbstractReportBlockGenerator:
 
 class PowerReportBlockGenerator(AbstractReportBlockGenerator):
 
-    def __init__(self, tests: [AbstractTest], rvs_generators: [AbstractRVSGenerator], rvs_sizes=None, alpha=0.05,
+    def __init__(self, tests: [AbstractTestStatistic], rvs_generators: [AbstractRVSGenerator], rvs_sizes=None, alpha=0.05,
                  count=1_000_000):
         self.tests = tests
 
@@ -66,7 +67,7 @@ class PowerReportBlockGenerator(AbstractReportBlockGenerator):
 
         return self.add_table(pdf, self.header, table_data)
 
-    def calculate_multiple_test_power(self, test: AbstractTest):
+    def calculate_multiple_test_power(self, test: AbstractTestStatistic):
         result = []
 
         for rvs_size in self.rvs_sizes:
@@ -79,7 +80,7 @@ class PowerReportBlockGenerator(AbstractReportBlockGenerator):
 
 class PDFReportBlockGenerator(AbstractReportBlockGenerator):
 
-    def __init__(self, tests: [AbstractTest], rvs_size, h=70, w=70, count=100_000):
+    def __init__(self, tests: [AbstractTestStatistic], rvs_size, h=70, w=70, count=100_000):
         self.tests = tests
         self.rvs_size = rvs_size
         self.count = count
@@ -136,7 +137,7 @@ class ReportGenerator:
 
 
 if __name__ == '__main__':
-    tests = [KSTest(), ADTest()]
+    tests = [KSTestStatistic(), ADTestStatistic()]
     rvs_generators = [BetaRVSGenerator(a=0.5, b=0.5)]  # , BetaRVSGenerator(a=1, b=1), BetaRVSGenerator(a=2, b=2),
     # CauchyRVSGenerator(t=0, s=0.5), CauchyRVSGenerator(t=0, s=1), CauchyRVSGenerator(t=0, s=2),
     # LaplaceRVSGenerator(t=0, s=1), LogisticRVSGenerator(t=2, s=2),
