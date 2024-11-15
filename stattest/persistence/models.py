@@ -120,73 +120,34 @@ class ICriticalValueStore(IStore):
         pass
 
 
-class IPowerResultStore(IStore):
+class IResultStore(IStore):
 
-    def insert_power(self, sl: float, size: int, test_code: str, alternative_code: str, power: float):
-        """
-        Insert power to store.
-
-        :param sl: significant level
-        :param size: rvs size
-        :param test_code: test code
-        :param alternative_code:  alternative code
-        :param power: test power
-        """
-        pass
-
-    def get_power(self, sl: float, size: int, test_code: str, alternative_code: str) -> Optional[float]:
-        """
-        Get power from store.
-
-        :param sl: significant level
-        :param size: rvs size
-        :param test_code: test code
-        :param alternative_code: alternative code
-
-        :return power on None
-        """
-        pass
-
-    def get_powers(self, offset: int, limit: int):  # -> [PowerResultModel]:
-        """
-        Get several powers from store.
-
-        :param offset: offset
-        :param limit: limit
-
-        :return list of PowerResultModel
-        """
-        pass
-
-
-class IBenchmarkResultStore(IStore):
-
-    def insert_benchmark(self, test_code: str, size: int, benchmark: [float]):
+    def insert_result(self, result_id: str, result: any):
         """
         Insert benchmark to store.
 
-        :param test_code: test code
-        :param benchmark:  benchmark
+        :param result_id: result id
+        :param result: the result
         """
         pass
 
-    def get_benchmark(self, test_code: str, size: int) -> [float]:
+    def get_result(self, result_id: str) -> any:
         """
         Get benchmark from store.
 
-        :param test_code: test code
+        :param result_id: result id
 
-        :return benchmark on None
+        :return result or None
         """
         pass
 
-    def get_benchmarks(self, offset: int, limit: int):  # -> [PowerResultModel]:
+    def get_results(self, offset: int, limit: int):  # -> [PowerResultModel]:
         """
         Get several powers from store.
 
         :param offset: offset
         :param limit: limit
 
-        :return list of PowerResultModel
+        :return list of results
         """
         pass
