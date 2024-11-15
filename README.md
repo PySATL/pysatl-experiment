@@ -21,6 +21,11 @@ Framework consists of 5 modules
 ### Generators
 
 ### Storages
+***CriticalValueSqLiteStore*** - store critical values and target distributions in SQLite.  
+***CriticalValueFileStore*** - store critical values and target distributions in JSON and CSV.  
+***RvsSqLiteStore*** - store generated rvs in SQLite. 
+***RvsFileStore*** - store generated rvs in CSV.  
+***PowerResultSqLiteStore*** - store PowerCalculationWorker result in SQLite
 
 ### Workers
 
