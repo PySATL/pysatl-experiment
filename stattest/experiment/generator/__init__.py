@@ -1,10 +1,7 @@
-from stattest.execution.report_generator import ReportGenerator, TopTestTableReportBlockGenerator
-from stattest.test.generator import BetaRVSGenerator, CauchyRVSGenerator, LaplaceRVSGenerator, LogisticRVSGenerator, \
-    TRVSGenerator, TukeyRVSGenerator, Chi2Generator, GammaGenerator, GumbelGenerator, LognormGenerator, \
-    WeibullGenerator, TruncnormGenerator, LoConNormGenerator, ScConNormGenerator, MixConNormGenerator
-from stattest.test.normal import AbstractNormalityTestStatistic
-
-sizes = [30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+from stattest.experiment.generator.model import AbstractRVSGenerator
+from stattest.experiment.generator.generators import BetaRVSGenerator, CauchyRVSGenerator, LaplaceRVSGenerator, \
+    LogisticRVSGenerator, TRVSGenerator, TukeyRVSGenerator, Chi2Generator, GammaGenerator, WeibullGenerator, \
+    TruncnormGenerator, LoConNormGenerator, ScConNormGenerator, MixConNormGenerator, GumbelGenerator, LognormGenerator
 
 symmetric_generators = [BetaRVSGenerator(a=0.5, b=0.5), BetaRVSGenerator(a=1, b=1), BetaRVSGenerator(a=2, b=2),
                         CauchyRVSGenerator(t=0, s=0.5), CauchyRVSGenerator(t=0, s=1), CauchyRVSGenerator(t=0, s=2),
@@ -37,52 +34,3 @@ modified_generators = [TruncnormGenerator(a=-1, b=1), TruncnormGenerator(a=-2, b
                        MixConNormGenerator(p=0.3, a=1, b=4), MixConNormGenerator(p=0.4, a=1, b=4),
                        MixConNormGenerator(p=0.5, a=1, b=4), MixConNormGenerator(p=0.3, a=3, b=4),
                        MixConNormGenerator(p=0.4, a=3, b=4), MixConNormGenerator(p=0.5, a=3, b=4)]
-
-
-def run(tests_to_run: [AbstractNormalityTestStatistic], sizes):
-    for test in tests_to_run:
-        for size in sizes:
-            print('Calculating...', test.code(), size)
-            test.calculate_critical_value(size, 0.05, 1000)
-            print('Critical value calculated', test.code(), size)
-
-
-if __name__ == '__main__':
-    cpu_count = 2  # multiprocessing.cpu_count()
-    """
-    # Generate data
-    rvs_generators = symmetric_generators + asymmetric_generators + modified_generators
-    print('RVS generators count: ', len(rvs_generators))
-    sizes_chunks = np.array_split(np.array(sizes), cpu_count)
-    start = timeit.default_timer()
-    with multiprocessing.Pool(cpu_count) as pool:
-        pool.starmap(prepare_rvs_data, zip(repeat(rvs_generators), sizes_chunks))
-    # prepare_rvs_data(rvs_generators, sizes)
-    stop = timeit.default_timer()
-    print('Time: ', stop - start)
-    
-    cache = MonteCarloCacheService()
-    tests = [CoinTest()]
-    alpha = [0.05, 0.1, 0.01]
-    start = timeit.default_timer()
-    execute_powers(tests, alpha)
-    stop = timeit.default_timer()
-    print('Power calculation time: ', stop - start)
-    """
-
-    """
-    manager = multiprocessing.Manager()
-    lock = manager.Lock()
-    cache = ThreadSafeMonteCarloCacheService(lock=lock)
-    tests = [EPTest(cache=cache)]
-    tests_chunks = np.array_split(np.array(tests), cpu_count)
-    with multiprocessing.Pool(cpu_count) as pool:
-        pool.starmap(run, zip(tests_chunks, repeat(sizes)))
-    """
-    symmetric = [x.code() for x in symmetric_generators]
-    asymmetric = [x.code() for x in asymmetric_generators]
-    modified = [x.code() for x in modified_generators]
-    print(len(symmetric + asymmetric + modified))
-    report_generator = ReportGenerator([TopTestTableReportBlockGenerator()])
-    report_generator.generate()
-
