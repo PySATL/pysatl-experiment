@@ -8,13 +8,16 @@ from tqdm import tqdm
 
 from stattest.experiment.configuration.configuration import TestConfiguration, TestWorker
 from stattest.persistence import IRvsStore
+from stattest.persistence.models import IResultStore
 from stattest.test import AbstractTestStatistic
 
 logger = logging.getLogger(__name__)
 
 
-def execute_tests(worker: TestWorker, tests: [AbstractTestStatistic], rvs_store: IRvsStore, thread_count: int = 0):
+def execute_tests(worker: TestWorker, tests: [AbstractTestStatistic], rvs_store: IRvsStore, result_store: IResultStore,
+                  thread_count: int = 0):
     rvs_store.init()
+    result_store.init()
     worker.init()
 
     stat = rvs_store.get_rvs_stat()
@@ -23,8 +26,11 @@ def execute_tests(worker: TestWorker, tests: [AbstractTestStatistic], rvs_store:
     for code, size, _ in stat:
         data = rvs_store.get_rvs(code, size)
         for test in tests:
-            result = worker.execute(test, data, code, size)
-            worker.save_result(result)
+            result_id = worker.build_id(test, data, code, size)
+            result = result_store.get_result(result_id)
+            if result is None:
+                result = worker.execute(test, data, code, size)
+                result_store.insert_result(result_id, result)
             pbar.update(1)
 
 

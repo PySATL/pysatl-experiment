@@ -3,7 +3,7 @@ from typing_extensions import override
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.experiment.configuration.configuration import TestWorker, TestWorkerResult
 from stattest.experiment.test.power_calculation import calculate_test_power
-from stattest.persistence.models import IPowerResultStore, ICriticalValueStore
+from stattest.persistence.models import ICriticalValueStore
 from stattest.test import AbstractTestStatistic
 
 
@@ -16,37 +16,28 @@ class PowerWorkerResult(TestWorkerResult):
         self.alternative_code = alternative_code
 
 
+class BenchmarkWorkerResult(TestWorkerResult):
+    def __init__(self, size: int, test_code: str, benchmark: [float]):
+        self.size = size
+        self.benchmark = benchmark
+        self.test_code = test_code
+
+
 class PowerCalculationWorker(TestWorker):
-    def __init__(self, alpha, monte_carlo_count, worker_result_store: IPowerResultStore,
-                 critical_value_store: ICriticalValueStore, hypothesis: AbstractHypothesis):
+    def __init__(self, alpha, monte_carlo_count, cv_store: ICriticalValueStore, hypothesis: AbstractHypothesis):
         self.alpha = alpha
         self.monte_carlo_count = monte_carlo_count
-        self.worker_result_store = worker_result_store
-        self.critical_value_store = critical_value_store
+        self.cv_store = cv_store
         self.hypothesis = hypothesis
 
     @override
     def init(self):
-        self.critical_value_store.init()
-        self.worker_result_store.init()
+        self.cv_store.init()
+
+    def build_id(self, test: AbstractTestStatistic, data: [[float]], code: str, size: int) -> str:
+        return '_'.join([self.alpha, size, test.code(), code])
 
     @override
     def execute(self, test: AbstractTestStatistic, data: [[float]], code: str, size: int) -> PowerWorkerResult:
-
-        # 1. Check power result
-        power = self.worker_result_store.get_power(self.alpha, size, test.code(), code)
-        if power is not None:
-            return PowerWorkerResult(test.code(), code, size, self.alpha, power)
-
-        # 2. Calculate power
-        power = calculate_test_power(test, data, self.hypothesis, self.alpha, self.critical_value_store,
-                                     self.monte_carlo_count)
-
-        # 3. Save result
-        self.worker_result_store.insert_power(self.alpha, size, test.code(), code, power)
-
+        power = calculate_test_power(test, data, self.hypothesis, self.alpha, self.cv_store, self.monte_carlo_count)
         return PowerWorkerResult(test.code(), code, size, self.alpha, power)
-
-    @override
-    def save_result(self, result: PowerWorkerResult):
-        pass

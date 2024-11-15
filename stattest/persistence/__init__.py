@@ -1,1 +1,1 @@
-from stattest.persistence.models import IRvsStore, ICriticalValueStore, IStore, IPowerResultStore
+from stattest.persistence.models import IRvsStore, ICriticalValueStore, IStore

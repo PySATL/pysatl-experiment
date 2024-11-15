@@ -1,6 +1,7 @@
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.persistence import IRvsStore, ICriticalValueStore
+from stattest.persistence.models import IResultStore
 from stattest.test import AbstractTestStatistic
 
 
@@ -25,17 +26,19 @@ class StepListener:
 
 
 class TestWorker:
+
     def init(self):
         pass
+
     def execute(self, test: AbstractTestStatistic, data: [[float]], code, size: int) -> TestWorkerResult:
         pass
 
-    def save_result(self, result: TestWorkerResult):
+    def build_id(self, test: AbstractTestStatistic, data: [[float]], code, size: int) -> str:
         pass
 
 
 class ReportConfiguration:
-    def __init__(self, report_builder: ReportBuilder, data_reader, listeners: [StepListener] = None):
+    def __init__(self, report_builder: ReportBuilder, listeners: [StepListener] = None):
         """
         Report configuration provides configuration for report.
 
@@ -45,7 +48,6 @@ class ReportConfiguration:
             listeners = []
         self.report_builder = report_builder
         self.listeners = listeners
-        self.data_reader = data_reader
 
 
 class AlternativeConfiguration:
@@ -88,9 +90,11 @@ class ExperimentConfiguration:
                  test_configuration: TestConfiguration,
                  report_configuration: ReportConfiguration,
                  rvs_store: IRvsStore,
+                 result_store: IResultStore,
                  critical_value_store: ICriticalValueStore):
         self.alternative_configuration = alternative_configuration
         self.test_configuration = test_configuration
         self.report_configuration = report_configuration
         self.rvs_store = rvs_store
+        self.rvs_store = result_store
         self.critical_value_store = critical_value_store
