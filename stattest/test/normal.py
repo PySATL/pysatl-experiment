@@ -6,13 +6,13 @@ import scipy.stats as scipy_stats
 import pandas as pd
 
 from stattest.test import AbstractTestStatistic
-from stattest.persistence.json_store.cache import MonteCarloCacheService
+from stattest.persistence.file_store.critical_value_store import CriticalValueFileStore
 from stattest.test.common import KSTestStatistic, ADTestStatistic, LillieforsTest
 
 
 class AbstractNormalityTestStatistic(AbstractTestStatistic):
 
-    def __init__(self, cache=MonteCarloCacheService()):
+    def __init__(self, cache=CriticalValueFileStore()):
         self.mean = 0
         self.var = 1
         self.cache = cache

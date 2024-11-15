@@ -25,7 +25,7 @@ class GeneratorResolver(IResolver):
     user_subdir = USERPATH_GENERATORS
     initial_search_path = None
     extra_path = "generator_path"
-    module_name = "stattest.experiment.generator"
+    module_names = ["stattest.experiment.generator"]
 
     @staticmethod
     def load_generators(config: Optional[Config]) -> [AbstractRVSGenerator]:
@@ -101,7 +101,7 @@ class GeneratorResolver(IResolver):
         )
 
         if not generator:
-            generator = GeneratorResolver._load_module_object(
+            generator = GeneratorResolver._load_modules_object(
                 object_name=generator_name,
                 kwargs=params
             )

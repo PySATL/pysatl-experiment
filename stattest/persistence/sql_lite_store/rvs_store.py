@@ -42,18 +42,19 @@ class RVSStat(ModelBase):
     count: Mapped[int] = mapped_column(Integer)  # type: ignore
 
 
-class RvsSqlLiteStore(IRvsStore):
+class RvsSqLiteStore(IRvsStore):
     session: ClassVar[SessionType]
     __separator = ';'
 
-    def __init__(self):
+    def __init__(self, name='pysatl.sqlite'):
         super().__init__()
+        self.name = name
 
     @override
     def init(self):
         sqlite3.register_adapter(np.int64, lambda val: int(val))
-        engine = init_db("sqlite:///pysatl.sqlite")
-        RvsSqlLiteStore.session = scoped_session(
+        engine = init_db("sqlite:///" + self.name)
+        RvsSqLiteStore.session = scoped_session(
             sessionmaker(bind=engine, autoflush=False), scopefunc=get_request_or_thread_id
         )
         ModelBase.metadata.create_all(engine)
@@ -64,22 +65,22 @@ class RvsSqlLiteStore(IRvsStore):
             return
 
         data_to_insert = [
-            {'code': generator_code, 'size': int(size), 'data': RvsSqlLiteStore.__separator.join(map(str, d))} for d in
+            {'code': generator_code, 'size': int(size), 'data': RvsSqLiteStore.__separator.join(map(str, d))} for d in
             data]
         statement = text("INSERT INTO rvs_data (code, size, data) VALUES (:code, :size, :data)")
-        RvsSqlLiteStore.session.execute(statement, data_to_insert)
+        RvsSqLiteStore.session.execute(statement, data_to_insert)
 
         '''stat_to_insert = [{'code': code, 'size': int(size), 'data': SqlLiteStore.__separator.join(map(str, d))} for d in
                           data]
         stat_statement = text("INSERT INTO rvs_stat (code, size, count) VALUES (:code, :size, :count)")
         SqlLiteStore.session.execute(stat_statement, data_to_insert)'''
-        RvsSqlLiteStore.session.commit()
+        RvsSqLiteStore.session.commit()
 
     @override
     def insert_rvs(self, code: str, size: int, data: [float]):
-        data_str = RvsSqlLiteStore.__separator.join(map(str, data))
-        RvsSqlLiteStore.session.add(RVS(code=code, size=int(size), data=data_str))
-        RvsSqlLiteStore.session.commit()
+        data_str = RvsSqLiteStore.__separator.join(map(str, data))
+        RvsSqLiteStore.session.add(RVS(code=code, size=int(size), data=data_str))
+        RvsSqLiteStore.session.commit()
 
     @override
     def get_rvs_count(self, code: str, size: int):
@@ -88,19 +89,19 @@ class RvsSqlLiteStore(IRvsStore):
 
     @override
     def get_rvs(self, code: str, size: int) -> [[float]]:
-        samples = RvsSqlLiteStore.session.query(RVS).filter(
+        samples = RvsSqLiteStore.session.query(RVS).filter(
             RVS.code == code, RVS.size == size,
         ).all()
 
         if not samples:
             return []
 
-        return [[float(x) for x in sample.data.split(RvsSqlLiteStore.__separator)] for sample in samples]
+        return [[float(x) for x in sample.data.split(RvsSqLiteStore.__separator)] for sample in samples]
 
     @override
     def get_rvs_stat(self) -> [(str, int, int)]:
-        result = RvsSqlLiteStore.session.query(RVS.code, RVS.size,
-                                            func.count(RVS.code)).group_by(RVS.code, RVS.size).all()
+        result = RvsSqLiteStore.session.query(RVS.code, RVS.size,
+                                              func.count(RVS.code)).group_by(RVS.code, RVS.size).all()
 
         if result is None:
             return []
@@ -109,4 +110,4 @@ class RvsSqlLiteStore(IRvsStore):
 
     @override
     def clear_all_rvs(self):
-        RvsSqlLiteStore.session.query(RVS).delete()
+        RvsSqLiteStore.session.query(RVS).delete()
