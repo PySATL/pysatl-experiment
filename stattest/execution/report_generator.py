@@ -4,7 +4,7 @@ from collections import Counter
 import numpy as np
 from fpdf import FPDF
 
-from stattest_ext.src.execution.cache import CacheResultService
+from stattest.execution.cache import CacheResultService
 
 
 class AbstractReportBlockGenerator:

@@ -1,4 +1,4 @@
-from stattest_std.src.cache_services.store import FastJsonStoreService, write_json
+from stattest.core.store import FastJsonStoreService, write_json
 
 
 class CacheResultService(FastJsonStoreService):
@@ -96,3 +96,5 @@ class ThreadSafeCacheResultService(CacheResultService):
         """
 
         self.separator = separator
+
+# TODO: move to stattest/execution??

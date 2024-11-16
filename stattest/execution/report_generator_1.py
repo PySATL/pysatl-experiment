@@ -1,6 +1,3 @@
-from fpdf import FPDF  # TODO: requirements.txt?
-
-
 class AbstractReportBlockGenerator:
     def build(self, pdf):
         raise NotImplementedError("Method is not implemented")

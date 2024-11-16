@@ -10,6 +10,7 @@ from stattest.persistence.sql_lite_store.base import SessionType
 
 ValueTypes = Union[str, datetime, float, int]
 
+
 class ValueTypesEnum(str, Enum):
     STRING = "str"
     DATETIME = "datetime"

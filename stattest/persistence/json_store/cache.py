@@ -1,7 +1,7 @@
 import csv
 import os
 
-from stattest_std.src.cache_services.store import FastJsonStoreService, write_json
+from stattest.core.store import FastJsonStoreService, write_json
 
 
 class MonteCarloCacheService(FastJsonStoreService):
@@ -51,11 +51,9 @@ class MonteCarloCacheService(FastJsonStoreService):
 
 class ThreadSafeMonteCarloCacheService(MonteCarloCacheService):
 
-    def __init__(self, lock, filename='cache.json', separator=':', csv_delimiter=';',
-                 dir_path='test_distribution', cache=None):
+    def __init__(self, lock, filename='cache.json', separator=':', csv_delimiter=';', dir_path='test_distribution'):
         super().__init__(filename, separator, csv_delimiter, dir_path)
         self.lock = lock
-        self.cache = cache
 
     def flush(self):
         """
@@ -63,8 +61,7 @@ class ThreadSafeMonteCarloCacheService(MonteCarloCacheService):
         """
 
         with self.lock:
-            cache_dict = dict(self.cache)
-            write_json(self.filename, cache_dict)
+            write_json(self.filename, self.cache)
 
     def put(self, key: str, value):
         """

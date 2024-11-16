@@ -64,8 +64,8 @@ class HypothesisResolver(IResolver):
             extra_dirs.append(extra_dir)
 
         abs_paths = HypothesisResolver.build_search_paths(user_data_dir=None,
-                                                         user_subdir=USERPATH_GENERATORS,
-                                                         extra_dirs=extra_dirs)
+                                                          user_subdir=USERPATH_GENERATORS,
+                                                          extra_dirs=extra_dirs)
 
         hypothesis = HypothesisResolver._load_object(
             paths=abs_paths,

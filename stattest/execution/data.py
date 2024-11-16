@@ -1,9 +1,10 @@
 import csv
 import os
 
-import stattest_ext.src.execution.utils as utils
-from stattest_ext.src.execution.utils import build_rvs_file_name
-from stattest_ext.src.execution.generator import AbstractRVSGenerator
+import stattest.execution.utils as utils
+from stattest.execution.utils import build_rvs_file_name
+from stattest.test.generator import AbstractRVSGenerator, BetaRVSGenerator
+import pandas as pd
 
 
 def generate_rvs_data(rvs_generator: AbstractRVSGenerator, size, count=1_000):
@@ -19,7 +20,7 @@ def generate_rvs_data(rvs_generator: AbstractRVSGenerator, size, count=1_000):
     result = []
     for i in range(count):
         # df.loc[i] = list(rvs_generator.generate(size))
-        result.append(rvs_generator.generate(size))
+        result.append(rvs_generator._generate(size))
     # return df
     return result
 
