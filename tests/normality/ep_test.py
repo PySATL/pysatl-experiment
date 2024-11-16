@@ -1,12 +1,7 @@
 import pytest as pytest
 
-<<<<<<<< HEAD:stattest_std/tests/normality/ep_test.py
-from stattest_std.src.stat_tests.normality_tests import EPTest
-from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
-========
-from stattest.test.normal import EPTest
-from tests.AbstractTestCase import AbstractTestCase
->>>>>>>> architecture:tests/normality/ep_test.py
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import EPNormalityTest
 
 
 @pytest.mark.parametrize(
@@ -23,4 +18,4 @@ class TestCaseEPNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return EPTest()
+        return EPNormalityTest()

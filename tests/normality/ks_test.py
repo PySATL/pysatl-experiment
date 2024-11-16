@@ -1,12 +1,7 @@
 import pytest as pytest
 
-<<<<<<<< HEAD:stattest_std/tests/normality/ks_test.py
-from stattest_std.src.stat_tests.normality_tests import KSTest
-from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
-========
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 from stattest.test.normal import KSNormalityTest
-from tests.AbstractTestCase import AbstractTestCase
->>>>>>>> architecture:tests/normality/ks_test.py
 
 
 @pytest.mark.parametrize(

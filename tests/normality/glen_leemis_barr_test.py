@@ -1,12 +1,7 @@
 import pytest as pytest
 
-<<<<<<<< HEAD:stattest_std/tests/normality/glen_leemis_barr_test.py
-from stattest_std.src.stat_tests.normality_tests import GlenLeemisBarrTest
-from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
-========
-from stattest.test.normal import GlenLeemisBarrTest
-from tests.AbstractTestCase import AbstractTestCase
->>>>>>>> architecture:tests/normality/glen_leemis_barr_test.py
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import GlenLeemisBarrNormalityTest
 
 
 @pytest.mark.parametrize(
@@ -21,4 +16,4 @@ class TestCaseGlenLeemisBarrNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return GlenLeemisBarrTest()
+        return GlenLeemisBarrNormalityTest()

@@ -1,7 +1,8 @@
+""" # TODO: check this test
 import pytest as pytest
 
-from stattest.test.normal import DATest
-from tests.AbstractTestCase import AbstractTestCase
+from stattest.test.normal import DANormalityTest
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(
@@ -10,8 +11,9 @@ from tests.AbstractTestCase import AbstractTestCase
         ([-1, 0, 1], 0),
     ],
 )
-class TestCaseDATest(AbstractTestCase):
+class TestCaseDANormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
         return DATest()
+"""

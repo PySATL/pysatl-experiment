@@ -1,12 +1,7 @@
 import pytest as pytest
 
-<<<<<<<< HEAD:stattest_std/tests/normality/sf_test.py
-from stattest_std.src.stat_tests.normality_tests import SFTest
-from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
-========
-from stattest.test.normal import SFTest
-from tests.AbstractTestCase import AbstractTestCase
->>>>>>>> architecture:tests/normality/sf_test.py
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import SFNormalityTest
 
 
 @pytest.mark.parametrize(
@@ -20,4 +15,4 @@ class TestCaseSFNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return SFTest()
+        return SFNormalityTest()

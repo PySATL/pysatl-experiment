@@ -1,13 +1,8 @@
 import pytest as pytest
 
-<<<<<<<< HEAD:stattest_std/tests/normality/robust_jarque_bera_test.py
-from stattest_std.src.stat_tests.normality_tests import RobustJarqueBeraTest
-from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
-========
-from stattest.test.normal import RobustJarqueBeraTest
-from tests.AbstractTestCase import AbstractTestCase
->>>>>>>> architecture:tests/normality/robust_jarque_bera_test.py
 
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import RobustJarqueBeraNormalityTest
 
 @pytest.mark.parametrize(
     ("data", "result"),
@@ -22,4 +17,4 @@ class TestCaseRobustJarqueBeraNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return RobustJarqueBeraTest()
+        return RobustJarqueBeraNormalityTest()

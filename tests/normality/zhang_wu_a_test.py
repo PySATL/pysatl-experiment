@@ -1,12 +1,7 @@
 import pytest as pytest
 
-<<<<<<<< HEAD:stattest_std/tests/normality/zhang_wu_a_test.py
-from stattest_std.src.stat_tests.normality_tests import ZhangWuATest
-from stattest_std.tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
-========
-from stattest.test.normal import ZhangWuATest
-from tests.AbstractTestCase import AbstractTestCase
->>>>>>>> architecture:tests/normality/zhang_wu_a_test.py
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import ZhangWuANormalityTest
 
 
 @pytest.mark.parametrize(
@@ -21,4 +16,4 @@ class TestCaseZhangWuCNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return ZhangWuATest()
+        return ZhangWuANormalityTest()

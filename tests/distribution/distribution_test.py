@@ -3,24 +3,24 @@ import math
 import numpy as np
 import pytest
 
-from stattest_ext.src.core.distribution.beta import generate_beta
-from stattest_ext.src.core.distribution.cauchy import generate_cauchy
-from stattest_ext.src.core.distribution.chi2 import generate_chi2
-from stattest_ext.src.core.distribution.expon import generate_expon
-from stattest_ext.src.core.distribution.gamma import generate_gamma
-from stattest_ext.src.core.distribution.gumbel import generate_gumbel
-from stattest_ext.src.core.distribution.laplace import generate_laplace
-from stattest_ext.src.core.distribution.lo_con_norm import generate_lo_con_norm
-from stattest_ext.src.core.distribution.logistic import generate_logistic
-from stattest_ext.src.core.distribution.lognormal import generate_lognorm
-from stattest_ext.src.core.distribution.mix_con_norm import generate_mix_con_norm
-from stattest_ext.src.core.distribution.norm import generate_norm
-from stattest_ext.src.core.distribution.scale_con_norm import generate_scale_con_norm
-from stattest_ext.src.core.distribution.student import generate_t
-from stattest_ext.src.core.distribution.truncnormal import generate_truncnorm
-from stattest_ext.src.core.distribution.tukey import generate_tukey
-from stattest_ext.src.core.distribution.uniform import generate_uniform
-from stattest_ext.src.core.distribution.weibull import generate_weibull
+from stattest.core.distribution.beta import generate_beta
+from stattest.core.distribution.cauchy import generate_cauchy
+from stattest.core.distribution.chi2 import generate_chi2
+from stattest.core.distribution.expon import generate_expon
+from stattest.core.distribution.gamma import generate_gamma
+from stattest.core.distribution.gumbel import generate_gumbel
+from stattest.core.distribution.laplace import generate_laplace
+from stattest.core.distribution.lo_con_norm import generate_lo_con_norm
+from stattest.core.distribution.logistic import generate_logistic
+from stattest.core.distribution.lognormal import generate_lognorm
+from stattest.core.distribution.mix_con_norm import generate_mix_con_norm
+from stattest.core.distribution.norm import generate_norm
+from stattest.core.distribution.scale_con_norm import generate_scale_con_norm
+from stattest.core.distribution.student import generate_t
+from stattest.core.distribution.truncnormal import generate_truncnorm
+from stattest.core.distribution.tukey import generate_tukey
+from stattest.core.distribution.uniform import generate_uniform
+from stattest.core.distribution.weibull import generate_weibull
 
 
 class TestDistribution:

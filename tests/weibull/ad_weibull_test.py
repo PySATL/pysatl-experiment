@@ -1,7 +1,7 @@
 import pytest
 
-from stattest.test import ADWeibullTest
-from tests.AbstractTestCase import AbstractTestCase
+from stattest.test.weibull import ADWeibullTest
+from tests.abstract_test_case import AbstractTestCase
 
 
 @pytest.mark.parametrize(
