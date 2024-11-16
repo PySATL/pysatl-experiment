@@ -1,11 +1,11 @@
 from scipy.stats import expon
 
 
-def generate_expon(size, l=1):
-    scale = 1 / l
+def generate_expon(size, lam=1):  # refactor structure with inheritance
+    scale = 1 / lam
     return expon.rvs(size=size, scale=scale)
 
 
-def cdf_expon(rvs, l=1):
-    scale = 1 / l
+def cdf_expon(rvs, lam=1):
+    scale = 1 / lam
     return expon.cdf(rvs, scale=scale)

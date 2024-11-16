@@ -1,0 +1,20 @@
+[project]
+name = "stattest"
+version = "0.0.1"
+authors = [
+    { name="Example Author", email="author@example.com" },
+]
+description = "Stattest Project"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/alex98247/statistic-test"
+Issues = "https://github.com/alex98247/statistic-test/issues"
+
+# TODO: fill stub from official documentation

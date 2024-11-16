@@ -1,8 +1,8 @@
 import pytest as pytest
 
-from stattest.test.normal import RobustJarqueBeraTest
-from tests.AbstractTestCase import AbstractTestCase
 
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import RobustJarqueBeraNormalityTest
 
 @pytest.mark.parametrize(
     ("data", "result"),
@@ -13,8 +13,8 @@ from tests.AbstractTestCase import AbstractTestCase
 
     ],
 )
-class TestCaseRobustJarqueBeraTest(AbstractTestCase):
+class TestCaseRobustJarqueBeraNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return RobustJarqueBeraTest()
+        return RobustJarqueBeraNormalityTest()

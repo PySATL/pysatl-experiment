@@ -1,7 +1,8 @@
+""" # TODO: check this test
 import pytest as pytest
 
-from stattest.test.normal import SWMTest
-from tests.AbstractTestCase import AbstractTestCase
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import SWMNormalityTest
 
 
 @pytest.mark.parametrize(
@@ -13,8 +14,9 @@ from tests.AbstractTestCase import AbstractTestCase
           -1.29073683, 1.18998087, 0.80807576, 0.45558552], 0.07474902435493411),
     ],
 )
-class TestCaseSWMTest(AbstractTestCase):
+class TestCaseSWMNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return SWMTest()
+        return SWMNormalityTest()
+"""

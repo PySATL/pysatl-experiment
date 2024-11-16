@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import GMGTest
-from tests.AbstractTestCase import AbstractTestCase
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import GMGNormalityTest
 
 
 @pytest.mark.parametrize(
@@ -12,8 +12,8 @@ from tests.AbstractTestCase import AbstractTestCase
           0.07543129, -0.03098110, -0.72435341, -0.90046224], 1.066354),
     ],
 )
-class TestCaseGMGTest(AbstractTestCase):
+class TestCaseGMGNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return GMGTest()
+        return GMGNormalityTest()

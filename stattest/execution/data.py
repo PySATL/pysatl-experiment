@@ -20,7 +20,7 @@ def generate_rvs_data(rvs_generator: AbstractRVSGenerator, size, count=1_000):
     result = []
     for i in range(count):
         # df.loc[i] = list(rvs_generator.generate(size))
-        result.append(rvs_generator.generate(size))
+        result.append(rvs_generator._generate(size))
     # return df
     return result
 

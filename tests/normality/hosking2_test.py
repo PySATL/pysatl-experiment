@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import Hosking2Test
-from tests.AbstractTestCase import AbstractTestCase
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import Hosking2NormalityTest
 
 
 @pytest.mark.parametrize(
@@ -12,8 +12,8 @@ from tests.AbstractTestCase import AbstractTestCase
           -0.8224675], 1.693243),
     ],
 )
-class TestCaseHosking2Test(AbstractTestCase):
+class TestCaseHosking2NormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return Hosking2Test()
+        return Hosking2NormalityTest()

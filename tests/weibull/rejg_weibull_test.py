@@ -1,7 +1,7 @@
 import pytest
 
 from stattest.test import REJGWeibullTestStatistic
-from tests.AbstractTestCase import AbstractTestCase
+from tests.abstract_test_case import AbstractTestCase
 
 
 @pytest.mark.parametrize(
