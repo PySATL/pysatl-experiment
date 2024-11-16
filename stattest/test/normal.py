@@ -1,188 +1,62 @@
 import math
 from typing import override
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-========
 from stattest.core.distribution import norm
->>>>>>>> architecture:stattest_std/test/normal.py
 import numpy as np
-import pandas as pd
 import scipy.stats as scipy_stats
+import pandas as pd
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-from stattest_ext.src.core.distribution.norm import pdf_norm  # TODO: extended test!!
-from stattest_std.src.cache_services.cache import MonteCarloCacheService
-from stattest_std.src.stat_tests.goodness_test import GoodnessOfFitTest
-
-
-class NormalityTest(GoodnessOfFitTest):
-========
-from stattest.test import AbstractTestStatistic
+from stattest.test.goodness_of_fit import AbstractGoodnessOfFitTestStatistic
 from stattest.persistence.json_store.cache import MonteCarloCacheService
 from stattest.test.common import KSTestStatistic, ADTestStatistic, LillieforsTest
 
 
-class AbstractNormalityTestStatistic(AbstractTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class AbstractNormalityTestStatistic(AbstractGoodnessOfFitTestStatistic):
+    @override
     def __init__(self, cache=MonteCarloCacheService(), mean=0, var=1):
         super().__init__(cache)
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
         self.mean = mean
         self.var = var
-========
-    def calculate_critical_value(self, rvs_size, sl, count=1_000_000):
-        keys_cr = [self.code(), str(rvs_size), str(sl)]
-        x_cr = self.cache.get_with_level(keys_cr)
-        if x_cr is not None:
-            return x_cr
-
-        d = self.cache.get_distribution(self.code(), rvs_size)
-        if d is not None:
-            ecdf = scipy_stats.ecdf(d)
-            x_cr = np.quantile(ecdf.cdf.quantiles, q=1 - sl)
-            self.cache.put_with_level(keys_cr, x_cr)
-            self.cache.flush()
-            return x_cr
-
-        result = np.zeros(count)
-
-        for i in range(count):
-            x = self.generate(size=rvs_size, mean=self.mean, var=self.var)
-            result[i] = self.execute_statistic(x)
-
-        result.sort()
-
-        ecdf = scipy_stats.ecdf(result)
-        x_cr = np.quantile(ecdf.cdf.quantiles, q=1 - sl)
-        self.cache.put_with_level(keys_cr, x_cr)
-        self.cache.put_distribution(self.code(), rvs_size, result)
-        self.cache.flush()
-        return x_cr
-
-    def test(self, rvs, alpha):
-        x_cr = self.calculate_critical_value(len(rvs), alpha)
-        statistic = self.execute_statistic(rvs)
-
-        return False if statistic > x_cr else True
-
-    def generate(self, size, mean=0, var=1):
-        return norm.generate_norm(size, mean, var)
-
-
-class KSNormalityTest(KSTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
 
     @staticmethod
     @override
     def code():
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-        return super(NormalityTest, NormalityTest).code() + '_norm'
+        return 'NORMALITY' + '_' + super(AbstractGoodnessOfFitTestStatistic, AbstractGoodnessOfFitTestStatistic).code()
+
+    @override
+    def _generate(self, size):
+        return norm.generate_norm(size, self.mean, self.var)
 
 
-class KSTest(NormalityTest):
+class KSNormalityTest(AbstractNormalityTestStatistic, KSTestStatistic):
+    @override
+    def __init__(self, cache=MonteCarloCacheService(), alternative='two-sided', mode='auto', mean=0, var=1):
+        AbstractNormalityTestStatistic.__init__(self, cache)
+        KSTestStatistic.__init__(self, alternative, mode)
+
+        self.mean = mean
+        self.var = var
 
     @staticmethod
     @override
     def code():
-        return 'KS' + super(KSTest, KSTest).code()
+        return 'KS' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
-    def execute_statistic(self, rvs, alternative='two-sided', mode='auto'):
-        """
-        Title: The Kolmogorov-Smirnov statistic for the Laplace distribution Ref. (book or article): Puig,
-        P. and Stephens, M. A. (2000). Tests of fit for the Laplace distribution, with applications. Technometrics
-        42, 417-424.
-
-        :param alternative: {'two-sided', 'less', 'greater'}, optional
-        :param mode: {'auto', 'exact', 'approx', 'asymp'}, optional
-        Defines the distribution used for calculating the p-value.
-        The following options are available (default is 'auto'):
-
-          * 'auto' : selects one of the other options.
-          * 'exact' : uses the exact distribution of test statistic.
-          * 'approx' : approximates the two-sided probability with twice
-            the one-sided probability
-          * 'asymp': uses asymptotic distribution of test statistic
-        :param rvs: unsorted vector
-        :return:
-        """
+    def execute_statistic(self, rvs, **kwargs):
         rvs = np.sort(rvs)
         cdf_vals = scipy_stats.norm.cdf(rvs)
-        n = len(rvs)
-
-        d_minus, _ = KSTest.__compute_dminus(cdf_vals, rvs)
-
-        if alternative == 'greater':
-            d_plus, d_location = KSTest.__compute_dplus(cdf_vals, rvs)
-            return d_plus  # KStestResult(Dplus, distributions.ksone.sf(Dplus, N),
-            # statistic_location=d_location, statistic_sign=1)
-        if alternative == 'less':
-            d_minus, d_location = KSTest.__compute_dminus(cdf_vals, rvs)
-            return d_minus  # KStestResult(Dminus, distributions.ksone.sf(Dminus, N),
-            # statistic_location=d_location, statistic_sign=-1)
-
-        # alternative == 'two-sided':
-        d_plus, d_plus_location = KSTest.__compute_dplus(cdf_vals, rvs)
-        d_minus, d_minus_location = KSTest.__compute_dminus(cdf_vals, rvs)
-        if d_plus > d_minus:
-            d = d_plus
-            d_location = d_plus_location
-            d_sign = 1
-        else:
-            d = d_minus
-            d_location = d_minus_location
-            d_sign = -1
-
-        if mode == 'auto':  # Always select exact
-            mode = 'exact'
-        if mode == 'exact':
-            prob = scipy_stats.distributions.kstwo.sf(d, n)
-        elif mode == 'asymp':
-            prob = scipy_stats.distributions.kstwobign.sf(d * np.sqrt(n))
-        else:
-            # mode == 'approx'
-            prob = 2 * scipy_stats.distributions.ksone.sf(d, n)
-        # print('PROB', prob)
-        prob = np.clip(prob, 0, 1)
-        return d
-
-    @override
-    def calculate_critical_value(self, rvs_size, alpha, count=500_000):
-        return scipy_stats.distributions.kstwo.ppf(1 - alpha, rvs_size)
-
-    @staticmethod
-    def __compute_dplus(cdf_vals, rvs):
-        n = len(cdf_vals)
-        d_plus = (np.arange(1.0, n + 1) / n - cdf_vals)
-        a_max = d_plus.argmax()
-        loc_max = rvs[a_max]
-        return d_plus[a_max], loc_max
-
-    @staticmethod
-    def __compute_dminus(cdf_vals, rvs):
-        n = len(cdf_vals)
-        d_minus = (cdf_vals - np.arange(0.0, n) / n)
-        a_max = d_minus.argmax()
-        loc_max = rvs[a_max]
-        return d_minus[a_max], loc_max
-========
-        return 'KS_NORMALITY'
-
-    def execute_statistic(self, rvs):
-        rvs = np.sort(rvs)
-        cdf_vals = scipy_stats.norm.cdf(rvs)
-        return super().execute_statistic(rvs, cdf_vals)
->>>>>>>> architecture:stattest_std/test/normal.py
+        return KSTestStatistic.execute_statistic(self, rvs, cdf_vals)  # TODO: should test it
 
 
-class ChiSquareTest(NormalityTest):  # TODO: check test correctness
+"""""
+class ChiSquareTest(AbstractNormalityTestStatistic):  # TODO: check test correctness
 
     @staticmethod
     @override
     def code():
-        return 'CHI2' + super(ChiSquareTest, ChiSquareTest).code()
+        return 'CHI2' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -194,81 +68,41 @@ class ChiSquareTest(NormalityTest):  # TODO: check test correctness
         scipy_stats.chi2_contingency()  # TODO: fix warning!!
         terms = (f_obs_float - f_exp) ** 2 / f_exp
         return terms.sum(axis=0)
+"""""
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class ADTest(NormalityTest):
-========
-class ADNormalityTest(ADTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
+class ADNormalityTest(AbstractNormalityTestStatistic, ADTestStatistic):
 
     @staticmethod
     @override
     def code():
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-        return 'AD' + super(ADTest, ADTest).code()
+        return 'AD' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
-        """
-        Title: The Anderson-Darling test Ref. (book or article): See package nortest and also Table 4.9 p. 127 in M.
-        A. Stephens, “Tests Based on EDF Statistics,” In: R. B. D’Agostino and M. A. Stephens, Eds., Goodness-of-Fit
-        Techniques, Marcel Dekker, New York, 1986, pp. 97-193.
-
-        :param rvs:
-        :return:
-
-        Parameters
-        ----------
-        **kwargs
-        """
-        n = len(rvs)
-
-========
-        return 'AD_NORMALITY'
-
-    def execute_statistic(self, rvs):
->>>>>>>> architecture:stattest_std/test/normal.py
         s = np.std(rvs, ddof=1, axis=0)
         y = np.sort(rvs)
         xbar = np.mean(rvs, axis=0)
         w = (y - xbar) / s
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-        log_cdf = scipy_stats.distributions.norm.logcdf(w)
-        log_sf = scipy_stats.distributions.norm.logsf(w)
-
-        i = np.arange(1, n + 1)
-        a2 = -n - np.sum((2 * i - 1.0) / n * (log_cdf + log_sf[::-1]), axis=0)
-        return a2
-========
         logcdf = scipy_stats.distributions.norm.logcdf(w)
         logsf = scipy_stats.distributions.norm.logsf
         return super().execute_statistic(rvs, log_cdf=logcdf, log_sf=logsf, w=w)
->>>>>>>> architecture:stattest_std/test/normal.py
 
     @override
-    def calculate_critical_value(self, rvs_size, alpha, count=500_000):  # TODO: check correctness
-        # # Values from Stephens, M A, "EDF Statistics for Goodness of Fit and
-        # #             Some Comparisons", Journal of the American Statistical
-        # #             Association, Vol. 69, Issue 347, Sept. 1974, pp 730-737
-        # _avals_norm = np.array([0.576, 0.656, 0.787, 0.918, 1.092])
-
+    def calculate_critical_value(self, rvs_size, sl, count=500_000):  # TODO: check test correctness
         # sig = [0.15, 0.10, 0.05, 0.025, 0.01].index(alpha)
-        # critical = np.around(_avals_norm / (1.0 + 4.0 / rvs_size - 25.0 / rvs_size / rvs_size), 3)
+        # critical = np.around(_Avals_norm / (1.0 + 4.0 / rvs_size - 25.0 / rvs_size / rvs_size), 3)
         # print(critical[sig])
-        return super().calculate_critical_value(rvs_size, alpha)
+        # return super().calculate_critical_value(rvs_size, alpha)
+        raise NotImplementedError("Not implemented")
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class SWTest(NormalityTest):
-========
-class SWTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
+class SWNormalityTest(AbstractNormalityTestStatistic):
 
     @staticmethod
     @override
     def code():
-        return 'SW' + super(SWTest, SWTest).code()
+        return 'SW' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -300,15 +134,15 @@ class SWTest(AbstractNormalityTestStatistic):
         u = 1 / np.sqrt(n)
 
         wn = np.polyval(p1, u)
-        # wn = np.array([p1[0] * (u ** 5), p1[1] * (u ** 4),
-        # p1[2] * (u ** 3), p1[3] * (u ** 2), p1[4] * (u ** 1), p1[5]]).sum()
+        # wn = np.array([p1[0] * (u ** 5), p1[1] * (u ** 4), p1[2] * (u ** 3), p1[3] * (u ** 2),
+        # p1[4] * (u ** 1), p1[5]]).sum()
         w1 = -wn
 
         if n == 4 or n == 5:
             phi = (m2.sum() - 2 * m[-1] ** 2) / (1 - 2 * wn ** 2)
             phi_sqrt = np.sqrt(phi)
             result = np.array([m[k] / phi_sqrt for k in range(1, n - 1)])
-            return np.concatenate([[w1], result, [wn]])  # TODO: ???
+            return np.concatenate([[w1], result, [wn]])
 
         p2 = [-3.582633, 5.682633, -1.752461, -0.293762, 0.042981, cn1]
 
@@ -318,23 +152,15 @@ class SWTest(AbstractNormalityTestStatistic):
             phi = (m2.sum() - 2 * m[-1] ** 2 - 2 * m[-2] ** 2) / (1 - 2 * wn ** 2 - 2 * wn1 ** 2)
             phi_sqrt = np.sqrt(phi)
             result = np.array([m[k] / phi_sqrt for k in range(2, n - 2)])
-            return np.concatenate([[w1, w2], result, [wn1, wn]])  # TODO: ???
+            return np.concatenate([[w1, w2], result, [wn1, wn]])
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class SWMTest(NormalityTest):
-========
-class CVMTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
+class CVMNormalityTest(AbstractNormalityTestStatistic):
 
     @staticmethod
     @override
     def code():
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-        return 'SWM' + super(SWMTest, SWMTest).code()
-========
-        return 'CVM'
->>>>>>>> architecture:stattest_std/test/normal.py
+        return 'CVM' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -349,37 +175,28 @@ class CVMTest(AbstractNormalityTestStatistic):
         return cm
 
 
-class LillieforsNormalityTest(LillieforsTest):
+class LillieforsNormalityTest(AbstractNormalityTestStatistic, LillieforsTest):
 
     @staticmethod
     @override
     def code():
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-        return 'LILLIE' + super(LillieforsTest, LillieforsTest).code()
+        return 'LILLIE' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
-        x = np.asarray(rvs)
-        z = (x - x.mean()) / x.std(ddof=1)
-
-        d_ks = super().execute_statistic(z)
-========
-        return 'LILLIE_NORMALITY'
-
-    def execute_statistic(self, rvs):
         cdf_vals = scipy_stats.norm.cdf(rvs)
-        d_ks = super().execute_statistic(rvs, cdf_vals)
->>>>>>>> architecture:stattest_std/test/normal.py
+        d_ks = super(LillieforsTest, LillieforsTest).execute_statistic(rvs, cdf_vals)
 
         return d_ks
 
 
-class DATest(NormalityTest):  # TODO: check for correctness
+"""
+class DANormalityTest(AbstractNormalityTestStatistic):  # TODO: check for correctness
 
     @staticmethod
     @override
     def code():
-        return 'DA' + super(DATest, DATest).code()
+        return 'DA' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -394,18 +211,14 @@ class DATest(NormalityTest):  # TODO: check for correctness
         terms = (i - c) * y
         stat = terms.sum() / (n ** 2 * np.sqrt(m2))
         return stat
+"""
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class JBTest(NormalityTest):
-========
-class JBTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class JBNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'JB' + super(JBTest, JBTest).code()
+        return 'JB' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -425,16 +238,11 @@ class JBTest(AbstractNormalityTestStatistic):
         return statistic
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class SkewTest(NormalityTest):
-========
-class SkewTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class SkewNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'SKEW' + super(SkewTest, SkewTest).code()
+        return 'SKEW' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -457,22 +265,17 @@ class SkewTest(AbstractNormalityTestStatistic):
         w2 = -1 + math.sqrt(2 * (beta2 - 1))
         delta = 1 / math.sqrt(0.5 * math.log(w2))
         alpha = math.sqrt(2.0 / (w2 - 1))
-        y = np.where(y == 0, 1, y)  # TODO: ???
+        y = np.where(y == 0, 1, y)
         z = delta * np.log(y / alpha + np.sqrt((y / alpha) ** 2 + 1))
 
         return z
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class KurtosisTest(NormalityTest):
-========
-class KurtosisTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class KurtosisNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'KURTOSIS' + super(KurtosisTest, KurtosisTest).code()
+        return 'KURTOSIS' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -516,12 +319,11 @@ class KurtosisTest(AbstractNormalityTestStatistic):
         return z
 
 
-class DAPTest(SkewTest, KurtosisTest):
-
+class DAPNormalityTest(SkewNormalityTest, KurtosisNormalityTest):
     @staticmethod
     @override
     def code():
-        return 'DAP' + super(DAPTest, DAPTest).code()
+        return 'DAP' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -535,16 +337,11 @@ class DAPTest(SkewTest, KurtosisTest):
 
 
 # https://github.com/puzzle-in-a-mug/normtest
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class FilliTest(NormalityTest):
-========
-class FilliTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class FilliNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'Filli' + super(FilliTest, FilliTest).code()
+        return 'Filli' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -575,16 +372,11 @@ class FilliTest(AbstractNormalityTestStatistic):
 
 
 # https://github.com/puzzle-in-a-mug/normtest
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class LooneyGulledgeTest(NormalityTest):
-========
-class LooneyGulledgeTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class LooneyGulledgeNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'LG' + super(LooneyGulledgeTest, LooneyGulledgeTest).code()
+        return 'LG' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -609,13 +401,13 @@ class LooneyGulledgeTest(AbstractNormalityTestStatistic):
             df = pd.DataFrame({"x_data": x_data})
             # getting mi values
             df["Rank"] = np.arange(1, df.shape[0] + 1)
-            df["Ui"] = LooneyGulledgeTest._order_statistic(
+            df["Ui"] = LooneyGulledgeNormalityTest._order_statistic(
                 sample_size=x_data.size,
             )
             df["Mi"] = df.groupby(["x_data"])["Ui"].transform("mean")
             normal_ordered = scipy_stats.norm.ppf(df["Mi"])
         else:
-            ordered = LooneyGulledgeTest._order_statistic(
+            ordered = LooneyGulledgeNormalityTest._order_statistic(
                 sample_size=x_data.size,
             )
             normal_ordered = scipy_stats.norm.ppf(ordered)
@@ -635,20 +427,17 @@ class LooneyGulledgeTest(AbstractNormalityTestStatistic):
 
 
 # https://github.com/puzzle-in-a-mug/normtest
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class RyanJoinerTest(NormalityTest):
-========
-class RyanJoinerTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
+class RyanJoinerNormalityTest(AbstractNormalityTestStatistic):
+    @override
     def __init__(self, weighted=False, cte_alpha="3/8"):
-        super().__init__()
+        super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).__init__()
         self.weighted = weighted
         self.cte_alpha = cte_alpha
 
     @staticmethod
     @override
     def code():
-        return 'RJ' + super(RyanJoinerTest, RyanJoinerTest).code()
+        return 'RJ' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -705,16 +494,11 @@ class RyanJoinerTest(AbstractNormalityTestStatistic):
         return (i - cte_alpha) / (sample_size - 2 * cte_alpha + 1)
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class SFTest(NormalityTest):
-========
-class SFTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class SFNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'SF' + super(SFTest, SFTest).code()
+        return 'SF' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -731,16 +515,11 @@ class SFTest(AbstractNormalityTestStatistic):
 
 
 # https://habr.com/ru/articles/685582/
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class EPTest(NormalityTest):
-========
-class EPTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class EPNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'EP' + super(EPTest, EPTest).code()
+        return 'EP' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -749,40 +528,26 @@ class EPTest(AbstractNormalityTestStatistic):
         x_mean = np.mean(x)
         m2 = np.var(x, ddof=0)
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
         a = np.sqrt(2) * np.sum([np.exp(-(x[i] - x_mean) ** 2 / (4 * m2)) for i in range(n)])
-        b = 2 / n * np.sum(
-            [np.sum([np.exp(-(x[j] - x[k]) ** 2 / (2 * m2)) for j in range(0, k)])
-             for k in range(1, n)])
+        b = 0
+        for k in range(1, n):
+            b = b + np.sum(np.exp(-(x[:k] - x[k]) ** 2 / (2 * m2)))
+        b = 2 / n * b
         t = 1 + n / np.sqrt(3) + b - a
         return t
 
 
-class Hosking2Test(NormalityTest):
-========
-        A = np.sqrt(2) * np.sum([np.exp(-(X[i] - X_mean) ** 2 / (4 * m2)) for i in range(n)])
-        B = 0
-        for k in range(1, n):
-            B = B + np.sum(np.exp(-(X[:k] - X[k]) ** 2 / (2 * m2)))
-        B = 2 / n * B
-        t = 1 + n / np.sqrt(3) + B - A
-        return t
-
-
-class Hosking2Test(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class Hosking2NormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'HOSKING2' + super(Hosking2Test, Hosking2Test).code()
+        return 'HOSKING2' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
 
         if n > 3:
-
             x_tmp = [0] * n
             l21, l31, l41 = 0.0, 0.0, 0.0
             mu_tau41, v_tau31, v_tau41 = 0.0, 0.0, 0.0
@@ -823,16 +588,11 @@ class Hosking2Test(AbstractNormalityTestStatistic):
         return res
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class Hosking1Test(NormalityTest):
-========
-class Hosking1Test(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class Hosking1NormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'HOSKING1' + super(Hosking1Test, Hosking1Test).code()
+        return 'HOSKING1' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -879,16 +639,11 @@ class Hosking1Test(AbstractNormalityTestStatistic):
             return stat_tl_mom
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class Hosking3Test(NormalityTest):
-========
-class Hosking3Test(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class Hosking3NormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'HOSKING3' + super(Hosking3Test, Hosking3Test).code()
+        return 'HOSKING3' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -937,16 +692,11 @@ class Hosking3Test(AbstractNormalityTestStatistic):
         return res
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class Hosking4Test(NormalityTest):
-========
-class Hosking4Test(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class Hosking4NormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'HOSKING4' + super(Hosking4Test, Hosking4Test).code()
+        return 'HOSKING4' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -995,16 +745,11 @@ class Hosking4Test(AbstractNormalityTestStatistic):
         return res
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class ZhangWuCTest(NormalityTest):
-========
-class ZhangWuCTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class ZhangWuCNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'ZWC' + super(ZhangWuCTest, ZhangWuCTest).code()
+        return 'ZWC' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1024,16 +769,11 @@ class ZhangWuCTest(AbstractNormalityTestStatistic):
             return stat_zc
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class ZhangWuATest(NormalityTest):
-========
-class ZhangWuATest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class ZhangWuANormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'ZWA' + super(ZhangWuATest, ZhangWuATest).code()
+        return 'ZWA' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1055,16 +795,11 @@ class ZhangWuATest(AbstractNormalityTestStatistic):
             return stat_za
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class GlenLeemisBarrTest(NormalityTest):
-========
-class GlenLeemisBarrTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class GlenLeemisBarrNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'GLB' + super(GlenLeemisBarrTest, GlenLeemisBarrTest).code()
+        return 'GLB' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1087,16 +822,11 @@ class GlenLeemisBarrTest(AbstractNormalityTestStatistic):
             return -n - stat_ps / n
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class DoornikHansenTest(NormalityTest):
-========
-class DoornikHansenTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class DoornikHansenNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'DH' + super(DoornikHansenTest, DoornikHansenTest).code()
+        return 'DH' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1146,16 +876,11 @@ class DoornikHansenTest(AbstractNormalityTestStatistic):
         return z
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class RobustJarqueBeraTest(NormalityTest):
-========
-class RobustJarqueBeraTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class RobustJarqueBeraNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'RJB' + super(RobustJarqueBeraTest, RobustJarqueBeraTest).code()
+        return 'RJB' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1170,16 +895,11 @@ class RobustJarqueBeraTest(AbstractNormalityTestStatistic):
         return rjb
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class BontempsMeddahi1Test(NormalityTest):
-========
-class BontempsMeddahi1Test(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class BontempsMeddahi1NormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'BM1' + super(BontempsMeddahi1Test, BontempsMeddahi1Test).code()
+        return 'BM1' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1212,16 +932,11 @@ class BontempsMeddahi1Test(AbstractNormalityTestStatistic):
             return stat_bm34
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class BontempsMeddahi2Test(NormalityTest):
-========
-class BontempsMeddahi2Test(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class BontempsMeddahi2NormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'BM2' + super(BontempsMeddahi2Test, BontempsMeddahi2Test).code()
+        return 'BM2' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1246,16 +961,11 @@ class BontempsMeddahi2Test(AbstractNormalityTestStatistic):
             return stat_bm36
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class BonettSeierTest(NormalityTest):
-========
-class BonettSeierTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class BonettSeierNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'BS' + super(BonettSeierTest, BonettSeierTest).code()
+        return 'BS' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1286,16 +996,11 @@ class BonettSeierTest(AbstractNormalityTestStatistic):
             return stat_tw
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class MartinezIglewiczTest(NormalityTest):
-========
-class MartinezIglewiczTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class MartinezIglewiczNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'MI' + super(MartinezIglewiczTest, MartinezIglewiczTest).code()
+        return 'MI' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1332,16 +1037,11 @@ class MartinezIglewiczTest(AbstractNormalityTestStatistic):
             return stat_in
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class CabanaCabana1Test(NormalityTest):
-========
-class CabanaCabana1Test(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class CabanaCabana1NormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'CC1' + super(CabanaCabana1Test, CabanaCabana1Test).code()
+        return 'CC1' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1364,22 +1064,17 @@ class CabanaCabana1Test(AbstractNormalityTestStatistic):
             vector_aux1 = (mean_h4 + mean_h5 * z_data / np.sqrt(2)
                            + mean_h6 * (z_data ** 2 - 1) / np.sqrt(6) + mean_h7 * (z_data ** 3 - 3 * z_data)
                            / (2 * np.sqrt(6)) + mean_h8 * (z_data ** 4 - 6 * z_data ** 2 + 3) / (
-                                 2 * np.sqrt(30)))
+                                   2 * np.sqrt(30)))
             stat_tsl = np.max(np.abs(scipy_stats.norm.cdf(z_data) * mean_h3
                                      - scipy_stats.norm.pdf(z_data) * vector_aux1))
             return stat_tsl
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class CabanaCabana2Test(NormalityTest):
-========
-class CabanaCabana2Test(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class CabanaCabana2NormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'CC2' + super(CabanaCabana2Test, CabanaCabana2Test).code()
+        return 'CC2' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1391,7 +1086,7 @@ class CabanaCabana2Test(AbstractNormalityTestStatistic):
 
         if n > 3:
             # TODO: Move variance calculation
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
+
             var_x = n * np.var(x) / (n - 1)
             sd_x = np.sqrt(var_x)
             z = (x - np.mean(x)) / sd_x
@@ -1404,20 +1099,6 @@ class CabanaCabana2Test(AbstractNormalityTestStatistic):
             h6 = np.zeros(n)
             h7 = np.zeros(n)
             h8 = np.zeros(n)
-========
-            varX = n * np.var(x) / (n - 1)
-            sdX = np.sqrt(varX)
-            z = (x - np.mean(x)) / sdX
-            H0 = np.zeros(n)
-            H1 = np.zeros(n)
-            H2 = np.zeros(n)
-            H3 = np.zeros(n)
-            H4 = np.zeros(n)
-            H5 = np.zeros(n)
-            H6 = np.zeros(n)
-            H7 = np.zeros(n)
-            H8 = np.zeros(n)
->>>>>>>> architecture:stattest_std/test/normal.py
 
             h3_tilde = 0
             h4_tilde = 0
@@ -1460,23 +1141,18 @@ class CabanaCabana2Test(AbstractNormalityTestStatistic):
 
             vector_aux2 = (np.sqrt(2) * h0 + h2) * h5_tilde + (np.sqrt(3 / 2) * h1 + h3) * h6_tilde + (
                     np.sqrt(4 / 3) * h2 + h4) * h7_tilde + (np.sqrt(5 / 4) * h3 + h5) * h8_tilde + (
-                                 np.sqrt(5 / 4) * h3 + h5) * h8_tilde
+                                  np.sqrt(5 / 4) * h3 + h5) * h8_tilde
             stat_tkl = np.max(np.abs(-scipy_stats.norm.pdf(z) * h3_tilde + (
                     scipy_stats.norm.cdf(z) - z * scipy_stats.norm.pdf(z)) * h4_tilde - scipy_stats.norm.pdf(
                 z) * vector_aux2))
             return stat_tkl
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class ChenShapiroTest(NormalityTest):
-========
-class ChenShapiroTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class ChenShapiroNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'CS' + super(ChenShapiroTest, ChenShapiroTest).code()
+        return 'CS' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1488,7 +1164,7 @@ class ChenShapiroTest(AbstractNormalityTestStatistic):
 
         if n > 3:
             xs = np.sort(x)
-            mean_x = np.mean(x)
+            # mean_x = np.mean(x)
             var_x = np.var(x, ddof=1)
             m = scipy_stats.norm.ppf(np.arange(1, n + 1) / (n + 0.25) - 0.375 / (n + 0.25))
             stat_cs = np.sum((xs[1:] - xs[:-1]) / (m[1:] - m[:-1])) / ((n - 1) * np.sqrt(var_x))
@@ -1496,16 +1172,11 @@ class ChenShapiroTest(AbstractNormalityTestStatistic):
             return stat_cs
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class ZhangQTest(NormalityTest):
-========
-class ZhangQTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class ZhangQNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'ZQ' + super(ZhangQTest, ZhangQTest).code()
+        return 'ZQ' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1541,16 +1212,11 @@ class ZhangQTest(AbstractNormalityTestStatistic):
             return stat_q
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class CoinTest(NormalityTest):
-========
-class CoinTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class CoinNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'COIN' + super(CoinTest, CoinTest).code()
+        return 'COIN' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1595,7 +1261,7 @@ class CoinTest(AbstractNormalityTestStatistic):
             else:
                 for i in range(n // 2):
                     a[i] = -sp[i]
-                a[n // 2] = 0.0  # TODO: ???
+                a[n // 2] = 0.0
                 for i in range(n // 2 + 1, n):
                     a[i] = sp[n - i - 1]
 
@@ -1675,16 +1341,11 @@ class CoinTest(AbstractNormalityTestStatistic):
         return
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class DagostinoTest(NormalityTest):
-========
-class DagostinoTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class DagostinoNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'D' + super(DagostinoTest, DagostinoTest).code()
+        return 'D' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1700,16 +1361,11 @@ class DagostinoTest(AbstractNormalityTestStatistic):
             return stat_da  # Here is the test statistic value
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class ZhangQStarTest(NormalityTest):
-========
-class ZhangQStarTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class ZhangQStarNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'ZQS' + super(ZhangQStarTest, ZhangQStarTest).code()
+        return 'ZQS' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1743,12 +1399,13 @@ class ZhangQStarTest(AbstractNormalityTestStatistic):
             return q_star
 
 
-class ZhangQQStarTest(NormalityTest):  # TODO: check for correctness
+"""
+class ZhangQQStarNormalityTest(AbstractNormalityTestStatistic):  # TODO: check for correctness
 
     @staticmethod
     @override
     def code():
-        return 'ZQQ' + super(ZhangQQStarTest, ZhangQQStarTest).code()
+        return 'ZQQ' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1786,18 +1443,14 @@ class ZhangQQStarTest(NormalityTest):  # TODO: check for correctness
             stat = -2.0 * (np.log(p_val1) + np.log(p_val2))  # Combinaison des valeurs-p (Fisher, 1932)
 
             return stat  # Here is the test statistic value
+"""
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class SWRGTest(NormalityTest):
-========
-class SWRGTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class SWRGNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'SWRG' + super(SWRGTest, SWRGTest).code()
+        return 'SWRG' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1823,16 +1476,11 @@ class SWRGTest(AbstractNormalityTestStatistic):
             return stat_wrg  # Here is the test statistic value
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class GMGTest(NormalityTest):
-========
-class GMGTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class GMGNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'GMG' + super(GMGTest, GMGTest).code()
+        return 'GMG' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1882,22 +1530,17 @@ class GMGTest(AbstractNormalityTestStatistic):
             return stat_rsj  # Here is the test statistic value
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class BHSTest(NormalityTest):  # TODO: check for correctness
-========
 """ Title: Statistique de test de Brys-Hubert-Struyf MC-LR
 Ref. (book or article): Brys, G., Hubert, M. and Struyf, A. (2008), Goodness-of-fit tests based on a robust measure of 
 skewness, Computational Statistics, Vol. 23, Issue 3, pp. 429-442. 
 """
 
 
-class BHSTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class BHSNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'BHS' + super(BHSTest, BHSTest).code()
+        return 'BHS' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1917,83 +1560,46 @@ class BHSTest(AbstractNormalityTestStatistic):
                 x2 = x_sorted[(n // 2) + 1:]
 
             eps = [2.220446e-16, 2.225074e-308]
-            iter = [1000, 0]
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-            w1 = self.mc_c_d(x1, n, eps, iter)
-            iter = [1000, 0]
-            w2 = self.mc_c_d(x2, in2, eps, iter)
-            iter = [1000, 0]
-            w3 = self.mc_c_d(x3, in3, eps, iter)
-========
->>>>>>>> architecture:stattest_std/test/normal.py
+            iter_ = [1000, 0]
 
             print('ssss')
-            w1 = self.mc_C_d(x, eps, iter)
+            w1 = self.mc_c_d(x, eps, iter_)
             print('ssss1')
-            w2 = self.mc_C_d(x1, eps, iter)
-            w3 = self.mc_C_d(x2, eps, iter)
+            w2 = self.mc_c_d(x1, eps, iter_)
+            w3 = self.mc_c_d(x2, eps, iter_)
 
             omega = [0.0, 0.198828, 0.198828]
             vec = [w1 - omega[0], -w2 - omega[1], w3 - omega[2]]
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-            inv_v11 = 0.8571890822945882
-            inv_v12 = -0.1051268907484579
-            inv_v13 = 0.1051268907484580
-            inv_v21 = -0.1051268907484579
-            inv_v22 = 0.3944817329840534
-            inv_v23 = -0.01109532299714422
-            inv_v31 = 0.1051268907484579
-            inv_v32 = -0.01109532299714422
-            inv_v33 = 0.3944817329840535
-
-            stat_tmclr = n * ((vec1 * inv_v11 + vec2 * inv_v21 + vec3 * inv_v31) * vec1 + (
-                    vec1 * inv_v12 + vec2 * inv_v22 + vec3 * inv_v32) * vec2 + (
-                                     vec1 * inv_v13 + vec2 * inv_v23 + vec3 * inv_v33) * vec3)
-            return stat_tmclr  # Here is the test statistic value
-
-    def mc_c_d(self, z, n, eps, iter):
-        trace_lev = iter[0]
-        it = 0
-        converged = True
-        med_c = 0.0
-        large = float('inf') / 4.0
-========
-            invV = np.array([
+            inv_v = np.array([
                 [0.8571890822945882, -0.1051268907484579, 0.1051268907484580],
                 [-0.1051268907484579, 0.3944817329840534, -0.01109532299714422],
                 [0.1051268907484579, -0.01109532299714422, 0.3944817329840535]
             ])
 
-            statTMCLR = n * np.dot(vec, np.dot(invV, vec))
-            return statTMCLR  # Here is the test statistic value
+            stat_tmclr = n * np.dot(vec, np.dot(inv_v, vec))
+            return stat_tmclr  # Here is the test statistic value
 
-    def mc_C_d(self, z, eps, iter):
+    def mc_c_d(self, z, eps, iter_):
         """
         NOTE:
             eps = [eps1, eps2]
-            iter = [maxit, trace_lev] as input
+            iter = [max_it, trace_lev] as input
                   = [it, converged] as output
         """
-        trace_lev = iter[1]
+        trace_lev = iter_[1]
         it = 0
         converged = True
-        medc = None  # "the" result
-        # DBL_MAX = 1.7976931348623158e+308
-        DBL_MAX = 1.7976931348623158e+308
-        Large = DBL_MAX / 4.
->>>>>>>> architecture:stattest_std/test/normal.py
+        med_c = None  # "the" result
+        # dbl_max = 1.7976931348623158e+308
+        dbl_max = 1.7976931348623158e+308
+        large = dbl_max / 4.
 
         n = len(z)
         if n < 3:
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-            med_c = 0.0
-            iter[0] = it
-========
-            medc = 0.
-            iter[0] = it  # to return
->>>>>>>> architecture:stattest_std/test/normal.py
-            iter[1] = converged
+            med_c = 0.
+            iter_[0] = it  # to return
+            iter_[1] = converged
             return med_c
 
         # copy data before sort()ing in place, also reflecting it -- dealing with +-Inf.
@@ -2001,92 +1607,53 @@ class BHSTest(AbstractNormalityTestStatistic):
         x = [0.0] * (n + 1)
         for i in range(n):
             zi = z[i]
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-            x[i + 1] = -large if zi == float('inf') else (-large if zi == float('-inf') else zi)
-========
-            x[i + 1] = -((Large if zi == float('inf') else (-Large if zi == -float('inf') else zi)))
->>>>>>>> architecture:stattest_std/test/normal.py
+            x[i + 1] = -(large if zi == float('inf') else (-large if zi == -float('inf') else zi))
 
         x[1:] = sorted(x[1:])  # full sort
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-        x_med = 0.0
-        if n % 2:
-            x_med = x[(n // 2) + 1]
-        else:
-            ind = n // 2
-            x_med = (x[ind] + x[ind + 1]) / 2
-
-        if abs(x[1] - x_med) < eps[0] * (eps[0] + abs(x_med)):
-            med_c = -1.0
-            iter[0] = it
-            iter[1] = converged
-            return med_c
-        elif abs(x[n] - x_med) < eps[0] * (eps[0] + abs(x_med)):
-            med_c = 1.0
-            iter[0] = it
-            iter[1] = converged
-            return med_c
-
-        if trace_lev:
-            print(f"mc_C_d(z[1:{n}], trace_lev={trace_lev}): Median = {x_med} (not at the border)")
-========
-        # xmed := median(x[1:n]) = -median(z[0:(n-1)])
+        # x_med := median(x[1:n]) = -median(z[0:(n-1)])
         if n % 2:  # n even
-            xmed = x[(n // 2) + 1]
+            x_med = x[(n // 2) + 1]
         else:  # n odd
             ind = (n // 2)
-            xmed = (x[ind] + x[ind + 1]) / 2.0
+            x_med = (x[ind] + x[ind + 1]) / 2.0
 
-        if abs(x[1] - xmed) < eps[0] * (eps[0] + abs(xmed)):
-            medc = -1.
-            iter[0] = it  # to return
-            iter[1] = converged
-            return medc
-        elif abs(x[n] - xmed) < eps[0] * (eps[0] + abs(xmed)):
-            medc = 1.
-            iter[0] = it  # to return
-            iter[1] = converged
-            return medc
+        if abs(x[1] - x_med) < eps[0] * (eps[0] + abs(x_med)):
+            med_c = -1.
+            iter_[0] = it  # to return
+            iter_[1] = converged
+            return med_c
+        elif abs(x[n] - x_med) < eps[0] * (eps[0] + abs(x_med)):
+            med_c = 1.
+            iter_[0] = it  # to return
+            iter_[1] = converged
+            return med_c
         # else: median is not at the border
         if trace_lev:
-            print(f"mc_C_d(z[1:{n}], trace_lev={trace_lev}): Median = {-xmed} (not at the border)")
->>>>>>>> architecture:stattest_std/test/normal.py
+            print(f"mc_C_d(z[1:{n}], trace_lev={trace_lev}): Median = {-x_med} (not at the border)")
 
         # center x[] wrt median --> such that then median(x[1:n]) == 0
         for i in range(1, n + 1):
             x[i] -= x_med
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-        x_den = -2 * max(-x[1], x[n])
-========
         # Now scale to inside [-0.5, 0.5] and flip sign such that afterwards
         # x[1] >= x[2] >= ... >= x[n]
-        xden = -2 * max(-x[1], x[n])
->>>>>>>> architecture:stattest_std/test/normal.py
+        x_den = -2 * max(-x[1], x[n])
         for i in range(1, n + 1):
             x[i] /= x_den
         x_med /= x_den
         if trace_lev >= 2:
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-            print(f" x[] has been rescaled (* 1/s) with s = {x_den}")
+            print(f" x[] has been rescaled (* 1/s) with s = {-x_den}")
 
         j = 1
         x_eps = eps[0] * (eps[0] + abs(x_med))
-        while j <= n and x[j] > x_eps:
-========
-            print(f" x[] has been rescaled (* 1/s) with s = {-xden}")
-
-        j = 1
-        x_eps = eps[0] * (eps[0] + abs(xmed))
-        while j <= n and x[j] > x_eps:  # test relative to xmed
->>>>>>>> architecture:stattest_std/test/normal.py
+        while j <= n and x[j] > x_eps:  # test relative to x_med
             j += 1
         if trace_lev >= 2:
             print(f"   x1[] := {{x | x_j > x_eps = {x_eps}}}    has {j - 1} (='j-1') entries")
         i = 1
         x2 = x[j - 1:]  # pointer -- corresponding to x2[i] = x[j]
-        while j <= n and x[j] > -x_eps:  # test relative to xmed
+        while j <= n and x[j] > -x_eps:  # test relative to x_med
             j += 1
             i += 1
         # now x1[] := {x | x_j > -eps} also includes the median (0)
@@ -2094,17 +1661,12 @@ class BHSTest(AbstractNormalityTestStatistic):
             print(f"'median-x' {{x | -eps < x_i <= eps}} has {i - 1} (= 'k') entries")
         h1 = j - 1  # == size of x1[] == the sum of those two sizes above
         # conceptually, x2[] := {x | x_j <= eps} (which includes the median 0)
-        h2 = i + (n - j)  # == size of x2[] == maximal size of whimed() arrays
+        h2 = i + (n - j)  # == size of x2[] == maximal size of whi_med() arrays
 
         if trace_lev:
             print(f"  now allocating 2+5 work arrays of size (1+) h2={h2} each:")
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-
+        # work arrays for whi_med_i()
         a_cand = [0.0] * h2
-========
-        # work arrays for whimed_i()
-        acand = [0.0] * h2
->>>>>>>> architecture:stattest_std/test/normal.py
         a_srt = [0.0] * h2
         iw_cand = [0] * h2
         # work arrays for the fast-median-of-table algorithm: currently still with 1-indexing
@@ -2124,19 +1686,14 @@ class BHSTest(AbstractNormalityTestStatistic):
         is_found = False
         nl = 0
         neq = 0
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-
-        while not is_found and (nr - nl + neq > n) and it < iter[0]:
-========
         # MK: 'neq' counts the number of observations in the inside the tolerance range,
         # i.e., where left > right + 1, since we would miss those when just using 'nl-nr'.
         # This is to prevent index overflow in work[] later on.
         # left might be larger than right + 1 since we are only testing with accuracy eps_trial
         # and therefore there might be more than one observation in the `tolerance range`
         # between < and <=.
-        while not IsFound and (nr - nl + neq > n) and it < iter[0]:
+        while not is_found and (nr - nl + neq > n) and it < iter_[0]:
             print(it)
->>>>>>>> architecture:stattest_std/test/normal.py
             it += 1
             j = 0
             for i in range(1, h2 + 1):
@@ -2146,11 +1703,7 @@ class BHSTest(AbstractNormalityTestStatistic):
                     work[j] = self.h_kern(x[k], x2[i - 1], k, i, h1 + 1, eps[1])
                     j += 1
             if trace_lev >= 4:
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-                print(f" before whi_med(): work and iwt, each [0:{j - 1}]:")
-========
-                print(" before whimed(): work and iwt, each [0:({})]".format(j - 1))
->>>>>>>> architecture:stattest_std/test/normal.py
+                print(" before whi_med(): work and iwt, each [0:({})]".format(j - 1))
                 if j >= 100:
                     for i in range(90):
                         print(f" {work[i]:8g}", end="")
@@ -2169,22 +1722,12 @@ class BHSTest(AbstractNormalityTestStatistic):
                         print(f" {work[i]:8g}", end="")
                     print("\n", end="")
                     for i in range(j):
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-                        print(f" {iwt[i]}", end="")
-                    print()
-
+                        print(f" {iwt[i]:8d}", end="")
+                    print("\n", end="")
             trial = self.whi_med_i(work, iwt, j, a_cand, a_srt, iw_cand)
             eps_trial = eps[0] * (eps[0] + abs(trial))
             if trace_lev >= 3:
-                print(f"  it={it}, whi_med(*, n={j})= {trial} ", end="")
-========
-                        print(f" {iwt[i]:8d}", end="")
-                    print("\n", end="")
-            trial = self.whimed_i(work, iwt, j, acand, a_srt, iw_cand)
-            eps_trial = eps[0] * (eps[0] + abs(trial))
-            if trace_lev >= 3:
-                print(f"{' ':2s} it={it:2d}, whimed(*, n={j:6d})= {trial:8g} ", end="")
->>>>>>>> architecture:stattest_std/test/normal.py
+                print(f"{' ':2s} it={it:2d}, whi_med(*, n={j:6d})= {trial:8g} ", end="")
 
             j = 1
             for i in range(h2, 0, -1):
@@ -2225,56 +1768,32 @@ class BHSTest(AbstractNormalityTestStatistic):
             if knew <= sum_p:
                 if trace_lev >= 3:
                     print("; sum_p >= kn")
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-                for i in range(h2):
-                    right[i + 1] = p[i + 1]
-                    if left[i + 1] > right[i + 1] + 1:
-                        neq += left[i + 1] - right[i + 1] - 1
-                nr = sum(p)
-            else:
-                is_found = knew <= sum(q)
-                if trace_lev >= 3:
-                    print(f"; s_p < kn ?<=? s_q: {'TRUE' if is_found else 'no'}")
-                if is_found:
-                    med_c = trial
-                else:
-                    for i in range(h2):
-                        left[i + 1] = q[i + 1]
-                        if left[i + 1] > right[i + 1] + 1:
-                            neq += left[i + 1] - right[i + 1] - 1
-                    nl = sum(q)
-========
                 for i in range(1, h2 + 1):
                     right[i] = p[i]
                     if left[i] > right[i] + 1:
                         neq += left[i] - right[i] - 1
                 nr = sum_p
             else:  # knew > sum_p
-                IsFound = (knew <= sum_q)  # i.e. sum_p < knew <= sum_q
+                is_found = (knew <= sum_q)  # i.e. sum_p < knew <= sum_q
 
                 if trace_lev >= 3:
-                    print("; s_p < kn ?<=? s_q: {}".format("TRUE" if IsFound else "no"))
-                if IsFound:
-                    medc = trial
+                    print("; s_p < kn ?<=? s_q: {}".format("TRUE" if is_found else "no"))
+                if is_found:
+                    med_c = trial
                 else:  # knew > sum_q
                     for i in range(1, h2 + 1):
                         left[i] = q[i]
                         if left[i] > right[i] + 1:
                             neq += left[i] - right[i] - 1
                     nl = sum_q
->>>>>>>> architecture:stattest_std/test/normal.py
 
         converged = is_found or (nr - nl + neq <= n)
         if not converged:
-            print(f"maximal number of iterations ({iter[0]} =? {it}) reached prematurely")
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-            med_c = trial
-========
+            print(f"maximal number of iterations ({iter_[0]} =? {it}) reached prematurely")
             # still:
-            medc = trial
->>>>>>>> architecture:stattest_std/test/normal.py
+            med_c = trial
 
-        if converged and not IsFound:  # e.g., for mc(1:4)
+        if converged and not is_found:  # e.g., for mc(1:4)
             j = 0
             for i in range(1, h2 + 1):
                 if left[i] <= right[i]:
@@ -2285,70 +1804,51 @@ class BHSTest(AbstractNormalityTestStatistic):
                 print(f"  not found [it={it},  (nr,nl) = ({nr},{nl})], -> (knew-nl, j) = ({knew - nl},{j})")
             # using rPsort(work, n,k), since we don't need work[] anymore
             work[:(knew - nl)] = sorted(work[:(knew - nl)])
-            medc = -work[knew - nl - 1]
+            med_c = -work[knew - nl - 1]
 
         if converged and trace_lev >= 2:
             print(f"converged in {it} iterations")
 
-        iter[0] = it  # to return
-        iter[1] = converged
+        iter_[0] = it  # to return
+        iter_[1] = converged
 
         return med_c
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
     @staticmethod
     def h_kern(a, b, ai, bi, ab, eps):
-        if abs(a - b) < 2.0 * eps or b > 0:
-            return math.copysign(1, ab - (ai + bi))
-========
-    def h_kern(self, a, b, ai, bi, ab, eps):
         if np.abs(a - b) < 2.0 * eps or b > 0:
             return np.sign(ab - (ai + bi))
->>>>>>>> architecture:stattest_std/test/normal.py
         else:
             return (a + b) / (a - b)
 
     @staticmethod
     def whi_med_i(a, w, n, a_cand, a_srt, w_cand):
         w_tot = sum(w)
-        wrest = 0
+        w_rest = 0
 
         while True:
             a_srt[:] = sorted(a)
             n2 = n // 2
             trial = a_srt[n2]
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-            w_left = 0
-            w_mid = 0
-            wright = 0
-            for i in range(n):
-                if a[i] < trial:
-                    w_left += w[i]
-                elif a[i] > trial:
-                    wright += w[i]
-                else:
-                    w_mid += w[i]
-========
-            wleft = sum(w[i] for i in range(n) if a[i] < trial)
-            wmid = sum(w[i] for i in range(n) if a[i] == trial)
-            wright = sum(w[i] for i in range(n) if a[i] > trial)
->>>>>>>> architecture:stattest_std/test/normal.py
+            w_left = sum(w[i] for i in range(n) if a[i] < trial)
+            w_mid = sum(w[i] for i in range(n) if a[i] == trial)
+            # w_right = sum(w[i] for i in range(n) if a[i] > trial)
 
             k_cand = 0
-            if 2 * (wrest + w_left) > w_tot:
+            if 2 * (w_rest + w_left) > w_tot:
                 for i in range(n):
                     if a[i] < trial:
                         a_cand[k_cand] = a[i]
                         w_cand[k_cand] = w[i]
                         k_cand += 1
-            elif 2 * (wrest + w_left + w_mid) <= w_tot:
+            elif 2 * (w_rest + w_left + w_mid) <= w_tot:
                 for i in range(n):
                     if a[i] > trial:
                         a_cand[k_cand] = a[i]
                         w_cand[k_cand] = w[i]
                         k_cand += 1
-                wrest += w_left + w_mid
+                w_rest += w_left + w_mid
             else:
                 return trial
 
@@ -2358,16 +1858,11 @@ class BHSTest(AbstractNormalityTestStatistic):
                 w[i] = w_cand[i]
 
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
-class SpiegelhalterTest(NormalityTest):
-========
-class SpiegelhalterTest(AbstractNormalityTestStatistic):
->>>>>>>> architecture:stattest_std/test/normal.py
-
+class SpiegelhalterNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     @override
     def code():
-        return 'SH' + super(SpiegelhalterTest, SpiegelhalterTest).code()
+        return 'SH' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -2405,42 +1900,37 @@ class SpiegelhalterTest(AbstractNormalityTestStatistic):
 
             stat_sp = ((cn * u) ** (-(n - 1)) + g ** (-(n - 1))) ** (1 / (n - 1))
 
-<<<<<<<< HEAD:stattest_std/src/stat_tests/normality_tests.py
             return stat_sp  # Here is the test statistic value
 
-# TODO: fix all weak warnings
-# TODO: check tests
-========
-            return statSp  # Here is the test statistic value
 
-
-class DesgagneLafayeTest(AbstractNormalityTestStatistic):
-
+class DesgagneLafayeNormalityTest(AbstractNormalityTestStatistic):
     @staticmethod
     def code():
-        return 'DLDMZEPD'
+        return 'DLDMZEPD' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
 
-    def execute_statistic(self, rvs):
+    @override
+    def execute_statistic(self, rvs, **kwargs):
         return self.stat35(rvs)
 
-    def stat35(self, x):
+    @staticmethod
+    def stat35(x):
         n = len(x)
 
         if n > 3:
             # Computation of the value of the test statistic
             y = np.zeros(n)
-            varpopX = 0.0
-            meanX = np.mean(x)
+            varpop_x = 0.0
+            mean_x = np.mean(x)
             r1 = 0.0
             r2 = 0.0
             r3 = 0.0
 
             for i in range(n):
-                varpopX += x[i] ** 2
-            varpopX = varpopX / n - meanX ** 2
-            sdX = np.sqrt(varpopX)
+                varpop_x += x[i] ** 2
+            varpop_x = varpop_x / n - mean_x ** 2
+            sd_x = np.sqrt(varpop_x)
             for i in range(n):
-                y[i] = (x[i] - meanX) / sdX
+                y[i] = (x[i] - mean_x) / sd_x
 
             # Formulas given in our paper p. 169
             for i in range(n):
@@ -2452,9 +1942,11 @@ class DesgagneLafayeTest(AbstractNormalityTestStatistic):
             r3 = 0.20981558 - r3 / n
 
             # Formula given in our paper p. 170
-            Rn = n * ((r1 * 1259.04213344 - r2 * 32040.69569026 + r3 * 85065.77739473) * r1 + (
+            rn = n * ((r1 * 1259.04213344 - r2 * 32040.69569026 + r3 * 85065.77739473) * r1 + (
                     -r1 * 32040.6956903 + r2 * 918649.9005906 - r3 * 2425883.3443201) * r2 + (
                               r1 * 85065.7773947 - r2 * 2425883.3443201 + r3 * 6407749.8211208) * r3)
 
-            return Rn  # Here is the test statistic value
->>>>>>>> architecture:stattest_std/test/normal.py
+            return rn  # Here is the test statistic value
+
+# TODO: fix all weak warnings
+# TODO: check tests
