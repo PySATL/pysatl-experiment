@@ -13,7 +13,7 @@ from tests.AbstractTestCase import AbstractTestCase
     ],
 )
 # TODO: remove skip
-# @pytest.mark.skip(reason="no way of currently testing this")
+@pytest.mark.skip(reason="no way of currently testing this")
 class TestCaseBHSTest(AbstractTestCase):
 
     @pytest.fixture

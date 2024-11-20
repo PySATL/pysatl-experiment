@@ -197,10 +197,10 @@ class LillieforsNormalityTest(LillieforsTest):
         return 'LILLIE_NORMALITY'
 
     def execute_statistic(self, rvs):
-        cdf_vals = scipy_stats.norm.cdf(rvs)
-        d_ks = super().execute_statistic(rvs, cdf_vals)
-
-        return d_ks
+        x = np.asarray(rvs)
+        z = (x - x.mean()) / x.std(ddof=1)
+        cdf_vals = scipy_stats.norm.cdf(np.sort(z))
+        return super().execute_statistic(rvs, cdf_vals)
 
 
 # TODO: What is it
