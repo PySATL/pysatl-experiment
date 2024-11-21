@@ -1,5 +1,7 @@
 # statistic-test
 
+[![Coverage Status](https://coveralls.io/repos/github/PySATL/pysatl-experiment/badge.svg?branch=main)](https://coveralls.io/github/PySATL/pysatl-experiment?branch=main)
+
 This is a test framework for goodness-of-fit statistic tests.
 
 ## Architecture

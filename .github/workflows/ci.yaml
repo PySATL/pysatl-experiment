@@ -30,4 +30,18 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
-        run: pytest
+        run: pytest --random-order
+
+      - name: Tests with Coveralls
+        if: (runner.os == 'Linux' && matrix.python-version == '3.12')
+        run: |
+          pytest --random-order --cov=pysatl --cov-config=.coveragerc
+
+      - name: Coveralls
+        if: (runner.os == 'Linux' && matrix.python-version == '3.12')
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.coverallsToken }}
+        run: |
+            # Allow failure for coveralls
+            coveralls || true
+
