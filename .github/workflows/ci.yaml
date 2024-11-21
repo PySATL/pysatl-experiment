@@ -35,7 +35,7 @@ jobs:
       - name: Tests with Coveralls
         if: (runner.os == 'Linux' && matrix.python-version == '3.12')
         run: |
-          pytest --random-order --cov=pysatl --cov-config=.coveragerc
+          pytest --random-order --cov=stattest --cov-config=.coveragerc
 
       - name: Coveralls
         if: (runner.os == 'Linux' && matrix.python-version == '3.12')
