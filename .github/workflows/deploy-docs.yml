@@ -3,7 +3,7 @@ name: Build Documentation
 on:
   push:
     branches:
-      - ci
+      - feature/ci
   release:
     types: [published]
 
