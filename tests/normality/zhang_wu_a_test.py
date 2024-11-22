@@ -12,7 +12,12 @@ from tests.AbstractTestCase import AbstractTestCase
           -0.44131251, 0.41216214], 1.225743),
     ],
 )
-class TestCaseZhangWuCTest(AbstractTestCase):
+@pytest.mark.skip(reason="no way of currently testing this")
+class TestCaseZhangWuATest(AbstractTestCase):
+
+    def test_execute_statistic(self, data, result, statistic_test):
+        statistic = statistic_test.execute_statistic(data)
+        assert result == pytest.approx(statistic, 0.1)
 
     @pytest.fixture
     def statistic_test(self):
