@@ -7,17 +7,13 @@ from typing_extensions import override
 from stattest.test.models import AbstractTestStatistic
 
 
-class KSTestStatistic(AbstractTestStatistic):
+class KSTestStatistic(AbstractTestStatistic, ABC):
 
     def __init__(self, alternative='two-sided', mode='auto'):
         self.alternative = alternative
         if mode == 'auto':  # Always select exact
             mode = 'exact'
         self.mode = mode
-
-    @staticmethod
-    def code():
-        raise NotImplementedError("Method is not implemented")
 
     @override
     def execute_statistic(self, rvs, cdf_vals=None):
@@ -122,13 +118,11 @@ class ADTestStatistic(AbstractTestStatistic):
         return A2
 
 
-class LillieforsTest(KSTestStatistic):
+class LillieforsTest(KSTestStatistic, ABC):
+    alternative = 'two-sided'
+    mode = 'auto'
 
-    @staticmethod
     @override
-    def code():
-        raise NotImplementedError("Method is not implemented")
-
     def execute_statistic(self, z, cdf_vals=None):
         return super().execute_statistic(z, cdf_vals)
 

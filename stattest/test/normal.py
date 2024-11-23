@@ -22,10 +22,6 @@ class AbstractNormalityTestStatistic(AbstractGoodnessOfFitTestStatistic, ABC):
     def code():
         return 'NORMALITY' + '_' + super(AbstractGoodnessOfFitTestStatistic, AbstractGoodnessOfFitTestStatistic).code()
 
-    @override
-    def _generate(self, size):
-        return norm.generate_norm(size, self.mean, self.var)
-
 
 class KSNormalityTest(AbstractNormalityTestStatistic, KSTestStatistic):
     @override
@@ -178,14 +174,14 @@ class LillieforsNormalityTest(AbstractNormalityTestStatistic, LillieforsTest):
     @staticmethod
     @override
     def code():
-        return 'LILLIE' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
+        return 'LILLIE' + '_' + super(AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
         x = np.asarray(rvs)
         z = (x - x.mean()) / x.std(ddof=1)
         cdf_vals = scipy_stats.norm.cdf(np.sort(z))
-        return super(LillieforsTest, LillieforsTest).execute_statistic(rvs, cdf_vals)
+        return super(LillieforsTest, self).execute_statistic(rvs, cdf_vals)
 
 
 """
@@ -428,14 +424,14 @@ class LooneyGulledgeNormalityTest(AbstractNormalityTestStatistic):
 class RyanJoinerNormalityTest(AbstractNormalityTestStatistic):
     @override
     def __init__(self, weighted=False, cte_alpha="3/8"):
-        super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).__init__()
+        super(AbstractNormalityTestStatistic).__init__()
         self.weighted = weighted
         self.cte_alpha = cte_alpha
 
     @staticmethod
     @override
     def code():
-        return 'RJ' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
+        return 'RJ' + '_' + super(AbstractNormalityTestStatistic).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
