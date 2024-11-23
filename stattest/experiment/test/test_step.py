@@ -1,12 +1,10 @@
 import logging
-import multiprocessing
-from itertools import repeat
-from multiprocessing import freeze_support
+from multiprocessing import Queue, Manager, Event, Process
 
-import numpy as np
 from tqdm import tqdm
 
 from stattest.experiment.configuration.configuration import TestConfiguration, TestWorker
+from stattest.experiment.pipeline import start_pipeline
 from stattest.persistence import IRvsStore
 from stattest.test import AbstractTestStatistic
 
@@ -27,6 +25,32 @@ def execute_tests(worker: TestWorker, tests: [AbstractTestStatistic], rvs_store:
             worker.save_result(result)
             pbar.update(1)
 
+def process_entries(generate_queue: Queue, info_queue: Queue, generate_shutdown_event: Event,
+                    info_shutdown_event: Event, kwargs):
+    worker = kwargs['worker']
+    worker.init()
+
+    while not (generate_shutdown_event.is_set() and generate_queue.empty()):
+        if not generate_queue.empty():
+            test, data, code, size = generate_queue.get()
+            result = worker.execute(test, data, code, size)
+            worker.save_result(result)
+            info_queue.put(1)
+
+    info_shutdown_event.set()
+
+def fill_queue(queue, generate_shutdown_event, tests: [AbstractTestStatistic]=None, store=None, **kwargs):
+    stat = store.get_rvs_stat()
+
+    for code, size, _ in stat:
+        data = store.get_rvs(code, size)
+        for test in tests:
+            queue.put((test, data, code, size))
+
+    generate_shutdown_event.set()
+
+    return len(stat) * len(tests)
+
 
 def execute_test_step(configuration: TestConfiguration, rvs_store: IRvsStore):
     threads_count = configuration.threads
@@ -44,15 +68,7 @@ def execute_test_step(configuration: TestConfiguration, rvs_store: IRvsStore):
     for listener in configuration.listeners:
         listener.before()
 
-    if threads_count > 1:
-        freeze_support()  # for Windows support
-        tqdm.set_lock(multiprocessing.RLock())  # for managing output contention
-        tests_chunks = np.array_split(tests, threads_count)
-        threads_counts = list(range(threads_count))
-        with multiprocessing.Pool(threads_count) as pool:
-            pool.starmap(execute_tests, zip(repeat(worker), tests_chunks, repeat(rvs_store), threads_counts))
-    else:
-        execute_tests(worker, tests, rvs_store)
+    start_pipeline(fill_queue, process_entries, threads_count, worker=worker, tests=tests, store=rvs_store)
 
     # Execute after all listeners
     for listener in configuration.listeners:

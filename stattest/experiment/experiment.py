@@ -16,6 +16,10 @@ class Experiment:
         """
 
         rvs_store = self.__configuration.rvs_store
+        rvs_store.init()
+
+        worker = self.__configuration.test_configuration.worker
+        worker.init()
 
         # Generate data for alternatives
         data_generation_step(self.__configuration.alternative_configuration, rvs_store)
