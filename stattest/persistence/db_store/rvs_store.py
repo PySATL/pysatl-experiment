@@ -1,18 +1,15 @@
-import sqlite3
-
-import numpy as np
 from typing_extensions import override
 
 from stattest.persistence import IRvsStore
 from typing import ClassVar
 
-from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import (
     Integer, String, text, func,
 )
 
-from stattest.persistence.sql_lite_store.base import ModelBase, SessionType
-from stattest.persistence.sql_lite_store.db_init import init_db, get_request_or_thread_id
+from stattest.persistence.db_store.base import ModelBase, SessionType
+from stattest.persistence.db_store.model import AbstractDbStore
 
 
 class RVS(ModelBase):
@@ -42,22 +39,9 @@ class RVSStat(ModelBase):
     count: Mapped[int] = mapped_column(Integer)  # type: ignore
 
 
-class RvsSqLiteStore(IRvsStore):
+class RvsDbLiteStore(AbstractDbStore, IRvsStore):
     session: ClassVar[SessionType]
     __separator = ';'
-
-    def __init__(self, name='pysatl.sqlite'):
-        super().__init__()
-        self.name = name
-
-    @override
-    def init(self):
-        sqlite3.register_adapter(np.int64, lambda val: int(val))
-        engine = init_db("sqlite:///" + self.name)
-        RvsSqLiteStore.session = scoped_session(
-            sessionmaker(bind=engine, autoflush=False), scopefunc=get_request_or_thread_id
-        )
-        ModelBase.metadata.create_all(engine)
 
     @override
     def insert_all_rvs(self, generator_code: str, size: int, data: [[float]]):
@@ -65,22 +49,22 @@ class RvsSqLiteStore(IRvsStore):
             return
 
         data_to_insert = [
-            {'code': generator_code, 'size': int(size), 'data': RvsSqLiteStore.__separator.join(map(str, d))} for d in
+            {'code': generator_code, 'size': int(size), 'data': RvsDbLiteStore.__separator.join(map(str, d))} for d in
             data]
         statement = text("INSERT INTO rvs_data (code, size, data) VALUES (:code, :size, :data)")
-        RvsSqLiteStore.session.execute(statement, data_to_insert)
+        RvsDbLiteStore.session.execute(statement, data_to_insert)
 
         '''stat_to_insert = [{'code': code, 'size': int(size), 'data': SqlLiteStore.__separator.join(map(str, d))} for d in
                           data]
         stat_statement = text("INSERT INTO rvs_stat (code, size, count) VALUES (:code, :size, :count)")
         SqlLiteStore.session.execute(stat_statement, data_to_insert)'''
-        RvsSqLiteStore.session.commit()
+        RvsDbLiteStore.session.commit()
 
     @override
     def insert_rvs(self, code: str, size: int, data: [float]):
-        data_str = RvsSqLiteStore.__separator.join(map(str, data))
-        RvsSqLiteStore.session.add(RVS(code=code, size=int(size), data=data_str))
-        RvsSqLiteStore.session.commit()
+        data_str = RvsDbLiteStore.__separator.join(map(str, data))
+        RvsDbLiteStore.session.add(RVS(code=code, size=int(size), data=data_str))
+        RvsDbLiteStore.session.commit()
 
     @override
     def get_rvs_count(self, code: str, size: int):
@@ -89,18 +73,18 @@ class RvsSqLiteStore(IRvsStore):
 
     @override
     def get_rvs(self, code: str, size: int) -> [[float]]:
-        samples = RvsSqLiteStore.session.query(RVS).filter(
+        samples = RvsDbLiteStore.session.query(RVS).filter(
             RVS.code == code, RVS.size == size,
         ).all()
 
         if not samples:
             return []
 
-        return [[float(x) for x in sample.data.split(RvsSqLiteStore.__separator)] for sample in samples]
+        return [[float(x) for x in sample.data.split(RvsDbLiteStore.__separator)] for sample in samples]
 
     @override
     def get_rvs_stat(self) -> [(str, int, int)]:
-        result = RvsSqLiteStore.session.query(RVS.code, RVS.size,
+        result = RvsDbLiteStore.session.query(RVS.code, RVS.size,
                                               func.count(RVS.code)).group_by(RVS.code, RVS.size).all()
 
         if result is None:
@@ -110,4 +94,4 @@ class RvsSqLiteStore(IRvsStore):
 
     @override
     def clear_all_rvs(self):
-        RvsSqLiteStore.session.query(RVS).delete()
+        RvsDbLiteStore.session.query(RVS).delete()

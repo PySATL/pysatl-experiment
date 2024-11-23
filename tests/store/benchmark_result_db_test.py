@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-from stattest.persistence.sql_lite_store import BenchmarkResultSqLiteStore
+from stattest.persistence.db_store import BenchmarkResultDbStore
 
 store_name = 'pysatl.sqlite'
 
@@ -12,11 +12,11 @@ class TestBenchmarkResultSqLiteStoreService:
 
     @pytest.fixture
     def store(self):
-        store = BenchmarkResultSqLiteStore(name=store_name)
+        store = BenchmarkResultDbStore(db_url='sqlite:///' + store_name)
         store.init()
         return store
 
-    def teardown_method(self, method):
+    def teardown_method(self):
         try:
             os.remove(store_name)
             os.remove(store_name + '-journal')

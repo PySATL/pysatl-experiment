@@ -5,8 +5,8 @@ from stattest.experiment.listener.listeners import TimeEstimationListener
 from stattest.experiment.configuration.configuration import TestConfiguration
 from stattest.experiment.report.model import PdfPowerReportBuilder, PowerResultReader
 from stattest.experiment.test.worker import PowerCalculationWorker
-from stattest.persistence.sql_lite_store import CriticalValueSqLiteStore, RvsSqLiteStore
-from stattest.persistence.sql_lite_store.power_result_store import PowerResultSqlLiteStore
+from stattest.persistence.db_store import CriticalValueDbStore, RvsDbLiteStore
+from stattest.persistence.db_store.power_result_store import PowerResultDbStore
 from stattest.test import KSWeibullTest
 
 if __name__ == '__main__':
@@ -24,8 +24,8 @@ if __name__ == '__main__':
                                                           listeners=listeners)
 
     tests = [KSWeibullTest()]
-    critical_value_store = CriticalValueSqLiteStore()
-    power_result_store = PowerResultSqlLiteStore()
+    critical_value_store = CriticalValueDbStore()
+    power_result_store = PowerResultDbStore()
     power_calculation_worker = PowerCalculationWorker(0.05, 1_000_000, power_result_store, critical_value_store,
                                                       hypothesis=WeibullHypothesis())
     hypothesis = WeibullHypothesis()
@@ -36,12 +36,12 @@ if __name__ == '__main__':
     reader = PowerResultReader(power_result_store)
     report_configuration = ReportConfiguration(report_builder, reader)
 
-    rvs_store = RvsSqLiteStore()
+    rvs_store = RvsDbLiteStore()
     experiment_configuration = ExperimentConfiguration(alternatives_configuration,
                                                        test_configuration,
                                                        report_configuration,
                                                        rvs_store=rvs_store,
-                                                       critical_value_store=CriticalValueSqLiteStore())
+                                                       critical_value_store=CriticalValueDbStore())
     experiment = Experiment(experiment_configuration)
 
     # Execute experiment

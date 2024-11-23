@@ -1,7 +1,8 @@
 from typing import Optional
+from abc import ABC, abstractmethod
 
 
-class IStore:
+class IStore(ABC):
 
     def migrate(self):
         """
@@ -16,7 +17,7 @@ class IStore:
         pass
 
 
-class IRvsStore(IStore):
+class IRvsStore(IStore, ABC):
 
     def insert_all_rvs(self, generator_code: str, size: int, data: [[float]]):
         """
@@ -30,6 +31,7 @@ class IRvsStore(IStore):
         for d in data:
             self.insert_rvs(generator_code, size, d)
 
+    @abstractmethod
     def insert_rvs(self, generator_code: str, size: int, data: [float]):
         """
         Insert one rvs data to store.
@@ -52,6 +54,7 @@ class IRvsStore(IStore):
         """
         return len(self.get_rvs(generator_code, size))
 
+    @abstractmethod
     def get_rvs(self, generator_code: str, size: int) -> [[float]]:
         """
         Get rvs data from store.
@@ -63,6 +66,7 @@ class IRvsStore(IStore):
         """
         pass
 
+    @abstractmethod
     def get_rvs_stat(self) -> [(str, int, int)]:
         """
         Get rvs data statistics.
@@ -71,6 +75,7 @@ class IRvsStore(IStore):
         """
         pass
 
+    @abstractmethod
     def clear_all_rvs(self):
         """
         Clear ALL data in store.
@@ -78,8 +83,9 @@ class IRvsStore(IStore):
         pass
 
 
-class ICriticalValueStore(IStore):
+class ICriticalValueStore(IStore, ABC):
 
+    @abstractmethod
     def insert_critical_value(self, code: str, size: int, sl: float, value: float):
         """
         Insert critical value to store.
@@ -91,6 +97,7 @@ class ICriticalValueStore(IStore):
         """
         pass
 
+    @abstractmethod
     def insert_distribution(self, code: str, size: int, data: [float]):
         """
         Insert distribution to store.
@@ -101,6 +108,7 @@ class ICriticalValueStore(IStore):
         """
         pass
 
+    @abstractmethod
     def get_critical_value(self, code: str, size: int, sl: float) -> Optional[float]:
         """
         Get critical value from store.
@@ -110,6 +118,7 @@ class ICriticalValueStore(IStore):
         """
         pass
 
+    @abstractmethod
     def get_distribution(self, code: str, size: int) -> [float]:
         """
         Get distribution from store.
@@ -120,8 +129,9 @@ class ICriticalValueStore(IStore):
         pass
 
 
-class IPowerResultStore(IStore):
+class IPowerResultStore(IStore, ABC):
 
+    @abstractmethod
     def insert_power(self, sl: float, size: int, test_code: str, alternative_code: str, power: float):
         """
         Insert power to store.
@@ -134,6 +144,7 @@ class IPowerResultStore(IStore):
         """
         pass
 
+    @abstractmethod
     def get_power(self, sl: float, size: int, test_code: str, alternative_code: str) -> Optional[float]:
         """
         Get power from store.
@@ -147,6 +158,7 @@ class IPowerResultStore(IStore):
         """
         pass
 
+    @abstractmethod
     def get_powers(self, offset: int, limit: int):  # -> [PowerResultModel]:
         """
         Get several powers from store.
@@ -159,8 +171,9 @@ class IPowerResultStore(IStore):
         pass
 
 
-class IBenchmarkResultStore(IStore):
+class IBenchmarkResultStore(IStore, ABC):
 
+    @abstractmethod
     def insert_benchmark(self, test_code: str, size: int, benchmark: [float]):
         """
         Insert benchmark to store.
@@ -170,6 +183,7 @@ class IBenchmarkResultStore(IStore):
         """
         pass
 
+    @abstractmethod
     def get_benchmark(self, test_code: str, size: int) -> [float]:
         """
         Get benchmark from store.
@@ -180,6 +194,7 @@ class IBenchmarkResultStore(IStore):
         """
         pass
 
+    @abstractmethod
     def get_benchmarks(self, offset: int, limit: int):  # -> [PowerResultModel]:
         """
         Get several powers from store.
