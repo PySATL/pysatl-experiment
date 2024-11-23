@@ -148,7 +148,7 @@ class GumbelGenerator(AbstractRVSGenerator):
 
 
 class WeibullGenerator(AbstractRVSGenerator):
-    def __init__(self, l=0, k=1):
+    def __init__(self, l=1, k=5):
         self.l = l
         self.k = k
 

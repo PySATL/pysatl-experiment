@@ -128,14 +128,8 @@ class LillieforsTest(KSTestStatistic):
     def code():
         raise NotImplementedError("Method is not implemented")
 
-    @override
-    def execute_statistic(self, rvs, cdf_vals=None):
-        x = np.asarray(rvs)
-        z = (x - x.mean()) / x.std(ddof=1)
-
-        d_ks = super().execute_statistic(z, cdf_vals)
-
-        return d_ks
+    def execute_statistic(self, z, cdf_vals=None):
+        return super().execute_statistic(z, cdf_vals)
 
 
 class CrammerVonMisesTestStatistic(AbstractTestStatistic):

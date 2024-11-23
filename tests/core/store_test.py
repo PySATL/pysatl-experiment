@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from stattest.core.store import JsonStoreService
+from stattest.persistence.file_store.store import JsonStoreService
 
 filename = 'cache.json'
 

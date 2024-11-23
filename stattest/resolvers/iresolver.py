@@ -46,7 +46,7 @@ class IResolver:
     initial_search_path: Optional[Path] = None
     # Optional a path (generator_path, report_generator_path)
     extra_path: Optional[str] = None
-    module_name: Optional[str] = None
+    module_names: [str] = None
 
     @classmethod
     def build_search_paths(
@@ -183,19 +183,35 @@ class IResolver:
         return None
 
     @classmethod
-    def _load_module_object(
+    def _load_modules_object(
             cls, *, object_name: str, kwargs: dict
+    ) -> Optional[Any]:
+        """
+        Try to load object from path list.
+        """
+        if cls.module_names is None:
+            return None
+
+        for module_name in cls.module_names:
+            module_object = cls._load_module_object(object_name=object_name, kwargs=kwargs, module_name=module_name)
+            if module_object is not None:
+                return module_object
+        return None
+
+    @classmethod
+    def _load_module_object(
+            cls, *, object_name: str, kwargs: dict, module_name: str
     ) -> Optional[Any]:
         """
         Try to load object from path list.
         """
 
         try:
-            module = getattr(importlib.import_module(cls.module_name), object_name)
+            module = getattr(importlib.import_module(module_name), object_name)
             if module:
                 logger.info(
                     f"Using resolved {cls.object_type.__name__.lower()[1:]} {object_name} "
-                    f"from '{cls.module_name}'..."
+                    f"from '{module_name}'..."
                 )
                 return module(**kwargs)
         except FileNotFoundError:

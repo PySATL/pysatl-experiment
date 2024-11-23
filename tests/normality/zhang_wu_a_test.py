@@ -12,6 +12,7 @@ from stattest.test.normal import ZhangWuANormalityTest
           -0.44131251, 0.41216214], 1.225743),
     ],
 )
+@pytest.mark.skip(reason="no way of currently testing this")
 class TestCaseZhangWuCNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture

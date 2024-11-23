@@ -13,7 +13,7 @@ from stattest.test.common import KSTestStatistic, ADTestStatistic, LillieforsTes
 
 class AbstractNormalityTestStatistic(AbstractGoodnessOfFitTestStatistic):
     @override
-    def __init__(self, cache=MonteCarloCacheService(), mean=0, var=1):
+    def __init__(self, cache=CriticalValueFileStore(), mean=0, var=1):
         super().__init__(cache)
 
         self.mean = mean
@@ -184,10 +184,10 @@ class LillieforsNormalityTest(AbstractNormalityTestStatistic, LillieforsTest):
 
     @override
     def execute_statistic(self, rvs, **kwargs):
-        cdf_vals = scipy_stats.norm.cdf(rvs)
-        d_ks = super(LillieforsTest, LillieforsTest).execute_statistic(rvs, cdf_vals)
-
-        return d_ks
+        x = np.asarray(rvs)
+        z = (x - x.mean()) / x.std(ddof=1)
+        cdf_vals = scipy_stats.norm.cdf(np.sort(z))
+        return super(LillieforsTest, LillieforsTest).execute_statistic(rvs, cdf_vals)
 
 
 """
