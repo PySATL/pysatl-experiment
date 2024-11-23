@@ -1,4 +1,5 @@
 import numpy as np
+from abc import ABC
 import scipy.stats as scipy_stats
 from scipy import special
 from typing_extensions import override
@@ -132,7 +133,7 @@ class LillieforsTest(KSTestStatistic):
         return super().execute_statistic(z, cdf_vals)
 
 
-class CrammerVonMisesTestStatistic(AbstractTestStatistic):
+class CrammerVonMisesTestStatistic(AbstractTestStatistic, ABC):
     @override
     def execute_statistic(self, rvs, cdf_vals):
         n = len(rvs)
@@ -143,7 +144,7 @@ class CrammerVonMisesTestStatistic(AbstractTestStatistic):
         return w
 
 
-class Chi2TestStatistic(AbstractTestStatistic):
+class Chi2TestStatistic(AbstractTestStatistic, ABC):
 
     @staticmethod
     def _m_sum(a, *, axis, preserve_mask, xp):
@@ -179,7 +180,7 @@ class Chi2TestStatistic(AbstractTestStatistic):
         return scipy_stats.distributions.chi2.ppf(1 - sl, rvs_size - 1)
 
 
-class MinToshiyukiTestStatistic(AbstractTestStatistic):
+class MinToshiyukiTestStatistic(AbstractTestStatistic, ABC):
 
     @override
     def execute_statistic(self, cdf_vals):

@@ -1,5 +1,5 @@
 import math
-from typing import override
+from typing_extensions import override
 
 from stattest.core.distribution import norm
 import numpy as np
@@ -7,15 +7,13 @@ import scipy.stats as scipy_stats
 import pandas as pd
 
 from stattest.test.goodness_of_fit import AbstractGoodnessOfFitTestStatistic
-from stattest.persistence.json_store.cache import MonteCarloCacheService
 from stattest.test.common import KSTestStatistic, ADTestStatistic, LillieforsTest
+from abc import ABC
 
 
-class AbstractNormalityTestStatistic(AbstractGoodnessOfFitTestStatistic):
+class AbstractNormalityTestStatistic(AbstractGoodnessOfFitTestStatistic, ABC):
     @override
-    def __init__(self, cache=CriticalValueFileStore(), mean=0, var=1):
-        super().__init__(cache)
-
+    def __init__(self, mean=0, var=1):
         self.mean = mean
         self.var = var
 
@@ -31,8 +29,8 @@ class AbstractNormalityTestStatistic(AbstractGoodnessOfFitTestStatistic):
 
 class KSNormalityTest(AbstractNormalityTestStatistic, KSTestStatistic):
     @override
-    def __init__(self, cache=MonteCarloCacheService(), alternative='two-sided', mode='auto', mean=0, var=1):
-        AbstractNormalityTestStatistic.__init__(self, cache)
+    def __init__(self, alternative='two-sided', mode='auto', mean=0, var=1):
+        AbstractNormalityTestStatistic.__init__(self)
         KSTestStatistic.__init__(self, alternative, mode)
 
         self.mean = mean

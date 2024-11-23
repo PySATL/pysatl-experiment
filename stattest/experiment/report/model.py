@@ -2,11 +2,11 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from stattest.experiment import ReportBuilder
-from stattest.experiment.test.worker import PowerWorkerResult, BenchmarkWorkerResult
+from stattest.experiment.test.worker import PowerWorkerResult
 from stattest.persistence.models import IBenchmarkResultStore
-from stattest.persistence.sql_lite_store.power_result_store import PowerResultSqLiteStore
 
 
+"""
 class ChartBenchmarkMeanReportBuilder(ReportBuilder):
     def __init__(self):
         self.data = {}
@@ -45,7 +45,7 @@ class ChartBenchmarkMeanReportBuilder(ReportBuilder):
     @staticmethod
     def __build_path(result: BenchmarkWorkerResult):
         return '_'.join([result.test_code, str(result.size)])
-
+"""
 
 class ChartPowerReportBuilder(ReportBuilder):
     def __init__(self):
@@ -93,7 +93,7 @@ class PdfPowerReportBuilder(ReportBuilder):
 
 
 class PowerResultReader:
-    def __init__(self, power_result_store: PowerResultSqLiteStore, batch_size=100):
+    def __init__(self, power_result_store, batch_size=100):
         self.power_result_store = power_result_store
         self.batch_size = batch_size
         self.offset = 0

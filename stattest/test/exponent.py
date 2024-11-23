@@ -1,19 +1,17 @@
 import math
-from typing import override
+from typing_extensions import override
+from abc import ABC
 
 from stattest.core.distribution import expon
 import numpy as np
 import scipy.special as scipy_special
 
-from stattest.persistence.json_store.cache import MonteCarloCacheService
 from stattest.test.goodness_of_fit import AbstractGoodnessOfFitTestStatistic
 
 
-class AbstractExponentialityTestStatistic(AbstractGoodnessOfFitTestStatistic):
+class AbstractExponentialityTestStatistic(AbstractGoodnessOfFitTestStatistic, ABC):
 
-    def __init__(self, cache=MonteCarloCacheService(), lam=1):
-        super().__init__(cache)
-
+    def __init__(self, lam=1):
         self.lam = lam
 
     @staticmethod

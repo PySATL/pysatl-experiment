@@ -4,7 +4,7 @@ from itertools import repeat
 from multiprocessing import freeze_support, RLock
 
 import numpy as np
-from tqdm import tqdm, trange
+from tqdm import tqdm
 
 from stattest.experiment.configuration.configuration import AlternativeConfiguration
 from stattest.experiment.generator import AbstractRVSGenerator

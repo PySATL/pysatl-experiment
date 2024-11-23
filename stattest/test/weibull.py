@@ -1,5 +1,7 @@
+from abc import abstractmethod, ABC
+
 import numpy as np
-from numpy import histogram, float64
+from numpy import histogram
 from scipy.optimize import minimize_scalar
 from scipy.stats import distributions
 from typing_extensions import override
@@ -11,10 +13,8 @@ from stattest.test.common import KSTestStatistic, ADTestStatistic, LillieforsTes
 from stattest.test.models import AbstractTestStatistic
 
 
-class AbstractWeibullTestStatistic(AbstractTestStatistic):
-    def __init__(self, cache=None, l=1, k=5):
-        super().__init__(cache)
-
+class AbstractWeibullTestStatistic(AbstractTestStatistic, ABC):
+    def __init__(self, l=1, k=5):
         self.l = l
         self.k = k
 
@@ -22,10 +22,6 @@ class AbstractWeibullTestStatistic(AbstractTestStatistic):
     @override
     def code():
         return 'WEIBULL'
-
-    @override
-    def execute_statistic(self, rvs, **kwargs):
-        raise NotImplementedError("Not implemented")
 
 
 class MinToshiyukiWeibullTestStatistic(AbstractWeibullTestStatistic, MinToshiyukiTestStatistic):
@@ -47,7 +43,7 @@ class Chi2PearsonWiebullTest(AbstractWeibullTestStatistic, Chi2TestStatistic):
     def code():
         return 'CHI2_PEARSON' + '_' + AbstractWeibullTestStatistic.code()
 
-    @override(AbstractWeibullTestStatistic)
+    @override
     def execute_statistic(self, rvs, **kwargs):
         rvs_sorted = np.sort(rvs)
         n = len(rvs)
