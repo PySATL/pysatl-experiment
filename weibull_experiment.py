@@ -1,5 +1,7 @@
 from stattest.experiment import Experiment, ExperimentConfiguration, ReportConfiguration, AlternativeConfiguration
-from stattest.experiment.generator import BetaRVSGenerator, modified_generators, symmetric_generators
+from stattest.experiment.generator import BetaRVSGenerator, modified_generators, symmetric_generators, WeibullGenerator
+from stattest.experiment.generator.generators import ExponentialGenerator, GammaGenerator, InvGaussGenerator, \
+    LognormGenerator, RiceGenerator, GompertzGenerator
 from stattest.experiment.hypothesis import WeibullHypothesis
 from stattest.experiment.listener.listeners import TimeEstimationListener
 from stattest.experiment.configuration.configuration import TestConfiguration
@@ -17,8 +19,18 @@ if __name__ == '__main__':
 
     generate_data_tel = TimeEstimationListener()
     listeners = [generate_data_tel]
-    sizes = [1000, 100, 10]
-    alternatives = [BetaRVSGenerator(a=0.5, b=0.5)]
+    sizes = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+    alternatives = [ExponentialGenerator(lam=0.5), ExponentialGenerator(lam=1), ExponentialGenerator(lam=1.5),
+                    GammaGenerator(alfa=1, beta=2), GammaGenerator(alfa=2, beta=2), GammaGenerator(alfa=3, beta=2),
+                    GammaGenerator(alfa=5, beta=1), GammaGenerator(alfa=9, beta=0.5), GammaGenerator(alfa=0.5, beta=1),
+                    InvGaussGenerator(mu=1, lam=0.2), InvGaussGenerator(mu=1, lam=1), InvGaussGenerator(mu=1, lam=3),
+                    InvGaussGenerator(mu=3, lam=0.2), InvGaussGenerator(mu=3, lam=1),
+                    LognormGenerator(mu=0, s=0.25), LognormGenerator(mu=0, s=1), LognormGenerator(mu=0, s=5),
+                    LognormGenerator(mu=5, s=0.25), LognormGenerator(mu=5, s=1), LognormGenerator(mu=5, s=5),
+                    RiceGenerator(nu=0, sigma=1), RiceGenerator(nu=0.5, sigma=1), RiceGenerator(nu=4, sigma=1),
+                    GompertzGenerator(eta=0.1, b=1), GompertzGenerator(eta=2, b=1), GompertzGenerator(eta=3, b=1),
+                    GompertzGenerator(eta=1, b=2), GompertzGenerator(eta=1, b=3),
+                    WeibullGenerator(l=1, k=5), WeibullGenerator(l=2, k=5)]
 
     alternatives_configuration = AlternativeConfiguration(symmetric_generators, sizes, count=1_000, threads=3,
                                                           listeners=listeners)

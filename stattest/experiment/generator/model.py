@@ -1,7 +1,12 @@
-class AbstractRVSGenerator:
+from abc import ABC, abstractmethod
+
+
+class AbstractRVSGenerator(ABC):
+
     def __init__(self, **kwargs):
         pass
 
+    @abstractmethod
     def code(self):
         return NotImplementedError("Method is not implemented")
 
@@ -10,5 +15,6 @@ class AbstractRVSGenerator:
         return '_'.join(str(x) for x in items)
 
     @staticmethod
-    def generate(size):
-        raise NotImplementedError("Method is not implemented")
+    @abstractmethod
+    def generate(size: int):
+        pass
