@@ -56,7 +56,7 @@ class BenchmarkResultSqLiteStore(IBenchmarkResultStore):
 
         :param test_code: test code
 
-        :return benchmark on None
+        :return: benchmark on None
         """
         result = BenchmarkResultSqLiteStore.session.query(BenchmarkResultModel).filter(
             BenchmarkResultModel.test_code == test_code,
@@ -75,7 +75,7 @@ class BenchmarkResultSqLiteStore(IBenchmarkResultStore):
         :param offset: offset
         :param limit: limit
 
-        :return list of PowerResultModel
+        :return: list of PowerResultModel
         """
         result = (BenchmarkResultSqLiteStore.session.query(BenchmarkResultModel)
                   .order_by(BenchmarkResultModel.id).offset(offset).limit(limit)).all()

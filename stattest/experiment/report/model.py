@@ -5,7 +5,6 @@ from stattest.experiment import ReportBuilder
 from stattest.experiment.test.worker import PowerWorkerResult
 from stattest.persistence.models import IBenchmarkResultStore
 
-
 """
 class ChartBenchmarkMeanReportBuilder(ReportBuilder):
     def __init__(self):
@@ -46,6 +45,7 @@ class ChartBenchmarkMeanReportBuilder(ReportBuilder):
     def __build_path(result: BenchmarkWorkerResult):
         return '_'.join([result.test_code, str(result.size)])
 """
+
 
 class ChartPowerReportBuilder(ReportBuilder):
     def __init__(self):
