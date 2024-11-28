@@ -87,7 +87,7 @@ def load_from_files(
             return load_config_file(filename)
         file = Path(filename)
         if base_path:
-            # Prepend basepath to allow for relative assignments
+            # Prepend base path to allow for relative assignments
             file = base_path / file
 
         config_tmp = load_config_file(str(file))

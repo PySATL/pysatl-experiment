@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import KurtosisTest
-from tests.AbstractTestCase import AbstractTestCase
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import KurtosisNormalityTest
 
 
 @pytest.mark.parametrize(
@@ -10,8 +10,8 @@ from tests.AbstractTestCase import AbstractTestCase
         ([148, 154, 158, 160, 161, 162, 166, 170, 182, 195, 236], 2.3048235214240873),
     ],
 )
-class TestCaseKurtosisTest(AbstractTestCase):
+class TestCaseKurtosisNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return KurtosisTest()
+        return KurtosisNormalityTest()

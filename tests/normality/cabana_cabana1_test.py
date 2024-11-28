@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import CabanaCabana1Test
-from tests.AbstractTestCase import AbstractTestCase
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import CabanaCabana1NormalityTest
 
 
 @pytest.mark.parametrize(
@@ -12,8 +12,8 @@ from tests.AbstractTestCase import AbstractTestCase
           0.99395022, -0.28167969, 0.11683112, 0.68954236], 0.5265257),
     ],
 )
-class TestCaseCabanaCabana1Test(AbstractTestCase):
+class TestCaseCabanaCabana1NormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return CabanaCabana1Test()
+        return CabanaCabana1NormalityTest()

@@ -1,7 +1,7 @@
 import pytest as pytest
 
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 from stattest.test.normal import KSNormalityTest
-from tests.AbstractTestCase import AbstractTestCase
 
 
 @pytest.mark.parametrize(
@@ -21,7 +21,7 @@ from tests.AbstractTestCase import AbstractTestCase
           0.95253258, -1.17323879], 0.12958652448618313)
     ],
 )
-class TestCaseKSTest(AbstractTestCase):
+class TestCaseKSNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):

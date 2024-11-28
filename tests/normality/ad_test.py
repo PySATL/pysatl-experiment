@@ -1,7 +1,7 @@
 import pytest as pytest
 
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 from stattest.test.normal import ADTestStatistic
-from tests.AbstractTestCase import AbstractTestCase
 
 
 @pytest.mark.parametrize(
@@ -15,7 +15,7 @@ from tests.AbstractTestCase import AbstractTestCase
     ],
 )
 @pytest.mark.skip(reason="no way of currently testing this")
-class TestCaseADTest(AbstractTestCase):
+class TestCaseADNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):

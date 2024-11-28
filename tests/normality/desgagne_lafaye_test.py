@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import DesgagneLafayeTest
-from tests.AbstractTestCase import AbstractTestCase
+from stattest.test.normal import DesgagneLafayeNormalityTest
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(
@@ -12,8 +12,8 @@ from tests.AbstractTestCase import AbstractTestCase
           -0.03375564, 1.30610658], 0.8639117)
     ]
 )
-class TestDesgagneLafayeTest(AbstractTestCase):
+class TestDesgagneLafayeTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return DesgagneLafayeTest()
+        return DesgagneLafayeNormalityTest()

@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import ChenShapiroTest
-from tests.AbstractTestCase import AbstractTestCase
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import ChenShapiroNormalityTest
 
 
 @pytest.mark.parametrize(
@@ -12,8 +12,8 @@ from tests.AbstractTestCase import AbstractTestCase
           -0.7751734, -1.8370833], -0.1217789),
     ],
 )
-class TestCaseZhangWuCTest(AbstractTestCase):
+class TestCaseZhangWuCNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return ChenShapiroTest()
+        return ChenShapiroNormalityTest()

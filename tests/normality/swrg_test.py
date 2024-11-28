@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import SWRGTest
-from tests.AbstractTestCase import AbstractTestCase
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import SWRGNormalityTest
 
 
 @pytest.mark.parametrize(
@@ -12,8 +12,8 @@ from tests.AbstractTestCase import AbstractTestCase
           0.35588475, -0.44262575,  0.28699128, -0.66855218], 0.9092612),
     ],
 )
-class TestCaseZhangWuCTest(AbstractTestCase):
+class TestCaseZhangWuCNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return SWRGTest()
+        return SWRGNormalityTest()

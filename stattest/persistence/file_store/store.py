@@ -18,16 +18,16 @@ class StoreService:
         """
         Get cached value if exists, else return None.
 
-        :param key: cache key
+        :param key: cache_services key
         """
         raise NotImplementedError("Method is not implemented")
 
     def put(self, key: str, value):
         """
-        Put object to cache.
+        Put object to cache_services.
 
-        :param key: cache key
-        :param value: cache value
+        :param key: cache_services key
+        :param value: cache_services value
         """
         raise NotImplementedError("Method is not implemented")
 
@@ -44,7 +44,7 @@ class InMemoryStoreService(StoreService):
         """
         Get cached value if exists, else return None.
 
-        :param key: cache key
+        :param key: cache_services key
         """
 
         if key not in self.cache.keys():
@@ -64,10 +64,10 @@ class InMemoryStoreService(StoreService):
 
     def put(self, key: str, value):
         """
-        Put object to cache.
+        Put object to cache_services.
 
-        :param key: cache key
-        :param value: cache value
+        :param key: cache_services key
+        :param value: cache_services value
         """
 
         self.cache[key] = value
@@ -90,7 +90,7 @@ class InMemoryStoreService(StoreService):
 class JsonStoreService(InMemoryStoreService):
 
     def __init__(self, filename='cache.json', separator='.'):
-        super().__init__(separator)
+        super().__init__(separator=separator)
         mem_cache = {}
         if os.path.isfile(filename):
             mem_cache = read_json(filename)
@@ -100,10 +100,10 @@ class JsonStoreService(InMemoryStoreService):
 
     def put(self, key: str, value):
         """
-        Put object to cache.
+        Put object to cache_services.
 
-        :param key: cache key
-        :param value: cache value
+        :param key: cache_services key
+        :param value: cache_services value
         """
         super().put(key, value)
         write_json(self.filename, self.cache)
@@ -132,7 +132,7 @@ class FastStoreService(InMemoryStoreService):
 class FastJsonStoreService(FastStoreService):
 
     def __init__(self, filename='cache.json', separator='.'):
-        super().__init__(separator)
+        super().__init__(separator=separator)
         mem_cache = {}
         if os.path.isfile(filename):
             mem_cache = read_json(filename)

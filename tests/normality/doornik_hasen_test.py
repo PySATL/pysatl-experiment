@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import DoornikHansenTest
-from tests.AbstractTestCase import AbstractTestCase
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import DoornikHansenNormalityTest
 
 
 @pytest.mark.parametrize(
@@ -13,8 +13,8 @@ from tests.AbstractTestCase import AbstractTestCase
           1.50767670, -0.08592902, -0.46234996, 0.29561229, 0.32708351], 2.145117),
     ],
 )
-class TestCaseDoornikHasenTest(AbstractTestCase):
+class TestCaseDoornikHasenNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return DoornikHansenTest()
+        return DoornikHansenNormalityTest()
