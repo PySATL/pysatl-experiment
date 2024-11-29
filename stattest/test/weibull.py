@@ -5,6 +5,7 @@ from numpy import histogram
 from scipy.optimize import minimize_scalar
 from scipy.stats import distributions
 from scipy.special import gamma
+from scipy.stats import weibull_min
 from typing_extensions import override
 
 from stattest.core.distribution.weibull import generate_weibull_cdf
@@ -21,7 +22,7 @@ from stattest.test.models import AbstractTestStatistic
 
 
 class AbstractWeibullTestStatistic(AbstractTestStatistic, ABC):
-    def __init__(self, a=1, k=5):
+    def __init__(self, a=1, k=1):
         self.l = a
         self.k = k
 
@@ -32,23 +33,23 @@ class AbstractWeibullTestStatistic(AbstractTestStatistic, ABC):
 
 
 class MinToshiyukiWeibullTestStatistic(AbstractWeibullTestStatistic, MinToshiyukiTestStatistic):
-    @staticmethod
+    
     @override
-    def code():
-        return "MT" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"MT_{super().code()}"
 
     @override
-    def execute_statistic(self, rvs, **kwargs):
+    def execute_statistic(self, rvs):
         rvs = np.sort(rvs)
         cdf_vals = generate_weibull_cdf(rvs, a=self.l, k=self.k)
-        return MinToshiyukiTestStatistic.execute_statistic(self, cdf_vals)
+        return super().execute_statistic(cdf_vals)
 
 
 class Chi2PearsonWiebullTest(AbstractWeibullTestStatistic, Chi2TestStatistic):
-    @staticmethod
+
     @override
-    def code():
-        return "CHI2_PEARSON" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"CHI2_PEARSON_{super().code()}"
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -58,34 +59,39 @@ class Chi2PearsonWiebullTest(AbstractWeibullTestStatistic, Chi2TestStatistic):
         observed = observed / n
         expected = generate_weibull_cdf(bin_edges, a=self.l, k=self.k)
         expected = np.diff(expected)
-        return Chi2TestStatistic.execute_statistic(self, observed, expected, 1)
+        return super().execute_statistic(observed, expected, 1)
 
 
 class LillieforsWiebullTest(AbstractWeibullTestStatistic, LillieforsTest):
-    @staticmethod
+    
     @override
-    def code():
-        return "LILLIE" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"LILLIE_{super().code()}"
 
     @override
     def execute_statistic(self, rvs, **kwargs):
         rvs_sorted = np.sort(rvs)
         cdf_vals = generate_weibull_cdf(rvs_sorted, a=self.l, k=self.k)
-        return LillieforsTest.execute_statistic(rvs, cdf_vals)
+        return super().execute_statistic(rvs, cdf_vals)
 
 
 class CrammerVonMisesWeibullTest(AbstractWeibullTestStatistic, CrammerVonMisesTestStatistic):
-    def execute_statistic(self, rvs, cdf_vals):
+    
+    @override
+    def code(self):
+        return f"CVM_{super().code()}"
+        
+    def execute_statistic(self, rvs):
         rvs_sorted = np.sort(rvs)
         cdf_vals = generate_weibull_cdf(rvs_sorted, a=self.l, k=self.k)
-        return CrammerVonMisesTestStatistic.execute_statistic(rvs, cdf_vals)
+        return super().execute_statistic(rvs, cdf_vals)
 
 
 class ADWeibullTest(AbstractWeibullTestStatistic, ADTestStatistic):
-    @staticmethod
+
     @override
-    def code():
-        return "AD" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"AD_{super().code()}"
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -96,7 +102,7 @@ class ADWeibullTest(AbstractWeibullTestStatistic, ADTestStatistic):
         logcdf = distributions.gumbel_l.logcdf(w)
         logsf = distributions.gumbel_l.logsf(w)
 
-        return ADTestStatistic.execute_statistic(rvs, log_cdf=logcdf, log_sf=logsf, w=w)
+        return super().execute_statistic(rvs, log_cdf=logcdf, log_sf=logsf, w=w)
 
 
 class KSWeibullTest(AbstractWeibullTestStatistic, KSTestStatistic):
@@ -108,23 +114,22 @@ class KSWeibullTest(AbstractWeibullTestStatistic, KSTestStatistic):
         self.l = a
         self.k = k
 
-    @staticmethod
     @override
-    def code():
-        return "KS" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"KS_{super().code()}"
 
     @override
     def execute_statistic(self, rvs, **kwargs):
         rvs = np.sort(rvs)
         cdf_vals = generate_weibull_cdf(rvs, a=self.l, k=self.k)
-        return KSTestStatistic.execute_statistic(self, rvs, cdf_vals)
+        return super().execute_statistic(rvs, cdf_vals)
 
 
 class SBTestStatistic(AbstractWeibullTestStatistic):
-    @staticmethod
+
     @override
-    def code():
-        return "SB" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"SB_{super().code()}"
 
     # Test statistic of Shapiro Wilk
     @override
@@ -149,10 +154,10 @@ class SBTestStatistic(AbstractWeibullTestStatistic):
 
 
 class ST2TestStatistic(AbstractWeibullTestStatistic):
-    @staticmethod
+    
     @override
-    def code():
-        return "ST2" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"ST2_{super().code()}"
 
     # Smooth test statistic based on the kurtosis
     @override
@@ -172,10 +177,10 @@ class ST2TestStatistic(AbstractWeibullTestStatistic):
 
 
 class ST1TestStatistic(AbstractWeibullTestStatistic):
-    @staticmethod
+
     @override
-    def code():
-        return "ST1" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"ST1_{super().code()}"
 
     # Smooth test statistic based on the skewness
     @override
@@ -194,10 +199,10 @@ class ST1TestStatistic(AbstractWeibullTestStatistic):
 
 
 class REJGTestStatistic(AbstractWeibullTestStatistic):
-    @staticmethod
+    
     @override
-    def code():
-        return "REJG" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"REJG_{super().code()}"
 
     # Test statistic of Evans, Johnson and Green based on probability plot
     @override
@@ -242,10 +247,10 @@ class REJGTestStatistic(AbstractWeibullTestStatistic):
 
 
 class RSBTestStatistic(AbstractWeibullTestStatistic):
-    @staticmethod
+
     @override
-    def code():
-        return "RSB" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"RSB_{super().code()}"
 
     # Test statistic of Smith and Bain based on probability plot
     @override
@@ -307,13 +312,10 @@ class WeibullNormalizeSpaceTestStatistic(AbstractWeibullTestStatistic):
         w1 = 2 * (np.sum((n - s - 1 - a) * G1))
         w2 = (m - 2) * np.sum(G2)
 
-        print(G1)
-        print(G2)
-
         NS_statistic = 0
-        if type_ == "TS":
+        if type_ == "TS_WEIBULL":
             NS_statistic = w1 / w2
-        elif type_ == "LOS":
+        elif type_ == "LOS_WEIBULL":
             z = []
             for i in range(1, m - 1):
                 z.append(np.sum(G2[:i]) / np.sum(G2))
@@ -323,7 +325,7 @@ class WeibullNormalizeSpaceTestStatistic(AbstractWeibullTestStatistic):
             NS_statistic = -(m - 2) - (1 / (m - 2)) * np.sum(
                 (2 * np.array(interval) - 1) * (np.log(z) + np.log(1 - np.array(z1)))
             )
-        elif type_ == "MSF":
+        elif type_ == "MSF_WEIBULL":
             if s != 0:
                 raise ValueError("the test is only applied for right censoring")
             l1 = m // 2
@@ -336,12 +338,12 @@ class WeibullNormalizeSpaceTestStatistic(AbstractWeibullTestStatistic):
 
 
 class TSWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
-    @staticmethod
-    @override
-    def code():
-        return "TS" + "_" + AbstractWeibullTestStatistic.code()
 
+    @override
+    def code(self):
+        return f"TS_{super().code()}"
     # Tiku-Singh test statistic
+    
     @override
     def execute_statistic(self, rvs, **kwargs):
         """
@@ -355,14 +357,14 @@ class TSWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
         ----------
         **kwargs
         """
-        return super().execute_statistic(rvs, "TS")
+        return super().execute_statistic(rvs, self.code())
 
 
 class LOSWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
-    @staticmethod
+
     @override
-    def code():
-        return "LOS" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"LOS_{super().code()}"
 
     # Lockhart-O'Reilly-Stephens test statistic
     @override
@@ -380,14 +382,14 @@ class LOSWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
         **kwargs
         """
 
-        return super().execute_statistic(rvs, "LOS")
+        return super().execute_statistic(rvs, self.code())
 
 
 class MSFWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
-    @staticmethod
+
     @override
-    def code():
-        return "MSF" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"MSF_{super().code()}"
 
     # Lockhart-O'Reilly-Stephens test statistic
     @override
@@ -404,7 +406,7 @@ class MSFWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
         **kwargs
         """
 
-        return super().execute_statistic(rvs, "MSF")
+        return super().execute_statistic(rvs, self.code())
 
 
 class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
@@ -442,7 +444,7 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
         interval = np.arange(1, n + 1)
 
         WPP_statistic = 0
-        if type_ == "OK":
+        if type_ == "OK_WEIBULL":
             a = interval[:-1]
             Sig = np.sum((2 * np.concatenate((a, [n])) - 1 - n) * y) / (np.log(2) * (n - 1))
             w = np.log((n + 1) / (n - a + 1))
@@ -456,7 +458,7 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
                 0.49 / np.sqrt(n) - 0.36 / n
             )
 
-        elif type_ == "SB":
+        elif type_ == "SB_WEIBULL":
             yb = np.mean(y)
             S2 = np.sum((y - yb) ** 2)
             a = interval[:-1]
@@ -468,7 +470,7 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
             b = (0.6079 * np.sum(Wn * y) - 0.2570 * np.sum(Wi * y)) / n
             WPP_statistic = n * b**2 / S2
 
-        elif type_ == "RSB":
+        elif type_ == "RSB_WEIBULL":
             m = interval / (n + 1)
             m = np.log(-np.log(1 - m))
             mb = np.mean(m)
@@ -478,7 +480,7 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
             R /= np.sum((m - mb) ** 2)
             WPP_statistic = n * (1 - R)
 
-        elif type_ == "REJG":
+        elif type_ == "REJG_WEIBULL":
             beta_shape = WPPWeibullTestStatistic.MLEst(x)["beta"]
             m = np.log(-(np.log(1 - (interval - 0.3175) / (n + 0.365)))) / beta_shape
             s = (np.sum((y - np.mean(y)) * m)) ** 2 / (
@@ -486,20 +488,20 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
             )
             WPP_statistic = s**2
 
-        elif type_ == "SPP":
+        elif type_ == "SPP_WEIBULL":
             y = WPPWeibullTestStatistic.MLEst(x)["y"]
             r = 2 / np.pi * np.arcsin(np.sqrt((interval - 0.5) / n))
             s = 2 / np.pi * np.arcsin(np.sqrt(1 - np.exp(-np.exp(y))))
             WPP_statistic = np.max(np.abs(r - s))
 
-        elif type_ == "ST1":
+        elif type_ == "ST1_WEIBULL":
             x = np.sort(-y)
             s = np.sum((x - np.mean(x)) ** 2) / n
             b1 = np.sum(((x - np.mean(x)) / np.sqrt(s)) ** 3) / n
             V3 = (b1 - 1.139547) / np.sqrt(20 / n)
             WPP_statistic = V3**2
 
-        elif type_ == "ST2":
+        elif type_ == "ST2_WEIBULL":
             x = np.sort(-y)
             s = np.sum((x - np.mean(x)) ** 2) / n
             b1 = np.sum(((x - np.mean(x)) / np.sqrt(s)) ** 3) / n
@@ -511,10 +513,10 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
 
 
 class OKWeibullTestStatistic(WPPWeibullTestStatistic):
-    @staticmethod
+
     @override
-    def code():
-        return "OK" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"OK_{super().code()}"
 
     # Test statistic of Ozturk and Korukoglu
     @override
@@ -529,79 +531,79 @@ class OKWeibullTestStatistic(WPPWeibullTestStatistic):
         :return:
         """
 
-        return super().execute_statistic(rvs, "OK")
+        return super().execute_statistic(rvs, self.code())
 
 
 class SBWeibullTestStatistic(WPPWeibullTestStatistic):
-    @staticmethod
+
     @override
-    def code():
-        return "SB" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"SB_{super().code()}"
 
     # Test statistic of Shapiro Wilk
     @override
     def execute_statistic(self, rvs):
-        return super().execute_statistic(rvs, "SB")
+        return super().execute_statistic(rvs, self.code())
 
 
 class RSBWeibullTestStatistic(WPPWeibullTestStatistic):
-    @staticmethod
+
     @override
-    def code():
-        return "RSB" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"RSB_{super().code()}"
 
     # Test statistic of Smith and Bain based on probability plot
     @override
     def execute_statistic(self, rvs):
-        return super().execute_statistic(rvs, "RSB")
+        return super().execute_statistic(rvs, self.code())
 
 
 class ST2WeibullTestStatistic(WPPWeibullTestStatistic):
-    @staticmethod
+    
     @override
-    def code():
-        return "ST2" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"ST2_{super().code()}"
 
     # Smooth test statistic based on the kurtosis
     @override
     def execute_statistic(self, rvs):
-        return super().execute_statistic(rvs, "ST2")
+        return super().execute_statistic(rvs, self.code())
 
 
 class ST1WeibullTestStatistic(WPPWeibullTestStatistic):
-    @staticmethod
+
     @override
-    def code():
-        return "ST1" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"ST1_{super().code()}"
 
     # Smooth test statistic based on the skewness
     @override
     def execute_statistic(self, rvs):
-        return super().execute_statistic(rvs, "ST1")
+        return super().execute_statistic(rvs, self.code())
 
 
 class REJGWeibullTestStatistic(WPPWeibullTestStatistic):
-    @staticmethod
+
     @override
-    def code():
-        return "REJG" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"REJG_{super().code()}"
 
     # Test statistic of Evans, Johnson and Green based on probability plot
     @override
     def execute_statistic(self, rvs):
-        return super().execute_statistic(rvs, "REJG")
+        return super().execute_statistic(rvs, self.code())
 
 
 class SPPWeibullTestStatistic(WPPWeibullTestStatistic):
-    @staticmethod
+
     @override
-    def code():
-        return "SPP" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"SPP_{super().code()}"
 
     # Test statistic based on stabilized probability plot
     @override
     def execute_statistic(self, rvs):
-        return super().execute_statistic(rvs, "SPP")
+        return super().execute_statistic(rvs, self.code())
 
 
 # TODO: fix signatures
@@ -611,10 +613,9 @@ class MDTest(AbstractWeibullTestStatistic):
     25 Oct 2011 Goodness-of-ﬁt tests for weibull populations onthe basis of records , Mahdi Doostparast
     Department of Statistics, School of Mathematical Sciences,Ferdowsi University of Mashhad, P. O. Box 91775-1159, Mashhad, Iran'''
     
-    @staticmethod
     @override
-    def code():
-        return "MD" + "_" + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"MD_{super().code()}"
     
     @override
     def execute_statistic(self, rvs):
@@ -632,16 +633,17 @@ class MDTest(AbstractWeibullTestStatistic):
             [(emp_cdf[i-1] - 1) * (F_0[i] - F_0[i-1])
              for i in range(1, n)])
         
-        return n * (term1 + 2 * term2 + 0.5)
+        MD_statistic = n * (term1 + 2 * term2 + 0.5)
+        
+        return MD_statistic 
 
 class WatsonTest(CrammerVonMisesWeibullTest):
     '''Modified Cramer Statitstic 
     https://ru.wikipedia.org/wiki/Критерий_согласия_Ватсона'''
     
-    @staticmethod
     @override
-    def code():
-        return "Watson" + '_' + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"W_{super().code()}"
     
     @override
     def execute_statistic(self, rvs):
@@ -652,7 +654,9 @@ class WatsonTest(CrammerVonMisesWeibullTest):
         cramer_statistic = super().execute_statistic(rvs)
         correction_term = n * (np.mean(cdf_vals) - 0.5)**2
         
-        return cramer_statistic - correction_term
+        watson_statistic = cramer_statistic - correction_term
+        
+        return watson_statistic
 
 class LiaoShimokawaTest(AbstractWeibullTestStatistic):
     '''Test statistic of Liao-Shimokawa  
@@ -661,10 +665,9 @@ class LiaoShimokawaTest(AbstractWeibullTestStatistic):
     links/57b77e2708ae14f440ba3487/
     A-new-goodness-of-fit-test-for-Type-I-extreme-value-and-2-parameter-Weibull-distributions-with-estimated-parameters.pdf'''
     
-    @staticmethod
     @override
-    def code():
-        return "LS" + '_' + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"LS_{super().code()}"
     
     @override
     def execute_statistic(self, rvs):
@@ -674,23 +677,23 @@ class LiaoShimokawaTest(AbstractWeibullTestStatistic):
         empirical_cdf = np.arange(1, n + 1) / n
         theoretical_cdf = generate_weibull_cdf(rvs_sorted, a=self.l, k=self.k)
         
+        epsilon = 1e-10  # Small constant to avoid divide by zero
         
         deviations = np.maximum(
             empirical_cdf - theoretical_cdf,
             theoretical_cdf - (np.arange(0, n) / n)
         )
-        deviations /= np.sqrt(theoretical_cdf * (1 - theoretical_cdf))
+        deviations /= np.sqrt(theoretical_cdf * (1 - theoretical_cdf + epsilon))
         
         
-        statistic = np.sum(deviations) / np.sqrt(n)
-        return statistic
+        ls_statistic = np.sum(deviations) / np.sqrt(n)
+        return ls_statistic
 
 class KullbackLeiblerStatistic(AbstractWeibullTestStatistic):
     
-    @staticmethod
     @override
-    def code():
-        return 'KL' + '_' + AbstractWeibullTestStatistic.code()
+    def code(self):
+        return f"KL_{super().code()}"
     
     @override
     def execute_statistic(self, rvs, m=None):
@@ -721,21 +724,19 @@ class LTStatistic(AbstractWeibullTestStatistic):
     Recommended to use for small data
     """
 
-    def execute_statistic(self, rvs, m=100, a=-5, type='LT3'):
+    def execute_statistic(self, rvs, m=100, a=-5, type='LT3_WEIBULL'):
         n = len(rvs)
-        rvs_sorted = np.sort(rvs)
-        weibull_code = AbstractWeibullTestStatistic.code()
         
-        if type == f'LT2_{weibull_code}':
+        if type == f'LT2_WEIBULL':
             t_values = np.linspace(-m, -1, num=m) / m
             
-        elif type == f'LT3_{weibull_code}':
+        elif type == f'LT3_WEIBULL':
             t_values = np.linspace(-2.5, 0.49, m)
             
         else:
-            raise ValueError('type must be LT1 / LT2 / LT3')
+            raise ValueError('type must be LT2_WEIBULL / LT3_WEIBULL')
 
-        exp_matrix = np.exp(-np.outer(rvs_sorted, t_values))
+        exp_matrix = np.exp(-np.outer(rvs, t_values))
         
         col_sums = np.sum(exp_matrix, axis=0)
         
@@ -748,28 +749,28 @@ class LTStatistic(AbstractWeibullTestStatistic):
 
 class LT2Statistic(LTStatistic):
     
-    @staticmethod
-    def code():
-        return "LT2" + '_' + AbstractWeibullTestStatistic.code()
+    @override
+    def code(self):
+        return f"LT2_{super().code()}"
     
     def execute_statistic(self, rvs, m=100, a=-5):
-        return super().execute_statistic(rvs, m, a, 'LT2')
+        return super().execute_statistic(rvs, m, a, self.code())
 
 class LT3Statistic(LTStatistic):
     
-    @staticmethod
-    def code():
-        return "LT3" + '_' + AbstractWeibullTestStatistic.code()
+    @override
+    def code(self):
+        return f"LT3_{super().code()}"
     
     def execute_statistic(self, rvs, m=100, a=-5):
-        return super().execute_statistic(rvs, m, a, 'LT3')
+        return super().execute_statistic(rvs, m, a, self.code())
 
 class CabanaQuirozStatistic(AbstractWeibullTestStatistic):
     #Test statistic of Cabana and Quiroz
     
-    @staticmethod
-    def code():
-        return "CQ*"
+    @override
+    def code(self):
+        return f"CQ*_{super().code()}"
     
     def execute_statistic(self, rvs):
         
@@ -781,10 +782,9 @@ class CabanaQuirozStatistic(AbstractWeibullTestStatistic):
         
         n = len(rvs)
         
-        rvs_sorted = np.sort(rvs)
         
-        e1 = np.exp(-rvs_sorted * s1)
-        e2 = np.exp(-rvs_sorted * s2)
+        e1 = np.exp(-rvs * s1)
+        e2 = np.exp(-rvs * s2)
         
         mean_e1 = np.mean(e1)
         mean_e2 = np.mean(e2)
@@ -796,3 +796,19 @@ class CabanaQuirozStatistic(AbstractWeibullTestStatistic):
         CQ_statistic = Qn * (v2 * vn1**2 - 2 * vn1 * vn2 * v12 + v1 * vn2**2)
         
         return CQ_statistic
+
+
+
+# Example:
+# if __name__ == '__main__':
+
+#     tests = [MinToshiyukiWeibullTestStatistic(),MDTest(), LiaoShimokawaTest(), KullbackLeiblerStatistic(), 
+#             LT2Statistic(), LT3Statistic(), CabanaQuirozStatistic(), WatsonTest(), LillieforsWiebullTest(), 
+#             Chi2PearsonWiebullTest(), CrammerVonMisesWeibullTest(), ADWeibullTest(), KSWeibullTest(),
+#             SBTestStatistic(), ST2TestStatistic(), ST1TestStatistic(), REJGTestStatistic(), RSBTestStatistic(),
+#             TSWeibullTestStatistic(), LOSWeibullTestStatistic(), MSFWeibullTestStatistic(), OKWeibullTestStatistic(),
+#             SBWeibullTestStatistic(), RSBWeibullTestStatistic(), ST2WeibullTestStatistic(), ST1WeibullTestStatistic(), 
+#             REJGWeibullTestStatistic(), SPPWeibullTestStatistic()]
+#     data = np.random.weibull(1.5, size=100)  # Пример выборки
+#     for x in tests:
+#         print(x.execute_statistic(data), x.code())

@@ -126,6 +126,12 @@ class LillieforsTest(KSTestStatistic, ABC):
 
 
 class CrammerVonMisesTestStatistic(AbstractTestStatistic, ABC):
+    
+    @staticmethod
+    @override
+    def code():
+        return "CVM"
+    
     @override
     def execute_statistic(self, rvs, cdf_vals):
         n = len(rvs)
