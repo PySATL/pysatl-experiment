@@ -4,6 +4,7 @@ import numpy as np
 from numpy import histogram
 from scipy.optimize import minimize_scalar
 from scipy.stats import distributions
+from scipy.special import gamma
 from typing_extensions import override
 
 from stattest.core.distribution.weibull import generate_weibull_cdf
@@ -16,6 +17,7 @@ from stattest.test.common import (
     MinToshiyukiTestStatistic,
 )
 from stattest.test.models import AbstractTestStatistic
+
 
 
 class AbstractWeibullTestStatistic(AbstractTestStatistic, ABC):
@@ -603,3 +605,194 @@ class SPPWeibullTestStatistic(WPPWeibullTestStatistic):
 
 
 # TODO: fix signatures
+
+class MDTest(AbstractWeibullTestStatistic):
+    '''title:
+    25 Oct 2011 Goodness-of-ﬁt tests for weibull populations onthe basis of records , Mahdi Doostparast
+    Department of Statistics, School of Mathematical Sciences,Ferdowsi University of Mashhad, P. O. Box 91775-1159, Mashhad, Iran'''
+    
+    @staticmethod
+    @override
+    def code():
+        return "MD" + "_" + AbstractWeibullTestStatistic.code()
+    
+    @override
+    def execute_statistic(self, rvs):
+        rvs_sorted = np.sort(rvs)
+        n = len(rvs_sorted)
+        emp_cdf = np.arange(1, n + 1) / n
+
+        F_0 = generate_weibull_cdf(rvs_sorted, a=self.l, k=self.k)
+
+        term1 = np.sum(
+            [(emp_cdf[i-1] - 1) ** 2 * (np.log(F_0[i]) - np.log(F_0[i-1]))
+             for i in range(1, n)])
+
+        term2 = np.sum(
+            [(emp_cdf[i-1] - 1) * (F_0[i] - F_0[i-1])
+             for i in range(1, n)])
+        
+        return n * (term1 + 2 * term2 + 0.5)
+
+class WatsonTest(CrammerVonMisesWeibullTest):
+    '''Modified Cramer Statitstic 
+    https://ru.wikipedia.org/wiki/Критерий_согласия_Ватсона'''
+    
+    @staticmethod
+    @override
+    def code():
+        return "Watson" + '_' + AbstractWeibullTestStatistic.code()
+    
+    @override
+    def execute_statistic(self, rvs):
+        rvs_sorted = np.sort(rvs)
+        cdf_vals = generate_weibull_cdf(rvs_sorted, a=self.l, k=self.k)
+        n = len(rvs)
+        
+        cramer_statistic = super().execute_statistic(rvs)
+        correction_term = n * (np.mean(cdf_vals) - 0.5)**2
+        
+        return cramer_statistic - correction_term
+
+class LiaoShimokawaTest(AbstractWeibullTestStatistic):
+    '''Test statistic of Liao-Shimokawa  
+    https://www.researchgate.net/profile/Min-Liao-8/publication
+    /243043005_A_new_goodness-of-fit_test_for_Type-I_extreme-value_and_2-parameter_Weibull_distributions_with_estimated_parameters/
+    links/57b77e2708ae14f440ba3487/
+    A-new-goodness-of-fit-test-for-Type-I-extreme-value-and-2-parameter-Weibull-distributions-with-estimated-parameters.pdf'''
+    
+    @staticmethod
+    @override
+    def code():
+        return "LS" + '_' + AbstractWeibullTestStatistic.code()
+    
+    @override
+    def execute_statistic(self, rvs):
+        n = len(rvs)
+        rvs_sorted = np.sort(rvs)
+        
+        empirical_cdf = np.arange(1, n + 1) / n
+        theoretical_cdf = generate_weibull_cdf(rvs_sorted, a=self.l, k=self.k)
+        
+        
+        deviations = np.maximum(
+            empirical_cdf - theoretical_cdf,
+            theoretical_cdf - (np.arange(0, n) / n)
+        )
+        deviations /= np.sqrt(theoretical_cdf * (1 - theoretical_cdf))
+        
+        
+        statistic = np.sum(deviations) / np.sqrt(n)
+        return statistic
+
+class KullbackLeiblerStatistic(AbstractWeibullTestStatistic):
+    
+    @staticmethod
+    @override
+    def code():
+        return 'KL' + '_' + AbstractWeibullTestStatistic.code()
+    
+    @override
+    def execute_statistic(self, rvs, m=None):
+        """
+        Test statistic based on Kullback-Leibler information
+        """
+        n = len(rvs)
+        m = n // 2 if m is None else m
+        
+        log_rvs = np.log(np.sort(rvs))
+        
+        H_mn = np.mean([
+            np.log( (n / (2 * m)) * (log_rvs[min(n-1, i + m)] - log_rvs[max(0, i - m)]) )
+            for i in range(n)
+        ])
+        
+        term2 = np.mean(log_rvs)
+        
+        term3 = np.mean(np.exp(log_rvs))
+        
+        KL_statistic = -H_mn - term2 + term3
+        
+        return KL_statistic
+
+class LTStatistic(AbstractWeibullTestStatistic):
+    """
+    Family of the test statistics based on the Laplace transform
+    Recommended to use for small data
+    """
+
+    def execute_statistic(self, rvs, m=100, a=-5, type='LT3'):
+        n = len(rvs)
+        rvs_sorted = np.sort(rvs)
+        weibull_code = AbstractWeibullTestStatistic.code()
+        
+        if type == f'LT2_{weibull_code}':
+            t_values = np.linspace(-m, -1, num=m) / m
+            
+        elif type == f'LT3_{weibull_code}':
+            t_values = np.linspace(-2.5, 0.49, m)
+            
+        else:
+            raise ValueError('type must be LT1 / LT2 / LT3')
+
+        exp_matrix = np.exp(-np.outer(rvs_sorted, t_values))
+        
+        col_sums = np.sum(exp_matrix, axis=0)
+        
+        lt_sum = np.sum((np.exp(-np.exp(a * t_values) + a * t_values) * 
+                        (gamma(1 - t_values) - col_sums / n) ** 2))
+        
+        LT_stat = n * lt_sum
+        
+        return LT_stat
+
+class LT2Statistic(LTStatistic):
+    
+    @staticmethod
+    def code():
+        return "LT2" + '_' + AbstractWeibullTestStatistic.code()
+    
+    def execute_statistic(self, rvs, m=100, a=-5):
+        return super().execute_statistic(rvs, m, a, 'LT2')
+
+class LT3Statistic(LTStatistic):
+    
+    @staticmethod
+    def code():
+        return "LT3" + '_' + AbstractWeibullTestStatistic.code()
+    
+    def execute_statistic(self, rvs, m=100, a=-5):
+        return super().execute_statistic(rvs, m, a, 'LT3')
+
+class CabanaQuirozStatistic(AbstractWeibullTestStatistic):
+    #Test statistic of Cabana and Quiroz
+    
+    @staticmethod
+    def code():
+        return "CQ*"
+    
+    def execute_statistic(self, rvs):
+        
+        s1 = -0.1 
+        s2 = 0.02 
+        v1 = 1.59
+        v2 = 0.53
+        v12 = 0.91
+        
+        n = len(rvs)
+        
+        rvs_sorted = np.sort(rvs)
+        
+        e1 = np.exp(-rvs_sorted * s1)
+        e2 = np.exp(-rvs_sorted * s2)
+        
+        mean_e1 = np.mean(e1)
+        mean_e2 = np.mean(e2)
+        vn1 = np.sqrt(n) * (mean_e1 - gamma(1 - s1))
+        vn2 = np.sqrt(n) * (mean_e2 - gamma(1 - s2))
+        
+        Qn = 1 / (v1 * v2 - v12**2)
+        
+        CQ_statistic = Qn * (v2 * vn1**2 - 2 * vn1 * vn2 * v12 + v1 * vn2**2)
+        
+        return CQ_statistic
