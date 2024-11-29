@@ -13,7 +13,7 @@ from stattest.core.distribution.student import generate_t
 from stattest.core.distribution.truncnormal import generate_truncnorm
 from stattest.core.distribution.tukey import generate_tukey
 from stattest.core.distribution.weibull import generate_weibull
-from stattest.experiment.generator import AbstractRVSGenerator
+from stattest.experiment.generator.model import AbstractRVSGenerator
 
 
 class BetaRVSGenerator(AbstractRVSGenerator):

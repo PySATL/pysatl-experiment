@@ -1,5 +1,5 @@
 from stattest.core.distribution import norm, weibull
-from stattest.experiment.hypothesis import AbstractHypothesis
+from stattest.experiment.hypothesis.model import AbstractHypothesis
 
 
 class NormalHypothesis(AbstractHypothesis):

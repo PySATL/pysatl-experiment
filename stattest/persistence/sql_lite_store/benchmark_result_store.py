@@ -6,9 +6,9 @@ from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
 
 from stattest.persistence.models import IBenchmarkResultStore
-from stattest.persistence.sql_lite_store import (ModelBase, SessionType,
-                                                 get_request_or_thread_id,
-                                                 init_db)
+from stattest.persistence.sql_lite_store.base import ModelBase, SessionType
+from stattest.persistence.sql_lite_store.db_init import (
+    get_request_or_thread_id, init_db)
 
 
 class BenchmarkResultModel(ModelBase):

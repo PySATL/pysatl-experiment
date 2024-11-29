@@ -1,6 +1,7 @@
-from stattest.experiment import (AlternativeConfiguration, Experiment,
-                                 ExperimentConfiguration, ReportConfiguration)
-from stattest.experiment.configuration.configuration import TestConfiguration
+from stattest.experiment import Experiment
+from stattest.experiment.configuration.configuration import (
+    AlternativeConfiguration, ExperimentConfiguration, ReportConfiguration,
+    TestConfiguration)
 from stattest.experiment.generator import (BetaRVSGenerator,
                                            modified_generators,
                                            symmetric_generators)
