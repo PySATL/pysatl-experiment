@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -18,8 +18,8 @@ class TestCriticalValueSqLiteStoreService:
 
     def teardown_method(self, method):
         try:
-            os.remove(store_name)
-            os.remove(store_name + "-journal")
+            Path(store_name).unlink()
+            Path(store_name + "-journal").unlink()
         except OSError:
             pass
 

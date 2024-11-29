@@ -23,10 +23,10 @@ class TestRvsSqlLiteStoreService:
             pass
 
     def test_get_rvs_stat_empty(self, store):
-        assert len(store.get_rvs_stat()) is 0
+        assert len(store.get_rvs_stat()) == 0
 
     def test_get_rvs_empty(self, store):
-        assert len(store.get_rvs("test", 2)) is 0
+        assert len(store.get_rvs("test", 2)) == 0
 
     def test_insert_rvs(self, store):
         store.insert_rvs("gen_code", 10, [0.1, 0.2])
@@ -49,4 +49,4 @@ class TestRvsSqlLiteStoreService:
     def test_clear_rvs(self, store):
         store.insert_all_rvs("gen_code2", 2, [[0.1, 0.2], [0.3, 0.4]])
         store.clear_all_rvs()
-        assert len(store.get_rvs("gen_code2", 2)) is 0
+        assert len(store.get_rvs("gen_code2", 2)) == 0

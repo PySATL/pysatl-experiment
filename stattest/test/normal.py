@@ -1902,7 +1902,7 @@ class BHSNormalityTest(AbstractNormalityTestStatistic):
                     work[j] = self.h_kern(x[k], x2[i - 1], k, i, h1 + 1, eps[1])
                     j += 1
             if trace_lev >= 4:
-                print(" before whi_med(): work and iwt, each [0:({})]".format(j - 1))
+                #print(" before whi_med(): work and iwt, each [0:({})]".format(j - 1))
                 if j >= 100:
                     for i in range(90):
                         print(f" {work[i]:8g}", end="")
@@ -2104,7 +2104,7 @@ class SpiegelhalterNormalityTest(AbstractNormalityTestStatistic):
                 g += abs(x[i] - mean)
             g /= sd * math.sqrt(n) * math.sqrt(n - 1)
             if n < 150:
-                cn = 0.5 * math.gamma((n + 1)) ** (1 / (n - 1)) / n
+                cn = 0.5 * math.gamma(n + 1) ** (1 / (n - 1)) / n
             else:
                 cn = (
                     (2 * math.pi) ** (1 / (2 * (n - 1)))

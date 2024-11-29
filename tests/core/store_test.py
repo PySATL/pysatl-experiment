@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pytest
 
@@ -15,7 +15,7 @@ class TestJsonStoreService:
 
     def teardown_method(self, method):
         try:
-            os.remove(filename)
+            Path(filename).unlink()
         except OSError:
             pass
 

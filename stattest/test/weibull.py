@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 import numpy as np
 from numpy import histogram
@@ -19,8 +19,8 @@ from stattest.test.models import AbstractTestStatistic
 
 
 class AbstractWeibullTestStatistic(AbstractTestStatistic, ABC):
-    def __init__(self, l=1, k=5):
-        self.l = l
+    def __init__(self, a=1, k=5):
+        self.l = a
         self.k = k
 
     @staticmethod
@@ -38,7 +38,7 @@ class MinToshiyukiWeibullTestStatistic(AbstractWeibullTestStatistic, MinToshiyuk
     @override
     def execute_statistic(self, rvs, **kwargs):
         rvs = np.sort(rvs)
-        cdf_vals = generate_weibull_cdf(rvs, l=self.l, k=self.k)
+        cdf_vals = generate_weibull_cdf(rvs, a=self.l, k=self.k)
         return MinToshiyukiTestStatistic.execute_statistic(self, cdf_vals)
 
 
@@ -54,7 +54,7 @@ class Chi2PearsonWiebullTest(AbstractWeibullTestStatistic, Chi2TestStatistic):
         n = len(rvs)
         (observed, bin_edges) = histogram(rvs_sorted, bins=int(np.ceil(np.sqrt(n))))
         observed = observed / n
-        expected = generate_weibull_cdf(bin_edges, l=self.l, k=self.k)
+        expected = generate_weibull_cdf(bin_edges, a=self.l, k=self.k)
         expected = np.diff(expected)
         return Chi2TestStatistic.execute_statistic(self, observed, expected, 1)
 
@@ -68,14 +68,14 @@ class LillieforsWiebullTest(AbstractWeibullTestStatistic, LillieforsTest):
     @override
     def execute_statistic(self, rvs, **kwargs):
         rvs_sorted = np.sort(rvs)
-        cdf_vals = generate_weibull_cdf(rvs_sorted, l=self.l, k=self.k)
+        cdf_vals = generate_weibull_cdf(rvs_sorted, a=self.l, k=self.k)
         return LillieforsTest.execute_statistic(rvs, cdf_vals)
 
 
 class CrammerVonMisesWeibullTest(AbstractWeibullTestStatistic, CrammerVonMisesTestStatistic):
     def execute_statistic(self, rvs, cdf_vals):
         rvs_sorted = np.sort(rvs)
-        cdf_vals = generate_weibull_cdf(rvs_sorted, l=self.l, k=self.k)
+        cdf_vals = generate_weibull_cdf(rvs_sorted, a=self.l, k=self.k)
         return CrammerVonMisesTestStatistic.execute_statistic(rvs, cdf_vals)
 
 
@@ -99,11 +99,11 @@ class ADWeibullTest(AbstractWeibullTestStatistic, ADTestStatistic):
 
 class KSWeibullTest(AbstractWeibullTestStatistic, KSTestStatistic):
     @override
-    def __init__(self, alternative="two-sided", mode="auto", l=1, k=5):
+    def __init__(self, alternative="two-sided", mode="auto", a=1, k=5):
         AbstractWeibullTestStatistic.__init__(self, None)
         KSTestStatistic.__init__(self, alternative, mode)
 
-        self.l = l
+        self.l = a
         self.k = k
 
     @staticmethod
@@ -114,7 +114,7 @@ class KSWeibullTest(AbstractWeibullTestStatistic, KSTestStatistic):
     @override
     def execute_statistic(self, rvs, **kwargs):
         rvs = np.sort(rvs)
-        cdf_vals = generate_weibull_cdf(rvs, l=self.l, k=self.k)
+        cdf_vals = generate_weibull_cdf(rvs, a=self.l, k=self.k)
         return KSTestStatistic.execute_statistic(self, rvs, cdf_vals)
 
 
@@ -325,7 +325,7 @@ class WeibullNormalizeSpaceTestStatistic(AbstractWeibullTestStatistic):
             if s != 0:
                 raise ValueError("the test is only applied for right censoring")
             l1 = m // 2
-            l2 = m - l1 - 1
+            #l2 = m - l1 - 1
             S = np.sum((A[(l1 + 1) : m] - A[l1 : (m - 1)]) / (X[(l1 + 1) : m] - X[l1 : (m - 1)]))
             S = S / np.sum((A[1:m] - A[: (m - 1)]) / (X[1:m] - X[: (m - 1)]))
             NS_statistic = S
@@ -410,7 +410,6 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
         if np.min(x) <= 0:
             raise ValueError("Data x is not a positive sample")
 
-        n = len(x)
         lv = -np.log(x)
         y = np.sort(lv)
 

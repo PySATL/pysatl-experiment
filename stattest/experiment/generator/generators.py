@@ -156,7 +156,7 @@ class WeibullGenerator(AbstractRVSGenerator):
         return super()._convert_to_code(["weibull", self.l, self.k])
 
     def generate(self, size):
-        return generate_weibull(size=size, l=self.l, k=self.k)
+        return generate_weibull(size=size, a=self.l, k=self.k)
 
 
 class LoConNormGenerator(AbstractRVSGenerator):
