@@ -71,4 +71,29 @@ max-complexity = 12
 [tool.ruff.lint.isort]
 lines-after-imports = 2
 
+[tool.flake8]
+# Default from https://flake8.pycqa.org/en/latest/user/options.html#cmdoption-flake8-ignore
+# minus E226
+ignore = ["E121","E123","E126","E24", "E203","E704","W503","W504"]
+max-line-length = 100
+max-complexity = 12
+exclude = [
+    ".git",
+    "__pycache__",
+    ".eggs",
+    "user_data",
+    ".venv",
+    ".env",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+  "S101",  # allow assert in tests
+  "S104",  #  Possible binding to all interfaces
+  "S311",  # Standard pseudo-random generators are not suitable for cryptographic purposes
+  "S105",  # Possible hardcoded password assigned to: "secret"
+  "S106",  # Possible hardcoded password assigned to argument: "token_type"
+  "S110",  # `try`-`except`-`pass` detected, consider logging the exception
+  ]
+
 # TODO: fill stub from official documentation
