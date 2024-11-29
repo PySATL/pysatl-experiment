@@ -9,7 +9,8 @@ from typing_extensions import override
 from stattest.persistence.models import IPowerResultStore
 from stattest.persistence.sql_lite_store import ModelBase
 from stattest.persistence.sql_lite_store.base import SessionType
-from stattest.persistence.sql_lite_store.db_init import init_db, get_request_or_thread_id
+from stattest.persistence.sql_lite_store.db_init import (
+    get_request_or_thread_id, init_db)
 
 
 class PowerResultModel(ModelBase):

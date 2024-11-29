@@ -1,4 +1,4 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
 import numpy as np
 from numpy import histogram
@@ -7,9 +7,10 @@ from scipy.stats import distributions
 from typing_extensions import override
 
 from stattest.core.distribution.weibull import generate_weibull_cdf
-
-from stattest.test.common import KSTestStatistic, ADTestStatistic, LillieforsTest, CrammerVonMisesTestStatistic, \
-    Chi2TestStatistic, MinToshiyukiTestStatistic
+from stattest.test.common import (ADTestStatistic, Chi2TestStatistic,
+                                  CrammerVonMisesTestStatistic,
+                                  KSTestStatistic, LillieforsTest,
+                                  MinToshiyukiTestStatistic)
 from stattest.test.models import AbstractTestStatistic
 
 

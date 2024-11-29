@@ -11,7 +11,7 @@ from typing import Any, Optional
 import rapidjson
 
 from stattest.constants import Config
-from stattest.exceptions import OperationalException, ConfigurationError
+from stattest.exceptions import ConfigurationError, OperationalException
 from stattest.misc import deep_merge_dicts
 
 logger = logging.getLogger(__name__)

@@ -1,7 +1,8 @@
 import pytest as pytest
 
 from stattest.test.exponent import EPTestExp
-from tests.exponentiality.abstract_exponentiality_test_case import AbstractExponentialityTestCase
+from tests.exponentiality.abstract_exponentiality_test_case import \
+    AbstractExponentialityTestCase
 
 
 @pytest.mark.parametrize(  # TODO: actual test (7; 10)

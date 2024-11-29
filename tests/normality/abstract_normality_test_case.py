@@ -1,10 +1,10 @@
-from typing_extensions import override
+from abc import ABC
 
 import pytest
+from typing_extensions import override
 
-from tests.abstract_test_case import AbstractTestCase
 from stattest.test.normal import AbstractNormalityTestStatistic
-from abc import ABC
+from tests.abstract_test_case import AbstractTestCase
 
 
 class AbstractNormalityTestCase(AbstractTestCase, ABC):

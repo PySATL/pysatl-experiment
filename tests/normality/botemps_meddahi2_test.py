@@ -1,7 +1,8 @@
 import pytest as pytest
 
 from stattest.test.normal import BontempsMeddahi2NormalityTest
-from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from tests.normality.abstract_normality_test_case import \
+    AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(

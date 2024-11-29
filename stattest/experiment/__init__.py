@@ -1,3 +1,4 @@
+from stattest.experiment.configuration.configuration import (
+    AlternativeConfiguration, ExperimentConfiguration, ReportBuilder,
+    ReportConfiguration)
 from stattest.experiment.experiment import Experiment
-from stattest.experiment.configuration.configuration import (ExperimentConfiguration, ReportConfiguration,
-                                                             ReportBuilder, AlternativeConfiguration)

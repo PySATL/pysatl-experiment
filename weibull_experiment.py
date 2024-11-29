@@ -1,12 +1,18 @@
-from stattest.experiment import Experiment, ExperimentConfiguration, ReportConfiguration, AlternativeConfiguration
-from stattest.experiment.generator import BetaRVSGenerator, modified_generators, symmetric_generators
+from stattest.experiment import (AlternativeConfiguration, Experiment,
+                                 ExperimentConfiguration, ReportConfiguration)
+from stattest.experiment.configuration.configuration import TestConfiguration
+from stattest.experiment.generator import (BetaRVSGenerator,
+                                           modified_generators,
+                                           symmetric_generators)
 from stattest.experiment.hypothesis import WeibullHypothesis
 from stattest.experiment.listener.listeners import TimeEstimationListener
-from stattest.experiment.configuration.configuration import TestConfiguration
-from stattest.experiment.report.model import PdfPowerReportBuilder, PowerResultReader
+from stattest.experiment.report.model import (PdfPowerReportBuilder,
+                                              PowerResultReader)
 from stattest.experiment.test.worker import PowerCalculationWorker
-from stattest.persistence.sql_lite_store import CriticalValueSqLiteStore, RvsSqLiteStore
-from stattest.persistence.sql_lite_store.power_result_store import PowerResultSqlLiteStore
+from stattest.persistence.sql_lite_store import (CriticalValueSqLiteStore,
+                                                 RvsSqLiteStore)
+from stattest.persistence.sql_lite_store.power_result_store import \
+    PowerResultSqlLiteStore
 from stattest.test import KSWeibullTest
 
 if __name__ == '__main__':

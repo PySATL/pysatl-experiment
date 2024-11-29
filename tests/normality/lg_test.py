@@ -1,7 +1,9 @@
 import pytest as pytest
 
-from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 from stattest.test.normal import LooneyGulledgeNormalityTest
+from tests.normality.abstract_normality_test_case import \
+    AbstractNormalityTestCase
+
 
 @pytest.mark.parametrize(
     ("data", "result"),

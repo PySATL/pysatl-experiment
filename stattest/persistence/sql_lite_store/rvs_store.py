@@ -1,18 +1,15 @@
 import sqlite3
+from typing import ClassVar
 
 import numpy as np
+from sqlalchemy import Integer, String, func, text
+from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
 from typing_extensions import override
 
 from stattest.persistence import IRvsStore
-from typing import ClassVar
-
-from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
-from sqlalchemy import (
-    Integer, String, text, func,
-)
-
 from stattest.persistence.sql_lite_store.base import ModelBase, SessionType
-from stattest.persistence.sql_lite_store.db_init import init_db, get_request_or_thread_id
+from stattest.persistence.sql_lite_store.db_init import (
+    get_request_or_thread_id, init_db)
 
 
 class RVS(ModelBase):

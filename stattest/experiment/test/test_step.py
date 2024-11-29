@@ -6,7 +6,8 @@ from multiprocessing import freeze_support
 import numpy as np
 from tqdm import tqdm
 
-from stattest.experiment.configuration.configuration import TestConfiguration, TestWorker
+from stattest.experiment.configuration.configuration import (TestConfiguration,
+                                                             TestWorker)
 from stattest.persistence import IRvsStore
 from stattest.test import AbstractTestStatistic
 

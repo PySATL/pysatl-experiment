@@ -1,7 +1,8 @@
+from abc import ABC
+
 from typing_extensions import override
 
 from stattest.test.models import AbstractTestStatistic
-from abc import ABC
 
 
 class AbstractGoodnessOfFitTestStatistic(AbstractTestStatistic, ABC):

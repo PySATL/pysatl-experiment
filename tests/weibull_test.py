@@ -1,8 +1,11 @@
 import pytest
 
-from stattest.test import KSWeibullTest, ADWeibullTest, LOSWeibullTestStatistic, MSFWeibullTestStatistic, \
-    OKWeibullTestStatistic, REJGWeibullTestStatistic, RSBWeibullTestStatistic, SBWeibullTestStatistic, \
-    SPPWeibullTestStatistic, ST1WeibullTestStatistic, ST2WeibullTestStatistic, TSWeibullTestStatistic
+from stattest.test import (ADWeibullTest, KSWeibullTest,
+                           LOSWeibullTestStatistic, MSFWeibullTestStatistic,
+                           OKWeibullTestStatistic, REJGWeibullTestStatistic,
+                           RSBWeibullTestStatistic, SBWeibullTestStatistic,
+                           SPPWeibullTestStatistic, ST1WeibullTestStatistic,
+                           ST2WeibullTestStatistic, TSWeibullTestStatistic)
 
 
 @pytest.mark.parametrize(

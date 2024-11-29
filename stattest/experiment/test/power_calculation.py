@@ -1,5 +1,6 @@
 from stattest.experiment.configuration.configuration import AbstractHypothesis
-from stattest.experiment.test.critical_value import get_or_calculate_critical_value
+from stattest.experiment.test.critical_value import \
+    get_or_calculate_critical_value
 from stattest.persistence.models import ICriticalValueStore
 from stattest.test import AbstractTestStatistic
 

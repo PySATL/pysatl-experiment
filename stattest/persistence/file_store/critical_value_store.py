@@ -5,7 +5,7 @@ from typing import Optional
 from typing_extensions import override
 
 from stattest.persistence import ICriticalValueStore
-from stattest.persistence.file_store.store import write_json, read_json
+from stattest.persistence.file_store.store import read_json, write_json
 
 
 class CriticalValueFileStore(ICriticalValueStore):

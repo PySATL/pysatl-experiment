@@ -1,5 +1,6 @@
-import numpy as np
 from abc import ABC
+
+import numpy as np
 import scipy.stats as scipy_stats
 from scipy import special
 from typing_extensions import override

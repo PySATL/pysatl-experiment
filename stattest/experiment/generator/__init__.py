@@ -1,7 +1,19 @@
+from stattest.experiment.generator.generators import (BetaRVSGenerator,
+                                                      CauchyRVSGenerator,
+                                                      Chi2Generator,
+                                                      GammaGenerator,
+                                                      GumbelGenerator,
+                                                      LaplaceRVSGenerator,
+                                                      LoConNormGenerator,
+                                                      LogisticRVSGenerator,
+                                                      LognormGenerator,
+                                                      MixConNormGenerator,
+                                                      ScConNormGenerator,
+                                                      TruncnormGenerator,
+                                                      TRVSGenerator,
+                                                      TukeyRVSGenerator,
+                                                      WeibullGenerator)
 from stattest.experiment.generator.model import AbstractRVSGenerator
-from stattest.experiment.generator.generators import BetaRVSGenerator, CauchyRVSGenerator, LaplaceRVSGenerator, \
-    LogisticRVSGenerator, TRVSGenerator, TukeyRVSGenerator, Chi2Generator, GammaGenerator, WeibullGenerator, \
-    TruncnormGenerator, LoConNormGenerator, ScConNormGenerator, MixConNormGenerator, GumbelGenerator, LognormGenerator
 
 symmetric_generators = [BetaRVSGenerator(a=0.5, b=0.5), BetaRVSGenerator(a=1, b=1), BetaRVSGenerator(a=2, b=2),
                         CauchyRVSGenerator(t=0, s=0.5), CauchyRVSGenerator(t=0, s=1), CauchyRVSGenerator(t=0, s=2),

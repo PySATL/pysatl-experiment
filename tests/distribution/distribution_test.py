@@ -22,6 +22,7 @@ from stattest.core.distribution.tukey import generate_tukey
 from stattest.core.distribution.uniform import generate_uniform
 from stattest.core.distribution.weibull import generate_weibull
 
+
 @pytest.mark.skip(reason="no way of currently testing this")
 class TestDistribution:
     size = 10000

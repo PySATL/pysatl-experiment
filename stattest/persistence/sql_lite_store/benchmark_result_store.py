@@ -2,11 +2,13 @@ import sqlite3
 from typing import ClassVar
 
 import numpy as np
-from sqlalchemy import String, Integer
-from sqlalchemy.orm import Mapped, mapped_column, sessionmaker, scoped_session
+from sqlalchemy import Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
 
 from stattest.persistence.models import IBenchmarkResultStore
-from stattest.persistence.sql_lite_store import ModelBase, init_db, get_request_or_thread_id, SessionType
+from stattest.persistence.sql_lite_store import (ModelBase, SessionType,
+                                                 get_request_or_thread_id,
+                                                 init_db)
 
 
 class BenchmarkResultModel(ModelBase):

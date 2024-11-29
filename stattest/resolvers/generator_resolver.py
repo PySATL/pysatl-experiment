@@ -7,7 +7,7 @@ This module load custom RVS generators
 import logging
 from typing import Any, Optional
 
-from stattest.constants import Config, USERPATH_GENERATORS
+from stattest.constants import USERPATH_GENERATORS, Config
 from stattest.exceptions import OperationalException
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.resolvers.iresolver import IResolver

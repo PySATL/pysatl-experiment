@@ -1,12 +1,13 @@
 import logging
 import multiprocessing
 from itertools import repeat
-from multiprocessing import freeze_support, RLock
+from multiprocessing import RLock, freeze_support
 
 import numpy as np
 from tqdm import tqdm
 
-from stattest.experiment.configuration.configuration import AlternativeConfiguration
+from stattest.experiment.configuration.configuration import \
+    AlternativeConfiguration
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.persistence.models import IRvsStore
 

@@ -1,7 +1,8 @@
 import pytest as pytest
 
 from stattest.test.exponent import AHSTestExp
-from tests.exponentiality.abstract_exponentiality_test_case import AbstractExponentialityTestCase
+from tests.exponentiality.abstract_exponentiality_test_case import \
+    AbstractExponentialityTestCase
 
 
 # TODO: actual test (7; 10)

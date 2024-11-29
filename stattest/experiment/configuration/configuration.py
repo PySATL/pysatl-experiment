@@ -1,6 +1,6 @@
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.experiment.hypothesis import AbstractHypothesis
-from stattest.persistence import IRvsStore, ICriticalValueStore
+from stattest.persistence import ICriticalValueStore, IRvsStore
 from stattest.test import AbstractTestStatistic
 
 

@@ -1,14 +1,15 @@
 import math
+from abc import ABC
+
+import numpy as np
+import pandas as pd
+import scipy.stats as scipy_stats
 from typing_extensions import override
 
 from stattest.core.distribution import norm
-import numpy as np
-import scipy.stats as scipy_stats
-import pandas as pd
-
+from stattest.test.common import (ADTestStatistic, KSTestStatistic,
+                                  LillieforsTest)
 from stattest.test.goodness_of_fit import AbstractGoodnessOfFitTestStatistic
-from stattest.test.common import KSTestStatistic, ADTestStatistic, LillieforsTest
-from abc import ABC
 
 
 class AbstractNormalityTestStatistic(AbstractGoodnessOfFitTestStatistic, ABC):

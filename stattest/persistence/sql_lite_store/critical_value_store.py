@@ -1,20 +1,15 @@
 import sqlite3
-
-import numpy as np
-from typing_extensions import override, Optional
-
 from typing import ClassVar
 
+import numpy as np
+from sqlalchemy import Float, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
-from sqlalchemy import (
-    Integer,
-    String,
-    Float,
-)
+from typing_extensions import Optional, override
 
 from stattest.persistence.models import ICriticalValueStore
 from stattest.persistence.sql_lite_store.base import ModelBase, SessionType
-from stattest.persistence.sql_lite_store.db_init import init_db, get_request_or_thread_id
+from stattest.persistence.sql_lite_store.db_init import (
+    get_request_or_thread_id, init_db)
 
 
 class Distribution(ModelBase):

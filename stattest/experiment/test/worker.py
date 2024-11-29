@@ -1,9 +1,10 @@
 from typing_extensions import override
 
+from stattest.experiment.configuration.configuration import (TestWorker,
+                                                             TestWorkerResult)
 from stattest.experiment.hypothesis import AbstractHypothesis
-from stattest.experiment.configuration.configuration import TestWorker, TestWorkerResult
 from stattest.experiment.test.power_calculation import calculate_test_power
-from stattest.persistence.models import IPowerResultStore, ICriticalValueStore
+from stattest.persistence.models import ICriticalValueStore, IPowerResultStore
 from stattest.test import AbstractTestStatistic
 
 

@@ -1,6 +1,7 @@
+from abc import ABC, abstractmethod
+
 from numpy import float64
 from typing_extensions import Optional
-from abc import ABC, abstractmethod
 
 
 class AbstractTestStatistic(ABC):

@@ -1,11 +1,11 @@
 import math
-from typing_extensions import override
 from abc import ABC
 
-from stattest.core.distribution import expon
 import numpy as np
 import scipy.special as scipy_special
+from typing_extensions import override
 
+from stattest.core.distribution import expon
 from stattest.test.goodness_of_fit import AbstractGoodnessOfFitTestStatistic
 
 
