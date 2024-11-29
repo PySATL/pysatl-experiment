@@ -325,7 +325,7 @@ class WeibullNormalizeSpaceTestStatistic(AbstractWeibullTestStatistic):
             if s != 0:
                 raise ValueError("the test is only applied for right censoring")
             l1 = m // 2
-            #l2 = m - l1 - 1
+            # l2 = m - l1 - 1
             S = np.sum((A[(l1 + 1) : m] - A[l1 : (m - 1)]) / (X[(l1 + 1) : m] - X[l1 : (m - 1)]))
             S = S / np.sum((A[1:m] - A[: (m - 1)]) / (X[1:m] - X[: (m - 1)]))
             NS_statistic = S

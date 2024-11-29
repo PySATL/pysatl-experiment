@@ -54,21 +54,21 @@ class KSTestStatistic(AbstractTestStatistic, ABC):
         d_minus, d_minus_location = KSTestStatistic.__compute_dminus(cdf_vals, rvs)
         if d_plus > d_minus:
             D = d_plus
-            #d_location = d_plus_location
-            #d_sign = 1
+            # d_location = d_plus_location
+            # d_sign = 1
         else:
             D = d_minus
-            #d_location = d_minus_location
-            #d_sign = -1
+            # d_location = d_minus_location
+            # d_sign = -1
 
-        '''if self.mode == "exact":
+        """if self.mode == "exact":
             prob = scipy_stats.distributions.kstwo.sf(D, n)
         elif self.mode == "asymp":
             #prob = scipy_stats.distributions.kstwobign.sf(D * np.sqrt(n))
         else:
             # mode == 'approx'
             #prob = 2 * scipy_stats.distributions.ksone.sf(D, n)
-        #prob = np.clip(prob, 0, 1)'''
+        #prob = np.clip(prob, 0, 1)"""
         return D
 
     @override

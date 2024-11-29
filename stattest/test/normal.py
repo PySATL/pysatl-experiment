@@ -1782,7 +1782,7 @@ class BHSNormalityTest(AbstractNormalityTestStatistic):
             stat_tmclr = n * np.dot(vec, np.dot(inv_v, vec))
             return stat_tmclr  # Here is the test statistic value
 
-    #TODO: refactor
+    # TODO: refactor
     # flake8: noqa: C901
     def mc_c_d(self, z, eps, iter_):
         """
@@ -1907,7 +1907,7 @@ class BHSNormalityTest(AbstractNormalityTestStatistic):
                     work[j] = self.h_kern(x[k], x2[i - 1], k, i, h1 + 1, eps[1])
                     j += 1
             if trace_lev >= 4:
-                #print(" before whi_med(): work and iwt, each [0:({})]".format(j - 1))
+                # print(" before whi_med(): work and iwt, each [0:({})]".format(j - 1))
                 if j >= 100:
                     for i in range(90):
                         print(f" {work[i]:8g}", end="")

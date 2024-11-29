@@ -23,9 +23,7 @@ class RvsFileStore(IRvsStore):
 
     @override
     def insert_all_rvs(self, generator_code: str, size: int, data: [[float]]):
-        file_path = Path(
-            self.path, RvsFileStore.build_rvs_file_name(generator_code, size) + ".csv"
-        )
+        file_path = Path(self.path, RvsFileStore.build_rvs_file_name(generator_code, size) + ".csv")
         with Path(file_path).open("w", newline="") as csvfile:
             writer = csv.writer(
                 csvfile,
@@ -40,9 +38,7 @@ class RvsFileStore(IRvsStore):
         result = []
         for filename in filenames:
             rvs_code, size = RvsFileStore.parse_rvs_file_name(filename)
-            file_path = Path(
-                self.path, RvsFileStore.build_rvs_file_name(rvs_code, size) + ".csv"
-            )
+            file_path = Path(self.path, RvsFileStore.build_rvs_file_name(rvs_code, size) + ".csv")
             with Path(file_path).open(newline="") as f:
                 reader = csv.reader(
                     f, delimiter=RvsFileStore.__separator, quoting=csv.QUOTE_NONNUMERIC

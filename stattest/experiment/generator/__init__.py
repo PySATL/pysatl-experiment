@@ -97,4 +97,4 @@ modified_generators = [
     MixConNormGenerator(p=0.5, a=3, b=4),
 ]
 
-__all__ = ['AbstractRVSGenerator']
+__all__ = ["AbstractRVSGenerator"]

@@ -5,5 +5,12 @@ from stattest.persistence.sql_lite_store.db_init import get_request_or_thread_id
 from stattest.persistence.sql_lite_store.rvs_store import RvsSqLiteStore
 
 
-__all__  = ['RvsSqLiteStore', 'get_request_or_thread_id', 'init_db', 'CriticalValueSqLiteStore',
-            'BenchmarkResultSqLiteStore', 'ModelBase', 'SessionType']
+__all__ = [
+    "RvsSqLiteStore",
+    "get_request_or_thread_id",
+    "init_db",
+    "CriticalValueSqLiteStore",
+    "BenchmarkResultSqLiteStore",
+    "ModelBase",
+    "SessionType",
+]
