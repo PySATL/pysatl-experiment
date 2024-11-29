@@ -1,5 +1,5 @@
 import logging
-from multiprocessing import Queue, Manager, Event, Process
+from multiprocessing import Event, Queue
 
 from tqdm import tqdm
 
@@ -31,9 +31,15 @@ def execute_tests(
             worker.save_result(result)
             pbar.update(1)
 
-def process_entries(generate_queue: Queue, info_queue: Queue, generate_shutdown_event: Event,
-                    info_shutdown_event: Event, kwargs):
-    worker = kwargs['worker']
+
+def process_entries(
+    generate_queue: Queue,
+    info_queue: Queue,
+    generate_shutdown_event: Event,
+    info_shutdown_event: Event,
+    kwargs,
+):
+    worker = kwargs["worker"]
     worker.init()
 
     while not (generate_shutdown_event.is_set() and generate_queue.empty()):
@@ -45,7 +51,10 @@ def process_entries(generate_queue: Queue, info_queue: Queue, generate_shutdown_
 
     info_shutdown_event.set()
 
-def fill_queue(queue, generate_shutdown_event, tests: [AbstractTestStatistic]=None, store=None, **kwargs):
+
+def fill_queue(
+    queue, generate_shutdown_event, tests: [AbstractTestStatistic] = None, store=None, **kwargs
+):
     stat = store.get_rvs_stat()
 
     for code, size, _ in stat:
@@ -74,7 +83,9 @@ def execute_test_step(configuration: TestConfiguration, rvs_store: IRvsStore):
     for listener in configuration.listeners:
         listener.before()
 
-    start_pipeline(fill_queue, process_entries, threads_count, worker=worker, tests=tests, store=rvs_store)
+    start_pipeline(
+        fill_queue, process_entries, threads_count, worker=worker, tests=tests, store=rvs_store
+    )
 
     # Execute after all listeners
     for listener in configuration.listeners:

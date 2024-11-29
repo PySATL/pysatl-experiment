@@ -1,10 +1,10 @@
 import logging
+from multiprocessing import Event, Queue
 
 from stattest.experiment.configuration.configuration import AlternativeConfiguration
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.experiment.pipeline import start_pipeline
 from stattest.persistence.models import IRvsStore
-from multiprocessing import Queue, Manager, Event, Process
 
 
 logger = logging.getLogger(__name__)
@@ -23,9 +23,14 @@ def generate_rvs_data(rvs_generator: AbstractRVSGenerator, size, count):
     return [rvs_generator.generate(size) for _ in range(count)]
 
 
-def process_entries(generate_queue: Queue, info_queue: Queue, generate_shutdown_event: Event,
-                    info_shutdown_event: Event, kwargs):
-    store = kwargs['store']
+def process_entries(
+    generate_queue: Queue,
+    info_queue: Queue,
+    generate_shutdown_event: Event,
+    info_shutdown_event: Event,
+    kwargs,
+):
+    store = kwargs["store"]
     store.init()
 
     while not (generate_shutdown_event.is_set() and generate_queue.empty()):
@@ -38,7 +43,15 @@ def process_entries(generate_queue: Queue, info_queue: Queue, generate_shutdown_
     info_shutdown_event.set()
 
 
-def fill_queue(queue, generate_shutdown_event, sizes=None, count=0, store=None, rvs_generators: [AbstractRVSGenerator] = None, **kwargs):
+def fill_queue(
+    queue,
+    generate_shutdown_event,
+    sizes=None,
+    count=0,
+    store=None,
+    rvs_generators: [AbstractRVSGenerator] = None,
+    **kwargs,
+):
     for size in sizes:
         for generator in rvs_generators:
             code = generator.code()
@@ -79,8 +92,15 @@ def data_generation_step(alternative_configuration: AlternativeConfiguration, st
     rvs_generators = alternative_configuration.alternatives
     sizes = alternative_configuration.sizes
 
-    start_pipeline(fill_queue, process_entries, threads_count, sizes=sizes, count=alternative_configuration.count,
-                   rvs_generators=rvs_generators, store=store)
+    start_pipeline(
+        fill_queue,
+        process_entries,
+        threads_count,
+        sizes=sizes,
+        count=alternative_configuration.count,
+        rvs_generators=rvs_generators,
+        store=store,
+    )
 
     # Execute after all listeners
     for listener in alternative_configuration.listeners:

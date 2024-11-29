@@ -1,5 +1,6 @@
+from multiprocessing import Event, Manager, Process, Queue
+
 from tqdm import tqdm
-from multiprocessing import Queue, Manager, Event, Process
 
 
 def __show_prog(queue: Queue, shutdown_event, total):
@@ -11,7 +12,7 @@ def __show_prog(queue: Queue, shutdown_event, total):
             if prog.n >= total:
                 break
         finally:
-            continue
+            pass
 
 
 def start_pipeline(fill_queue, process_entries, num_workers, **kwargs):
@@ -25,8 +26,10 @@ def start_pipeline(fill_queue, process_entries, num_workers, **kwargs):
 
     processes = []
     for p in range(num_workers):
-        p = Process(target=process_entries,
-                    args=(queue, info_queue, shutdown_event, info_shutdown_event, kwargs))
+        p = Process(
+            target=process_entries,
+            args=(queue, info_queue, shutdown_event, info_shutdown_event, kwargs),
+        )
         p.start()
         processes.append(p)
 
