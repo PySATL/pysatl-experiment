@@ -3,9 +3,8 @@ from abc import ABC
 import numpy as np
 from numpy import histogram
 from scipy.optimize import minimize_scalar
-from scipy.stats import distributions
 from scipy.special import gamma
-from scipy.stats import weibull_min
+from scipy.stats import distributions, weibull_min
 from typing_extensions import override
 
 from stattest.core.distribution.weibull import generate_weibull_cdf
