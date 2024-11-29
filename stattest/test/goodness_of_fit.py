@@ -1,15 +1,15 @@
+from abc import ABC
+
 from typing_extensions import override
 
 from stattest.test.models import AbstractTestStatistic
-from abc import ABC
 
 
 class AbstractGoodnessOfFitTestStatistic(AbstractTestStatistic, ABC):
-
     @staticmethod
     @override
     def code():
-        return 'GOODNESS_OF_FIT'
+        return "GOODNESS_OF_FIT"
 
     def _generate(self, size):
         raise NotImplementedError("Method is not implemented")

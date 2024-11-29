@@ -1,6 +1,7 @@
-from numpy import float64
-from typing_extensions import Optional
 from abc import ABC, abstractmethod
+from typing import Optional
+
+from numpy import float64
 
 
 class AbstractTestStatistic(ABC):
@@ -27,4 +28,4 @@ class AbstractTestStatistic(ABC):
         :param rvs_size: rvs size
         :param sl: significance level
         """
-        pass
+        return None

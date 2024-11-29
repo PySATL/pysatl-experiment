@@ -10,10 +10,16 @@ from stattest.experiment.configuration.configuration import TestConfiguration, T
 from stattest.persistence import IRvsStore
 from stattest.test import AbstractTestStatistic
 
+
 logger = logging.getLogger(__name__)
 
 
-def execute_tests(worker: TestWorker, tests: [AbstractTestStatistic], rvs_store: IRvsStore, thread_count: int = 0):
+def execute_tests(
+    worker: TestWorker,
+    tests: [AbstractTestStatistic],
+    rvs_store: IRvsStore,
+    thread_count: int = 0,
+):
     rvs_store.init()
     worker.init()
 
@@ -35,10 +41,10 @@ def execute_test_step(configuration: TestConfiguration, rvs_store: IRvsStore):
 
     # Skip step
     if configuration.skip_step:
-        logger.info('Skip test step')
+        logger.info("Skip test step")
         return
 
-    logger.info('Start test step')
+    logger.info("Start test step")
 
     # Execute before all listeners
     for listener in configuration.listeners:
@@ -50,7 +56,10 @@ def execute_test_step(configuration: TestConfiguration, rvs_store: IRvsStore):
         tests_chunks = np.array_split(tests, threads_count)
         threads_counts = list(range(threads_count))
         with multiprocessing.Pool(threads_count) as pool:
-            pool.starmap(execute_tests, zip(repeat(worker), tests_chunks, repeat(rvs_store), threads_counts))
+            pool.starmap(
+                execute_tests,
+                zip(repeat(worker), tests_chunks, repeat(rvs_store), threads_counts),
+            )
     else:
         execute_tests(worker, tests, rvs_store)
 
@@ -58,4 +67,4 @@ def execute_test_step(configuration: TestConfiguration, rvs_store: IRvsStore):
     for listener in configuration.listeners:
         listener.after()
 
-    logger.info('End test step')
+    logger.info("End test step")

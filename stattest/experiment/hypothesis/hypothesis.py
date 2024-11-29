@@ -1,6 +1,5 @@
-from stattest.experiment.hypothesis import AbstractHypothesis
-from stattest.core.distribution import norm
-from stattest.core.distribution import weibull
+from stattest.core.distribution import norm, weibull
+from stattest.experiment.hypothesis.model import AbstractHypothesis
 
 
 class NormalHypothesis(AbstractHypothesis):
@@ -13,8 +12,8 @@ class NormalHypothesis(AbstractHypothesis):
 
 
 class WeibullHypothesis(AbstractHypothesis):
-    def __init__(self, l=1, k=5):
-        self.l = l
+    def __init__(self, a=1, k=5):
+        self.l = a
         self.k = k
 
     def generate(self, size, **kwargs):

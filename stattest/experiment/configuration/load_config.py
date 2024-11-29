@@ -11,8 +11,9 @@ from typing import Any, Optional
 import rapidjson
 
 from stattest.constants import Config
-from stattest.exceptions import OperationalException, ConfigurationError
+from stattest.exceptions import ConfigurationError, OperationalException
 from stattest.misc import deep_merge_dicts
+
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ def log_config_error_range(path: str, errmsg: str) -> str:
             offset = int(offsetlist[0])
             text = Path(path).read_text()
             # Fetch an offset of 80 characters around the error line
-            subtext = text[offset - min(80, offset): offset + 80]
+            subtext = text[offset - min(80, offset) : offset + 80]
             segments = subtext.split("\n")
             if len(segments) > 3:
                 # Remove first and last lines, to avoid odd truncations
@@ -66,7 +67,7 @@ def load_config_file(path: str) -> dict[str, Any]:
 
 
 def load_from_files(
-        files: list[str], base_path: Optional[Path] = None, level: int = 0
+    files: list[str], base_path: Optional[Path] = None, level: int = 0
 ) -> dict[str, Any]:
     """
     Recursively load configuration files if specified.

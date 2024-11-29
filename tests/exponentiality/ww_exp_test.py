@@ -13,7 +13,6 @@ from tests.exponentiality.abstract_exponentiality_test_case import AbstractExpon
 )
 @pytest.mark.skip(reason="fix test and check")
 class TestCaseWWExponentialityTest(AbstractExponentialityTestCase):
-
     @pytest.fixture
     def statistic_test(self):
         return WWTestExp()

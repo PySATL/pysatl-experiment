@@ -1,10 +1,12 @@
 import logging
 from copy import deepcopy
 from typing import Any
+
 from jsonschema import Draft4Validator, validators
 from jsonschema.exceptions import ValidationError, best_match
 
 from stattest.experiment.configuration.config_schema import CONF_SCHEMA
+
 
 logger = logging.getLogger(__name__)
 

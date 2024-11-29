@@ -2,7 +2,7 @@
 
 [![Freqtrade CI](https://github.com/PySATL/pysatl-experiment/workflows/PySATL%20CI/badge.svg)](https://github.com/PySATL/pysatl-experiment/actions)
 [![Coverage Status](https://coveralls.io/repos/github/PySATL/pysatl-experiment/badge.svg?branch=main)](https://coveralls.io/github/PySATL/pysatl-experiment?branch=main)
-[![Documentation](https://readthedocs.org/projects/pysatl/badge/)](https://pysatl.github.io/pysatl-experiment/)
+[![Documentation](https://readthedocs.org/projects/pysatl-experiment/badge)](https://pysatl-experiment.readthedocs.io)
 
 This is a test framework for goodness-of-fit statistic tests.
 

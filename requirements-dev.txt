@@ -1,0 +1,11 @@
+# Include all requirements to run lib.
+-r requirements.txt
+-r docs/requirements-docs.txt
+
+isort==5.13.2
+coveralls==4.0.1
+pytest==8.3.3
+pytest-cov==6.0.0
+pytest-random-order==1.1.1
+ruff==0.7.4
+pre-commit==4.0.1

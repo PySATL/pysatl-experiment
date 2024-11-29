@@ -4,7 +4,6 @@ from stattest.experiment.configuration.configuration import StepListener
 
 
 class TimeEstimationListener(StepListener):
-
     def __init__(self):
         self.start_time = None
         self.end_time = None
@@ -14,4 +13,4 @@ class TimeEstimationListener(StepListener):
 
     def after(self) -> None:
         self.end_time = timeit.default_timer()
-        print('Generation time (s)', self.end_time - self.start_time)
+        print("Generation time (s)", self.end_time - self.start_time)

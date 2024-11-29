@@ -13,6 +13,7 @@ from sqlalchemy.pool import StaticPool
 
 from stattest.exceptions import OperationalException
 
+
 logger = logging.getLogger(__name__)
 
 REQUEST_ID_CTX_KEY: Final[str] = "request_id"
@@ -72,9 +73,9 @@ def init_db(db_url: str) -> None:
 
     # https://docs.sqlalchemy.org/en/13/orm/contextual.html#thread-local-scope
     # Scoped sessions proxy requests to the appropriate thread-local session.
-    '''SqlLiteStore.session = scoped_session(
+    """SqlLiteStore.session = scoped_session(
         sessionmaker(bind=engine, autoflush=False), scopefunc=get_request_or_thread_id
-    )'''
+    )"""
     return engine
 
     # previous_tables = inspect(engine).get_table_names()

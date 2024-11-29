@@ -2,17 +2,19 @@ import sqlite3
 from typing import ClassVar
 
 import numpy as np
-from sqlalchemy import String, Integer
-from sqlalchemy.orm import Mapped, mapped_column, sessionmaker, scoped_session
+from sqlalchemy import Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
 
 from stattest.persistence.models import IBenchmarkResultStore
-from stattest.persistence.sql_lite_store import ModelBase, init_db, get_request_or_thread_id, SessionType
+from stattest.persistence.sql_lite_store.base import ModelBase, SessionType
+from stattest.persistence.sql_lite_store.db_init import get_request_or_thread_id, init_db
 
 
 class BenchmarkResultModel(ModelBase):
     """
     Pair Locks database model.
     """
+
     __tablename__ = "benchmark_result"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -23,9 +25,9 @@ class BenchmarkResultModel(ModelBase):
 
 class BenchmarkResultSqLiteStore(IBenchmarkResultStore):
     session: ClassVar[SessionType]
-    __separator = ';'
+    __separator = ";"
 
-    def __init__(self, name='pysatl.sqlite'):
+    def __init__(self, name="pysatl.sqlite"):
         super().__init__()
         self.name = name
 
@@ -33,7 +35,8 @@ class BenchmarkResultSqLiteStore(IBenchmarkResultStore):
         sqlite3.register_adapter(np.int64, lambda val: int(val))
         engine = init_db("sqlite:///" + self.name)
         BenchmarkResultSqLiteStore.session = scoped_session(
-            sessionmaker(bind=engine, autoflush=False), scopefunc=get_request_or_thread_id
+            sessionmaker(bind=engine, autoflush=False),
+            scopefunc=get_request_or_thread_id,
         )
         ModelBase.metadata.create_all(engine)
 
@@ -58,10 +61,14 @@ class BenchmarkResultSqLiteStore(IBenchmarkResultStore):
 
         :return: benchmark on None
         """
-        result = BenchmarkResultSqLiteStore.session.query(BenchmarkResultModel).filter(
-            BenchmarkResultModel.test_code == test_code,
-            BenchmarkResultModel.size == size
-        ).first()
+        result = (
+            BenchmarkResultSqLiteStore.session.query(BenchmarkResultModel)
+            .filter(
+                BenchmarkResultModel.test_code == test_code,
+                BenchmarkResultModel.size == size,
+            )
+            .first()
+        )
 
         if not result:
             return []
@@ -77,9 +84,20 @@ class BenchmarkResultSqLiteStore(IBenchmarkResultStore):
 
         :return: list of PowerResultModel
         """
-        result = (BenchmarkResultSqLiteStore.session.query(BenchmarkResultModel)
-                  .order_by(BenchmarkResultModel.id).offset(offset).limit(limit)).all()
+        result = (
+            BenchmarkResultSqLiteStore.session.query(BenchmarkResultModel)
+            .order_by(BenchmarkResultModel.id)
+            .offset(offset)
+            .limit(limit)
+        ).all()
         result = [
-            BenchmarkResultModel(size=b.size, test_code=b.test_code, benchmark=[float(x) for x in b.benchmark.split(
-                BenchmarkResultSqLiteStore.__separator)]) for b in result]
+            BenchmarkResultModel(
+                size=b.size,
+                test_code=b.test_code,
+                benchmark=[
+                    float(x) for x in b.benchmark.split(BenchmarkResultSqLiteStore.__separator)
+                ],
+            )
+            for b in result
+        ]
         return result

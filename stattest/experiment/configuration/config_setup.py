@@ -4,6 +4,7 @@ from typing import Any
 from .config_validation import validate_config_consistency
 from .load_config import load_from_files
 
+
 logger = logging.getLogger(__name__)
 
 

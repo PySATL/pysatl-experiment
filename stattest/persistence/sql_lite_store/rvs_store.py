@@ -1,18 +1,14 @@
 import sqlite3
+from typing import ClassVar
 
 import numpy as np
+from sqlalchemy import Integer, String, func, text
+from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
 from typing_extensions import override
 
 from stattest.persistence import IRvsStore
-from typing import ClassVar
-
-from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
-from sqlalchemy import (
-    Integer, String, text, func,
-)
-
 from stattest.persistence.sql_lite_store.base import ModelBase, SessionType
-from stattest.persistence.sql_lite_store.db_init import init_db, get_request_or_thread_id
+from stattest.persistence.sql_lite_store.db_init import get_request_or_thread_id, init_db
 
 
 class RVS(ModelBase):
@@ -44,9 +40,9 @@ class RVSStat(ModelBase):
 
 class RvsSqLiteStore(IRvsStore):
     session: ClassVar[SessionType]
-    __separator = ';'
+    __separator = ";"
 
-    def __init__(self, name='pysatl.sqlite'):
+    def __init__(self, name="pysatl.sqlite"):
         super().__init__()
         self.name = name
 
@@ -55,7 +51,8 @@ class RvsSqLiteStore(IRvsStore):
         sqlite3.register_adapter(np.int64, lambda val: int(val))
         engine = init_db("sqlite:///" + self.name)
         RvsSqLiteStore.session = scoped_session(
-            sessionmaker(bind=engine, autoflush=False), scopefunc=get_request_or_thread_id
+            sessionmaker(bind=engine, autoflush=False),
+            scopefunc=get_request_or_thread_id,
         )
         ModelBase.metadata.create_all(engine)
 
@@ -65,15 +62,15 @@ class RvsSqLiteStore(IRvsStore):
             return
 
         data_to_insert = [
-            {'code': generator_code, 'size': int(size), 'data': RvsSqLiteStore.__separator.join(map(str, d))} for d in
-            data]
+            {
+                "code": generator_code,
+                "size": int(size),
+                "data": RvsSqLiteStore.__separator.join(map(str, d)),
+            }
+            for d in data
+        ]
         statement = text("INSERT INTO rvs_data (code, size, data) VALUES (:code, :size, :data)")
         RvsSqLiteStore.session.execute(statement, data_to_insert)
-
-        '''stat_to_insert = [{'code': code, 'size': int(size), 'data': SqlLiteStore.__separator.join(map(str, d))} for d in
-                          data]
-        stat_statement = text("INSERT INTO rvs_stat (code, size, count) VALUES (:code, :size, :count)")
-        SqlLiteStore.session.execute(stat_statement, data_to_insert)'''
         RvsSqLiteStore.session.commit()
 
     @override
@@ -89,19 +86,29 @@ class RvsSqLiteStore(IRvsStore):
 
     @override
     def get_rvs(self, code: str, size: int) -> [[float]]:
-        samples = RvsSqLiteStore.session.query(RVS).filter(
-            RVS.code == code, RVS.size == size,
-        ).all()
+        samples = (
+            RvsSqLiteStore.session.query(RVS)
+            .filter(
+                RVS.code == code,
+                RVS.size == size,
+            )
+            .all()
+        )
 
         if not samples:
             return []
 
-        return [[float(x) for x in sample.data.split(RvsSqLiteStore.__separator)] for sample in samples]
+        return [
+            [float(x) for x in sample.data.split(RvsSqLiteStore.__separator)] for sample in samples
+        ]
 
     @override
     def get_rvs_stat(self) -> [(str, int, int)]:
-        result = RvsSqLiteStore.session.query(RVS.code, RVS.size,
-                                              func.count(RVS.code)).group_by(RVS.code, RVS.size).all()
+        result = (
+            RvsSqLiteStore.session.query(RVS.code, RVS.size, func.count(RVS.code))
+            .group_by(RVS.code, RVS.size)
+            .all()
+        )
 
         if result is None:
             return []
