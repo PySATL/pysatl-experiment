@@ -54,10 +54,10 @@ asymmetric_generators = [
     GammaGenerator(alfa=100, beta=1),
     GumbelGenerator(mu=1, beta=2),
     LognormGenerator(s=1, mu=0),
-    WeibullGenerator(l=0.5, k=1),
-    WeibullGenerator(l=1, k=2),
-    WeibullGenerator(l=2, k=3.4),
-    WeibullGenerator(l=3, k=4),
+    WeibullGenerator(a=0.5, k=1),
+    WeibullGenerator(a=1, k=2),
+    WeibullGenerator(a=2, k=3.4),
+    WeibullGenerator(a=3, k=4),
 ]
 modified_generators = [
     TruncnormGenerator(a=-1, b=1),
@@ -96,3 +96,5 @@ modified_generators = [
     MixConNormGenerator(p=0.4, a=3, b=4),
     MixConNormGenerator(p=0.5, a=3, b=4),
 ]
+
+__all__ = ['AbstractRVSGenerator']

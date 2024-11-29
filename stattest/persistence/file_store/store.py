@@ -1,14 +1,14 @@
 import json
-import os
+from pathlib import Path
 
 
 def read_json(filename: str):
-    with open(filename) as f_in:
+    with Path(filename).open("w") as f_in:
         return json.load(f_in)
 
 
 def write_json(filename: str, value):
-    with open(filename, "w") as fp:
+    with Path(filename).open("w") as fp:
         json.dump(value, fp)
 
 
@@ -89,7 +89,7 @@ class JsonStoreService(InMemoryStoreService):
     def __init__(self, filename="cache.json", separator="."):
         super().__init__(separator=separator)
         mem_cache = {}
-        if os.path.isfile(filename):
+        if Path(filename).is_file():
             mem_cache = read_json(filename)
         self.cache = mem_cache
         self.filename = filename
@@ -130,7 +130,7 @@ class FastJsonStoreService(FastStoreService):
     def __init__(self, filename="cache.json", separator="."):
         super().__init__(separator=separator)
         mem_cache = {}
-        if os.path.isfile(filename):
+        if Path(filename).is_file():
             mem_cache = read_json(filename)
         self.cache = mem_cache
         self.filename = filename

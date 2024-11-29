@@ -6,7 +6,6 @@ import pandas as pd
 import scipy.stats as scipy_stats
 from typing_extensions import override
 
-from stattest.core.distribution import norm
 from stattest.test.common import ADTestStatistic, KSTestStatistic, LillieforsTest
 from stattest.test.goodness_of_fit import AbstractGoodnessOfFitTestStatistic
 
@@ -58,7 +57,8 @@ class ChiSquareTest(AbstractNormalityTestStatistic):  # TODO: check test correct
     @staticmethod
     @override
     def code():
-        return 'CHI2' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
+        return 'CHI2' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic)
+        .code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -206,7 +206,8 @@ class DANormalityTest(AbstractNormalityTestStatistic):  # TODO: check for correc
     @staticmethod
     @override
     def code():
-        return 'DA' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
+        return 'DA' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic)
+        .code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1589,7 +1590,8 @@ class ZhangQQStarNormalityTest(AbstractNormalityTestStatistic):  # TODO: check f
     @staticmethod
     @override
     def code():
-        return 'ZQQ' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
+        return 'ZQQ' + '_' + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic)
+        .code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -1624,7 +1626,8 @@ class ZhangQQStarNormalityTest(AbstractNormalityTestStatistic):  # TODO: check f
             else:
                 p_val2 = p_value34[0]
 
-            stat = -2.0 * (np.log(p_val1) + np.log(p_val2))  # Combinaison des valeurs-p (Fisher, 1932)
+            # Combinaison des valeurs-p (Fisher, 1932)
+            stat = -2.0 * (np.log(p_val1) + np.log(p_val2))
 
             return stat  # Here is the test statistic value
 """
@@ -1724,8 +1727,8 @@ class GMGNormalityTest(AbstractNormalityTestStatistic):
 
 
 """ Title: Statistique de test de Brys-Hubert-Struyf MC-LR
-Ref. (book or article): Brys, G., Hubert, M. and Struyf, A. (2008), Goodness-of-fit tests based on a robust measure of 
-skewness, Computational Statistics, Vol. 23, Issue 3, pp. 429-442. 
+Ref. (book or article): Brys, G., Hubert, M. and Struyf, A. (2008), Goodness-of-fit tests based on
+a robust measure of skewness, Computational Statistics, Vol. 23, Issue 3, pp. 429-442.
 """
 
 
@@ -1779,6 +1782,8 @@ class BHSNormalityTest(AbstractNormalityTestStatistic):
             stat_tmclr = n * np.dot(vec, np.dot(inv_v, vec))
             return stat_tmclr  # Here is the test statistic value
 
+    #TODO: refactor
+    # flake8: noqa: C901
     def mc_c_d(self, z, eps, iter_):
         """
         NOTE:
@@ -2007,7 +2012,8 @@ class BHSNormalityTest(AbstractNormalityTestStatistic):
                         j += 1
             if trace_lev:
                 print(
-                    f"  not found [it={it},  (nr,nl) = ({nr},{nl})], -> (knew-nl, j) = ({knew - nl},{j})"
+                    f"  not found [it={it},  (nr,nl) = ({nr},{nl})], -> (knew-nl, j) ="
+                    f" ({knew - nl},{j})"
                 )
             # using rPsort(work, n,k), since we don't need work[] anymore
             work[: (knew - nl)] = sorted(work[: (knew - nl)])

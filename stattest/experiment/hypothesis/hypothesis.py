@@ -12,8 +12,8 @@ class NormalHypothesis(AbstractHypothesis):
 
 
 class WeibullHypothesis(AbstractHypothesis):
-    def __init__(self, l=1, k=5):
-        self.l = l
+    def __init__(self, a=1, k=5):
+        self.l = a
         self.k = k
 
     def generate(self, size, **kwargs):

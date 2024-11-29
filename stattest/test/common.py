@@ -18,9 +18,9 @@ class KSTestStatistic(AbstractTestStatistic, ABC):
     @override
     def execute_statistic(self, rvs, cdf_vals=None):
         """
-        Title: The Kolmogorov-Smirnov statistic for the Laplace distribution Ref. (book or article): Puig,
-        P. and Stephens, M. A. (2000). Tests of fit for the Laplace distribution, with applications. Technometrics
-        42, 417-424.
+        Title: The Kolmogorov-Smirnov statistic for the Laplace distribution Ref. (book or article):
+        Puig, P. and Stephens, M. A. (2000). Tests of fit for the Laplace distribution, with
+        applications. Technometrics 42, 417-424.
 
         :param alternative: {'two-sided', 'less', 'greater'}, optional
         :param mode: {'auto', 'exact', 'approx', 'asymp'}, optional
@@ -39,8 +39,6 @@ class KSTestStatistic(AbstractTestStatistic, ABC):
         ----------
         cdf_vals
         """
-        # rvs = np.sort(rvs)
-        n = len(rvs)
 
         d_minus, _ = KSTestStatistic.__compute_dminus(cdf_vals, rvs)
 
@@ -56,21 +54,21 @@ class KSTestStatistic(AbstractTestStatistic, ABC):
         d_minus, d_minus_location = KSTestStatistic.__compute_dminus(cdf_vals, rvs)
         if d_plus > d_minus:
             D = d_plus
-            d_location = d_plus_location
-            d_sign = 1
+            #d_location = d_plus_location
+            #d_sign = 1
         else:
             D = d_minus
-            d_location = d_minus_location
-            d_sign = -1
+            #d_location = d_minus_location
+            #d_sign = -1
 
-        if self.mode == "exact":
+        '''if self.mode == "exact":
             prob = scipy_stats.distributions.kstwo.sf(D, n)
         elif self.mode == "asymp":
-            prob = scipy_stats.distributions.kstwobign.sf(D * np.sqrt(n))
+            #prob = scipy_stats.distributions.kstwobign.sf(D * np.sqrt(n))
         else:
             # mode == 'approx'
-            prob = 2 * scipy_stats.distributions.ksone.sf(D, n)
-        prob = np.clip(prob, 0, 1)
+            #prob = 2 * scipy_stats.distributions.ksone.sf(D, n)
+        #prob = np.clip(prob, 0, 1)'''
         return D
 
     @override
@@ -103,9 +101,10 @@ class ADTestStatistic(AbstractTestStatistic):
     @override
     def execute_statistic(self, rvs, log_cdf=None, log_sf=None, w=None):
         """
-        Title: The Anderson-Darling test Ref. (book or article): See package nortest and also Table 4.9 p. 127 in M.
-        A. Stephens, “Tests Based on EDF Statistics,” In: R. B. D’Agostino and M. A. Stephens, Eds., Goodness-of-Fit
-        Techniques, Marcel Dekker, New York, 1986, pp. 97-193.
+        Title: The Anderson-Darling test Ref. (book or article): See package nortest and also
+        Table 4.9 p. 127 in M.
+        A. Stephens, “Tests Based on EDF Statistics,” In: R. B. D’Agostino and M. A. Stephens, Eds.,
+        Goodness-of-Fit Techniques, Marcel Dekker, New York, 1986, pp. 97-193.
 
         :param rvs:
         :return:
@@ -141,8 +140,8 @@ class Chi2TestStatistic(AbstractTestStatistic, ABC):
     @staticmethod
     def _m_sum(a, *, axis, preserve_mask, xp):
         if np.ma.isMaskedArray(a):
-            sum = a.sum(axis)
-            return sum if preserve_mask else np.asarray(sum)
+            s = a.sum(axis)
+            return s if preserve_mask else np.asarray(s)
         return xp.sum(a, axis=axis)
 
     @override

@@ -71,11 +71,6 @@ class RvsSqLiteStore(IRvsStore):
         ]
         statement = text("INSERT INTO rvs_data (code, size, data) VALUES (:code, :size, :data)")
         RvsSqLiteStore.session.execute(statement, data_to_insert)
-
-        """stat_to_insert = [{'code': code, 'size': int(size), 'data': SqlLiteStore.__separator.join(map(str, d))} for d in
-                          data]
-        stat_statement = text("INSERT INTO rvs_stat (code, size, count) VALUES (:code, :size, :count)")
-        SqlLiteStore.session.execute(stat_statement, data_to_insert)"""
         RvsSqLiteStore.session.commit()
 
     @override

@@ -130,12 +130,12 @@ class SBTestStatistic(AbstractWeibullTestStatistic):
         n = len(rvs)
         lv = np.log(rvs)
         y = np.sort(lv)
-        I = np.arange(1, n + 1)
+        interval = np.arange(1, n + 1)
 
         yb = np.mean(y)
         S2 = np.sum((y - yb) ** 2)
-        l = I[: n - 1]
-        w = np.log((n + 1) / (n - l + 1))
+        _l = interval[: n - 1]
+        w = np.log((n + 1) / (n - _l + 1))
         Wi = np.concatenate((w, [n - np.sum(w)]))
         Wn = w * (1 + np.log(w)) - 1
         a = 0.4228 * n - np.sum(Wn)
@@ -203,10 +203,10 @@ class REJGTestStatistic(AbstractWeibullTestStatistic):
         n = len(rvs)
         lv = np.log(rvs)
         y = np.sort(lv)
-        I = np.arange(1, n + 1)
+        interval = np.arange(1, n + 1)
 
         beta_shape = self.MLEst(rvs)[1]
-        m = np.log(-(np.log(1 - (I - 0.3175) / (n + 0.365)))) / beta_shape
+        m = np.log(-(np.log(1 - (interval - 0.3175) / (n + 0.365)))) / beta_shape
         s = (sum((y - np.mean(y)) * m)) ** 2 / (
             (sum((y - np.mean(y)) ** 2)) * sum((m - np.mean(m)) ** 2)
         )
@@ -249,9 +249,9 @@ class RSBTestStatistic(AbstractWeibullTestStatistic):
     @override
     def execute_statistic(self, rvs, **kwargs):
         n = len(rvs)
-        I = np.arange(1, n + 1)
+        interval = np.arange(1, n + 1)
 
-        m = I / (n + 1)
+        m = interval / (n + 1)
         m = np.log(-np.log(1 - m))
         mb = np.mean(m)
         xb = np.mean(np.log(rvs))
@@ -297,12 +297,12 @@ class WeibullNormalizeSpaceTestStatistic(AbstractWeibullTestStatistic):
         X = TSWeibullTestStatistic.GoFNS(r + 1, n, m)
         mu1 = X[1 : (m - 1)] - X[: (m - 2)]
         mu2 = X[1:m] - X[: (m - 1)]
-        l = np.arange(r + 1, n - s - 1)
+        a = np.arange(r + 1, n - s - 1)
 
         G1 = d1 / mu1
         G2 = d2 / mu2
 
-        w1 = 2 * (np.sum((n - s - 1 - l) * G1))
+        w1 = 2 * (np.sum((n - s - 1 - a) * G1))
         w2 = (m - 2) * np.sum(G2)
 
         print(G1)
@@ -317,9 +317,9 @@ class WeibullNormalizeSpaceTestStatistic(AbstractWeibullTestStatistic):
                 z.append(np.sum(G2[:i]) / np.sum(G2))
             z = sorted(z)
             z1 = sorted(z, reverse=True)
-            I = range(1, m - 1)
+            interval = range(1, m - 1)
             NS_statistic = -(m - 2) - (1 / (m - 2)) * np.sum(
-                (2 * np.array(I) - 1) * (np.log(z) + np.log(1 - np.array(z1)))
+                (2 * np.array(interval) - 1) * (np.log(z) + np.log(1 - np.array(z1)))
             )
         elif type_ == "MSF":
             if s != 0:
@@ -343,8 +343,8 @@ class TSWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
     @override
     def execute_statistic(self, rvs, **kwargs):
         """
-        Tiku M.L. and Singh M., Testing the two-parameter Weibull distribution, Communications in Statistics,
-        10, 907-918, 1981.
+        Tiku M.L. and Singh M., Testing the two-parameter Weibull distribution, Communications in
+        Statistics, 10, 907-918, 1981.
 
         :param rvs:
         :return:
@@ -366,8 +366,9 @@ class LOSWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
     @override
     def execute_statistic(self, rvs, **kwargs):
         """
-        Lockhart R.A., O'Reilly F. and Stephens M.A., Tests for the extreme-value and Weibull distributions based on
-        normalized spacings, Naval Research Logistics Quarterly, 33, 413-421, 1986.
+        Lockhart R.A., O'Reilly F. and Stephens M.A., Tests for the extreme-value and Weibull
+        distributions based on normalized spacings, Naval Research Logistics Quarterly, 33, 413-421,
+        1986.
 
         :param rvs:
         :return:
@@ -390,8 +391,8 @@ class MSFWeibullTestStatistic(WeibullNormalizeSpaceTestStatistic):
     @override
     def execute_statistic(self, rvs, **kwargs):
         """
-        Mann N.R., Scheuer E.M. and Fertig K.W., A new goodness-of-fit test for the two-parameter Weibull or
-        extreme-value distribution, Communications in Statistics, 2, 383-400, 1973.
+        Mann N.R., Scheuer E.M. and Fertig K.W., A new goodness-of-fit test for the two-parameter
+        Weibull or extreme-value distribution, Communications in Statistics, 2, 383-400, 1973.
 
         :param rvs:
         :return:
@@ -436,13 +437,13 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
         n = len(x)
         lv = np.log(x)
         y = np.sort(lv)
-        I = np.arange(1, n + 1)
+        interval = np.arange(1, n + 1)
 
         WPP_statistic = 0
         if type_ == "OK":
-            l = I[:-1]
-            Sig = np.sum((2 * np.concatenate((l, [n])) - 1 - n) * y) / (np.log(2) * (n - 1))
-            w = np.log((n + 1) / (n - l + 1))
+            a = interval[:-1]
+            Sig = np.sum((2 * np.concatenate((a, [n])) - 1 - n) * y) / (np.log(2) * (n - 1))
+            w = np.log((n + 1) / (n - a + 1))
             Wi = np.concatenate((w, [n - np.sum(w)]))
             Wn = w * (1 + np.log(w)) - 1
             a = 0.4228 * n - np.sum(Wn)
@@ -456,8 +457,8 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
         elif type_ == "SB":
             yb = np.mean(y)
             S2 = np.sum((y - yb) ** 2)
-            l = I[:-1]
-            w = np.log((n + 1) / (n - l + 1))
+            a = interval[:-1]
+            w = np.log((n + 1) / (n - a + 1))
             Wi = np.concatenate((w, [n - np.sum(w)]))
             Wn = w * (1 + np.log(w)) - 1
             a = 0.4228 * n - np.sum(Wn)
@@ -466,7 +467,7 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
             WPP_statistic = n * b**2 / S2
 
         elif type_ == "RSB":
-            m = I / (n + 1)
+            m = interval / (n + 1)
             m = np.log(-np.log(1 - m))
             mb = np.mean(m)
             xb = np.mean(np.log(x))
@@ -477,7 +478,7 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
 
         elif type_ == "REJG":
             beta_shape = WPPWeibullTestStatistic.MLEst(x)["beta"]
-            m = np.log(-(np.log(1 - (I - 0.3175) / (n + 0.365)))) / beta_shape
+            m = np.log(-(np.log(1 - (interval - 0.3175) / (n + 0.365)))) / beta_shape
             s = (np.sum((y - np.mean(y)) * m)) ** 2 / (
                 np.sum((y - np.mean(y)) ** 2) * np.sum((m - np.mean(m)) ** 2)
             )
@@ -485,7 +486,7 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
 
         elif type_ == "SPP":
             y = WPPWeibullTestStatistic.MLEst(x)["y"]
-            r = 2 / np.pi * np.arcsin(np.sqrt((I - 0.5) / n))
+            r = 2 / np.pi * np.arcsin(np.sqrt((interval - 0.5) / n))
             s = 2 / np.pi * np.arcsin(np.sqrt(1 - np.exp(-np.exp(y))))
             WPP_statistic = np.max(np.abs(r - s))
 

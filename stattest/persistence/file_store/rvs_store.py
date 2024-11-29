@@ -1,6 +1,7 @@
 import csv
 import os
 import shutil
+from pathlib import Path
 
 from typing_extensions import override
 
@@ -17,15 +18,15 @@ class RvsFileStore(IRvsStore):
 
     @override
     def init(self):
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
+        if not Path(self.path).exists():
+            Path(self.path).mkdir(parents=True)
 
     @override
     def insert_all_rvs(self, generator_code: str, size: int, data: [[float]]):
-        file_path = os.path.join(
+        file_path = Path(
             self.path, RvsFileStore.build_rvs_file_name(generator_code, size) + ".csv"
         )
-        with open(file_path, "w", newline="") as csvfile:
+        with Path(file_path).open("w", newline="") as csvfile:
             writer = csv.writer(
                 csvfile,
                 delimiter=RvsFileStore.__separator,
@@ -39,10 +40,10 @@ class RvsFileStore(IRvsStore):
         result = []
         for filename in filenames:
             rvs_code, size = RvsFileStore.parse_rvs_file_name(filename)
-            file_path = os.path.join(
+            file_path = Path(
                 self.path, RvsFileStore.build_rvs_file_name(rvs_code, size) + ".csv"
             )
-            with open(file_path, newline="") as f:
+            with Path(file_path).open(newline="") as f:
                 reader = csv.reader(
                     f, delimiter=RvsFileStore.__separator, quoting=csv.QUOTE_NONNUMERIC
                 )
@@ -52,8 +53,8 @@ class RvsFileStore(IRvsStore):
 
     @override
     def insert_rvs(self, code: str, size: int, data: [float]):
-        file_path = os.path.join(self.path, RvsFileStore.build_rvs_file_name(code, size) + ".csv")
-        with open(file_path, "w", newline="") as csvfile:
+        file_path = Path(self.path, RvsFileStore.build_rvs_file_name(code, size) + ".csv")
+        with Path(file_path).open("w", newline="") as csvfile:
             writer = csv.writer(
                 csvfile,
                 delimiter=RvsFileStore.__separator,
@@ -70,10 +71,10 @@ class RvsFileStore(IRvsStore):
 
     @override
     def get_rvs(self, code: str, size: int) -> [[float]]:
-        file_path = os.path.join(self.path, RvsFileStore.build_rvs_file_name(code, size) + ".csv")
-        if not os.path.exists(file_path):
+        file_path = Path(self.path, RvsFileStore.build_rvs_file_name(code, size) + ".csv")
+        if not Path(file_path).exists():
             return []
-        with open(file_path, newline="") as f:
+        with Path(file_path).open(newline="") as f:
             reader = csv.reader(f, delimiter=RvsFileStore.__separator, quoting=csv.QUOTE_NONNUMERIC)
             return list(reader)
 

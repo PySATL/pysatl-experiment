@@ -1,10 +1,10 @@
 import sqlite3
-from typing import ClassVar
+from typing import ClassVar, Optional
 
 import numpy as np
 from sqlalchemy import Float, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
-from typing_extensions import Optional, override
+from typing_extensions import override
 
 from stattest.persistence.models import ICriticalValueStore
 from stattest.persistence.sql_lite_store.base import ModelBase, SessionType
