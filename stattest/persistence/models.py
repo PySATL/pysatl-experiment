@@ -2,7 +2,6 @@ from typing import Optional
 
 
 class IStore:
-
     def migrate(self):
         """
         Migrate store.
@@ -17,7 +16,6 @@ class IStore:
 
 
 class IRvsStore(IStore):
-
     def insert_all_rvs(self, generator_code: str, size: int, data: [[float]]):
         """
         Insert several rvs data to store.
@@ -79,7 +77,6 @@ class IRvsStore(IStore):
 
 
 class ICriticalValueStore(IStore):
-
     def insert_critical_value(self, code: str, size: int, sl: float, value: float):
         """
         Insert critical value to store.
@@ -121,8 +118,9 @@ class ICriticalValueStore(IStore):
 
 
 class IPowerResultStore(IStore):
-
-    def insert_power(self, sl: float, size: int, test_code: str, alternative_code: str, power: float):
+    def insert_power(
+        self, sl: float, size: int, test_code: str, alternative_code: str, power: float
+    ):
         """
         Insert power to store.
 
@@ -134,7 +132,9 @@ class IPowerResultStore(IStore):
         """
         pass
 
-    def get_power(self, sl: float, size: int, test_code: str, alternative_code: str) -> Optional[float]:
+    def get_power(
+        self, sl: float, size: int, test_code: str, alternative_code: str
+    ) -> Optional[float]:
         """
         Get power from store.
 
@@ -143,7 +143,7 @@ class IPowerResultStore(IStore):
         :param test_code: test code
         :param alternative_code: alternative code
 
-        :return power on None
+        :return: power on None
         """
         pass
 
@@ -154,13 +154,12 @@ class IPowerResultStore(IStore):
         :param offset: offset
         :param limit: limit
 
-        :return list of PowerResultModel
+        :return: list of PowerResultModel
         """
         pass
 
 
 class IBenchmarkResultStore(IStore):
-
     def insert_benchmark(self, test_code: str, size: int, benchmark: [float]):
         """
         Insert benchmark to store.
@@ -176,7 +175,7 @@ class IBenchmarkResultStore(IStore):
 
         :param test_code: test code
 
-        :return benchmark on None
+        :return: benchmark on None
         """
         pass
 
@@ -187,6 +186,6 @@ class IBenchmarkResultStore(IStore):
         :param offset: offset
         :param limit: limit
 
-        :return list of PowerResultModel
+        :return: list of PowerResultModel
         """
         pass

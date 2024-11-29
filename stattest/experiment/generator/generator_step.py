@@ -6,6 +6,7 @@ from stattest.experiment.pipeline import start_pipeline
 from stattest.persistence.models import IRvsStore
 from multiprocessing import Queue, Manager, Event, Process
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -62,10 +63,10 @@ def data_generation_step(alternative_configuration: AlternativeConfiguration, st
 
     # Skip step
     if alternative_configuration.skip_step:
-        logger.info('Skip data generation step')
+        logger.info("Skip data generation step")
         return
 
-    logger.info('Start data generation step')
+    logger.info("Start data generation step")
     # Execute before all listeners
     for listener in alternative_configuration.listeners:
         listener.before()
@@ -85,4 +86,4 @@ def data_generation_step(alternative_configuration: AlternativeConfiguration, st
     for listener in alternative_configuration.listeners:
         listener.after()
 
-    logger.info('End data generation step')
+    logger.info("End data generation step")

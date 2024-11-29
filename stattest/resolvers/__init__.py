@@ -1,2 +1,0 @@
-from stattest.resolvers.iresolver import IResolver
-from stattest.resolvers.generator_resolver import GeneratorResolver

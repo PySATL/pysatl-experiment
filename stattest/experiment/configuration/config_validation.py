@@ -1,10 +1,12 @@
 import logging
 from copy import deepcopy
 from typing import Any
+
 from jsonschema import Draft4Validator, validators
 from jsonschema.exceptions import ValidationError, best_match
 
 from stattest.experiment.configuration.config_schema import CONF_SCHEMA
+
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +14,7 @@ logger = logging.getLogger(__name__)
 def _extend_validator(validator_class):
     """
     Extended validator for the Freqtrade configuration JSON Schema.
-    Currently it only handles defaults for subschemas.
+    Currently, it only handles defaults for subschemas.
     """
     validate_properties = validator_class.VALIDATORS["properties"]
 
@@ -29,7 +31,7 @@ def _extend_validator(validator_class):
 FreqtradeValidator = _extend_validator(Draft4Validator)
 
 
-def validate_config_schema(conf: dict[str, Any], preliminary: bool = False) -> dict[str, Any]:
+def validate_config_schema(conf: dict[str, Any], preliminagiry: bool = False) -> dict[str, Any]:
     """
     Validate the configuration follow the Config Schema
     :param conf: Config in JSON format
@@ -47,7 +49,7 @@ def validate_config_schema(conf: dict[str, Any], preliminary: bool = False) -> d
 def validate_config_consistency(conf: dict[str, Any], *, preliminary: bool = False) -> None:
     """
     Validate the configuration consistency.
-    Should be ran after loading both configuration and strategy,
+    Should be run after loading both configuration and strategy,
     since strategies can set certain configuration settings too.
     :param conf: Config in JSON format
     :return: Returns None if everything is ok, otherwise throw an ConfigurationError

@@ -13,7 +13,6 @@ from tests.exponentiality.abstract_exponentiality_test_case import AbstractExpon
 )
 @pytest.mark.skip(reason="fix test and check")
 class TestCaseHG1ExponentialityTest(AbstractExponentialityTestCase):
-
     @pytest.fixture
     def statistic_test(self):
         return HG1TestExp()

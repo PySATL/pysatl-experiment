@@ -8,10 +8,16 @@ from stattest.experiment.pipeline import start_pipeline
 from stattest.persistence import IRvsStore
 from stattest.test import AbstractTestStatistic
 
+
 logger = logging.getLogger(__name__)
 
 
-def execute_tests(worker: TestWorker, tests: [AbstractTestStatistic], rvs_store: IRvsStore, thread_count: int = 0):
+def execute_tests(
+    worker: TestWorker,
+    tests: [AbstractTestStatistic],
+    rvs_store: IRvsStore,
+    thread_count: int = 0,
+):
     rvs_store.init()
     worker.init()
 
@@ -59,10 +65,10 @@ def execute_test_step(configuration: TestConfiguration, rvs_store: IRvsStore):
 
     # Skip step
     if configuration.skip_step:
-        logger.info('Skip test step')
+        logger.info("Skip test step")
         return
 
-    logger.info('Start test step')
+    logger.info("Start test step")
 
     # Execute before all listeners
     for listener in configuration.listeners:
@@ -74,4 +80,4 @@ def execute_test_step(configuration: TestConfiguration, rvs_store: IRvsStore):
     for listener in configuration.listeners:
         listener.after()
 
-    logger.info('End test step')
+    logger.info("End test step")

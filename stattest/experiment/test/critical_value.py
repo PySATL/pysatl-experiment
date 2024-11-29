@@ -1,13 +1,18 @@
 import numpy as np
+import scipy.stats as scipy_stats
 
 from stattest.experiment.configuration.configuration import AbstractHypothesis
 from stattest.persistence.models import ICriticalValueStore
 from stattest.test import AbstractTestStatistic
-import scipy.stats as scipy_stats
 
 
-def calculate_critical_value(test: AbstractTestStatistic, hypothesis: AbstractHypothesis, size: int, alpha: float,
-                             count) -> (float, [float]):
+def calculate_critical_value(
+    test: AbstractTestStatistic,
+    hypothesis: AbstractHypothesis,
+    size: int,
+    alpha: float,
+    count,
+) -> (float, [float]):
     # Calculate critical value
     distribution = np.zeros(count)
 
@@ -22,8 +27,14 @@ def calculate_critical_value(test: AbstractTestStatistic, hypothesis: AbstractHy
     return critical_value, distribution
 
 
-def get_or_calculate_critical_value(test: AbstractTestStatistic, hypothesis: AbstractHypothesis, size: int, alpha: float,
-                                    store: ICriticalValueStore, count: int) -> float:
+def get_or_calculate_critical_value(
+    test: AbstractTestStatistic,
+    hypothesis: AbstractHypothesis,
+    size: int,
+    alpha: float,
+    store: ICriticalValueStore,
+    count: int,
+) -> float:
     # Get critical value distribution is known
     critical_value = test.calculate_critical_value(size, alpha)
     if critical_value is not None:

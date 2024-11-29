@@ -7,9 +7,7 @@ CONF_SCHEMA = {
             "minimum": -1,
         },
         "timeframe": {
-            "description": (
-                f"The timeframe to use (e.g `1m`, `5m`, `15m`, `30m`, `1h` ...). {__IN_STRATEGY}"
-            ),
+            "description": ("The timeframe to use (e.g `1m`, `5m`, `15m`, `30m`, `1h` ...)."),
             "type": "string",
         },
         "stake_currency": {
@@ -20,7 +18,7 @@ CONF_SCHEMA = {
             "description": "Amount to stake per trade.",
             "type": ["number", "string"],
             "minimum": 0.0001,
-            "pattern": UNLIMITED_STAKE_AMOUNT,
+            "pattern": "",
         },
-    }
+    },
 }

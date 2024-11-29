@@ -7,10 +7,11 @@ This module load custom RVS generators
 import logging
 from typing import Any, Optional
 
-from stattest.constants import Config, USERPATH_GENERATORS
+from stattest.constants import USERPATH_GENERATORS, Config
 from stattest.exceptions import OperationalException
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.resolvers.iresolver import IResolver
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,36 +31,34 @@ class GeneratorResolver(IResolver):
     @staticmethod
     def load_generators(config: Optional[Config]) -> [AbstractRVSGenerator]:
         if not config:
-            raise OperationalException(
-                "No configuration set. Please specify configuration."
-            )
+            raise OperationalException("No configuration set. Please specify configuration.")
 
         if not config.get("alternatives_configuration"):
-            raise OperationalException(
-                "No alternatives configuration set."
-            )
+            raise OperationalException("No alternatives configuration set.")
 
         alternatives_configuration = config["alternatives_configuration"]
         if not alternatives_configuration.get("alternatives"):
-            raise OperationalException(
-                "No alternatives set."
-            )
+            raise OperationalException("No alternatives set.")
 
         alternatives = alternatives_configuration["alternatives"]
         generators = []
         for generator_conf in alternatives:
-            generator = GeneratorResolver.load_generator(generator_conf["name"], generator_conf["params"])
+            generator = GeneratorResolver.load_generator(
+                generator_conf["name"], generator_conf["params"]
+            )
             generators.append(generator)
 
         return generators
 
     @staticmethod
-    def load_generator(generator_name: str, path: str = None, params: dict[str, Any] = None) -> AbstractRVSGenerator:
+    def load_generator(
+        generator_name: str, path: str = None, params: dict[str, Any] = None
+    ) -> AbstractRVSGenerator:
         """
         Load the custom class from config parameter
-        :param params: 
-        :param path: 
-        :param generator_name: 
+        :param params:
+        :param path:
+        :param generator_name:
         """
 
         generator: AbstractRVSGenerator = GeneratorResolver._load_generator(
@@ -75,7 +74,9 @@ class GeneratorResolver(IResolver):
 
     @staticmethod
     def _load_generator(
-            generator_name: str, params: dict[str, Any], extra_dir: Optional[str] = None,
+        generator_name: str,
+        params: dict[str, Any],
+        extra_dir: Optional[str] = None,
     ) -> AbstractRVSGenerator:
         """
         Search and loads the specified strategy.
@@ -89,9 +90,9 @@ class GeneratorResolver(IResolver):
         if extra_dir:
             extra_dirs.append(extra_dir)
 
-        abs_paths = GeneratorResolver.build_search_paths(user_data_dir=None,
-                                                         user_subdir=USERPATH_GENERATORS,
-                                                         extra_dirs=extra_dirs)
+        abs_paths = GeneratorResolver.build_search_paths(
+            user_data_dir=None, user_subdir=USERPATH_GENERATORS, extra_dirs=extra_dirs
+        )
 
         generator = GeneratorResolver._load_object(
             paths=abs_paths,
@@ -102,8 +103,7 @@ class GeneratorResolver(IResolver):
 
         if not generator:
             generator = GeneratorResolver._load_modules_object(
-                object_name=generator_name,
-                kwargs=params
+                object_name=generator_name, kwargs=params
             )
 
         if generator:
