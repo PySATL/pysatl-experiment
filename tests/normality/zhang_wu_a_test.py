@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import ZhangWuATest
-from tests.AbstractTestCase import AbstractTestCase
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import ZhangWuANormalityTest
 
 
 @pytest.mark.parametrize(
@@ -13,12 +13,8 @@ from tests.AbstractTestCase import AbstractTestCase
     ],
 )
 @pytest.mark.skip(reason="no way of currently testing this")
-class TestCaseZhangWuATest(AbstractTestCase):
-
-    def test_execute_statistic(self, data, result, statistic_test):
-        statistic = statistic_test.execute_statistic(data)
-        assert result == pytest.approx(statistic, 0.1)
+class TestCaseZhangWuCNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return ZhangWuATest()
+        return ZhangWuANormalityTest()

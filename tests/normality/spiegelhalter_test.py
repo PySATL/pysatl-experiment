@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import SpiegelhalterTest
-from tests.AbstractTestCase import AbstractTestCase
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import SpiegelhalterNormalityTest
 
 
 @pytest.mark.parametrize(
@@ -12,8 +12,8 @@ from tests.AbstractTestCase import AbstractTestCase
           1.3267088, -0.3299987, -0.5767829, -1.4114579], 1.374628),
     ],
 )
-class TestCaseSpiegelhalterTest(AbstractTestCase):
+class TestCaseSpiegelhalterNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return SpiegelhalterTest()
+        return SpiegelhalterNormalityTest()

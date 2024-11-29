@@ -78,5 +78,5 @@ def init_db(db_url: str) -> None:
     return engine
 
     # previous_tables = inspect(engine).get_table_names()
-    #ModelBase.metadata.create_all(engine)
+    # ModelBase.metadata.create_all(engine)
     # check_migrate(engine, decl_base=ModelBase, previous_tables=previous_tables)

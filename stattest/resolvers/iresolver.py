@@ -39,7 +39,7 @@ class IResolver:
     This class contains all the logic to load custom classes
     """
 
-    # Childclasses need to override this
+    # Child classes need to override this
     object_type: type[Any]
     object_type_str: str
     user_subdir: Optional[str] = None
@@ -155,8 +155,8 @@ class IResolver:
                 obj[0].__file__ = str(entry)
                 if add_source:
                     obj[0].__source__ = obj[1]
-                return (obj[0], module_path)
-        return (None, None)
+                return obj[0], module_path
+        return None, None
 
     @classmethod
     def _load_object(

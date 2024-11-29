@@ -1,15 +1,18 @@
 from numpy import float64
 from typing_extensions import Optional
+from abc import ABC, abstractmethod
 
 
-class AbstractTestStatistic:
+class AbstractTestStatistic(ABC):
     @staticmethod
+    @abstractmethod
     def code() -> str:
         """
         Generate code for test statistic.
         """
         raise NotImplementedError("Method is not implemented")
 
+    @abstractmethod
     def execute_statistic(self, rvs, **kwargs) -> float or float64:
         """
         Execute test statistic and return calculated statistic value.

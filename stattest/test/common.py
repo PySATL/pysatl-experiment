@@ -1,4 +1,5 @@
 import numpy as np
+from abc import ABC
 import scipy.stats as scipy_stats
 from scipy import special
 from typing_extensions import override
@@ -6,7 +7,7 @@ from typing_extensions import override
 from stattest.test.models import AbstractTestStatistic
 
 
-class KSTestStatistic(AbstractTestStatistic):
+class KSTestStatistic(AbstractTestStatistic, ABC):
 
     def __init__(self, alternative='two-sided', mode='auto'):
         self.alternative = alternative
@@ -14,10 +15,7 @@ class KSTestStatistic(AbstractTestStatistic):
             mode = 'exact'
         self.mode = mode
 
-    @staticmethod
-    def code():
-        raise NotImplementedError("Method is not implemented")
-
+    @override
     def execute_statistic(self, rvs, cdf_vals=None):
         """
         Title: The Kolmogorov-Smirnov statistic for the Laplace distribution Ref. (book or article): Puig,
@@ -36,6 +34,10 @@ class KSTestStatistic(AbstractTestStatistic):
           * 'asymp': uses asymptotic distribution of test statistic
         :param rvs: unsorted vector
         :return:
+
+        Parameters
+        ----------
+        cdf_vals
         """
         # rvs = np.sort(rvs)
         n = len(rvs)
@@ -71,6 +73,7 @@ class KSTestStatistic(AbstractTestStatistic):
         prob = np.clip(prob, 0, 1)
         return D
 
+    @override
     def calculate_critical_value(self, rvs_size, sl):
         return scipy_stats.distributions.kstwo.ppf(1 - sl, rvs_size)
 
@@ -94,9 +97,11 @@ class KSTestStatistic(AbstractTestStatistic):
 class ADTestStatistic(AbstractTestStatistic):
 
     @staticmethod
+    @override
     def code():
         raise NotImplementedError("Method is not implemented")
 
+    @override
     def execute_statistic(self, rvs, log_cdf=None, log_sf=None, w=None):
         """
         Title: The Anderson-Darling test Ref. (book or article): See package nortest and also Table 4.9 p. 127 in M.
@@ -113,17 +118,17 @@ class ADTestStatistic(AbstractTestStatistic):
         return A2
 
 
-class LillieforsTest(KSTestStatistic):
+class LillieforsTest(KSTestStatistic, ABC):
+    alternative = 'two-sided'
+    mode = 'auto'
 
-    @staticmethod
-    def code():
-        raise NotImplementedError("Method is not implemented")
-
+    @override
     def execute_statistic(self, z, cdf_vals=None):
         return super().execute_statistic(z, cdf_vals)
 
 
-class CrammerVonMisesTestStatistic(AbstractTestStatistic):
+class CrammerVonMisesTestStatistic(AbstractTestStatistic, ABC):
+    @override
     def execute_statistic(self, rvs, cdf_vals):
         n = len(rvs)
 
@@ -133,7 +138,7 @@ class CrammerVonMisesTestStatistic(AbstractTestStatistic):
         return w
 
 
-class Chi2TestStatistic(AbstractTestStatistic):
+class Chi2TestStatistic(AbstractTestStatistic, ABC):
 
     @staticmethod
     def _m_sum(a, *, axis, preserve_mask, xp):
@@ -142,6 +147,7 @@ class Chi2TestStatistic(AbstractTestStatistic):
             return sum if preserve_mask else np.asarray(sum)
         return xp.sum(a, axis=axis)
 
+    @override
     def execute_statistic(self, f_obs, f_exp, lambda_):
         # `terms` is the array of terms that are summed along `axis` to create
         # the test statistic.  We use some specialized code for a few special
@@ -163,11 +169,12 @@ class Chi2TestStatistic(AbstractTestStatistic):
 
         return terms.sum()
 
+    @override
     def calculate_critical_value(self, rvs_size, sl):
         return scipy_stats.distributions.chi2.ppf(1 - sl, rvs_size - 1)
 
 
-class MinToshiyukiTestStatistic(AbstractTestStatistic):
+class MinToshiyukiTestStatistic(AbstractTestStatistic, ABC):
 
     @override
     def execute_statistic(self, cdf_vals):
@@ -180,3 +187,5 @@ class MinToshiyukiTestStatistic(AbstractTestStatistic):
 
         s = np.sum(d * np.sqrt(fi))
         return s / np.sqrt(n)
+
+# TODO: fix signatures

@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import BonettSeierTest
-from tests.AbstractTestCase import AbstractTestCase
+from stattest.test.normal import BonettSeierNormalityTest
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(
@@ -13,8 +13,8 @@ from tests.AbstractTestCase import AbstractTestCase
 
     ],
 )
-class TestCaseBonettSeierTest(AbstractTestCase):
+class TestCaseBonettSeierNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return BonettSeierTest()
+        return BonettSeierNormalityTest()

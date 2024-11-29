@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import JBTest
-from tests.AbstractTestCase import AbstractTestCase
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import JBNormalityTest
 
 
 @pytest.mark.parametrize(
@@ -12,8 +12,8 @@ from tests.AbstractTestCase import AbstractTestCase
           0.83445286, 0.72505429, 1.25012578, -1.11276931], 0.44334632590843914),
     ],
 )
-class TestCaseJBTest(AbstractTestCase):
+class TestCaseJBNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return JBTest()
+        return JBNormalityTest()

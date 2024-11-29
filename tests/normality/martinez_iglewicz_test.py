@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import MartinezIglewiczTest
-from tests.AbstractTestCase import AbstractTestCase
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
+from stattest.test.normal import MartinezIglewiczNormalityTest
 
 
 @pytest.mark.parametrize(
@@ -12,8 +12,8 @@ from tests.AbstractTestCase import AbstractTestCase
           0.3070847, -1.6807102, -1.7846244, -0.3949447], 1.020476),
     ],
 )
-class TestCaseMartinezIglewiczTest(AbstractTestCase):
+class TestCaseMartinezIglewiczNormalityTest(AbstractNormalityTestCase):
 
     @pytest.fixture
     def statistic_test(self):
-        return MartinezIglewiczTest()
+        return MartinezIglewiczNormalityTest()
