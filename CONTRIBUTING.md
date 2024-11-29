@@ -79,11 +79,11 @@ ruff format .
 How to prioritize pull requests, from most to least important:
 
 1. Fixes for broken tests. Broken means broken on any supported platform or Python version.
-1. Extra tests to cover corner cases.
-1. Minor edits to docs.
-1. Bug fixes.
-1. Major edits to docs.
-1. Features.
+2. Extra tests to cover corner cases.
+3. Minor edits to docs.
+4. Bug fixes.
+5. Major edits to docs.
+6. Features.
 
 Ensure that each pull request meets all requirements in the Contributing document.
 
@@ -118,7 +118,7 @@ Exceptions:
 Contributors may be given commit privileges. Preference will be given to those with:
 
 1. Past contributions to pysatl-experiment and other related open-source projects. Contributions to pysatl-experiment include both code (both accepted and pending) and friendly participation in the issue tracker and Pull request reviews. Both quantity and quality are considered.
-2. coding style that the other core committers find simple, minimal, and clean.
+2. Coding style that the other core committers find simple, minimal, and clean.
 3. Access to resources for cross-platform development and testing.
 4. Time to devote to the project regularly.
 
