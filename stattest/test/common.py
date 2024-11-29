@@ -46,12 +46,15 @@ class KSTestStatistic(AbstractTestStatistic, ABC):
             d_plus, d_location = KSTestStatistic.__compute_dplus(cdf_vals, rvs)
             return d_plus
         if self.alternative == "less":
-            d_minus, d_location = KSTestStatistic.__compute_dminus(cdf_vals, rvs)
+            d_minus, d_location = KSTestStatistic.__compute_dminus(
+                cdf_vals, rvs)
             return d_minus
 
         # alternative == 'two-sided':
-        d_plus, d_plus_location = KSTestStatistic.__compute_dplus(cdf_vals, rvs)
-        d_minus, d_minus_location = KSTestStatistic.__compute_dminus(cdf_vals, rvs)
+        d_plus, d_plus_location = KSTestStatistic.__compute_dplus(
+            cdf_vals, rvs)
+        d_minus, d_minus_location = KSTestStatistic.__compute_dminus(
+            cdf_vals, rvs)
         if d_plus > d_minus:
             D = d_plus
             # d_location = d_plus_location
@@ -126,12 +129,12 @@ class LillieforsTest(KSTestStatistic, ABC):
 
 
 class CrammerVonMisesTestStatistic(AbstractTestStatistic, ABC):
-    
+
     @staticmethod
     @override
     def code():
         return "CVM"
-    
+
     @override
     def execute_statistic(self, rvs, cdf_vals):
         n = len(rvs)
