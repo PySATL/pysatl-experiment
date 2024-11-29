@@ -9,7 +9,7 @@ class BBBRVSGenerator(AbstractRVSGenerator):
         self.b = b
 
     def code(self):
-        return super()._convert_to_code(['beta', self.a, self.b])
+        return super()._convert_to_code(["beta", self.a, self.b])
 
     def generate(self, size):
         return generate_beta(size=size, a=self.a, b=self.b)

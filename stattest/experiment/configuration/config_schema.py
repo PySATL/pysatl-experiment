@@ -22,5 +22,5 @@ CONF_SCHEMA = {
             "minimum": 0.0001,
             "pattern": UNLIMITED_STAKE_AMOUNT,
         },
-    }
+    },
 }

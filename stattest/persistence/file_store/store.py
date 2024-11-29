@@ -8,12 +8,11 @@ def read_json(filename: str):
 
 
 def write_json(filename: str, value):
-    with open(filename, 'w') as fp:
+    with open(filename, "w") as fp:
         json.dump(value, fp)
 
 
 class StoreService:
-
     def get(self, key: str):
         """
         Get cached value if exists, else return None.
@@ -33,8 +32,7 @@ class StoreService:
 
 
 class InMemoryStoreService(StoreService):
-
-    def __init__(self, cache=None, separator='.'):
+    def __init__(self, cache=None, separator="."):
         if cache is None:
             cache = {}
         self.cache = cache
@@ -88,8 +86,7 @@ class InMemoryStoreService(StoreService):
 
 
 class JsonStoreService(InMemoryStoreService):
-
-    def __init__(self, filename='cache.json', separator='.'):
+    def __init__(self, filename="cache.json", separator="."):
         super().__init__(separator=separator)
         mem_cache = {}
         if os.path.isfile(filename):
@@ -130,8 +127,7 @@ class FastStoreService(InMemoryStoreService):
 
 
 class FastJsonStoreService(FastStoreService):
-
-    def __init__(self, filename='cache.json', separator='.'):
+    def __init__(self, filename="cache.json", separator="."):
         super().__init__(separator=separator)
         mem_cache = {}
         if os.path.isfile(filename):

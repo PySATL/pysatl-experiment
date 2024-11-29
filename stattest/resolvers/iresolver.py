@@ -50,10 +50,10 @@ class IResolver:
 
     @classmethod
     def build_search_paths(
-            cls,
-            user_data_dir: Optional[str] = None,
-            user_subdir: Optional[str] = None,
-            extra_dirs: Optional[list[str]] = None,
+        cls,
+        user_data_dir: Optional[str] = None,
+        user_subdir: Optional[str] = None,
+        extra_dirs: Optional[list[str]] = None,
     ) -> list[Path]:
         abs_paths: list[Path] = []
         if cls.initial_search_path:
@@ -74,7 +74,7 @@ class IResolver:
 
     @classmethod
     def _get_valid_object(
-            cls, module_path: Path, object_name: Optional[str], enum_failed: bool = False
+        cls, module_path: Path, object_name: Optional[str], enum_failed: bool = False
     ) -> Iterator[Any]:
         """
         Generator returning objects with matching object_type and object_name in the path given.
@@ -98,11 +98,11 @@ class IResolver:
             try:
                 spec.loader.exec_module(module)  # type: ignore # importlib does not use typehints
             except (
-                    AttributeError,
-                    ModuleNotFoundError,
-                    SyntaxError,
-                    ImportError,
-                    NameError,
+                AttributeError,
+                ModuleNotFoundError,
+                SyntaxError,
+                ImportError,
+                NameError,
             ) as err:
                 # Catch errors in case a specific module is not installed
                 logger.warning(f"Could not import {module_path} due to '{err}'")
@@ -112,10 +112,10 @@ class IResolver:
             def is_valid_class(obj):
                 try:
                     return (
-                            inspect.isclass(obj)
-                            and issubclass(obj, cls.object_type)
-                            and obj is not cls.object_type
-                            and obj.__module__ == module_name
+                        inspect.isclass(obj)
+                        and issubclass(obj, cls.object_type)
+                        and obj is not cls.object_type
+                        and obj.__module__ == module_name
                     )
                 except TypeError:
                     return False
@@ -130,7 +130,7 @@ class IResolver:
 
     @classmethod
     def _search_object(
-            cls, directory: Path, *, object_name: str, add_source: bool = False
+        cls, directory: Path, *, object_name: str, add_source: bool = False
     ) -> Union[tuple[Any, Path], tuple[None, None]]:
         """
         Search for the objectname in the given directory
@@ -138,7 +138,9 @@ class IResolver:
         :param object_name: ClassName of the object to load
         :return: object class
         """
-        logger.debug(f"Searching for {cls.object_type.__name__} {object_name} in '{directory}'")
+        logger.debug(
+            f"Searching for {cls.object_type.__name__} {object_name} in '{directory}'"
+        )
         for entry in directory.iterdir():
             # Only consider python files
             if entry.suffix != ".py":
@@ -160,7 +162,12 @@ class IResolver:
 
     @classmethod
     def _load_object(
-            cls, paths: list[Path], *, object_name: str, add_source: bool = False, kwargs: dict
+        cls,
+        paths: list[Path],
+        *,
+        object_name: str,
+        add_source: bool = False,
+        kwargs: dict,
     ) -> Optional[Any]:
         """
         Try to load object from path list.
@@ -183,9 +190,7 @@ class IResolver:
         return None
 
     @classmethod
-    def _load_modules_object(
-            cls, *, object_name: str, kwargs: dict
-    ) -> Optional[Any]:
+    def _load_modules_object(cls, *, object_name: str, kwargs: dict) -> Optional[Any]:
         """
         Try to load object from path list.
         """
@@ -193,14 +198,16 @@ class IResolver:
             return None
 
         for module_name in cls.module_names:
-            module_object = cls._load_module_object(object_name=object_name, kwargs=kwargs, module_name=module_name)
+            module_object = cls._load_module_object(
+                object_name=object_name, kwargs=kwargs, module_name=module_name
+            )
             if module_object is not None:
                 return module_object
         return None
 
     @classmethod
     def _load_module_object(
-            cls, *, object_name: str, kwargs: dict, module_name: str
+        cls, *, object_name: str, kwargs: dict, module_name: str
     ) -> Optional[Any]:
         """
         Try to load object from path list.
@@ -221,7 +228,12 @@ class IResolver:
 
     @classmethod
     def load_object(
-            cls, object_name: str, config: Config, *, kwargs: dict, extra_dir: Optional[str] = None
+        cls,
+        object_name: str,
+        config: Config,
+        *,
+        kwargs: dict,
+        extra_dir: Optional[str] = None,
     ) -> Any:
         """
         Search and loads the specified object as configured in the child class.
@@ -240,7 +252,9 @@ class IResolver:
             config, user_subdir=cls.user_subdir, extra_dirs=extra_dirs
         )
 
-        found_object = cls._load_object(paths=abs_paths, object_name=object_name, kwargs=kwargs)
+        found_object = cls._load_object(
+            paths=abs_paths, object_name=object_name, kwargs=kwargs
+        )
         if found_object:
             return found_object
         raise OperationalException(
@@ -259,11 +273,11 @@ class IResolver:
 
     @classmethod
     def _search_all_objects(
-            cls,
-            directory: Path,
-            enum_failed: bool,
-            recursive: bool = False,
-            basedir: Optional[Path] = None,
+        cls,
+        directory: Path,
+        enum_failed: bool,
+        recursive: bool = False,
+        basedir: Optional[Path] = None,
     ) -> list[dict[str, Any]]:
         """
         Searches a directory for valid objects
@@ -280,13 +294,15 @@ class IResolver:
             return objects
         for entry in directory.iterdir():
             if (
-                    recursive
-                    and entry.is_dir()
-                    and not entry.name.startswith("__")
-                    and not entry.name.startswith(".")
+                recursive
+                and entry.is_dir()
+                and not entry.name.startswith("__")
+                and not entry.name.startswith(".")
             ):
                 objects.extend(
-                    cls._search_all_objects(entry, enum_failed, recursive, basedir or directory)
+                    cls._search_all_objects(
+                        entry, enum_failed, recursive, basedir or directory
+                    )
                 )
             # Only consider python files
             if entry.suffix != ".py":
@@ -295,14 +311,16 @@ class IResolver:
             module_path = entry.resolve()
             logger.debug(f"Path {module_path}")
             for obj in cls._get_valid_object(
-                    module_path, object_name=None, enum_failed=enum_failed
+                module_path, object_name=None, enum_failed=enum_failed
             ):
                 objects.append(
                     {
                         "name": obj[0].__name__ if obj is not None else "",
                         "class": obj[0] if obj is not None else None,
                         "location": entry,
-                        "location_rel": cls._build_rel_location(basedir or directory, entry),
+                        "location_rel": cls._build_rel_location(
+                            basedir or directory, entry
+                        ),
                     }
                 )
         return objects

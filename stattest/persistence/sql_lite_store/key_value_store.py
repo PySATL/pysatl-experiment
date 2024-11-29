@@ -178,7 +178,8 @@ class KeyValueStoreSqlLiteStore:
         kv = (
             _KeyValueStoreModel.session.query(_KeyValueStoreModel)
             .filter(
-                _KeyValueStoreModel.key == key, _KeyValueStoreModel.value_type == ValueTypesEnum.INT
+                _KeyValueStoreModel.key == key,
+                _KeyValueStoreModel.value_type == ValueTypesEnum.INT,
             )
             .first()
         )

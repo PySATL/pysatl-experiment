@@ -10,15 +10,19 @@ from stattest.test.goodness_of_fit import AbstractGoodnessOfFitTestStatistic
 
 
 class AbstractExponentialityTestStatistic(AbstractGoodnessOfFitTestStatistic, ABC):
-
     def __init__(self, lam=1):
         self.lam = lam
 
     @staticmethod
     @override
     def code():
-        return 'EXPONENTIALITY' + '_' + super(AbstractGoodnessOfFitTestStatistic,
-                                              AbstractGoodnessOfFitTestStatistic).code()
+        return (
+            "EXPONENTIALITY"
+            + "_"
+            + super(
+                AbstractGoodnessOfFitTestStatistic, AbstractGoodnessOfFitTestStatistic
+            ).code()
+        )
 
     @override
     def _generate(self, size):
@@ -26,11 +30,10 @@ class AbstractExponentialityTestStatistic(AbstractGoodnessOfFitTestStatistic, AB
 
 
 class EPTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'EP' + '_' + super(EPTestExp, EPTestExp).code()
+        return "EP" + "_" + super(EPTestExp, EPTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -56,11 +59,10 @@ class EPTestExp(AbstractExponentialityTestStatistic):
 
 
 class KSTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'KS' + '_' + super(KSTestExp, KSTestExp).code()
+        return "KS" + "_" + super(KSTestExp, KSTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -91,11 +93,10 @@ class KSTestExp(AbstractExponentialityTestStatistic):
 
 
 class AHSTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'AHS' + '_' + super(AHSTestExp, AHSTestExp).code()
+        return "AHS" + "_" + super(AHSTestExp, AHSTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -124,17 +125,16 @@ class AHSTestExp(AbstractExponentialityTestStatistic):
                         h += 1
                     if 2 * min(rvs[i], rvs[j]) < rvs[k]:
                         g += 1
-        a = (h - g) / (n ** 3)
+        a = (h - g) / (n**3)
 
         return a
 
 
 class ATKTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'ATK' + '_' + super(ATKTestExp, ATKTestExp).code()
+        return "ATK" + "_" + super(ATKTestExp, ATKTestExp).code()
 
     @override
     def execute_statistic(self, rvs, p=0.99):
@@ -164,11 +164,10 @@ class ATKTestExp(AbstractExponentialityTestStatistic):
 
 
 class COTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'CO' + '_' + super(COTestExp, COTestExp).code()
+        return "CO" + "_" + super(COTestExp, COTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -196,11 +195,10 @@ class COTestExp(AbstractExponentialityTestStatistic):
 
 
 class CVMTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'CVM' + '_' + super(CVMTestExp, CVMTestExp).code()
+        return "CVM" + "_" + super(CVMTestExp, CVMTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -229,11 +227,10 @@ class CVMTestExp(AbstractExponentialityTestStatistic):
 
 
 class DSPTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'DSP' + '_' + super(DSPTestExp, DSPTestExp).code()
+        return "DSP" + "_" + super(DSPTestExp, DSPTestExp).code()
 
     @override
     def execute_statistic(self, rvs, b=0.44):
@@ -259,17 +256,16 @@ class DSPTestExp(AbstractExponentialityTestStatistic):
             for k in range(n):
                 if (i != k) and (rvs[i] > b * rvs[k]):
                     des += 1
-        des /= (n * (n - 1))
+        des /= n * (n - 1)
 
         return des
 
 
 class EPSTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'EPS' + '_' + super(EPSTestExp, EPSTestExp).code()
+        return "EPS" + "_" + super(EPSTestExp, EPSTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -290,18 +286,22 @@ class EPSTestExp(AbstractExponentialityTestStatistic):
         n = len(rvs)
         rvs.sort()
         x = np.concatenate(([0], rvs))
-        d = (np.arange(n, 0, -1)) * (x[1:n + 1] - x[0:n])
-        eps = 2 * n * (np.log(np.sum(d) / n) - (np.sum(np.log(d))) / n) / (1 + (n + 1) / (6 * n))
+        d = (np.arange(n, 0, -1)) * (x[1 : n + 1] - x[0:n])
+        eps = (
+            2
+            * n
+            * (np.log(np.sum(d) / n) - (np.sum(np.log(d))) / n)
+            / (1 + (n + 1) / (6 * n))
+        )
 
         return eps
 
 
 class FZTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'FZ' + '_' + super(FZTestExp, FZTestExp).code()
+        return "FZ" + "_" + super(FZTestExp, FZTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -323,17 +323,18 @@ class FZTestExp(AbstractExponentialityTestStatistic):
         rvs.sort()
         rvs = np.array(rvs)
         y = np.mean(rvs)
-        froz = (1 / np.sqrt(n)) * np.sum(np.abs(1 - np.exp(-rvs / y) - (np.arange(1, n + 1) - 0.5) / n))
+        froz = (1 / np.sqrt(n)) * np.sum(
+            np.abs(1 - np.exp(-rvs / y) - (np.arange(1, n + 1) - 0.5) / n)
+        )
 
         return froz
 
 
 class GiniTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'Gini' + '_' + super(GiniTestExp, GiniTestExp).code()
+        return "Gini" + "_" + super(GiniTestExp, GiniTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -363,11 +364,10 @@ class GiniTestExp(AbstractExponentialityTestStatistic):
 
 
 class GDTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'GD' + '_' + super(GDTestExp, GDTestExp).code()
+        return "GD" + "_" + super(GDTestExp, GDTestExp).code()
 
     @override
     def execute_statistic(self, rvs, r=None):
@@ -391,18 +391,17 @@ class GDTestExp(AbstractExponentialityTestStatistic):
             r = round(len(rvs) / 2)
         n = len(rvs)
         x = np.sort(np.concatenate(([0], rvs)))
-        d = (np.arange(n, 0, -1)) * (x[1:n + 1] - x[0:n])
+        d = (np.arange(n, 0, -1)) * (x[1 : n + 1] - x[0:n])
         gd = (sum(d[:r]) / r) / (sum(d[r:]) / (n - r))
 
         return gd
 
 
 class HMTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'HM' + '_' + super(HMTestExp, HMTestExp).code()
+        return "HM" + "_" + super(HMTestExp, HMTestExp).code()
 
     @override
     def execute_statistic(self, rvs, r=None):
@@ -426,18 +425,19 @@ class HMTestExp(AbstractExponentialityTestStatistic):
             r = round(len(rvs) / 4)
         n = len(rvs)
         x = np.sort(np.concatenate(([0], rvs)))
-        d = (np.arange(n, 0, -1)) * (x[1:n + 1] - x[:n])
-        hm = ((np.sum(d[:r]) + np.sum(d[-r:])) / (2 * r)) / ((np.sum(d[r:-r])) / (n - 2 * r))
+        d = (np.arange(n, 0, -1)) * (x[1 : n + 1] - x[:n])
+        hm = ((np.sum(d[:r]) + np.sum(d[-r:])) / (2 * r)) / (
+            (np.sum(d[r:-r])) / (n - 2 * r)
+        )
 
         return hm
 
 
 class HG1TestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'HG1' + '_' + super(HG1TestExp, HG1TestExp).code()
+        return "HG1" + "_" + super(HG1TestExp, HG1TestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -464,11 +464,10 @@ class HG1TestExp(AbstractExponentialityTestStatistic):
 
 
 class HPTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'HP' + '_' + super(HPTestExp, HPTestExp).code()
+        return "HP" + "_" + super(HPTestExp, HPTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -499,11 +498,10 @@ class HPTestExp(AbstractExponentialityTestStatistic):
 
 
 class KMTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'KM' + '_' + super(KMTestExp, KMTestExp).code()
+        return "KM" + "_" + super(KMTestExp, KMTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -532,11 +530,10 @@ class KMTestExp(AbstractExponentialityTestStatistic):
 
 
 class KCTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'KC' + '_' + super(KCTestExp, KCTestExp).code()
+        return "KC" + "_" + super(KCTestExp, KCTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -564,11 +561,10 @@ class KCTestExp(AbstractExponentialityTestStatistic):
 
 
 class LZTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'LZ' + '_' + super(LZTestExp, LZTestExp).code()
+        return "LZ" + "_" + super(LZTestExp, LZTestExp).code()
 
     @override
     def execute_statistic(self, rvs, p=0.5):
@@ -590,17 +586,16 @@ class LZTestExp(AbstractExponentialityTestStatistic):
 
         n = len(rvs)
         rvs.sort()
-        lz = sum(rvs[:int(n * p)]) / sum(rvs)
+        lz = sum(rvs[: int(n * p)]) / sum(rvs)
 
         return lz
 
 
 class MNTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'MN' + '_' + super(MNTestExp, MNTestExp).code()
+        return "MN" + "_" + super(MNTestExp, MNTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -626,11 +621,10 @@ class MNTestExp(AbstractExponentialityTestStatistic):
 
 
 class PTTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'PT' + '_' + super(PTTestExp, PTTestExp).code()
+        return "PT" + "_" + super(PTTestExp, PTTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -656,11 +650,10 @@ class PTTestExp(AbstractExponentialityTestStatistic):
 
 
 class SWTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'SW' + '_' + super(SWTestExp, SWTestExp).code()
+        return "SW" + "_" + super(SWTestExp, SWTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -687,11 +680,10 @@ class SWTestExp(AbstractExponentialityTestStatistic):
 
 
 class RSTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'RS' + '_' + super(RSTestExp, RSTestExp).code()
+        return "RS" + "_" + super(RSTestExp, RSTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -717,8 +709,14 @@ class RSTestExp(AbstractExponentialityTestStatistic):
             for i in range(n - 2):
                 for j in range(i + 1, n - 1):
                     for k in range(j + 1, n):
-                        if (rvs[i] + rvs[j] + rvs[k] - 2 * min(rvs[i], rvs[j], rvs[k]) - max(rvs[i], rvs[j], rvs[k]) <
-                                rvs[m]):
+                        if (
+                            rvs[i]
+                            + rvs[j]
+                            + rvs[k]
+                            - 2 * min(rvs[i], rvs[j], rvs[k])
+                            - max(rvs[i], rvs[j], rvs[k])
+                            < rvs[m]
+                        ):
                             h += 1
             h = ((6 * math.factorial(n - 3)) / math.factorial(n)) * h
             sh += h
@@ -737,11 +735,10 @@ class RSTestExp(AbstractExponentialityTestStatistic):
 
 
 class WETestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'WE' + '_' + super(WETestExp, WETestExp).code()
+        return "WE" + "_" + super(WETestExp, WETestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -762,17 +759,16 @@ class WETestExp(AbstractExponentialityTestStatistic):
         n = len(rvs)
         m = np.mean(rvs)
         v = np.var(rvs)
-        we = (n - 1) * v / (n ** 2 * m ** 2)
+        we = (n - 1) * v / (n**2 * m**2)
 
         return we
 
 
 class WWTestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'WW' + '_' + super(WWTestExp, WWTestExp).code()
+        return "WW" + "_" + super(WWTestExp, WWTestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -797,11 +793,10 @@ class WWTestExp(AbstractExponentialityTestStatistic):
 
 
 class HG2TestExp(AbstractExponentialityTestStatistic):
-
     @staticmethod
     @override
     def code():
-        return 'HG2' + '_' + super(HG2TestExp, HG2TestExp).code()
+        return "HG2" + "_" + super(HG2TestExp, HG2TestExp).code()
 
     @override
     def execute_statistic(self, rvs, **kwargs):
@@ -825,5 +820,6 @@ class HG2TestExp(AbstractExponentialityTestStatistic):
         hg = (n ** (-1)) * np.sum((rvs - b) ** 2)
 
         return hg
+
 
 # TODO: check all mistype warnings

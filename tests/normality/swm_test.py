@@ -1,5 +1,4 @@
-
-""" # TODO: check this test
+"""# TODO: check this test
 import pytest as pytest
 
 from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase

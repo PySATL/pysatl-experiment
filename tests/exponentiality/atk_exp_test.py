@@ -1,8 +1,9 @@
 import pytest as pytest
 
 from stattest.test.exponent import ATKTestExp
-from tests.exponentiality.abstract_exponentiality_test_case import \
-    AbstractExponentialityTestCase
+from tests.exponentiality.abstract_exponentiality_test_case import (
+    AbstractExponentialityTestCase,
+)
 
 
 # TODO: actual test (7; 10)
@@ -15,7 +16,6 @@ from tests.exponentiality.abstract_exponentiality_test_case import \
 )
 @pytest.mark.skip(reason="fix test and check")
 class TestCaseATKExponentialityTest(AbstractExponentialityTestCase):
-
     @pytest.fixture
     def statistic_test(self):
         return ATKTestExp()

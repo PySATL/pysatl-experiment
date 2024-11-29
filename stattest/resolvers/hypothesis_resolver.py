@@ -28,11 +28,13 @@ class HypothesisResolver(IResolver):
     module_name = "stattest.experiment.hypothesis"
 
     @staticmethod
-    def load_hypothesis(hypothesis_name: str, path: str = None, params: dict[str, Any] = None) -> AbstractHypothesis:
+    def load_hypothesis(
+        hypothesis_name: str, path: str = None, params: dict[str, Any] = None
+    ) -> AbstractHypothesis:
         """
         Load the custom class from config parameter
-        :param params: 
-        :param path: 
+        :param params:
+        :param path:
         :param hypothesis_name:
         """
 
@@ -49,7 +51,9 @@ class HypothesisResolver(IResolver):
 
     @staticmethod
     def _load_hypothesis(
-            hypothesis_name: str, params: dict[str, Any], extra_dir: Optional[str] = None,
+        hypothesis_name: str,
+        params: dict[str, Any],
+        extra_dir: Optional[str] = None,
     ) -> AbstractHypothesis:
         """
         Search and loads the specified strategy.
@@ -63,9 +67,9 @@ class HypothesisResolver(IResolver):
         if extra_dir:
             extra_dirs.append(extra_dir)
 
-        abs_paths = HypothesisResolver.build_search_paths(user_data_dir=None,
-                                                          user_subdir=USERPATH_GENERATORS,
-                                                          extra_dirs=extra_dirs)
+        abs_paths = HypothesisResolver.build_search_paths(
+            user_data_dir=None, user_subdir=USERPATH_GENERATORS, extra_dirs=extra_dirs
+        )
 
         hypothesis = HypothesisResolver._load_object(
             paths=abs_paths,
@@ -76,8 +80,7 @@ class HypothesisResolver(IResolver):
 
         if not hypothesis:
             hypothesis = HypothesisResolver._load_module_object(
-                object_name=hypothesis_name,
-                kwargs=params
+                object_name=hypothesis_name, kwargs=params
             )
 
         if hypothesis:

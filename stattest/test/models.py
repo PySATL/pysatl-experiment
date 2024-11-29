@@ -22,7 +22,9 @@ class AbstractTestStatistic(ABC):
         """
         raise NotImplementedError("Method is not implemented")
 
-    def calculate_critical_value(self, rvs_size, sl) -> Optional[float] or Optional[float64]:
+    def calculate_critical_value(
+        self, rvs_size, sl
+    ) -> Optional[float] or Optional[float64]:
         """
         Calculate critical value for test statistics
         :param rvs_size: rvs size

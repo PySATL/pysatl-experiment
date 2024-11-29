@@ -112,8 +112,8 @@ class TestDistribution:
     @pytest.mark.parametrize(
         ("mean", "var", "mu", "beta"),
         [
-            (1 + 1 * 0.57721566, math.pi ** 2 / 6, 1, 1),
-            (4 + 3 * 0.57721566, math.pi ** 2 * 9 / 6, 4, 3),
+            (1 + 1 * 0.57721566, math.pi**2 / 6, 1, 1),
+            (4 + 3 * 0.57721566, math.pi**2 * 9 / 6, 4, 3),
         ],
     )
     def test_generate_gumbel(self, mean, var, mu, beta):
@@ -140,8 +140,8 @@ class TestDistribution:
     @pytest.mark.parametrize(
         ("mean", "var", "t", "s"),
         [
-            (1, math.pi ** 2 / 3, 1, 1),
-            (4, math.pi ** 2 * 4 / 3, 4, 2),
+            (1, math.pi**2 / 3, 1, 1),
+            (4, math.pi**2 * 4 / 3, 4, 2),
         ],
     )
     def test_generate_logistic(self, mean, var, t, s):
@@ -214,7 +214,7 @@ class TestDistribution:
         ("mean", "var", "lam"),
         [
             (0, 1 / 12, 2),
-            (0, math.pi ** 2 / 3, 0),
+            (0, math.pi**2 / 3, 0),
         ],
     )
     def test_generate_tukey(self, mean, var, lam):

@@ -5,11 +5,10 @@ import pytest
 
 from stattest.persistence.sql_lite_store import BenchmarkResultSqLiteStore
 
-store_name = 'pysatl.sqlite'
+store_name = "pysatl.sqlite"
 
 
 class TestBenchmarkResultSqLiteStoreService:
-
     @pytest.fixture
     def store(self):
         store = BenchmarkResultSqLiteStore(name=store_name)
@@ -19,7 +18,7 @@ class TestBenchmarkResultSqLiteStoreService:
     def teardown_method(self, method):
         try:
             os.remove(store_name)
-            os.remove(store_name + '-journal')
+            os.remove(store_name + "-journal")
         except OSError:
             pass
 
@@ -27,17 +26,17 @@ class TestBenchmarkResultSqLiteStoreService:
         assert len(store.get_benchmarks(0, 5)) == 0
 
     def test_get_benchmark_empty(self, store):
-        assert len(store.get_benchmark('test', 10)) == 0
+        assert len(store.get_benchmark("test", 10)) == 0
 
     def test_get_benchmark_value(self, store):
-        store.insert_benchmark('test', 10, [0.5, 0.7])
-        ar = np.array(store.get_benchmark('test', 10))
+        store.insert_benchmark("test", 10, [0.5, 0.7])
+        ar = np.array(store.get_benchmark("test", 10))
         expected = np.array([0.5, 0.7])
         assert np.array_equal(ar, expected)
 
     def test_get_benchmarks_value(self, store):
-        store.insert_benchmark('test', 10, [0.5, 0.7])
+        store.insert_benchmark("test", 10, [0.5, 0.7])
         ar = store.get_benchmarks(0, 5)
         expected = np.array([0.5, 0.7])
         assert np.array_equal(ar[0].benchmark, expected)
-        assert ar[0].test_code == 'test'
+        assert ar[0].test_code == "test"

@@ -1,8 +1,9 @@
 import pytest as pytest
 
 from stattest.test.exponent import SWTestExp
-from tests.exponentiality.abstract_exponentiality_test_case import \
-    AbstractExponentialityTestCase
+from tests.exponentiality.abstract_exponentiality_test_case import (
+    AbstractExponentialityTestCase,
+)
 
 
 @pytest.mark.parametrize(  # TODO: actual test (7; 10)
@@ -14,7 +15,6 @@ from tests.exponentiality.abstract_exponentiality_test_case import \
 )
 @pytest.mark.skip(reason="fix test and check")
 class TestCaseSWExponentialityTest(AbstractExponentialityTestCase):
-
     @pytest.fixture
     def statistic_test(self):
         return SWTestExp()

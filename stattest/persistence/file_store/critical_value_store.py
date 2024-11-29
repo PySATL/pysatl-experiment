@@ -9,13 +9,13 @@ from stattest.persistence.file_store.store import read_json, write_json
 
 
 class CriticalValueFileStore(ICriticalValueStore):
-    csv_delimiter = ';'
-    separator = ':'
+    csv_delimiter = ";"
+    separator = ":"
 
-    def __init__(self, path='test_distribution'):
+    def __init__(self, path="test_distribution"):
         super().__init__()
         self.path = path
-        self.filename = os.path.join(path, 'critical_value.json')
+        self.filename = os.path.join(path, "critical_value.json")
         self.cache = {}
 
     @override
@@ -52,8 +52,10 @@ class CriticalValueFileStore(ICriticalValueStore):
         """
 
         file_path = self.__build_file_path(code, size)
-        with open(file_path, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile, delimiter=self.csv_delimiter, quoting=csv.QUOTE_NONNUMERIC)
+        with open(file_path, "w", newline="") as csvfile:
+            writer = csv.writer(
+                csvfile, delimiter=self.csv_delimiter, quoting=csv.QUOTE_NONNUMERIC
+            )
             writer.writerow(data)
 
     def get_critical_value(self, code: str, size: int, sl: float) -> Optional[float]:
@@ -80,14 +82,16 @@ class CriticalValueFileStore(ICriticalValueStore):
 
         file_path = self.__build_file_path(code, size)
         if os.path.exists(file_path):
-            with open(file_path, newline='') as f:
-                reader = csv.reader(f, delimiter=self.csv_delimiter, quoting=csv.QUOTE_NONNUMERIC)
+            with open(file_path, newline="") as f:
+                reader = csv.reader(
+                    f, delimiter=self.csv_delimiter, quoting=csv.QUOTE_NONNUMERIC
+                )
                 return list(reader)[0]
         else:
             return None
 
     def __build_file_path(self, test_code: str, size: int):
-        file_name = test_code + '_' + str(size) + '.csv'
+        file_name = test_code + "_" + str(size) + ".csv"
         return os.path.join(self.path, file_name)
 
     def _create_key(self, keys: [str]):
@@ -95,8 +99,14 @@ class CriticalValueFileStore(ICriticalValueStore):
 
 
 class ThreadSafeMonteCarloCacheService(CriticalValueFileStore):
-
-    def __init__(self, lock, filename='cache.json', separator=':', csv_delimiter=';', dir_path='test_distribution'):
+    def __init__(
+        self,
+        lock,
+        filename="cache.json",
+        separator=":",
+        csv_delimiter=";",
+        dir_path="test_distribution",
+    ):
         super().__init__(filename, separator, csv_delimiter, dir_path)
         self.lock = lock
 

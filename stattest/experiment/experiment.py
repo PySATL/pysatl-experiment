@@ -1,5 +1,4 @@
-from stattest.experiment.configuration.configuration import \
-    ExperimentConfiguration
+from stattest.experiment.configuration.configuration import ExperimentConfiguration
 from stattest.experiment.generator.generator_step import data_generation_step
 from stattest.experiment.report.report_step import execute_report_step
 from stattest.experiment.test.test_step import execute_test_step
