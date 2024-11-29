@@ -5,10 +5,7 @@ from stattest.experiment import (
     ReportConfiguration,
 )
 from stattest.experiment.configuration.configuration import TestConfiguration
-from stattest.experiment.generator import (
-    BetaRVSGenerator,
-    symmetric_generators,
-)
+from stattest.experiment.generator import BetaRVSGenerator, symmetric_generators
 from stattest.experiment.hypothesis import WeibullHypothesis
 from stattest.experiment.listener.listeners import TimeEstimationListener
 from stattest.experiment.report.model import PdfPowerReportBuilder
