@@ -1,0 +1,99 @@
+[project]
+name = "stattest"
+version = "0.0.1"
+authors = [
+    { name="Example Author", email="author@example.com" },
+]
+description = "Stattest Project"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/alex98247/statistic-test"
+Issues = "https://github.com/alex98247/statistic-test/issues"
+
+[tool.isort]
+line_length = 100
+profile = "black"
+# multi_line_output=3
+lines_after_imports=2
+skip_glob = ["**/.env*", "**/env/*", "**/.venv/*", "**/docs/*", "**/user_data/*"]
+
+[tool.ruff]
+line-length = 100
+extend-exclude = [".env", ".venv"]
+
+[tool.ruff.lint]
+extend-select = [
+  "C90",    # mccabe
+  "B",      # bugbear
+  # "N",    # pep8-naming
+  "F",      # pyflakes
+  "E",      # pycodestyle
+  "W",      # pycodestyle
+  "UP",     # pyupgrade
+  "I",      # isort
+  "A",      # flake8-builtins
+  "TID",    # flake8-tidy-imports
+  # "EXE",  # flake8-executable
+  # "C4",     # flake8-comprehensions
+  "YTT",    # flake8-2020
+  "S",      # flake8-bandit
+  # "DTZ",  # flake8-datetimez
+  # "RSE",  # flake8-raise
+  # "TCH",  # flake8-type-checking
+  "PTH",    # flake8-use-pathlib
+  # "RUF",    # ruff
+  "ASYNC",  # flake8-async
+  "NPY",    # numpy
+]
+
+extend-ignore = [
+  "E241",  # Multiple spaces after comma
+  "E272",  # Multiple spaces before keyword
+  "E221",  # Multiple spaces before operator
+  "B007",  # Loop control variable not used
+  "B904",  # BugBear - except raise from
+  "S603",  # `subprocess` call: check for execution of untrusted input
+  "S607",  # Starting a process with a partial executable path
+  "S608",  # Possible SQL injection vector through string-based query construction
+  "NPY002",  # Numpy legacy random generator
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+
+[tool.flake8]
+# Default from https://flake8.pycqa.org/en/latest/user/options.html#cmdoption-flake8-ignore
+# minus E226
+ignore = ["E121","E123","E126","E24", "E203","E704","W503","W504"]
+max-line-length = 100
+max-complexity = 12
+exclude = [
+    ".git",
+    "__pycache__",
+    ".eggs",
+    "user_data",
+    ".venv",
+    ".env",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+  "S101",  # allow assert in tests
+  "S104",  #  Possible binding to all interfaces
+  "S311",  # Standard pseudo-random generators are not suitable for cryptographic purposes
+  "S105",  # Possible hardcoded password assigned to: "secret"
+  "S106",  # Possible hardcoded password assigned to argument: "token_type"
+  "S110",  # `try`-`except`-`pass` detected, consider logging the exception
+  ]
+
+# TODO: fill stub from official documentation

@@ -1,29 +1,29 @@
 import csv
-import os
+from pathlib import Path
 from typing import Optional
 
 from typing_extensions import override
 
 from stattest.persistence import ICriticalValueStore
-from stattest.persistence.file_store.store import FastJsonStoreService, write_json, read_json
+from stattest.persistence.file_store.store import read_json, write_json
 
 
 class CriticalValueFileStore(ICriticalValueStore):
-    csv_delimiter = ';'
-    separator = ':'
+    csv_delimiter = ";"
+    separator = ":"
 
-    def __init__(self, path='test_distribution'):
+    def __init__(self, path="test_distribution"):
         super().__init__()
         self.path = path
-        self.filename = os.path.join(path, 'critical_value.json')
+        self.filename = Path(path, "critical_value.json")
         self.cache = {}
 
     @override
     def init(self):
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
+        if not Path(self.path).exists():
+            Path(self.path).mkdir(parents=True)
         mem_cache = {}
-        if os.path.isfile(self.filename):
+        if Path(self.filename).is_file():
             mem_cache = read_json(self.filename)
         self.cache = mem_cache
 
@@ -52,7 +52,7 @@ class CriticalValueFileStore(ICriticalValueStore):
         """
 
         file_path = self.__build_file_path(code, size)
-        with open(file_path, 'w', newline='') as csvfile:
+        with Path(file_path).open("w", newline="") as csvfile:
             writer = csv.writer(csvfile, delimiter=self.csv_delimiter, quoting=csv.QUOTE_NONNUMERIC)
             writer.writerow(data)
 
@@ -79,24 +79,30 @@ class CriticalValueFileStore(ICriticalValueStore):
         """
 
         file_path = self.__build_file_path(code, size)
-        if os.path.exists(file_path):
-            with open(file_path, newline='') as f:
+        if Path(file_path).exists():
+            with Path(file_path).open(newline="") as f:
                 reader = csv.reader(f, delimiter=self.csv_delimiter, quoting=csv.QUOTE_NONNUMERIC)
                 return list(reader)[0]
         else:
             return None
 
     def __build_file_path(self, test_code: str, size: int):
-        file_name = test_code + '_' + str(size) + '.csv'
-        return os.path.join(self.path, file_name)
+        file_name = test_code + "_" + str(size) + ".csv"
+        return Path(self.path, file_name)
 
     def _create_key(self, keys: [str]):
         return self.separator.join(keys)
 
 
 class ThreadSafeMonteCarloCacheService(CriticalValueFileStore):
-
-    def __init__(self, lock, filename='cache.json', separator=':', csv_delimiter=';', dir_path='test_distribution'):
+    def __init__(
+        self,
+        lock,
+        filename="cache.json",
+        separator=":",
+        csv_delimiter=";",
+        dir_path="test_distribution",
+    ):
         super().__init__(filename, separator, csv_delimiter, dir_path)
         self.lock = lock
 

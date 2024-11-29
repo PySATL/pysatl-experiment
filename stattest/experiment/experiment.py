@@ -4,7 +4,6 @@ from stattest.experiment.report.report_step import execute_report_step
 from stattest.experiment.test.test_step import execute_test_step
 
 
-
 class Experiment:
     def __init__(self, configuration: ExperimentConfiguration or str):
         self.__configuration = configuration

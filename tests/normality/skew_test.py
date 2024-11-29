@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import SkewTest
-from tests.AbstractTestCase import AbstractTestCase
+from stattest.test.normal import SkewNormalityTest
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(
@@ -10,8 +10,7 @@ from tests.AbstractTestCase import AbstractTestCase
         ([148, 154, 158, 160, 161, 162, 166, 170, 182, 195, 236], 2.7788579769903414),
     ],
 )
-class TestCaseSkewTest(AbstractTestCase):
-
+class TestCaseSkewNormalityTest(AbstractNormalityTestCase):
     @pytest.fixture
     def statistic_test(self):
-        return SkewTest()
+        return SkewNormalityTest()

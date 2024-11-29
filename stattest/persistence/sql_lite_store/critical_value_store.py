@@ -1,20 +1,14 @@
 import sqlite3
+from typing import ClassVar, Optional
 
 import numpy as np
-from typing_extensions import override, Optional
-
-from typing import ClassVar
-
+from sqlalchemy import Float, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
-from sqlalchemy import (
-    Integer,
-    String,
-    Float,
-)
+from typing_extensions import override
 
 from stattest.persistence.models import ICriticalValueStore
 from stattest.persistence.sql_lite_store.base import ModelBase, SessionType
-from stattest.persistence.sql_lite_store.db_init import init_db, get_request_or_thread_id
+from stattest.persistence.sql_lite_store.db_init import get_request_or_thread_id, init_db
 
 
 class Distribution(ModelBase):
@@ -45,9 +39,9 @@ class CriticalValue(ModelBase):
 
 class CriticalValueSqLiteStore(ICriticalValueStore):
     session: ClassVar[SessionType]
-    __separator = ';'
+    __separator = ";"
 
-    def __init__(self, name='pysatl.sqlite'):
+    def __init__(self, name="pysatl.sqlite"):
         super().__init__()
         self.name = name
 
@@ -56,19 +50,24 @@ class CriticalValueSqLiteStore(ICriticalValueStore):
         sqlite3.register_adapter(np.int64, lambda val: int(val))
         engine = init_db("sqlite:///" + self.name)
         CriticalValueSqLiteStore.session = scoped_session(
-            sessionmaker(bind=engine, autoflush=False), scopefunc=get_request_or_thread_id
+            sessionmaker(bind=engine, autoflush=False),
+            scopefunc=get_request_or_thread_id,
         )
         ModelBase.metadata.create_all(engine)
 
     @override
     def insert_critical_value(self, code: str, size: int, sl: float, value: float):
-        CriticalValueSqLiteStore.session.add(CriticalValue(code=code, sl=sl, size=int(size), value=value))
+        CriticalValueSqLiteStore.session.add(
+            CriticalValue(code=code, sl=sl, size=int(size), value=value)
+        )
         CriticalValueSqLiteStore.session.commit()
 
     @override
     def insert_distribution(self, code: str, size: int, data: [float]):
         data_to_insert = CriticalValueSqLiteStore.__separator.join(map(str, data))
-        CriticalValueSqLiteStore.session.add(Distribution(code=code, size=int(size), data=data_to_insert))
+        CriticalValueSqLiteStore.session.add(
+            Distribution(code=code, size=int(size), data=data_to_insert)
+        )
         CriticalValueSqLiteStore.session.commit()
 
     @override

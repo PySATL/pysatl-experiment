@@ -1,3 +1,5 @@
+from abc import ABC
+
 import numpy as np
 import scipy.stats as scipy_stats
 from scipy import special
@@ -6,23 +8,19 @@ from typing_extensions import override
 from stattest.test.models import AbstractTestStatistic
 
 
-class KSTestStatistic(AbstractTestStatistic):
-
-    def __init__(self, alternative='two-sided', mode='auto'):
+class KSTestStatistic(AbstractTestStatistic, ABC):
+    def __init__(self, alternative="two-sided", mode="auto"):
         self.alternative = alternative
-        if mode == 'auto':  # Always select exact
-            mode = 'exact'
+        if mode == "auto":  # Always select exact
+            mode = "exact"
         self.mode = mode
 
-    @staticmethod
-    def code():
-        raise NotImplementedError("Method is not implemented")
-
+    @override
     def execute_statistic(self, rvs, cdf_vals=None):
         """
-        Title: The Kolmogorov-Smirnov statistic for the Laplace distribution Ref. (book or article): Puig,
-        P. and Stephens, M. A. (2000). Tests of fit for the Laplace distribution, with applications. Technometrics
-        42, 417-424.
+        Title: The Kolmogorov-Smirnov statistic for the Laplace distribution Ref. (book or article):
+        Puig, P. and Stephens, M. A. (2000). Tests of fit for the Laplace distribution, with
+        applications. Technometrics 42, 417-424.
 
         :param alternative: {'two-sided', 'less', 'greater'}, optional
         :param mode: {'auto', 'exact', 'approx', 'asymp'}, optional
@@ -36,16 +34,18 @@ class KSTestStatistic(AbstractTestStatistic):
           * 'asymp': uses asymptotic distribution of test statistic
         :param rvs: unsorted vector
         :return:
+
+        Parameters
+        ----------
+        cdf_vals
         """
-        # rvs = np.sort(rvs)
-        n = len(rvs)
 
         d_minus, _ = KSTestStatistic.__compute_dminus(cdf_vals, rvs)
 
-        if self.alternative == 'greater':
+        if self.alternative == "greater":
             d_plus, d_location = KSTestStatistic.__compute_dplus(cdf_vals, rvs)
             return d_plus
-        if self.alternative == 'less':
+        if self.alternative == "less":
             d_minus, d_location = KSTestStatistic.__compute_dminus(cdf_vals, rvs)
             return d_minus
 
@@ -54,30 +54,31 @@ class KSTestStatistic(AbstractTestStatistic):
         d_minus, d_minus_location = KSTestStatistic.__compute_dminus(cdf_vals, rvs)
         if d_plus > d_minus:
             D = d_plus
-            d_location = d_plus_location
-            d_sign = 1
+            # d_location = d_plus_location
+            # d_sign = 1
         else:
             D = d_minus
-            d_location = d_minus_location
-            d_sign = -1
+            # d_location = d_minus_location
+            # d_sign = -1
 
-        if self.mode == 'exact':
+        """if self.mode == "exact":
             prob = scipy_stats.distributions.kstwo.sf(D, n)
-        elif self.mode == 'asymp':
-            prob = scipy_stats.distributions.kstwobign.sf(D * np.sqrt(n))
+        elif self.mode == "asymp":
+            #prob = scipy_stats.distributions.kstwobign.sf(D * np.sqrt(n))
         else:
             # mode == 'approx'
-            prob = 2 * scipy_stats.distributions.ksone.sf(D, n)
-        prob = np.clip(prob, 0, 1)
+            #prob = 2 * scipy_stats.distributions.ksone.sf(D, n)
+        #prob = np.clip(prob, 0, 1)"""
         return D
 
+    @override
     def calculate_critical_value(self, rvs_size, sl):
         return scipy_stats.distributions.kstwo.ppf(1 - sl, rvs_size)
 
     @staticmethod
     def __compute_dplus(cdf_vals, rvs):
         n = len(cdf_vals)
-        d_plus = (np.arange(1.0, n + 1) / n - cdf_vals)
+        d_plus = np.arange(1.0, n + 1) / n - cdf_vals
         a_max = d_plus.argmax()
         loc_max = rvs[a_max]
         return d_plus[a_max], loc_max
@@ -85,23 +86,25 @@ class KSTestStatistic(AbstractTestStatistic):
     @staticmethod
     def __compute_dminus(cdf_vals, rvs):
         n = len(cdf_vals)
-        d_minus = (cdf_vals - np.arange(0.0, n) / n)
+        d_minus = cdf_vals - np.arange(0.0, n) / n
         a_max = d_minus.argmax()
         loc_max = rvs[a_max]
         return d_minus[a_max], loc_max
 
 
 class ADTestStatistic(AbstractTestStatistic):
-
     @staticmethod
+    @override
     def code():
         raise NotImplementedError("Method is not implemented")
 
+    @override
     def execute_statistic(self, rvs, log_cdf=None, log_sf=None, w=None):
         """
-        Title: The Anderson-Darling test Ref. (book or article): See package nortest and also Table 4.9 p. 127 in M.
-        A. Stephens, “Tests Based on EDF Statistics,” In: R. B. D’Agostino and M. A. Stephens, Eds., Goodness-of-Fit
-        Techniques, Marcel Dekker, New York, 1986, pp. 97-193.
+        Title: The Anderson-Darling test Ref. (book or article): See package nortest and also
+        Table 4.9 p. 127 in M.
+        A. Stephens, “Tests Based on EDF Statistics,” In: R. B. D’Agostino and M. A. Stephens, Eds.,
+        Goodness-of-Fit Techniques, Marcel Dekker, New York, 1986, pp. 97-193.
 
         :param rvs:
         :return:
@@ -113,22 +116,17 @@ class ADTestStatistic(AbstractTestStatistic):
         return A2
 
 
-class LillieforsTest(KSTestStatistic):
+class LillieforsTest(KSTestStatistic, ABC):
+    alternative = "two-sided"
+    mode = "auto"
 
-    @staticmethod
-    def code():
-        raise NotImplementedError("Method is not implemented")
-
-    def execute_statistic(self, rvs, cdf_vals=None):
-        x = np.asarray(rvs)
-        z = (x - x.mean()) / x.std(ddof=1)
-
-        d_ks = super().execute_statistic(z, cdf_vals)
-
-        return d_ks
+    @override
+    def execute_statistic(self, z, cdf_vals=None):
+        return super().execute_statistic(z, cdf_vals)
 
 
-class CrammerVonMisesTestStatistic(AbstractTestStatistic):
+class CrammerVonMisesTestStatistic(AbstractTestStatistic, ABC):
+    @override
     def execute_statistic(self, rvs, cdf_vals):
         n = len(rvs)
 
@@ -138,15 +136,15 @@ class CrammerVonMisesTestStatistic(AbstractTestStatistic):
         return w
 
 
-class Chi2TestStatistic(AbstractTestStatistic):
-
+class Chi2TestStatistic(AbstractTestStatistic, ABC):
     @staticmethod
     def _m_sum(a, *, axis, preserve_mask, xp):
         if np.ma.isMaskedArray(a):
-            sum = a.sum(axis)
-            return sum if preserve_mask else np.asarray(sum)
+            s = a.sum(axis)
+            return s if preserve_mask else np.asarray(s)
         return xp.sum(a, axis=axis)
 
+    @override
     def execute_statistic(self, f_obs, f_exp, lambda_):
         # `terms` is the array of terms that are summed along `axis` to create
         # the test statistic.  We use some specialized code for a few special
@@ -168,20 +166,23 @@ class Chi2TestStatistic(AbstractTestStatistic):
 
         return terms.sum()
 
+    @override
     def calculate_critical_value(self, rvs_size, sl):
         return scipy_stats.distributions.chi2.ppf(1 - sl, rvs_size - 1)
 
 
-class MinToshiyukiTestStatistic(AbstractTestStatistic):
-
+class MinToshiyukiTestStatistic(AbstractTestStatistic, ABC):
     @override
     def execute_statistic(self, cdf_vals):
         n = len(cdf_vals)
-        d_plus = (np.arange(1.0, n + 1) / n - cdf_vals)
-        d_minus = (cdf_vals - np.arange(0.0, n) / n)
+        d_plus = np.arange(1.0, n + 1) / n - cdf_vals
+        d_minus = cdf_vals - np.arange(0.0, n) / n
         d = np.maximum.reduce([d_plus, d_minus])
 
-        fi = 1/(cdf_vals*(1-cdf_vals))
+        fi = 1 / (cdf_vals * (1 - cdf_vals))
 
         s = np.sum(d * np.sqrt(fi))
         return s / np.sqrt(n)
+
+
+# TODO: fix signatures

@@ -8,7 +8,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 from stattest.persistence.sql_lite_store import ModelBase
 from stattest.persistence.sql_lite_store.base import SessionType
 
+
 ValueTypes = Union[str, datetime, float, int]
+
 
 class ValueTypesEnum(str, Enum):
     STRING = "str"
@@ -177,7 +179,8 @@ class KeyValueStoreSqlLiteStore:
         kv = (
             _KeyValueStoreModel.session.query(_KeyValueStoreModel)
             .filter(
-                _KeyValueStoreModel.key == key, _KeyValueStoreModel.value_type == ValueTypesEnum.INT
+                _KeyValueStoreModel.key == key,
+                _KeyValueStoreModel.value_type == ValueTypesEnum.INT,
             )
             .first()
         )

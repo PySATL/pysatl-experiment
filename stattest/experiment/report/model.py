@@ -1,11 +1,12 @@
-import numpy as np
 from matplotlib import pyplot as plt
 
 from stattest.experiment import ReportBuilder
+from stattest.persistence.models import IBenchmarkResultStore
 from stattest.experiment.test.worker import PowerWorkerResult, BenchmarkWorkerResult
 from stattest.persistence.models import IResultStore
 
 
+"""
 class ChartBenchmarkMeanReportBuilder(ReportBuilder):
     def __init__(self):
         self.data = {}
@@ -44,6 +45,7 @@ class ChartBenchmarkMeanReportBuilder(ReportBuilder):
     @staticmethod
     def __build_path(result: BenchmarkWorkerResult):
         return '_'.join([result.test_code, str(result.size)])
+"""
 
 
 class ChartPowerReportBuilder(ReportBuilder):
@@ -68,8 +70,11 @@ class ChartPowerReportBuilder(ReportBuilder):
             fig, ax = plt.subplots()
             ax.plot(s, p)
 
-            ax.set(xlabel='time (s)', ylabel='voltage (mV)',
-                   title='About as simple as it gets, folks')
+            ax.set(
+                xlabel="time (s)",
+                ylabel="voltage (mV)",
+                title="About as simple as it gets, folks",
+            )
             ax.grid()
 
             fig.savefig("test.png")
@@ -77,7 +82,7 @@ class ChartPowerReportBuilder(ReportBuilder):
 
     @staticmethod
     def __build_path(result: PowerWorkerResult):
-        return '_'.join([result.test_code, str(result.alternative_code), str(result.alpha)])
+        return "_".join([result.test_code, str(result.alternative_code), str(result.alpha)])
 
 
 class PdfPowerReportBuilder(ReportBuilder):

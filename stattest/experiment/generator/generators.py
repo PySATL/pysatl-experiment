@@ -13,7 +13,7 @@ from stattest.core.distribution.student import generate_t
 from stattest.core.distribution.truncnormal import generate_truncnorm
 from stattest.core.distribution.tukey import generate_tukey
 from stattest.core.distribution.weibull import generate_weibull
-from stattest.experiment.generator import AbstractRVSGenerator
+from stattest.experiment.generator.model import AbstractRVSGenerator
 
 
 class BetaRVSGenerator(AbstractRVSGenerator):
@@ -22,7 +22,7 @@ class BetaRVSGenerator(AbstractRVSGenerator):
         self.b = b
 
     def code(self):
-        return super()._convert_to_code(['beta', self.a, self.b])
+        return super()._convert_to_code(["beta", self.a, self.b])
 
     def generate(self, size):
         return generate_beta(size=size, a=self.a, b=self.b)
@@ -34,7 +34,7 @@ class CauchyRVSGenerator(AbstractRVSGenerator):
         self.s = s
 
     def code(self):
-        return super()._convert_to_code(['cauchy', self.t, self.s])
+        return super()._convert_to_code(["cauchy", self.t, self.s])
 
     def generate(self, size):
         return generate_cauchy(size=size, t=self.t, s=self.s)
@@ -46,7 +46,7 @@ class LaplaceRVSGenerator(AbstractRVSGenerator):
         self.s = s
 
     def code(self):
-        return super()._convert_to_code(['laplace', self.t, self.s])
+        return super()._convert_to_code(["laplace", self.t, self.s])
 
     def generate(self, size):
         return generate_laplace(size=size, t=self.t, s=self.s)
@@ -58,7 +58,7 @@ class LogisticRVSGenerator(AbstractRVSGenerator):
         self.s = s
 
     def code(self):
-        return super()._convert_to_code(['logistic', self.t, self.s])
+        return super()._convert_to_code(["logistic", self.t, self.s])
 
     def generate(self, size):
         return generate_logistic(size=size, t=self.t, s=self.s)
@@ -69,7 +69,7 @@ class TRVSGenerator(AbstractRVSGenerator):
         self.df = df
 
     def code(self):
-        return super()._convert_to_code(['student', self.df])
+        return super()._convert_to_code(["student", self.df])
 
     def generate(self, size):
         return generate_t(size=size, df=self.df)
@@ -80,7 +80,7 @@ class TukeyRVSGenerator(AbstractRVSGenerator):
         self.lam = lam
 
     def code(self):
-        return super()._convert_to_code(['tukey', self.lam])
+        return super()._convert_to_code(["tukey", self.lam])
 
     def generate(self, size):
         return generate_tukey(size=size, lam=self.lam)
@@ -92,7 +92,7 @@ class LognormGenerator(AbstractRVSGenerator):
         self.mu = mu
 
     def code(self):
-        return super()._convert_to_code(['lognorm', self.s, self.mu])
+        return super()._convert_to_code(["lognorm", self.s, self.mu])
 
     def generate(self, size):
         return generate_lognorm(size=size, s=self.s, mu=self.mu)
@@ -104,7 +104,7 @@ class GammaGenerator(AbstractRVSGenerator):
         self.beta = beta
 
     def code(self):
-        return super()._convert_to_code(['gamma', self.alfa, self.beta])
+        return super()._convert_to_code(["gamma", self.alfa, self.beta])
 
     def generate(self, size):
         return generate_gamma(size=size, alfa=self.alfa, beta=self.beta)
@@ -118,7 +118,7 @@ class TruncnormGenerator(AbstractRVSGenerator):
         self.b = b
 
     def code(self):
-        return super()._convert_to_code(['truncnorm', self.mean, self.var, self.a, self.b])
+        return super()._convert_to_code(["truncnorm", self.mean, self.var, self.a, self.b])
 
     def generate(self, size):
         return generate_truncnorm(size=size, mean=self.mean, var=self.var, a=self.a, b=self.b)
@@ -129,7 +129,7 @@ class Chi2Generator(AbstractRVSGenerator):
         self.df = df
 
     def code(self):
-        return super()._convert_to_code(['chi2', self.df])
+        return super()._convert_to_code(["chi2", self.df])
 
     def generate(self, size):
         return generate_chi2(size=size, df=self.df)
@@ -141,22 +141,22 @@ class GumbelGenerator(AbstractRVSGenerator):
         self.beta = beta
 
     def code(self):
-        return super()._convert_to_code(['gumbel', self.mu, self.beta])
+        return super()._convert_to_code(["gumbel", self.mu, self.beta])
 
     def generate(self, size):
         return generate_gumbel(size=size, mu=self.mu, beta=self.beta)
 
 
 class WeibullGenerator(AbstractRVSGenerator):
-    def __init__(self, l=1, k=5):
-        self.l = l
+    def __init__(self, a=1, k=5):
+        self.l = a
         self.k = k
 
     def code(self):
-        return super()._convert_to_code(['weibull', self.l, self.k])
+        return super()._convert_to_code(["weibull", self.l, self.k])
 
     def generate(self, size):
-        return generate_weibull(size=size, l=self.l, k=self.k)
+        return generate_weibull(size=size, a=self.l, k=self.k)
 
 
 class LoConNormGenerator(AbstractRVSGenerator):
@@ -165,7 +165,7 @@ class LoConNormGenerator(AbstractRVSGenerator):
         self.a = a
 
     def code(self):
-        return super()._convert_to_code(['lo_con_norm', self.p, self.a])
+        return super()._convert_to_code(["lo_con_norm", self.p, self.a])
 
     def generate(self, size):
         return generate_lo_con_norm(size=size, p=self.p, a=self.a)
@@ -177,7 +177,7 @@ class ScConNormGenerator(AbstractRVSGenerator):
         self.b = b
 
     def code(self):
-        return super()._convert_to_code(['scale_con_norm', self.p, self.b])
+        return super()._convert_to_code(["scale_con_norm", self.p, self.b])
 
     def generate(self, size):
         return generate_scale_con_norm(size=size, p=self.p, b=self.b)
@@ -190,7 +190,7 @@ class MixConNormGenerator(AbstractRVSGenerator):
         self.b = b
 
     def code(self):
-        return super()._convert_to_code(['mix_con_norm', self.p, self.a, self.b])
+        return super()._convert_to_code(["mix_con_norm", self.p, self.a, self.b])
 
     def generate(self, size):
         return generate_mix_con_norm(size=size, p=self.p, a=self.a, b=self.b)

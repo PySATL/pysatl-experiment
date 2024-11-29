@@ -2,7 +2,6 @@ from typing import Optional
 
 
 class IStore:
-
     def migrate(self):
         """
         Migrate store.
@@ -17,7 +16,6 @@ class IStore:
 
 
 class IRvsStore(IStore):
-
     def insert_all_rvs(self, generator_code: str, size: int, data: [[float]]):
         """
         Insert several rvs data to store.
@@ -79,7 +77,6 @@ class IRvsStore(IStore):
 
 
 class ICriticalValueStore(IStore):
-
     def insert_critical_value(self, code: str, size: int, sl: float, value: float):
         """
         Insert critical value to store.
@@ -137,7 +134,7 @@ class IResultStore(IStore):
 
         :param result_id: result id
 
-        :return result or None
+        :return: result or None
         """
         pass
 
@@ -148,6 +145,6 @@ class IResultStore(IStore):
         :param offset: offset
         :param limit: limit
 
-        :return list of results
+        :return: list of results
         """
         pass

@@ -1,40 +1,38 @@
 import json
-import os
+from pathlib import Path
 
 
 def read_json(filename: str):
-    with open(filename) as f_in:
+    with Path(filename).open("w") as f_in:
         return json.load(f_in)
 
 
 def write_json(filename: str, value):
-    with open(filename, 'w') as fp:
+    with Path(filename).open("w") as fp:
         json.dump(value, fp)
 
 
 class StoreService:
-
     def get(self, key: str):
         """
         Get cached value if exists, else return None.
 
-        :param key: cache key
+        :param key: cache_services key
         """
         raise NotImplementedError("Method is not implemented")
 
     def put(self, key: str, value):
         """
-        Put object to cache.
+        Put object to cache_services.
 
-        :param key: cache key
-        :param value: cache value
+        :param key: cache_services key
+        :param value: cache_services value
         """
         raise NotImplementedError("Method is not implemented")
 
 
 class InMemoryStoreService(StoreService):
-
-    def __init__(self, cache=None, separator='.'):
+    def __init__(self, cache=None, separator="."):
         if cache is None:
             cache = {}
         self.cache = cache
@@ -44,7 +42,7 @@ class InMemoryStoreService(StoreService):
         """
         Get cached value if exists, else return None.
 
-        :param key: cache key
+        :param key: cache_services key
         """
 
         if key not in self.cache.keys():
@@ -64,10 +62,10 @@ class InMemoryStoreService(StoreService):
 
     def put(self, key: str, value):
         """
-        Put object to cache.
+        Put object to cache_services.
 
-        :param key: cache key
-        :param value: cache value
+        :param key: cache_services key
+        :param value: cache_services value
         """
 
         self.cache[key] = value
@@ -88,11 +86,10 @@ class InMemoryStoreService(StoreService):
 
 
 class JsonStoreService(InMemoryStoreService):
-
-    def __init__(self, filename='cache.json', separator='.'):
-        super().__init__(separator)
+    def __init__(self, filename="cache.json", separator="."):
+        super().__init__(separator=separator)
         mem_cache = {}
-        if os.path.isfile(filename):
+        if Path(filename).is_file():
             mem_cache = read_json(filename)
         self.cache = mem_cache
         self.filename = filename
@@ -100,10 +97,10 @@ class JsonStoreService(InMemoryStoreService):
 
     def put(self, key: str, value):
         """
-        Put object to cache.
+        Put object to cache_services.
 
-        :param key: cache key
-        :param value: cache value
+        :param key: cache_services key
+        :param value: cache_services value
         """
         super().put(key, value)
         write_json(self.filename, self.cache)
@@ -130,11 +127,10 @@ class FastStoreService(InMemoryStoreService):
 
 
 class FastJsonStoreService(FastStoreService):
-
-    def __init__(self, filename='cache.json', separator='.'):
-        super().__init__(separator)
+    def __init__(self, filename="cache.json", separator="."):
+        super().__init__(separator=separator)
         mem_cache = {}
-        if os.path.isfile(filename):
+        if Path(filename).is_file():
             mem_cache = read_json(filename)
         self.cache = mem_cache
         self.filename = filename

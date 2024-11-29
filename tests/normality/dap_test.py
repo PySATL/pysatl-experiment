@@ -1,7 +1,7 @@
 import pytest as pytest
 
-from stattest.test.normal import DAPTest
-from tests.AbstractTestCase import AbstractTestCase
+from stattest.test.normal import DAPNormalityTest
+from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
 
 
 @pytest.mark.parametrize(
@@ -11,8 +11,7 @@ from tests.AbstractTestCase import AbstractTestCase
         ([16, 18, 16, 14, 12, 12, 16, 18, 16, 14, 12, 12], 2.5224),
     ],
 )
-class TestCaseDAPTest(AbstractTestCase):
-
+class TestCaseDAPNormalityTest(AbstractNormalityTestCase):
     @pytest.fixture
     def statistic_test(self):
-        return DAPTest()
+        return DAPNormalityTest()
