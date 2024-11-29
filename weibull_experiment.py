@@ -15,10 +15,9 @@ from stattest.experiment.listener.listeners import TimeEstimationListener
 from stattest.experiment.report.model import PdfPowerReportBuilder, PowerResultReader
 from stattest.experiment.test.worker import PowerCalculationWorker
 from stattest.persistence.sql_lite_store import CriticalValueSqLiteStore, RvsSqLiteStore
-from stattest.persistence.sql_lite_store.power_result_store import (
-    PowerResultSqlLiteStore,
-)
+from stattest.persistence.sql_lite_store.power_result_store import PowerResultSqlLiteStore
 from stattest.test import KSWeibullTest
+
 
 if __name__ == "__main__":
     print("Start Weibull experiment")

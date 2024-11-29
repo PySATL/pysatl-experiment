@@ -5,6 +5,7 @@ import pytest
 
 from stattest.persistence.file_store import CriticalValueFileStore
 
+
 store_name = "data5"
 
 

@@ -12,6 +12,7 @@ from stattest.exceptions import OperationalException
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.resolvers.iresolver import IResolver
 
+
 logger = logging.getLogger(__name__)
 
 

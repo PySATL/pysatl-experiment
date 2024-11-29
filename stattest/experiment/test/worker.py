@@ -56,9 +56,7 @@ class PowerCalculationWorker(TestWorker):
         )
 
         # 3. Save result
-        self.worker_result_store.insert_power(
-            self.alpha, size, test.code(), code, power
-        )
+        self.worker_result_store.insert_power(self.alpha, size, test.code(), code, power)
 
         return PowerWorkerResult(test.code(), code, size, self.alpha, power)
 

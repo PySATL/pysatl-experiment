@@ -9,10 +9,7 @@ from typing_extensions import override
 from stattest.persistence.models import IPowerResultStore
 from stattest.persistence.sql_lite_store import ModelBase
 from stattest.persistence.sql_lite_store.base import SessionType
-from stattest.persistence.sql_lite_store.db_init import (
-    get_request_or_thread_id,
-    init_db,
-)
+from stattest.persistence.sql_lite_store.db_init import get_request_or_thread_id, init_db
 
 
 class PowerResultModel(ModelBase):
@@ -26,9 +23,7 @@ class PowerResultModel(ModelBase):
     alpha: Mapped[float] = mapped_column(Float, nullable=False, index=True)
     size: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     test_code: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
-    alternative_code: Mapped[str] = mapped_column(
-        String(50), nullable=False, index=True
-    )
+    alternative_code: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     power: Mapped[float] = mapped_column(Float, nullable=False)
 
 
@@ -67,9 +62,7 @@ class PowerResultSqlLiteStore(IPowerResultStore):
         PowerResultSqlLiteStore.session.commit()
 
     @override
-    def get_power(
-        self, alpha: float, size: int, test_code: str, alternative_code: str
-    ) -> float:
+    def get_power(self, alpha: float, size: int, test_code: str, alternative_code: str) -> float:
         result = (
             PowerResultSqlLiteStore.session.query(PowerResultModel)
             .filter(

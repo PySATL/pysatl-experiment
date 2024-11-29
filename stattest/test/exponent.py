@@ -19,9 +19,7 @@ class AbstractExponentialityTestStatistic(AbstractGoodnessOfFitTestStatistic, AB
         return (
             "EXPONENTIALITY"
             + "_"
-            + super(
-                AbstractGoodnessOfFitTestStatistic, AbstractGoodnessOfFitTestStatistic
-            ).code()
+            + super(AbstractGoodnessOfFitTestStatistic, AbstractGoodnessOfFitTestStatistic).code()
         )
 
     @override
@@ -287,12 +285,7 @@ class EPSTestExp(AbstractExponentialityTestStatistic):
         rvs.sort()
         x = np.concatenate(([0], rvs))
         d = (np.arange(n, 0, -1)) * (x[1 : n + 1] - x[0:n])
-        eps = (
-            2
-            * n
-            * (np.log(np.sum(d) / n) - (np.sum(np.log(d))) / n)
-            / (1 + (n + 1) / (6 * n))
-        )
+        eps = 2 * n * (np.log(np.sum(d) / n) - (np.sum(np.log(d))) / n) / (1 + (n + 1) / (6 * n))
 
         return eps
 
@@ -426,9 +419,7 @@ class HMTestExp(AbstractExponentialityTestStatistic):
         n = len(rvs)
         x = np.sort(np.concatenate(([0], rvs)))
         d = (np.arange(n, 0, -1)) * (x[1 : n + 1] - x[:n])
-        hm = ((np.sum(d[:r]) + np.sum(d[-r:])) / (2 * r)) / (
-            (np.sum(d[r:-r])) / (n - 2 * r)
-        )
+        hm = ((np.sum(d[:r]) + np.sum(d[-r:])) / (2 * r)) / ((np.sum(d[r:-r])) / (n - 2 * r))
 
         return hm
 

@@ -7,6 +7,7 @@ from jsonschema.exceptions import ValidationError, best_match
 
 from stattest.experiment.configuration.config_schema import CONF_SCHEMA
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,9 +31,7 @@ def _extend_validator(validator_class):
 FreqtradeValidator = _extend_validator(Draft4Validator)
 
 
-def validate_config_schema(
-    conf: dict[str, Any], preliminagiry: bool = False
-) -> dict[str, Any]:
+def validate_config_schema(conf: dict[str, Any], preliminagiry: bool = False) -> dict[str, Any]:
     """
     Validate the configuration follow the Config Schema
     :param conf: Config in JSON format
@@ -44,14 +43,10 @@ def validate_config_schema(
         return conf
     except ValidationError as e:
         logger.critical(f"Invalid configuration. Reason: {e}")
-        raise ValidationError(
-            best_match(Draft4Validator(conf_schema).iter_errors(conf)).message
-        )
+        raise ValidationError(best_match(Draft4Validator(conf_schema).iter_errors(conf)).message)
 
 
-def validate_config_consistency(
-    conf: dict[str, Any], *, preliminary: bool = False
-) -> None:
+def validate_config_consistency(conf: dict[str, Any], *, preliminary: bool = False) -> None:
     """
     Validate the configuration consistency.
     Should be run after loading both configuration and strategy,

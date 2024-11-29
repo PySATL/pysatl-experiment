@@ -17,6 +17,7 @@ from stattest.experiment.generator.generators import (
 )
 from stattest.experiment.generator.model import AbstractRVSGenerator
 
+
 symmetric_generators = [
     BetaRVSGenerator(a=0.5, b=0.5),
     BetaRVSGenerator(a=1, b=1),

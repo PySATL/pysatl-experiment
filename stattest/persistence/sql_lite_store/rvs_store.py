@@ -8,10 +8,7 @@ from typing_extensions import override
 
 from stattest.persistence import IRvsStore
 from stattest.persistence.sql_lite_store.base import ModelBase, SessionType
-from stattest.persistence.sql_lite_store.db_init import (
-    get_request_or_thread_id,
-    init_db,
-)
+from stattest.persistence.sql_lite_store.db_init import get_request_or_thread_id, init_db
 
 
 class RVS(ModelBase):
@@ -72,9 +69,7 @@ class RvsSqLiteStore(IRvsStore):
             }
             for d in data
         ]
-        statement = text(
-            "INSERT INTO rvs_data (code, size, data) VALUES (:code, :size, :data)"
-        )
+        statement = text("INSERT INTO rvs_data (code, size, data) VALUES (:code, :size, :data)")
         RvsSqLiteStore.session.execute(statement, data_to_insert)
 
         """stat_to_insert = [{'code': code, 'size': int(size), 'data': SqlLiteStore.__separator.join(map(str, d))} for d in
@@ -109,8 +104,7 @@ class RvsSqLiteStore(IRvsStore):
             return []
 
         return [
-            [float(x) for x in sample.data.split(RvsSqLiteStore.__separator)]
-            for sample in samples
+            [float(x) for x in sample.data.split(RvsSqLiteStore.__separator)] for sample in samples
         ]
 
     @override

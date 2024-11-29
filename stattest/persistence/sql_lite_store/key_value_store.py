@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from stattest.persistence.sql_lite_store import ModelBase
 from stattest.persistence.sql_lite_store.base import SessionType
 
+
 ValueTypes = Union[str, datetime, float, int]
 
 

@@ -12,6 +12,7 @@ from stattest.exceptions import OperationalException
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.resolvers.iresolver import IResolver
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,9 +31,7 @@ class GeneratorResolver(IResolver):
     @staticmethod
     def load_generators(config: Optional[Config]) -> [AbstractRVSGenerator]:
         if not config:
-            raise OperationalException(
-                "No configuration set. Please specify configuration."
-            )
+            raise OperationalException("No configuration set. Please specify configuration.")
 
         if not config.get("alternatives_configuration"):
             raise OperationalException("No alternatives configuration set.")

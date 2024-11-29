@@ -29,9 +29,7 @@ class AbstractWeibullTestStatistic(AbstractTestStatistic, ABC):
         return "WEIBULL"
 
 
-class MinToshiyukiWeibullTestStatistic(
-    AbstractWeibullTestStatistic, MinToshiyukiTestStatistic
-):
+class MinToshiyukiWeibullTestStatistic(AbstractWeibullTestStatistic, MinToshiyukiTestStatistic):
     @staticmethod
     @override
     def code():
@@ -74,9 +72,7 @@ class LillieforsWiebullTest(AbstractWeibullTestStatistic, LillieforsTest):
         return LillieforsTest.execute_statistic(rvs, cdf_vals)
 
 
-class CrammerVonMisesWeibullTest(
-    AbstractWeibullTestStatistic, CrammerVonMisesTestStatistic
-):
+class CrammerVonMisesWeibullTest(AbstractWeibullTestStatistic, CrammerVonMisesTestStatistic):
     def execute_statistic(self, rvs, cdf_vals):
         rvs_sorted = np.sort(rvs)
         cdf_vals = generate_weibull_cdf(rvs_sorted, l=self.l, k=self.k)
@@ -228,10 +224,7 @@ class REJGTestStatistic(AbstractWeibullTestStatistic):
         def f1(toto, vect):
             if toto != 0:
                 f1 = np.sum(vect) / len(vect)
-                f1 -= (
-                    np.sum(vect * np.exp(-vect * toto)) / np.sum(np.exp(-vect * toto))
-                    - 1 / toto
-                )
+                f1 -= np.sum(vect * np.exp(-vect * toto)) / np.sum(np.exp(-vect * toto)) - 1 / toto
             else:
                 f1 = 100
             return abs(f1)
@@ -282,9 +275,7 @@ class WeibullNormalizeSpaceTestStatistic(AbstractWeibullTestStatistic):
             d2_Q_r = d_Q_r / q_r - d_Q_r * d_Q_r
             d3_Q_r = d2_Q_r / q_r + d_Q_r / (q_r * q_r) - 2 * (d_Q_r * d2_Q_r)
             d4_Q_r = d3_Q_r / q_r + 2 * d2_Q_r / (q_r * q_r)
-            d4_Q_r += 2 * d_Q_r / (q_r * q_r * q_r) - 2 * (
-                d2_Q_r * d2_Q_r + d_Q_r * d3_Q_r
-            )
+            d4_Q_r += 2 * d_Q_r / (q_r * q_r * q_r) - 2 * (d2_Q_r * d2_Q_r + d_Q_r * d3_Q_r)
             res[i] = Q_r + (p_r * q_r / (2 * (n + 2))) * d2_Q_r
             res[i] += (
                 q_r
@@ -335,10 +326,7 @@ class WeibullNormalizeSpaceTestStatistic(AbstractWeibullTestStatistic):
                 raise ValueError("the test is only applied for right censoring")
             l1 = m // 2
             l2 = m - l1 - 1
-            S = np.sum(
-                (A[(l1 + 1) : m] - A[l1 : (m - 1)])
-                / (X[(l1 + 1) : m] - X[l1 : (m - 1)])
-            )
+            S = np.sum((A[(l1 + 1) : m] - A[l1 : (m - 1)]) / (X[(l1 + 1) : m] - X[l1 : (m - 1)]))
             S = S / np.sum((A[1:m] - A[: (m - 1)]) / (X[1:m] - X[: (m - 1)]))
             NS_statistic = S
 
@@ -429,10 +417,7 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
         def f1(toto, vect):
             if toto != 0:
                 f1 = np.sum(vect) / len(vect)
-                f1 -= (
-                    np.sum(vect * np.exp(-vect * toto)) / np.sum(np.exp(-vect * toto))
-                    - 1 / toto
-                )
+                f1 -= np.sum(vect * np.exp(-vect * toto)) / np.sum(np.exp(-vect * toto)) - 1 / toto
             else:
                 f1 = 100
             return abs(f1)
@@ -457,9 +442,7 @@ class WPPWeibullTestStatistic(AbstractWeibullTestStatistic):
         WPP_statistic = 0
         if type_ == "OK":
             l = I[:-1]
-            Sig = np.sum((2 * np.concatenate((l, [n])) - 1 - n) * y) / (
-                np.log(2) * (n - 1)
-            )
+            Sig = np.sum((2 * np.concatenate((l, [n])) - 1 - n) * y) / (np.log(2) * (n - 1))
             w = np.log((n + 1) / (n - l + 1))
             Wi = np.concatenate((w, [n - np.sum(w)]))
             Wn = w * (1 + np.log(w)) - 1

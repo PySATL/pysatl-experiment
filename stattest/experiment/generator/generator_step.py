@@ -10,6 +10,7 @@ from stattest.experiment.configuration.configuration import AlternativeConfigura
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.persistence.models import IRvsStore
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -68,17 +69,13 @@ def prepare_rvs_data(
     store.init()
 
     text = f"#{thread_count}"
-    pbar = tqdm(
-        total=len(sizes) * len(rvs_generators), desc=text, position=thread_count
-    )
+    pbar = tqdm(total=len(sizes) * len(rvs_generators), desc=text, position=thread_count)
     for size in sizes:
         prepare_one_size_rvs_data(rvs_generators, size, count, store, pbar)
     pbar.close()
 
 
-def data_generation_step(
-    alternative_configuration: AlternativeConfiguration, store: IRvsStore
-):
+def data_generation_step(alternative_configuration: AlternativeConfiguration, store: IRvsStore):
     """
 
     Generate data and save it to store.

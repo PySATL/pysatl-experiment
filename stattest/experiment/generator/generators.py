@@ -118,14 +118,10 @@ class TruncnormGenerator(AbstractRVSGenerator):
         self.b = b
 
     def code(self):
-        return super()._convert_to_code(
-            ["truncnorm", self.mean, self.var, self.a, self.b]
-        )
+        return super()._convert_to_code(["truncnorm", self.mean, self.var, self.a, self.b])
 
     def generate(self, size):
-        return generate_truncnorm(
-            size=size, mean=self.mean, var=self.var, a=self.a, b=self.b
-        )
+        return generate_truncnorm(size=size, mean=self.mean, var=self.var, a=self.a, b=self.b)
 
 
 class Chi2Generator(AbstractRVSGenerator):

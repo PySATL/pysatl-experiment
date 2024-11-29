@@ -14,6 +14,7 @@ from stattest.constants import Config
 from stattest.exceptions import ConfigurationError, OperationalException
 from stattest.misc import deep_merge_dicts
 
+
 logger = logging.getLogger(__name__)
 
 CONFIG_PARSE_MODE = rapidjson.PM_COMMENTS | rapidjson.PM_TRAILING_COMMAS

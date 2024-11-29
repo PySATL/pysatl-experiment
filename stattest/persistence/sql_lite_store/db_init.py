@@ -13,12 +13,11 @@ from sqlalchemy.pool import StaticPool
 
 from stattest.exceptions import OperationalException
 
+
 logger = logging.getLogger(__name__)
 
 REQUEST_ID_CTX_KEY: Final[str] = "request_id"
-_request_id_ctx_var: ContextVar[Optional[str]] = ContextVar(
-    REQUEST_ID_CTX_KEY, default=None
-)
+_request_id_ctx_var: ContextVar[Optional[str]] = ContextVar(REQUEST_ID_CTX_KEY, default=None)
 
 
 def get_request_or_thread_id() -> Optional[str]:

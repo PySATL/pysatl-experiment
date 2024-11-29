@@ -15,6 +15,7 @@ from typing import Any, Optional, Union
 from stattest.constants import Config
 from stattest.exceptions import OperationalException
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -138,9 +139,7 @@ class IResolver:
         :param object_name: ClassName of the object to load
         :return: object class
         """
-        logger.debug(
-            f"Searching for {cls.object_type.__name__} {object_name} in '{directory}'"
-        )
+        logger.debug(f"Searching for {cls.object_type.__name__} {object_name} in '{directory}'")
         for entry in directory.iterdir():
             # Only consider python files
             if entry.suffix != ".py":
@@ -252,9 +251,7 @@ class IResolver:
             config, user_subdir=cls.user_subdir, extra_dirs=extra_dirs
         )
 
-        found_object = cls._load_object(
-            paths=abs_paths, object_name=object_name, kwargs=kwargs
-        )
+        found_object = cls._load_object(paths=abs_paths, object_name=object_name, kwargs=kwargs)
         if found_object:
             return found_object
         raise OperationalException(
@@ -300,9 +297,7 @@ class IResolver:
                 and not entry.name.startswith(".")
             ):
                 objects.extend(
-                    cls._search_all_objects(
-                        entry, enum_failed, recursive, basedir or directory
-                    )
+                    cls._search_all_objects(entry, enum_failed, recursive, basedir or directory)
                 )
             # Only consider python files
             if entry.suffix != ".py":
@@ -318,9 +313,7 @@ class IResolver:
                         "name": obj[0].__name__ if obj is not None else "",
                         "class": obj[0] if obj is not None else None,
                         "location": entry,
-                        "location_rel": cls._build_rel_location(
-                            basedir or directory, entry
-                        ),
+                        "location_rel": cls._build_rel_location(basedir or directory, entry),
                     }
                 )
         return objects

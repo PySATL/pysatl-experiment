@@ -5,6 +5,7 @@ import pytest
 
 from stattest.persistence.file_store.rvs_store import RvsFileStore
 
+
 store_name = "data5"
 
 

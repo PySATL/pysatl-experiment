@@ -5,6 +5,7 @@ import pytest
 
 from stattest.persistence.sql_lite_store import BenchmarkResultSqLiteStore
 
+
 store_name = "pysatl.sqlite"
 
 

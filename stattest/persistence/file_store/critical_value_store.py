@@ -53,9 +53,7 @@ class CriticalValueFileStore(ICriticalValueStore):
 
         file_path = self.__build_file_path(code, size)
         with open(file_path, "w", newline="") as csvfile:
-            writer = csv.writer(
-                csvfile, delimiter=self.csv_delimiter, quoting=csv.QUOTE_NONNUMERIC
-            )
+            writer = csv.writer(csvfile, delimiter=self.csv_delimiter, quoting=csv.QUOTE_NONNUMERIC)
             writer.writerow(data)
 
     def get_critical_value(self, code: str, size: int, sl: float) -> Optional[float]:
@@ -83,9 +81,7 @@ class CriticalValueFileStore(ICriticalValueStore):
         file_path = self.__build_file_path(code, size)
         if os.path.exists(file_path):
             with open(file_path, newline="") as f:
-                reader = csv.reader(
-                    f, delimiter=self.csv_delimiter, quoting=csv.QUOTE_NONNUMERIC
-                )
+                reader = csv.reader(f, delimiter=self.csv_delimiter, quoting=csv.QUOTE_NONNUMERIC)
                 return list(reader)[0]
         else:
             return None

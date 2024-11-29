@@ -12,9 +12,7 @@ def execute_test(
     store: ICriticalValueStore,
     count: int,
 ):
-    x_cr = get_or_calculate_critical_value(
-        test, hypothesis, len(rvs), alpha, store, count
-    )
+    x_cr = get_or_calculate_critical_value(test, hypothesis, len(rvs), alpha, store, count)
     statistic = test.execute_statistic(rvs)
 
     return False if statistic > x_cr else True
