@@ -2,15 +2,19 @@ import importlib
 import json
 import sqlite3
 from typing import ClassVar
-import sys
 
 import numpy as np
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column, sessionmaker, scoped_session
+from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
 from typing_extensions import override
 
 from stattest.persistence.models import IResultStore
-from stattest.persistence.sql_lite_store import ModelBase, init_db, get_request_or_thread_id, SessionType
+from stattest.persistence.sql_lite_store import (
+    ModelBase,
+    SessionType,
+    get_request_or_thread_id,
+    init_db,
+)
 
 
 class ResultModel(ModelBase):
@@ -51,7 +55,8 @@ class ResultSqLiteStore(IResultStore):
         """
 
         json_data = json.dumps(result.__dict__)
-        data = ResultModel(id=result_id, module=result.__module__, className=result.__class__.__name__,  data=json_data)
+        data = ResultModel(id=result_id, module=result.__module__,
+                           className=result.__class__.__name__, data=json_data)
         ResultSqLiteStore.session.add(data)
         ResultSqLiteStore.session.commit()
 
@@ -83,5 +88,6 @@ class ResultSqLiteStore(IResultStore):
         """
         result = (ResultSqLiteStore.session.query(ResultModel)
                   .order_by(ResultModel.id).offset(offset).limit(limit)).all()
-        result = [getattr(importlib.import_module(r.module), r.className)(**json.loads(r.data)) for r in result]
+        result = [getattr(importlib.import_module(r.module), r.className)(**json.loads(r.data))
+                  for r in result]
         return result

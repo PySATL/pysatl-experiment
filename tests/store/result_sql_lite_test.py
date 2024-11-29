@@ -1,10 +1,11 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pytest
 
 from stattest.experiment.configuration import TestWorkerResult
 from stattest.persistence.sql_lite_store import ResultSqLiteStore
+
 
 store_name = 'pysatl.sqlite'
 
@@ -24,8 +25,8 @@ class TestBenchmarkResultSqLiteStoreService:
 
     def teardown_method(self):
         try:
-            os.remove(store_name)
-            os.remove(store_name + '-journal')
+            Path(store_name).unlink()
+            Path(store_name + "-journal").unlink()
         except OSError:
             pass
 

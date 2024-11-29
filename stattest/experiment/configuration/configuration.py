@@ -1,6 +1,6 @@
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.experiment.hypothesis import AbstractHypothesis
-from stattest.persistence import IRvsStore, ICriticalValueStore
+from stattest.persistence import ICriticalValueStore, IRvsStore
 from stattest.persistence.models import IResultStore
 from stattest.test import AbstractTestStatistic
 
@@ -29,7 +29,8 @@ class TestWorker:
     def init(self):
         pass
 
-    def execute(self, test: AbstractTestStatistic, data: [[float]], code, size: int) -> TestWorkerResult:
+    def execute(self, test: AbstractTestStatistic, data: [[float]], code,
+                size: int) -> TestWorkerResult:
         pass
 
     def build_id(self, test: AbstractTestStatistic, data: [[float]], code, size: int) -> str:

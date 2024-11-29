@@ -1,7 +1,7 @@
 from typing_extensions import override
 
-from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.experiment.configuration.configuration import TestWorker, TestWorkerResult
+from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.experiment.test.power_calculation import calculate_test_power
 from stattest.persistence.models import ICriticalValueStore
 from stattest.test import AbstractTestStatistic
@@ -24,7 +24,8 @@ class BenchmarkWorkerResult(TestWorkerResult):
 
 
 class PowerCalculationWorker(TestWorker):
-    def __init__(self, alpha, monte_carlo_count, cv_store: ICriticalValueStore, hypothesis: AbstractHypothesis):
+    def __init__(self, alpha, monte_carlo_count, cv_store: ICriticalValueStore,
+                 hypothesis: AbstractHypothesis):
         self.alpha = alpha
         self.monte_carlo_count = monte_carlo_count
         self.cv_store = cv_store
@@ -38,6 +39,8 @@ class PowerCalculationWorker(TestWorker):
         return '_'.join([self.alpha, size, test.code(), code])
 
     @override
-    def execute(self, test: AbstractTestStatistic, data: [[float]], code: str, size: int) -> PowerWorkerResult:
-        power = calculate_test_power(test, data, self.hypothesis, self.alpha, self.cv_store, self.monte_carlo_count)
+    def execute(self, test: AbstractTestStatistic, data: [[float]], code: str,
+                size: int) -> PowerWorkerResult:
+        power = calculate_test_power(test, data, self.hypothesis, self.alpha, self.cv_store,
+                                     self.monte_carlo_count)
         return PowerWorkerResult(test.code(), code, size, self.alpha, power)
