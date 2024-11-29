@@ -21,6 +21,7 @@ class ResultModel(ModelBase):
     """
     Result database model.
     """
+
     __tablename__ = "result"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
@@ -31,9 +32,9 @@ class ResultModel(ModelBase):
 
 class ResultSqLiteStore(IResultStore):
     session: ClassVar[SessionType]
-    __separator = ';'
+    __separator = ";"
 
-    def __init__(self, name='pysatl.sqlite'):
+    def __init__(self, name="pysatl.sqlite"):
         super().__init__()
         self.name = name
 
@@ -55,8 +56,12 @@ class ResultSqLiteStore(IResultStore):
         """
 
         json_data = json.dumps(result.__dict__)
-        data = ResultModel(id=result_id, module=result.__module__,
-                           className=result.__class__.__name__, data=json_data)
+        data = ResultModel(
+            id=result_id,
+            module=result.__module__,
+            className=result.__class__.__name__,
+            data=json_data,
+        )
         ResultSqLiteStore.session.add(data)
         ResultSqLiteStore.session.commit()
 
@@ -86,8 +91,14 @@ class ResultSqLiteStore(IResultStore):
 
         :return list of PowerResultModel
         """
-        result = (ResultSqLiteStore.session.query(ResultModel)
-                  .order_by(ResultModel.id).offset(offset).limit(limit)).all()
-        result = [getattr(importlib.import_module(r.module), r.className)(**json.loads(r.data))
-                  for r in result]
+        result = (
+            ResultSqLiteStore.session.query(ResultModel)
+            .order_by(ResultModel.id)
+            .offset(offset)
+            .limit(limit)
+        ).all()
+        result = [
+            getattr(importlib.import_module(r.module), r.className)(**json.loads(r.data))
+            for r in result
+        ]
         return result

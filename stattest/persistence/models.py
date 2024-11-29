@@ -118,7 +118,6 @@ class ICriticalValueStore(IStore):
 
 
 class IResultStore(IStore):
-
     def insert_result(self, result_id: str, result: any):
         """
         Insert benchmark to store.

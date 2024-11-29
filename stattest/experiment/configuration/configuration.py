@@ -29,8 +29,9 @@ class TestWorker:
     def init(self):
         pass
 
-    def execute(self, test: AbstractTestStatistic, data: [[float]], code,
-                size: int) -> TestWorkerResult:
+    def execute(
+        self, test: AbstractTestStatistic, data: [[float]], code, size: int
+    ) -> TestWorkerResult:
         pass
 
     def build_id(self, test: AbstractTestStatistic, data: [[float]], code, size: int) -> str:
@@ -97,13 +98,15 @@ class TestConfiguration:
 
 
 class ExperimentConfiguration:
-    def __init__(self,
-                 alternative_configuration: AlternativeConfiguration,
-                 test_configuration: TestConfiguration,
-                 report_configuration: ReportConfiguration,
-                 rvs_store: IRvsStore,
-                 result_store: IResultStore,
-                 critical_value_store: ICriticalValueStore):
+    def __init__(
+        self,
+        alternative_configuration: AlternativeConfiguration,
+        test_configuration: TestConfiguration,
+        report_configuration: ReportConfiguration,
+        rvs_store: IRvsStore,
+        result_store: IResultStore,
+        critical_value_store: ICriticalValueStore,
+    ):
         self.alternative_configuration = alternative_configuration
         self.test_configuration = test_configuration
         self.report_configuration = report_configuration

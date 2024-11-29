@@ -7,7 +7,8 @@ from stattest.experiment.configuration import TestWorkerResult
 from stattest.persistence.sql_lite_store import ResultSqLiteStore
 
 
-store_name = 'pysatl.sqlite'
+store_name = "pysatl.sqlite"
+
 
 class TestResult(TestWorkerResult):
     def __init__(self, name, values):
@@ -16,7 +17,6 @@ class TestResult(TestWorkerResult):
 
 
 class TestBenchmarkResultSqLiteStoreService:
-
     @pytest.fixture
     def store(self):
         store = ResultSqLiteStore(name=store_name)
@@ -34,18 +34,18 @@ class TestBenchmarkResultSqLiteStoreService:
         assert len(store.get_results(0, 5)) == 0
 
     def test_get_result_empty(self, store):
-        assert store.get_result('test') is None
+        assert store.get_result("test") is None
 
     def test_get_result_value(self, store):
-        store.insert_result('test', TestResult('name', [0.1, 0.5]))
-        result = store.get_result('test')
-        assert result.name == 'name'
-        assert np.array_equal(result.values,  [0.1, 0.5])
+        store.insert_result("test", TestResult("name", [0.1, 0.5]))
+        result = store.get_result("test")
+        assert result.name == "name"
+        assert np.array_equal(result.values, [0.1, 0.5])
 
     def test_get_results_value(self, store):
-        store.insert_result('test', TestResult('name1', [0.1, 0.5]))
-        store.insert_result('test1', TestResult('name', [0.3, 0.2]))
+        store.insert_result("test", TestResult("name1", [0.1, 0.5]))
+        store.insert_result("test1", TestResult("name", [0.3, 0.2]))
         result = store.get_results(0, 5)
         result = sorted(list(map(lambda x: x.name, result)))
-        assert result[0] == 'name'
-        assert result[1] == 'name1'
+        assert result[0] == "name"
+        assert result[1] == "name1"
