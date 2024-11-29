@@ -72,12 +72,12 @@ class CriticalValueSqLiteStore(ICriticalValueStore):
 
     @override
     def get_critical_value(self, code: str, size: int, sl: float) -> Optional[float]:
-        critical_value = CriticalValueSqLiteStore.session.query(CriticalValue).get((code, size, sl))
+        critical_value = CriticalValueSqLiteStore.session.get(CriticalValue, (code, size, sl))
         if critical_value is not None:
             return critical_value.value
 
     @override
     def get_distribution(self, code: str, size: int) -> [float]:
-        distribution = CriticalValueSqLiteStore.session.query(Distribution).get((code, size))
+        distribution = CriticalValueSqLiteStore.session.get(Distribution, (code, size))
         if distribution is not None:
             return [float(x) for x in distribution.data.split(CriticalValueSqLiteStore.__separator)]
