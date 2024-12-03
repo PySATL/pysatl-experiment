@@ -83,6 +83,8 @@ class AlternativeConfiguration:
 
 
 class TestConfiguration:
+    __test__ = False
+
     def __init__(
         self,
         tests: [AbstractTestStatistic],
