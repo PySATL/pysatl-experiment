@@ -70,4 +70,3 @@ def init_db(db_url: str) -> Engine:
             f"is no valid database URL! (See {_SQL_DOCS_URL})"
         )
     return engine
-
