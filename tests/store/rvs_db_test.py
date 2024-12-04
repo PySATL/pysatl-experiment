@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from stattest.persistence.sql_lite_store import RvsSqLiteStore
+from stattest.persistence.db_store import RvsDbLiteStore
 
 
 store_name = "pysatl.sqlite"
@@ -12,11 +12,11 @@ store_name = "pysatl.sqlite"
 class TestRvsSqLiteStoreService:
     @pytest.fixture
     def store(self):
-        store = RvsSqLiteStore(name=store_name)
+        store = RvsDbLiteStore(db_url="sqlite:///" + store_name)
         store.init()
         return store
 
-    def teardown_method(self, method):
+    def teardown_method(self):
         try:
             Path(store_name).unlink()
             Path(store_name + "-journal").unlink()
