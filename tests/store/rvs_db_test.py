@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from stattest.persistence.db_store import RvsDbLiteStore
+from stattest.persistence.db_store import RvsDbStore
 
 
 store_name = "pysatl.sqlite"
@@ -12,7 +12,7 @@ store_name = "pysatl.sqlite"
 class TestRvsSqLiteStoreService:
     @pytest.fixture
     def store(self):
-        store = RvsDbLiteStore(db_url="sqlite:///" + store_name)
+        store = RvsDbStore(db_url="sqlite:///" + store_name)
         store.init()
         return store
 

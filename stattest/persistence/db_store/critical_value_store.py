@@ -56,12 +56,12 @@ class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
 
     @override
     def get_critical_value(self, code: str, size: int, sl: float) -> Optional[float]:
-        critical_value = CriticalValueDbStore.session.query(CriticalValue).get((code, size, sl))
+        critical_value = CriticalValueDbStore.session.get(CriticalValue, (code, size, sl))
         if critical_value is not None:
             return critical_value.value
 
     @override
     def get_distribution(self, code: str, size: int) -> [float]:
-        distribution = CriticalValueDbStore.session.query(Distribution).get((code, size))
+        distribution = CriticalValueDbStore.session.get(Distribution, (code, size))
         if distribution is not None:
             return [float(x) for x in distribution.data.split(CriticalValueDbStore.__separator)]
