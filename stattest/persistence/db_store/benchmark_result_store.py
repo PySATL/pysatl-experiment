@@ -1,13 +1,11 @@
-import sqlite3
 from typing import ClassVar
 
-import numpy as np
 from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
+from sqlalchemy.orm import Mapped, mapped_column
 
+from stattest.persistence.db_store.base import ModelBase, SessionType
+from stattest.persistence.db_store.model import AbstractDbStore
 from stattest.persistence.models import IBenchmarkResultStore
-from stattest.persistence.sql_lite_store.base import ModelBase, SessionType
-from stattest.persistence.sql_lite_store.db_init import get_request_or_thread_id, init_db
 
 
 class BenchmarkResultModel(ModelBase):
@@ -23,22 +21,9 @@ class BenchmarkResultModel(ModelBase):
     benchmark: Mapped[str] = mapped_column(String, nullable=False)
 
 
-class BenchmarkResultSqLiteStore(IBenchmarkResultStore):
+class BenchmarkResultDbStore(IBenchmarkResultStore, AbstractDbStore):
     session: ClassVar[SessionType]
     __separator = ";"
-
-    def __init__(self, name="pysatl.sqlite"):
-        super().__init__()
-        self.name = name
-
-    def init(self, **kwargs):
-        sqlite3.register_adapter(np.int64, lambda val: int(val))
-        engine = init_db("sqlite:///" + self.name)
-        BenchmarkResultSqLiteStore.session = scoped_session(
-            sessionmaker(bind=engine, autoflush=False),
-            scopefunc=get_request_or_thread_id,
-        )
-        ModelBase.metadata.create_all(engine)
 
     def insert_benchmark(self, test_code: str, size: int, benchmark: [float]):
         """
@@ -48,10 +33,10 @@ class BenchmarkResultSqLiteStore(IBenchmarkResultStore):
         :param benchmark:  benchmark
         """
 
-        data_str = BenchmarkResultSqLiteStore.__separator.join(map(str, benchmark))
+        data_str = BenchmarkResultDbStore.__separator.join(map(str, benchmark))
         data = BenchmarkResultModel(size=size, test_code=test_code, benchmark=data_str)
-        BenchmarkResultSqLiteStore.session.add(data)
-        BenchmarkResultSqLiteStore.session.commit()
+        BenchmarkResultDbStore.session.add(data)
+        BenchmarkResultDbStore.session.commit()
 
     def get_benchmark(self, test_code: str, size: int) -> [float]:
         """
@@ -62,18 +47,15 @@ class BenchmarkResultSqLiteStore(IBenchmarkResultStore):
         :return: benchmark on None
         """
         result = (
-            BenchmarkResultSqLiteStore.session.query(BenchmarkResultModel)
-            .filter(
-                BenchmarkResultModel.test_code == test_code,
-                BenchmarkResultModel.size == size,
-            )
+            BenchmarkResultDbStore.session.query(BenchmarkResultModel)
+            .filter(BenchmarkResultModel.test_code == test_code, BenchmarkResultModel.size == size)
             .first()
         )
 
         if not result:
             return []
 
-        return [float(x) for x in result.benchmark.split(BenchmarkResultSqLiteStore.__separator)]
+        return [float(x) for x in result.benchmark.split(BenchmarkResultDbStore.__separator)]
 
     def get_benchmarks(self, offset: int, limit: int):  # -> [PowerResultModel]:
         """
@@ -85,7 +67,7 @@ class BenchmarkResultSqLiteStore(IBenchmarkResultStore):
         :return: list of PowerResultModel
         """
         result = (
-            BenchmarkResultSqLiteStore.session.query(BenchmarkResultModel)
+            BenchmarkResultDbStore.session.query(BenchmarkResultModel)
             .order_by(BenchmarkResultModel.id)
             .offset(offset)
             .limit(limit)
@@ -94,9 +76,7 @@ class BenchmarkResultSqLiteStore(IBenchmarkResultStore):
             BenchmarkResultModel(
                 size=b.size,
                 test_code=b.test_code,
-                benchmark=[
-                    float(x) for x in b.benchmark.split(BenchmarkResultSqLiteStore.__separator)
-                ],
+                benchmark=[float(x) for x in b.benchmark.split(BenchmarkResultDbStore.__separator)],
             )
             for b in result
         ]

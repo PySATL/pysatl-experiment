@@ -7,7 +7,7 @@ import threading
 from contextvars import ContextVar
 from typing import Any, Final, Optional
 
-from sqlalchemy import create_engine
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.exc import NoSuchModuleError
 from sqlalchemy.pool import StaticPool
 
@@ -35,7 +35,7 @@ def get_request_or_thread_id() -> Optional[str]:
 _SQL_DOCS_URL = "http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls"
 
 
-def init_db(db_url: str) -> None:
+def init_db(db_url: str) -> Engine:
     """
     Initializes this module with the given config,
     registers all known command handlers
@@ -70,14 +70,4 @@ def init_db(db_url: str) -> None:
             f"Given value for db_url: '{db_url}' "
             f"is no valid database URL! (See {_SQL_DOCS_URL})"
         )
-
-    # https://docs.sqlalchemy.org/en/13/orm/contextual.html#thread-local-scope
-    # Scoped sessions proxy requests to the appropriate thread-local session.
-    """SqlLiteStore.session = scoped_session(
-        sessionmaker(bind=engine, autoflush=False), scopefunc=get_request_or_thread_id
-    )"""
     return engine
-
-    # previous_tables = inspect(engine).get_table_names()
-    # ModelBase.metadata.create_all(engine)
-    # check_migrate(engine, decl_base=ModelBase, previous_tables=previous_tables)
