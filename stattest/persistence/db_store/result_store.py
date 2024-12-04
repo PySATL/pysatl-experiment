@@ -1,20 +1,14 @@
 import importlib
 import json
-import sqlite3
 from typing import ClassVar
 
-import numpy as np
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
+from sqlalchemy.orm import Mapped, mapped_column
 from typing_extensions import override
 
+from stattest.persistence.db_store import ModelBase, SessionType
+from stattest.persistence.db_store.model import AbstractDbStore
 from stattest.persistence.models import IResultStore
-from stattest.persistence.sql_lite_store import (
-    ModelBase,
-    SessionType,
-    get_request_or_thread_id,
-    init_db,
-)
 
 
 class ResultModel(ModelBase):
@@ -30,21 +24,9 @@ class ResultModel(ModelBase):
     data: Mapped[str] = mapped_column(String, nullable=False)
 
 
-class ResultSqLiteStore(IResultStore):
+class ResultDbStore(AbstractDbStore, IResultStore):
     session: ClassVar[SessionType]
     __separator = ";"
-
-    def __init__(self, name="pysatl.sqlite"):
-        super().__init__()
-        self.name = name
-
-    def init(self, **kwargs):
-        sqlite3.register_adapter(np.int64, lambda val: int(val))
-        engine = init_db("sqlite:///" + self.name)
-        ResultSqLiteStore.session = scoped_session(
-            sessionmaker(bind=engine, autoflush=False), scopefunc=get_request_or_thread_id
-        )
-        ModelBase.metadata.create_all(engine)
 
     @override
     def insert_result(self, result_id: str, result: any):
@@ -62,8 +44,8 @@ class ResultSqLiteStore(IResultStore):
             className=result.__class__.__name__,
             data=json_data,
         )
-        ResultSqLiteStore.session.add(data)
-        ResultSqLiteStore.session.commit()
+        ResultDbStore.session.add(data)
+        ResultDbStore.session.commit()
 
     @override
     def get_result(self, result_id: str) -> any:
@@ -74,7 +56,7 @@ class ResultSqLiteStore(IResultStore):
 
         :return benchmark on None
         """
-        result = ResultSqLiteStore.session.query(ResultModel).get(result_id)
+        result = ResultDbStore.session.get(ResultModel, result_id)
         if not result:
             return None
 
@@ -92,7 +74,7 @@ class ResultSqLiteStore(IResultStore):
         :return list of PowerResultModel
         """
         result = (
-            ResultSqLiteStore.session.query(ResultModel)
+            ResultDbStore.session.query(ResultModel)
             .order_by(ResultModel.id)
             .offset(offset)
             .limit(limit)

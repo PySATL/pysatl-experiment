@@ -4,13 +4,15 @@ import numpy as np
 import pytest
 
 from stattest.experiment.configuration import TestWorkerResult
-from stattest.persistence.sql_lite_store import ResultSqLiteStore
+from stattest.persistence.db_store import ResultDbStore
 
 
 store_name = "pysatl.sqlite"
 
 
 class TestResult(TestWorkerResult):
+    __test__ = False
+
     def __init__(self, name, values):
         self.name = name
         self.values = values
@@ -19,7 +21,7 @@ class TestResult(TestWorkerResult):
 class TestBenchmarkResultSqLiteStoreService:
     @pytest.fixture
     def store(self):
-        store = ResultSqLiteStore(name=store_name)
+        store = ResultDbStore(db_url="sqlite:///" + store_name)
         store.init()
         return store
 

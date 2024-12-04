@@ -1,16 +1,16 @@
-from stattest.experiment import (
-    Experiment
+from stattest.experiment import Experiment
+from stattest.experiment.configuration.configuration import (
+    AlternativeConfiguration,
+    ExperimentConfiguration,
+    ReportConfiguration,
+    TestConfiguration,
 )
-from stattest.experiment.configuration.configuration import (TestConfiguration,
-                                                             AlternativeConfiguration,
-                                                             ExperimentConfiguration,
-                                                             ReportConfiguration)
 from stattest.experiment.generator import BetaRVSGenerator, symmetric_generators
 from stattest.experiment.hypothesis import WeibullHypothesis
 from stattest.experiment.listener.listeners import TimeEstimationListener
 from stattest.experiment.report.model import PdfPowerReportBuilder
 from stattest.experiment.test.worker import PowerCalculationWorker
-from stattest.persistence.db_store import CriticalValueDbStore, RvsDbLiteStore
+from stattest.persistence.db_store import CriticalValueDbStore, RvsDbStore
 from stattest.persistence.db_store.power_result_store import PowerResultDbStore
 from stattest.test import KSWeibullTest
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     report_builder = PdfPowerReportBuilder()
     report_configuration = ReportConfiguration(report_builder)
 
-    rvs_store = RvsDbLiteStore()
+    rvs_store = RvsDbStore()
     experiment_configuration = ExperimentConfiguration(
         alternatives_configuration,
         test_configuration,
