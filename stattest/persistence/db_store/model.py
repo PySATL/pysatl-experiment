@@ -13,7 +13,7 @@ from stattest.persistence.db_store import ModelBase, SessionType, get_request_or
 class AbstractDbStore(IStore, ABC):
     session: ClassVar[SessionType]
 
-    def __init__(self, db_url='sqlite:///pysatl.sqlite'):
+    def __init__(self, db_url="sqlite:///pysatl.sqlite"):
         super().__init__()
         self.db_url = db_url
 

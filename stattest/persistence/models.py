@@ -3,13 +3,14 @@ from typing import Optional
 
 
 class IStore(ABC):
-
+    @abstractmethod
     def migrate(self):
         """
         Migrate store.
         """
         pass
 
+    @abstractmethod
     def init(self):
         """
         Initialize store.
@@ -18,7 +19,6 @@ class IStore(ABC):
 
 
 class IRvsStore(IStore, ABC):
-
     def insert_all_rvs(self, generator_code: str, size: int, data: [[float]]):
         """
         Insert several rvs data to store.
@@ -84,7 +84,6 @@ class IRvsStore(IStore, ABC):
 
 
 class ICriticalValueStore(IStore, ABC):
-
     @abstractmethod
     def insert_critical_value(self, code: str, size: int, sl: float, value: float):
         """
@@ -130,9 +129,10 @@ class ICriticalValueStore(IStore, ABC):
 
 
 class IPowerResultStore(IStore, ABC):
-
     @abstractmethod
-    def insert_power(self, sl: float, size: int, test_code: str, alternative_code: str, power: float):
+    def insert_power(
+        self, sl: float, size: int, test_code: str, alternative_code: str, power: float
+    ):
         """
         Insert power to store.
 
@@ -145,7 +145,9 @@ class IPowerResultStore(IStore, ABC):
         pass
 
     @abstractmethod
-    def get_power(self, sl: float, size: int, test_code: str, alternative_code: str) -> Optional[float]:
+    def get_power(
+        self, sl: float, size: int, test_code: str, alternative_code: str
+    ) -> Optional[float]:
         """
         Get power from store.
 
@@ -172,7 +174,6 @@ class IPowerResultStore(IStore, ABC):
 
 
 class IBenchmarkResultStore(IStore, ABC):
-
     @abstractmethod
     def insert_benchmark(self, test_code: str, size: int, benchmark: [float]):
         """

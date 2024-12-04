@@ -12,7 +12,7 @@ store_name = "pysatl.sqlite"
 class TestRvsSqLiteStoreService:
     @pytest.fixture
     def store(self):
-        store = RvsDbLiteStore(db_url='sqlite:///' + store_name)
+        store = RvsDbLiteStore(db_url="sqlite:///" + store_name)
         store.init()
         return store
 

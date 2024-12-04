@@ -1,11 +1,10 @@
-from typing import ClassVar
+from typing import ClassVar, Optional
 
 from sqlalchemy import Float, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
-from typing_extensions import Optional, override
+from typing_extensions import override
 
 from stattest.persistence.db_store.base import ModelBase, SessionType
-from stattest.persistence.db_store.db_init import get_request_or_thread_id, init_db
 from stattest.persistence.db_store.model import AbstractDbStore
 from stattest.persistence.models import ICriticalValueStore
 
@@ -42,13 +41,17 @@ class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
 
     @override
     def insert_critical_value(self, code: str, size: int, sl: float, value: float):
-        CriticalValueDbStore.session.add(CriticalValue(code=code, sl=sl, size=int(size), value=value))
+        CriticalValueDbStore.session.add(
+            CriticalValue(code=code, sl=sl, size=int(size), value=value)
+        )
         CriticalValueDbStore.session.commit()
 
     @override
     def insert_distribution(self, code: str, size: int, data: [float]):
         data_to_insert = CriticalValueDbStore.__separator.join(map(str, data))
-        CriticalValueDbStore.session.add(Distribution(code=code, size=int(size), data=data_to_insert))
+        CriticalValueDbStore.session.add(
+            Distribution(code=code, size=int(size), data=data_to_insert)
+        )
         CriticalValueDbStore.session.commit()
 
     @override

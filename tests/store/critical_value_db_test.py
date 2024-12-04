@@ -12,7 +12,7 @@ store_name = "pysatl.sqlite"
 class TestCriticalValueSqLiteStoreService:
     @pytest.fixture
     def store(self):
-        store = CriticalValueDbStore(db_url='sqlite:///' + store_name)
+        store = CriticalValueDbStore(db_url="sqlite:///" + store_name)
         store.init()
         return store
 

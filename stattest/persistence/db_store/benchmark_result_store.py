@@ -4,7 +4,6 @@ from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from stattest.persistence.db_store.base import ModelBase, SessionType
-from stattest.persistence.db_store.db_init import get_request_or_thread_id, init_db
 from stattest.persistence.db_store.model import AbstractDbStore
 from stattest.persistence.models import IBenchmarkResultStore
 
@@ -47,10 +46,11 @@ class BenchmarkResultDbStore(IBenchmarkResultStore, AbstractDbStore):
 
         :return: benchmark on None
         """
-        result = BenchmarkResultDbStore.session.query(BenchmarkResultModel).filter(
-            BenchmarkResultModel.test_code == test_code,
-            BenchmarkResultModel.size == size
-        ).first()
+        result = (
+            BenchmarkResultDbStore.session.query(BenchmarkResultModel)
+            .filter(BenchmarkResultModel.test_code == test_code, BenchmarkResultModel.size == size)
+            .first()
+        )
 
         if not result:
             return []
@@ -66,9 +66,18 @@ class BenchmarkResultDbStore(IBenchmarkResultStore, AbstractDbStore):
 
         :return: list of PowerResultModel
         """
-        result = (BenchmarkResultDbStore.session.query(BenchmarkResultModel)
-                  .order_by(BenchmarkResultModel.id).offset(offset).limit(limit)).all()
+        result = (
+            BenchmarkResultDbStore.session.query(BenchmarkResultModel)
+            .order_by(BenchmarkResultModel.id)
+            .offset(offset)
+            .limit(limit)
+        ).all()
         result = [
-            BenchmarkResultModel(size=b.size, test_code=b.test_code, benchmark=[float(x) for x in b.benchmark.split(
-                BenchmarkResultDbStore.__separator)]) for b in result]
+            BenchmarkResultModel(
+                size=b.size,
+                test_code=b.test_code,
+                benchmark=[float(x) for x in b.benchmark.split(BenchmarkResultDbStore.__separator)],
+            )
+            for b in result
+        ]
         return result

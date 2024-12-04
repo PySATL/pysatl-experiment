@@ -12,7 +12,7 @@ store_name = "pysatl.sqlite"
 class TestBenchmarkResultSqLiteStoreService:
     @pytest.fixture
     def store(self):
-        store = BenchmarkResultDbStore(db_url='sqlite:///' + store_name)
+        store = BenchmarkResultDbStore(db_url="sqlite:///" + store_name)
         store.init()
         return store
 

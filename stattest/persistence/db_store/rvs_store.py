@@ -46,15 +46,15 @@ class RvsDbLiteStore(AbstractDbStore, IRvsStore):
             return
 
         data_to_insert = [
-            {'code': generator_code, 'size': int(size), 'data': RvsDbLiteStore.__separator.join(map(str, d))} for d in
-            data]
+            {
+                "code": generator_code,
+                "size": int(size),
+                "data": RvsDbLiteStore.__separator.join(map(str, d)),
+            }
+            for d in data
+        ]
         statement = text("INSERT INTO rvs_data (code, size, data) VALUES (:code, :size, :data)")
         RvsDbLiteStore.session.execute(statement, data_to_insert)
-
-        '''stat_to_insert = [{'code': code, 'size': int(size), 'data': SqlLiteStore.__separator.join(map(str, d))} for d in
-                          data]
-        stat_statement = text("INSERT INTO rvs_stat (code, size, count) VALUES (:code, :size, :count)")
-        SqlLiteStore.session.execute(stat_statement, data_to_insert)'''
         RvsDbLiteStore.session.commit()
 
     @override
@@ -70,19 +70,29 @@ class RvsDbLiteStore(AbstractDbStore, IRvsStore):
 
     @override
     def get_rvs(self, code: str, size: int) -> [[float]]:
-        samples = RvsDbLiteStore.session.query(RVS).filter(
-            RVS.code == code, RVS.size == size,
-        ).all()
+        samples = (
+            RvsDbLiteStore.session.query(RVS)
+            .filter(
+                RVS.code == code,
+                RVS.size == size,
+            )
+            .all()
+        )
 
         if not samples:
             return []
 
-        return [[float(x) for x in sample.data.split(RvsDbLiteStore.__separator)] for sample in samples]
+        return [
+            [float(x) for x in sample.data.split(RvsDbLiteStore.__separator)] for sample in samples
+        ]
 
     @override
     def get_rvs_stat(self) -> [(str, int, int)]:
-        result = RvsDbLiteStore.session.query(RVS.code, RVS.size,
-                                              func.count(RVS.code)).group_by(RVS.code, RVS.size).all()
+        result = (
+            RvsDbLiteStore.session.query(RVS.code, RVS.size, func.count(RVS.code))
+            .group_by(RVS.code, RVS.size)
+            .all()
+        )
 
         if result is None:
             return []

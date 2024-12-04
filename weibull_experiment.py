@@ -33,8 +33,9 @@ if __name__ == "__main__":
     tests = [KSWeibullTest()]
     critical_value_store = CriticalValueDbStore()
     power_result_store = PowerResultDbStore()
-    power_calculation_worker = PowerCalculationWorker(0.05, 1_000_000, power_result_store, critical_value_store,
-                                                      hypothesis=WeibullHypothesis())
+    power_calculation_worker = PowerCalculationWorker(
+        0.05, 1_000_000, power_result_store, critical_value_store, hypothesis=WeibullHypothesis()
+    )
     hypothesis = WeibullHypothesis()
     test_configuration = TestConfiguration(
         tests,
@@ -49,11 +50,13 @@ if __name__ == "__main__":
     report_configuration = ReportConfiguration(report_builder, reader)
 
     rvs_store = RvsDbLiteStore()
-    experiment_configuration = ExperimentConfiguration(alternatives_configuration,
-                                                       test_configuration,
-                                                       report_configuration,
-                                                       rvs_store=rvs_store,
-                                                       critical_value_store=CriticalValueDbStore())
+    experiment_configuration = ExperimentConfiguration(
+        alternatives_configuration,
+        test_configuration,
+        report_configuration,
+        rvs_store=rvs_store,
+        critical_value_store=CriticalValueDbStore(),
+    )
     experiment = Experiment(experiment_configuration)
 
     # Execute experiment

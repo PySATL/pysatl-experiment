@@ -1,4 +1,4 @@
-from sqlalchemy.orm import DeclarativeBase, Session, scoped_session, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Session, scoped_session
 
 
 SessionType = scoped_session[Session]
