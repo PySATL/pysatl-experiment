@@ -13,6 +13,7 @@ from sqlalchemy.pool import StaticPool
 
 from stattest.exceptions import OperationalException
 
+
 logger = logging.getLogger(__name__)
 
 REQUEST_ID_CTX_KEY: Final[str] = "request_id"

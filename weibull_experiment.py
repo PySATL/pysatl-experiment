@@ -1,16 +1,22 @@
-from stattest.experiment import Experiment, ExperimentConfiguration, ReportConfiguration, AlternativeConfiguration
-from stattest.experiment.generator import BetaRVSGenerator, modified_generators, symmetric_generators
+from stattest.experiment import Experiment
+from stattest.experiment.configuration.configuration import (
+    AlternativeConfiguration,
+    ExperimentConfiguration,
+    ReportConfiguration,
+    TestConfiguration,
+)
+from stattest.experiment.generator import BetaRVSGenerator, symmetric_generators
 from stattest.experiment.hypothesis import WeibullHypothesis
 from stattest.experiment.listener.listeners import TimeEstimationListener
-from stattest.experiment.configuration.configuration import TestConfiguration
 from stattest.experiment.report.model import PdfPowerReportBuilder, PowerResultReader
 from stattest.experiment.test.worker import PowerCalculationWorker
 from stattest.persistence.db_store import CriticalValueDbStore, RvsDbLiteStore
 from stattest.persistence.db_store.power_result_store import PowerResultDbStore
 from stattest.test import KSWeibullTest
 
-if __name__ == '__main__':
-    print('Start Weibull experiment')
+
+if __name__ == "__main__":
+    print("Start Weibull experiment")
 
     # Configuring experiment
     test_data_tel = TimeEstimationListener()
@@ -20,8 +26,9 @@ if __name__ == '__main__':
     sizes = [1000, 100, 10]
     alternatives = [BetaRVSGenerator(a=0.5, b=0.5)]
 
-    alternatives_configuration = AlternativeConfiguration(symmetric_generators, sizes, count=1_000, threads=3,
-                                                          listeners=listeners)
+    alternatives_configuration = AlternativeConfiguration(
+        symmetric_generators, sizes, count=1_000, threads=3, listeners=listeners
+    )
 
     tests = [KSWeibullTest()]
     critical_value_store = CriticalValueDbStore()
@@ -29,8 +36,13 @@ if __name__ == '__main__':
     power_calculation_worker = PowerCalculationWorker(0.05, 1_000_000, power_result_store, critical_value_store,
                                                       hypothesis=WeibullHypothesis())
     hypothesis = WeibullHypothesis()
-    test_configuration = TestConfiguration(tests, threads=1, hypothesis=hypothesis,
-                                           worker=power_calculation_worker, listeners=[test_data_tel])
+    test_configuration = TestConfiguration(
+        tests,
+        threads=1,
+        hypothesis=hypothesis,
+        worker=power_calculation_worker,
+        listeners=[test_data_tel],
+    )
 
     report_builder = PdfPowerReportBuilder()
     reader = PowerResultReader(power_result_store)

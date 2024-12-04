@@ -12,6 +12,7 @@ from sqlalchemy import (
 from stattest.persistence.db_store.model import AbstractDbStore
 from stattest.persistence.models import ICriticalValueStore
 from stattest.persistence.db_store.base import ModelBase, SessionType
+from stattest.persistence.db_store.db_init import get_request_or_thread_id, init_db
 
 
 class Distribution(ModelBase):
@@ -42,7 +43,7 @@ class CriticalValue(ModelBase):
 
 class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
     session: ClassVar[SessionType]
-    __separator = ';'
+    __separator = ";"
 
     @override
     def insert_critical_value(self, code: str, size: int, sl: float, value: float):

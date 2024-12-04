@@ -1,13 +1,11 @@
+import pytest
 from typing_extensions import override
 
-import pytest
-
-from tests.abstract_test_case import AbstractTestCase
 from stattest.test.exponent import AbstractExponentialityTestStatistic
+from tests.abstract_test_case import AbstractTestCase
 
 
 class AbstractExponentialityTestCase(AbstractTestCase):
-
     @staticmethod
     @override
     def test_execute_statistic(data, result, statistic_test: AbstractExponentialityTestStatistic):

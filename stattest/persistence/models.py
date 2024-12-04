@@ -154,7 +154,7 @@ class IPowerResultStore(IStore, ABC):
         :param test_code: test code
         :param alternative_code: alternative code
 
-        :return power on None
+        :return: power on None
         """
         pass
 
@@ -166,7 +166,7 @@ class IPowerResultStore(IStore, ABC):
         :param offset: offset
         :param limit: limit
 
-        :return list of PowerResultModel
+        :return: list of PowerResultModel
         """
         pass
 
@@ -190,7 +190,7 @@ class IBenchmarkResultStore(IStore, ABC):
 
         :param test_code: test code
 
-        :return benchmark on None
+        :return: benchmark on None
         """
         pass
 
@@ -202,6 +202,6 @@ class IBenchmarkResultStore(IStore, ABC):
         :param offset: offset
         :param limit: limit
 
-        :return list of PowerResultModel
+        :return: list of PowerResultModel
         """
         pass

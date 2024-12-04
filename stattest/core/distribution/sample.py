@@ -1,5 +1,5 @@
-from scipy.stats import moment as scipy_moment
 import numpy as np
+from scipy.stats import moment as scipy_moment
 
 
 def moment(a, mom=1, center=None):

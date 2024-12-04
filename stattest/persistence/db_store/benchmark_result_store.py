@@ -5,13 +5,15 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from stattest.persistence.db_store.model import AbstractDbStore
 from stattest.persistence.models import IBenchmarkResultStore
-from stattest.persistence.db_store import ModelBase, SessionType
+from stattest.persistence.db_store.base import ModelBase, SessionType
+from stattest.persistence.db_store.db_init import get_request_or_thread_id, init_db
 
 
 class BenchmarkResultModel(ModelBase):
     """
     Pair Locks database model.
     """
+
     __tablename__ = "benchmark_result"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -22,7 +24,7 @@ class BenchmarkResultModel(ModelBase):
 
 class BenchmarkResultDbStore(IBenchmarkResultStore, AbstractDbStore):
     session: ClassVar[SessionType]
-    __separator = ';'
+    __separator = ";"
 
     def insert_benchmark(self, test_code: str, size: int, benchmark: [float]):
         """
@@ -43,7 +45,7 @@ class BenchmarkResultDbStore(IBenchmarkResultStore, AbstractDbStore):
 
         :param test_code: test code
 
-        :return benchmark on None
+        :return: benchmark on None
         """
         result = BenchmarkResultDbStore.session.query(BenchmarkResultModel).filter(
             BenchmarkResultModel.test_code == test_code,
@@ -62,7 +64,7 @@ class BenchmarkResultDbStore(IBenchmarkResultStore, AbstractDbStore):
         :param offset: offset
         :param limit: limit
 
-        :return list of PowerResultModel
+        :return: list of PowerResultModel
         """
         result = (BenchmarkResultDbStore.session.query(BenchmarkResultModel)
                   .order_by(BenchmarkResultModel.id).offset(offset).limit(limit)).all()

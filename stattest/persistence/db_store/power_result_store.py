@@ -8,12 +8,14 @@ from stattest.persistence.db_store.model import AbstractDbStore
 from stattest.persistence.models import IPowerResultStore
 from stattest.persistence.db_store import ModelBase
 from stattest.persistence.db_store.base import SessionType
+from stattest.persistence.db_store.db_init import get_request_or_thread_id, init_db
 
 
 class PowerResultModel(ModelBase):
     """
     Pair Locks database model.
     """
+
     __tablename__ = "power_result"
 
     id: Mapped[int] = mapped_column(primary_key=True)

@@ -1,4 +1,3 @@
-import numpy as np
 from matplotlib import pyplot as plt
 
 from stattest.experiment import ReportBuilder
@@ -47,6 +46,7 @@ class ChartBenchmarkMeanReportBuilder(ReportBuilder):
         return '_'.join([result.test_code, str(result.size)])
 """
 
+
 class ChartPowerReportBuilder(ReportBuilder):
     def __init__(self):
         self.data = {}
@@ -69,8 +69,11 @@ class ChartPowerReportBuilder(ReportBuilder):
             fig, ax = plt.subplots()
             ax.plot(s, p)
 
-            ax.set(xlabel='time (s)', ylabel='voltage (mV)',
-                   title='About as simple as it gets, folks')
+            ax.set(
+                xlabel="time (s)",
+                ylabel="voltage (mV)",
+                title="About as simple as it gets, folks",
+            )
             ax.grid()
 
             fig.savefig("test.png")
@@ -78,7 +81,7 @@ class ChartPowerReportBuilder(ReportBuilder):
 
     @staticmethod
     def __build_path(result: PowerWorkerResult):
-        return '_'.join([result.test_code, str(result.alternative_code), str(result.alpha)])
+        return "_".join([result.test_code, str(result.alternative_code), str(result.alpha)])
 
 
 class PdfPowerReportBuilder(ReportBuilder):
@@ -106,7 +109,9 @@ class PowerResultReader:
     def __next__(self):
         self.i += 1
         if self.i >= len(self.items):
-            self.items = self.power_result_store.get_powers(offset=self.offset, limit=self.batch_size)
+            self.items = self.power_result_store.get_powers(
+                offset=self.offset, limit=self.batch_size
+            )
             self.i = 0
             self.offset += self.batch_size
             if len(self.items) == 0:
@@ -128,7 +133,9 @@ class BenchmarkResultReader:
     def __next__(self):
         self.i += 1
         if self.i >= len(self.items):
-            self.items = self.benchmark_result_store.get_benchmarks(offset=self.offset, limit=self.batch_size)
+            self.items = self.benchmark_result_store.get_benchmarks(
+                offset=self.offset, limit=self.batch_size
+            )
             self.i = 0
             self.offset += self.batch_size
             if len(self.items) == 0:

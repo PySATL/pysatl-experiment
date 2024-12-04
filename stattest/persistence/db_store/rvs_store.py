@@ -41,7 +41,7 @@ class RVSStat(ModelBase):
 
 class RvsDbLiteStore(AbstractDbStore, IRvsStore):
     session: ClassVar[SessionType]
-    __separator = ';'
+    __separator = ";"
 
     @override
     def insert_all_rvs(self, generator_code: str, size: int, data: [[float]]):
