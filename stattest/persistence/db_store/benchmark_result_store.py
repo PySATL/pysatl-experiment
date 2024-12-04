@@ -1,12 +1,12 @@
 from typing import ClassVar
 
-from sqlalchemy import String, Integer
+from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from stattest.persistence.db_store.model import AbstractDbStore
-from stattest.persistence.models import IBenchmarkResultStore
 from stattest.persistence.db_store.base import ModelBase, SessionType
 from stattest.persistence.db_store.db_init import get_request_or_thread_id, init_db
+from stattest.persistence.db_store.model import AbstractDbStore
+from stattest.persistence.models import IBenchmarkResultStore
 
 
 class BenchmarkResultModel(ModelBase):

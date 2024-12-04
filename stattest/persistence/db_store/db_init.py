@@ -7,7 +7,7 @@ import threading
 from contextvars import ContextVar
 from typing import Any, Final, Optional
 
-from sqlalchemy import create_engine, Engine
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.exc import NoSuchModuleError
 from sqlalchemy.pool import StaticPool
 

@@ -7,7 +7,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from typing_extensions import override
 
 from stattest.persistence import IStore
-from stattest.persistence.db_store import get_request_or_thread_id, init_db, SessionType, ModelBase
+from stattest.persistence.db_store import ModelBase, SessionType, get_request_or_thread_id, init_db
 
 
 class AbstractDbStore(IStore, ABC):
