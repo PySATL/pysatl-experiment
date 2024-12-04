@@ -2,15 +2,13 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 
-class IStore(ABC):
-    @abstractmethod
+class IStore:
     def migrate(self):
         """
         Migrate store.
         """
         pass
 
-    @abstractmethod
     def init(self):
         """
         Initialize store.
