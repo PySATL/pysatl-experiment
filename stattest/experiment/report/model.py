@@ -109,9 +109,7 @@ class ResultReader:
     def __next__(self):
         self.i += 1
         if self.i >= len(self.items):
-            self.items = self.result_store.get_results(
-                offset=self.offset, limit=self.batch_size
-            )
+            self.items = self.result_store.get_results(offset=self.offset, limit=self.batch_size)
             self.i = 0
             self.offset += self.batch_size
             if len(self.items) == 0:
