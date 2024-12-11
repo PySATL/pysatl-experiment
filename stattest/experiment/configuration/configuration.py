@@ -113,5 +113,5 @@ class ExperimentConfiguration:
         self.test_configuration = test_configuration
         self.report_configuration = report_configuration
         self.rvs_store = rvs_store
-        self.rvs_store = result_store
+        self.result_store = result_store
         self.critical_value_store = critical_value_store

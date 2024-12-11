@@ -96,8 +96,8 @@ class PdfPowerReportBuilder(ReportBuilder):
 
 
 class ResultReader:
-    def __init__(self, power_result_store: IResultStore, batch_size=100):
-        self.power_result_store = power_result_store
+    def __init__(self, result_store: IResultStore, batch_size=100):
+        self.result_store = result_store
         self.batch_size = batch_size
         self.offset = 0
         self.items = []
@@ -109,7 +109,7 @@ class ResultReader:
     def __next__(self):
         self.i += 1
         if self.i >= len(self.items):
-            self.items = self.power_result_store.get_results(
+            self.items = self.result_store.get_results(
                 offset=self.offset, limit=self.batch_size
             )
             self.i = 0
