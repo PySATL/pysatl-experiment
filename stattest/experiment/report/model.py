@@ -4,6 +4,7 @@ from stattest.experiment.configuration.configuration import ReportBuilder
 from stattest.experiment.test.worker import PowerWorkerResult
 from stattest.persistence.models import IResultStore
 
+
 """
 class ChartBenchmarkMeanReportBuilder(ReportBuilder):
     def __init__(self):
