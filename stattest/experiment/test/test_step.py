@@ -40,7 +40,9 @@ def execute_tests(
             pbar.update(1)
 
 
-def execute_test_step(configuration: TestConfiguration, rvs_store: IRvsStore):
+def execute_test_step(
+    configuration: TestConfiguration, rvs_store: IRvsStore, result_store: IResultStore
+):
     threads_count = configuration.threads
     worker = configuration.worker
     tests = configuration.tests
@@ -64,10 +66,16 @@ def execute_test_step(configuration: TestConfiguration, rvs_store: IRvsStore):
         with multiprocessing.Pool(threads_count) as pool:
             pool.starmap(
                 execute_tests,
-                zip(repeat(worker), tests_chunks, repeat(rvs_store), threads_counts),
+                zip(
+                    repeat(worker),
+                    tests_chunks,
+                    repeat(rvs_store),
+                    repeat(result_store),
+                    threads_counts,
+                ),
             )
     else:
-        execute_tests(worker, tests, rvs_store)
+        execute_tests(worker, tests, rvs_store, result_store)
 
     # Execute after all listeners
     for listener in configuration.listeners:
