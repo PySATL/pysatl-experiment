@@ -8,10 +8,10 @@ from stattest.experiment.configuration.configuration import (
 from stattest.experiment.generator import BetaRVSGenerator, symmetric_generators
 from stattest.experiment.hypothesis import WeibullHypothesis
 from stattest.experiment.listener.listeners import TimeEstimationListener
-from stattest.experiment.report.model import PdfPowerReportBuilder, PowerResultReader
+from stattest.experiment.report.model import PdfPowerReportBuilder
 from stattest.experiment.test.worker import PowerCalculationWorker
-from stattest.persistence.db_store import CriticalValueDbStore, RvsDbLiteStore
-from stattest.persistence.db_store.power_result_store import PowerResultDbStore
+from stattest.persistence.db_store import CriticalValueDbStore, RvsDbStore
+from stattest.persistence.db_store.result_store import ResultDbStore
 from stattest.test import KSWeibullTest
 
 
@@ -32,9 +32,8 @@ if __name__ == "__main__":
 
     tests = [KSWeibullTest()]
     critical_value_store = CriticalValueDbStore()
-    power_result_store = PowerResultDbStore()
     power_calculation_worker = PowerCalculationWorker(
-        0.05, 1_000_000, power_result_store, critical_value_store, hypothesis=WeibullHypothesis()
+        0.05, 1_000_000, critical_value_store, hypothesis=WeibullHypothesis()
     )
     hypothesis = WeibullHypothesis()
     test_configuration = TestConfiguration(
@@ -46,15 +45,16 @@ if __name__ == "__main__":
     )
 
     report_builder = PdfPowerReportBuilder()
-    reader = PowerResultReader(power_result_store)
-    report_configuration = ReportConfiguration(report_builder, reader)
+    report_configuration = ReportConfiguration(report_builder)
 
-    rvs_store = RvsDbLiteStore()
+    rvs_store = RvsDbStore()
+    result_store = ResultDbStore()
     experiment_configuration = ExperimentConfiguration(
         alternatives_configuration,
         test_configuration,
         report_configuration,
         rvs_store=rvs_store,
+        result_store=result_store,
         critical_value_store=CriticalValueDbStore(),
     )
     experiment = Experiment(experiment_configuration)

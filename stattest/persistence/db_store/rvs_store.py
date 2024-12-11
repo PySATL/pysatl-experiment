@@ -36,7 +36,7 @@ class RVSStat(ModelBase):
     count: Mapped[int] = mapped_column(Integer)  # type: ignore
 
 
-class RvsDbLiteStore(AbstractDbStore, IRvsStore):
+class RvsDbStore(AbstractDbStore, IRvsStore):
     session: ClassVar[SessionType]
     __separator = ";"
 
@@ -49,19 +49,19 @@ class RvsDbLiteStore(AbstractDbStore, IRvsStore):
             {
                 "code": generator_code,
                 "size": int(size),
-                "data": RvsDbLiteStore.__separator.join(map(str, d)),
+                "data": RvsDbStore.__separator.join(map(str, d)),
             }
             for d in data
         ]
         statement = text("INSERT INTO rvs_data (code, size, data) VALUES (:code, :size, :data)")
-        RvsDbLiteStore.session.execute(statement, data_to_insert)
-        RvsDbLiteStore.session.commit()
+        RvsDbStore.session.execute(statement, data_to_insert)
+        RvsDbStore.session.commit()
 
     @override
     def insert_rvs(self, code: str, size: int, data: [float]):
-        data_str = RvsDbLiteStore.__separator.join(map(str, data))
-        RvsDbLiteStore.session.add(RVS(code=code, size=int(size), data=data_str))
-        RvsDbLiteStore.session.commit()
+        data_str = RvsDbStore.__separator.join(map(str, data))
+        RvsDbStore.session.add(RVS(code=code, size=int(size), data=data_str))
+        RvsDbStore.session.commit()
 
     @override
     def get_rvs_count(self, code: str, size: int):
@@ -71,7 +71,7 @@ class RvsDbLiteStore(AbstractDbStore, IRvsStore):
     @override
     def get_rvs(self, code: str, size: int) -> [[float]]:
         samples = (
-            RvsDbLiteStore.session.query(RVS)
+            RvsDbStore.session.query(RVS)
             .filter(
                 RVS.code == code,
                 RVS.size == size,
@@ -82,14 +82,12 @@ class RvsDbLiteStore(AbstractDbStore, IRvsStore):
         if not samples:
             return []
 
-        return [
-            [float(x) for x in sample.data.split(RvsDbLiteStore.__separator)] for sample in samples
-        ]
+        return [[float(x) for x in sample.data.split(RvsDbStore.__separator)] for sample in samples]
 
     @override
     def get_rvs_stat(self) -> [(str, int, int)]:
         result = (
-            RvsDbLiteStore.session.query(RVS.code, RVS.size, func.count(RVS.code))
+            RvsDbStore.session.query(RVS.code, RVS.size, func.count(RVS.code))
             .group_by(RVS.code, RVS.size)
             .all()
         )
@@ -101,4 +99,4 @@ class RvsDbLiteStore(AbstractDbStore, IRvsStore):
 
     @override
     def clear_all_rvs(self):
-        RvsDbLiteStore.session.query(RVS).delete()
+        RvsDbStore.session.query(RVS).delete()
