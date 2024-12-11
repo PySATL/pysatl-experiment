@@ -1,14 +1,12 @@
-import sqlite3
 from typing import ClassVar, Optional
 
-import numpy as np
 from sqlalchemy import Float, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column, scoped_session, sessionmaker
+from sqlalchemy.orm import Mapped, mapped_column
 from typing_extensions import override
 
+from stattest.persistence.db_store.base import ModelBase, SessionType
+from stattest.persistence.db_store.model import AbstractDbStore
 from stattest.persistence.models import ICriticalValueStore
-from stattest.persistence.sql_lite_store.base import ModelBase, SessionType
-from stattest.persistence.sql_lite_store.db_init import get_request_or_thread_id, init_db
 
 
 class Distribution(ModelBase):
@@ -37,47 +35,33 @@ class CriticalValue(ModelBase):
     value: Mapped[float] = mapped_column(Float(), nullable=False)  # type: ignore
 
 
-class CriticalValueSqLiteStore(ICriticalValueStore):
+class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
     session: ClassVar[SessionType]
     __separator = ";"
 
-    def __init__(self, name="pysatl.sqlite"):
-        super().__init__()
-        self.name = name
-
-    @override
-    def init(self):
-        sqlite3.register_adapter(np.int64, lambda val: int(val))
-        engine = init_db("sqlite:///" + self.name)
-        CriticalValueSqLiteStore.session = scoped_session(
-            sessionmaker(bind=engine, autoflush=False),
-            scopefunc=get_request_or_thread_id,
-        )
-        ModelBase.metadata.create_all(engine)
-
     @override
     def insert_critical_value(self, code: str, size: int, sl: float, value: float):
-        CriticalValueSqLiteStore.session.add(
+        CriticalValueDbStore.session.add(
             CriticalValue(code=code, sl=sl, size=int(size), value=value)
         )
-        CriticalValueSqLiteStore.session.commit()
+        CriticalValueDbStore.session.commit()
 
     @override
     def insert_distribution(self, code: str, size: int, data: [float]):
-        data_to_insert = CriticalValueSqLiteStore.__separator.join(map(str, data))
-        CriticalValueSqLiteStore.session.add(
+        data_to_insert = CriticalValueDbStore.__separator.join(map(str, data))
+        CriticalValueDbStore.session.add(
             Distribution(code=code, size=int(size), data=data_to_insert)
         )
-        CriticalValueSqLiteStore.session.commit()
+        CriticalValueDbStore.session.commit()
 
     @override
     def get_critical_value(self, code: str, size: int, sl: float) -> Optional[float]:
-        critical_value = CriticalValueSqLiteStore.session.get(CriticalValue, (code, size, sl))
+        critical_value = CriticalValueDbStore.session.get(CriticalValue, (code, size, sl))
         if critical_value is not None:
             return critical_value.value
 
     @override
     def get_distribution(self, code: str, size: int) -> [float]:
-        distribution = CriticalValueSqLiteStore.session.get(Distribution, (code, size))
+        distribution = CriticalValueDbStore.session.get(Distribution, (code, size))
         if distribution is not None:
-            return [float(x) for x in distribution.data.split(CriticalValueSqLiteStore.__separator)]
+            return [float(x) for x in distribution.data.split(CriticalValueDbStore.__separator)]

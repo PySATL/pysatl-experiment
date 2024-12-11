@@ -1,8 +1,8 @@
 from matplotlib import pyplot as plt
 
-from stattest.experiment import ReportBuilder
+from stattest.experiment.configuration.configuration import ReportBuilder
 from stattest.experiment.test.worker import PowerWorkerResult
-from stattest.persistence.models import IBenchmarkResultStore
+from stattest.persistence.models import IResultStore
 
 
 """
@@ -95,9 +95,9 @@ class PdfPowerReportBuilder(ReportBuilder):
         pass
 
 
-class PowerResultReader:
-    def __init__(self, power_result_store, batch_size=100):
-        self.power_result_store = power_result_store
+class ResultReader:
+    def __init__(self, result_store: IResultStore, batch_size=100):
+        self.result_store = result_store
         self.batch_size = batch_size
         self.offset = 0
         self.items = []
@@ -109,33 +109,7 @@ class PowerResultReader:
     def __next__(self):
         self.i += 1
         if self.i >= len(self.items):
-            self.items = self.power_result_store.get_powers(
-                offset=self.offset, limit=self.batch_size
-            )
-            self.i = 0
-            self.offset += self.batch_size
-            if len(self.items) == 0:
-                raise StopIteration
-        return self.items[self.i]
-
-
-class BenchmarkResultReader:
-    def __init__(self, benchmark_result_store: IBenchmarkResultStore, batch_size=100):
-        self.benchmark_result_store = benchmark_result_store
-        self.batch_size = batch_size
-        self.offset = 0
-        self.items = []
-        self.i = 0
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        self.i += 1
-        if self.i >= len(self.items):
-            self.items = self.benchmark_result_store.get_benchmarks(
-                offset=self.offset, limit=self.batch_size
-            )
+            self.items = self.result_store.get_results(offset=self.offset, limit=self.batch_size)
             self.i = 0
             self.offset += self.batch_size
             if len(self.items) == 0:

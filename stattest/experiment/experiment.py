@@ -16,6 +16,7 @@ class Experiment:
         """
 
         rvs_store = self.__configuration.rvs_store
+        result_store = self.__configuration.result_store
         rvs_store.init()
 
         worker = self.__configuration.test_configuration.worker
@@ -25,7 +26,7 @@ class Experiment:
         data_generation_step(self.__configuration.alternative_configuration, rvs_store)
 
         # Test hypothesis
-        execute_test_step(self.__configuration.test_configuration, rvs_store)
+        execute_test_step(self.__configuration.test_configuration, rvs_store, result_store)
 
         # Generate reports
-        execute_report_step(self.__configuration.report_configuration)
+        execute_report_step(self.__configuration.report_configuration, result_store)

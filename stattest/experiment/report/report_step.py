@@ -1,5 +1,9 @@
-def execute_report_step(configuration):
-    data_reader = configuration.data_reader
+from stattest.experiment.report.model import ResultReader
+from stattest.persistence.models import IResultStore
+
+
+def execute_report_step(configuration, result_store: IResultStore):
+    data_reader = ResultReader(result_store)
     # Execute before all listeners
     for listener in configuration.listeners:
         listener.before()

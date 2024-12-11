@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from stattest.persistence.sql_lite_store import CriticalValueSqLiteStore
+from stattest.persistence.db_store import CriticalValueDbStore
 
 
 store_name = "pysatl.sqlite"
@@ -12,7 +12,7 @@ store_name = "pysatl.sqlite"
 class TestCriticalValueSqLiteStoreService:
     @pytest.fixture
     def store(self):
-        store = CriticalValueSqLiteStore(name=store_name)
+        store = CriticalValueDbStore(db_url="sqlite:///" + store_name)
         store.init()
         return store
 

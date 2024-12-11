@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import Optional
 
 
@@ -15,7 +16,7 @@ class IStore:
         pass
 
 
-class IRvsStore(IStore):
+class IRvsStore(IStore, ABC):
     def insert_all_rvs(self, generator_code: str, size: int, data: [[float]]):
         """
         Insert several rvs data to store.
@@ -28,6 +29,7 @@ class IRvsStore(IStore):
         for d in data:
             self.insert_rvs(generator_code, size, d)
 
+    @abstractmethod
     def insert_rvs(self, generator_code: str, size: int, data: [float]):
         """
         Insert one rvs data to store.
@@ -50,6 +52,7 @@ class IRvsStore(IStore):
         """
         return len(self.get_rvs(generator_code, size))
 
+    @abstractmethod
     def get_rvs(self, generator_code: str, size: int) -> [[float]]:
         """
         Get rvs data from store.
@@ -61,6 +64,7 @@ class IRvsStore(IStore):
         """
         pass
 
+    @abstractmethod
     def get_rvs_stat(self) -> [(str, int, int)]:
         """
         Get rvs data statistics.
@@ -69,6 +73,7 @@ class IRvsStore(IStore):
         """
         pass
 
+    @abstractmethod
     def clear_all_rvs(self):
         """
         Clear ALL data in store.
@@ -76,7 +81,8 @@ class IRvsStore(IStore):
         pass
 
 
-class ICriticalValueStore(IStore):
+class ICriticalValueStore(IStore, ABC):
+    @abstractmethod
     def insert_critical_value(self, code: str, size: int, sl: float, value: float):
         """
         Insert critical value to store.
@@ -88,6 +94,7 @@ class ICriticalValueStore(IStore):
         """
         pass
 
+    @abstractmethod
     def insert_distribution(self, code: str, size: int, data: [float]):
         """
         Insert distribution to store.
@@ -98,6 +105,7 @@ class ICriticalValueStore(IStore):
         """
         pass
 
+    @abstractmethod
     def get_critical_value(self, code: str, size: int, sl: float) -> Optional[float]:
         """
         Get critical value from store.
@@ -107,6 +115,7 @@ class ICriticalValueStore(IStore):
         """
         pass
 
+    @abstractmethod
     def get_distribution(self, code: str, size: int) -> [float]:
         """
         Get distribution from store.
@@ -117,75 +126,36 @@ class ICriticalValueStore(IStore):
         pass
 
 
-class IPowerResultStore(IStore):
-    def insert_power(
-        self, sl: float, size: int, test_code: str, alternative_code: str, power: float
-    ):
-        """
-        Insert power to store.
-
-        :param sl: significant level
-        :param size: rvs size
-        :param test_code: test code
-        :param alternative_code:  alternative code
-        :param power: test power
-        """
-        pass
-
-    def get_power(
-        self, sl: float, size: int, test_code: str, alternative_code: str
-    ) -> Optional[float]:
-        """
-        Get power from store.
-
-        :param sl: significant level
-        :param size: rvs size
-        :param test_code: test code
-        :param alternative_code: alternative code
-
-        :return: power on None
-        """
-        pass
-
-    def get_powers(self, offset: int, limit: int):  # -> [PowerResultModel]:
-        """
-        Get several powers from store.
-
-        :param offset: offset
-        :param limit: limit
-
-        :return: list of PowerResultModel
-        """
-        pass
-
-
-class IBenchmarkResultStore(IStore):
-    def insert_benchmark(self, test_code: str, size: int, benchmark: [float]):
+class IResultStore(IStore):
+    @abstractmethod
+    def insert_result(self, result_id: str, result: any):
         """
         Insert benchmark to store.
 
-        :param test_code: test code
-        :param benchmark:  benchmark
+        :param result_id: result id
+        :param result: the result
         """
         pass
 
-    def get_benchmark(self, test_code: str, size: int) -> [float]:
+    @abstractmethod
+    def get_result(self, result_id: str) -> any:
         """
         Get benchmark from store.
 
-        :param test_code: test code
+        :param result_id: result id
 
-        :return: benchmark on None
+        :return: result or None
         """
         pass
 
-    def get_benchmarks(self, offset: int, limit: int):  # -> [PowerResultModel]:
+    @abstractmethod
+    def get_results(self, offset: int, limit: int):  # -> [PowerResultModel]:
         """
         Get several powers from store.
 
         :param offset: offset
         :param limit: limit
 
-        :return: list of PowerResultModel
+        :return: list of results
         """
         pass
