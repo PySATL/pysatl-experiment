@@ -55,7 +55,6 @@ if __name__ == "__main__":
         report_configuration,
         rvs_store=rvs_store,
         result_store=result_store,
-        critical_value_store=CriticalValueDbStore(),
     )
     experiment = Experiment(experiment_configuration)
 
