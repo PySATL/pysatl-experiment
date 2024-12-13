@@ -1,6 +1,6 @@
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.experiment.hypothesis import AbstractHypothesis
-from stattest.persistence import ICriticalValueStore, IRvsStore
+from stattest.persistence import IRvsStore
 from stattest.persistence.models import IResultStore
 from stattest.test import AbstractTestStatistic
 
@@ -107,11 +107,9 @@ class ExperimentConfiguration:
         report_configuration: ReportConfiguration,
         rvs_store: IRvsStore,
         result_store: IResultStore,
-        critical_value_store: ICriticalValueStore,
     ):
         self.alternative_configuration = alternative_configuration
         self.test_configuration = test_configuration
         self.report_configuration = report_configuration
         self.rvs_store = rvs_store
         self.result_store = result_store
-        self.critical_value_store = critical_value_store
