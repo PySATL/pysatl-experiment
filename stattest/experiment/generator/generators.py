@@ -149,14 +149,14 @@ class GumbelGenerator(AbstractRVSGenerator):
 
 class WeibullGenerator(AbstractRVSGenerator):
     def __init__(self, a=1, k=5):
-        self.l = a
+        self.a = a
         self.k = k
 
     def code(self):
-        return super()._convert_to_code(["weibull", self.l, self.k])
+        return super()._convert_to_code(["weibull", self.a, self.k])
 
     def generate(self, size):
-        return generate_weibull(size=size, a=self.l, k=self.k)
+        return generate_weibull(size=size, a=self.a, k=self.k)
 
 
 class LoConNormGenerator(AbstractRVSGenerator):

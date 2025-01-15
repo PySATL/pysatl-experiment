@@ -1,8 +1,10 @@
+from typing import List
+
 import numpy as np
 from scipy.stats import norm
 
 
-def generate_scale_con_norm(size, p=0.5, b=0) -> [float]:
+def generate_scale_con_norm(size, p=0.5, b=0) -> List[float]:
     """
      Consisting of randomly selected observations with probability 1 − p drawn from a standard
      normal distribution and with probability p drawn from a normal distribution with mean 0 and

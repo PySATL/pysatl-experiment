@@ -11,8 +11,9 @@ def __show_prog(queue: Queue, shutdown_event, total):
             prog.update(to_add)
             if prog.n >= total:
                 break
-        finally:
+        except:  # noqa: E722, S110
             pass
+    prog.update(total - prog.n)
 
 
 def start_pipeline(fill_queue, process_entries, num_workers, **kwargs):
@@ -33,10 +34,10 @@ def start_pipeline(fill_queue, process_entries, num_workers, **kwargs):
         p.start()
         processes.append(p)
 
-    progress = Process(target=__show_prog, args=(info_queue, info_shutdown_event, total_count))
-    progress.start()
+    if total_count > 0:
+        progress = Process(target=__show_prog, args=(info_queue, info_shutdown_event, total_count))
+        progress.start()
+        progress.join()
 
     for p in processes:
         p.join()
-
-    progress.join()

@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 import numpy as np
 import scipy.stats as scipy_stats
 
@@ -12,7 +14,7 @@ def calculate_critical_value(
     size: int,
     alpha: float,
     count,
-) -> (float, [float]):
+) -> Tuple[float, List[float]]:
     # Calculate critical value
     distribution = np.zeros(count)
 

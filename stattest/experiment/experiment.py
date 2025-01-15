@@ -5,7 +5,7 @@ from stattest.experiment.test.test_step import execute_test_step
 
 
 class Experiment:
-    def __init__(self, configuration: ExperimentConfiguration or str):
+    def __init__(self, configuration: ExperimentConfiguration):
         self.__configuration = configuration
 
     def execute(self):

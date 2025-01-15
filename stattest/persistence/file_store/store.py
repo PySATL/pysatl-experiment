@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import List
 
 
 def read_json(filename: str):
@@ -50,7 +51,7 @@ class InMemoryStoreService(StoreService):
 
         return self.cache[key]
 
-    def get_with_level(self, keys: [str]):
+    def get_with_level(self, keys: List[str]):
         """
         Get JSON value by keys chain in 'keys' param.
 
@@ -70,7 +71,7 @@ class InMemoryStoreService(StoreService):
 
         self.cache[key] = value
 
-    def put_with_level(self, keys: [str], value):
+    def put_with_level(self, keys: List[str], value):
         """
         Put JSON value by keys chain in 'keys' param.
 
@@ -81,7 +82,7 @@ class InMemoryStoreService(StoreService):
         key = self._create_key(keys)
         self.put(key, value)
 
-    def _create_key(self, keys: [str]):
+    def _create_key(self, keys: List[str]):
         return self.separator.join(keys)
 
 
@@ -105,7 +106,7 @@ class JsonStoreService(InMemoryStoreService):
         super().put(key, value)
         write_json(self.filename, self.cache)
 
-    def put_with_level(self, keys: [str], value):
+    def put_with_level(self, keys: List[str], value):
         """
         Put JSON value by keys chain in 'keys' param.
 

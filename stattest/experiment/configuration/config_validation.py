@@ -31,9 +31,10 @@ def _extend_validator(validator_class):
 FreqtradeValidator = _extend_validator(Draft4Validator)
 
 
-def validate_config_schema(conf: dict[str, Any], preliminagiry: bool = False) -> dict[str, Any]:
+def validate_config_schema(conf: dict[str, Any], preliminary: bool = False) -> dict[str, Any]:
     """
     Validate the configuration follow the Config Schema
+    :param preliminary: preliminary
     :param conf: Config in JSON format
     :return: Returns the config if valid, otherwise throw an exception
     """

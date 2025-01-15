@@ -1,6 +1,6 @@
 import importlib
 import json
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -29,7 +29,7 @@ class ResultDbStore(AbstractDbStore, IResultStore):
     __separator = ";"
 
     @override
-    def insert_result(self, result_id: str, result: any):
+    def insert_result(self, result_id: str, result: Any):
         """
         Insert benchmark to store.
 
@@ -48,7 +48,7 @@ class ResultDbStore(AbstractDbStore, IResultStore):
         ResultDbStore.session.commit()
 
     @override
-    def get_result(self, result_id: str) -> any:
+    def get_result(self, result_id: str) -> Any:
         """
         Get benchmark from store.
 

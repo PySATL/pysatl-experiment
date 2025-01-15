@@ -1,5 +1,7 @@
 import logging
-from multiprocessing import Event, Queue
+from multiprocessing import Queue
+from multiprocessing.synchronize import Event as EventClass
+from typing import List, Optional
 
 from stattest.experiment.configuration.configuration import AlternativeConfiguration
 from stattest.experiment.generator import AbstractRVSGenerator
@@ -26,8 +28,8 @@ def generate_rvs_data(rvs_generator: AbstractRVSGenerator, size, count):
 def process_entries(
     generate_queue: Queue,
     info_queue: Queue,
-    generate_shutdown_event: Event,
-    info_shutdown_event: Event,
+    generate_shutdown_event: EventClass,
+    info_shutdown_event: EventClass,
     kwargs,
 ):
     store = kwargs["store"]
@@ -49,8 +51,7 @@ def fill_queue(
     sizes=None,
     count=0,
     store=None,
-    rvs_generators: [AbstractRVSGenerator] = None,
-    **kwargs,
+    rvs_generators: Optional[List[AbstractRVSGenerator]] = None,
 ):
     for size in sizes:
         for generator in rvs_generators:

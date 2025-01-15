@@ -1,5 +1,7 @@
 import logging
-from multiprocessing import Event, Queue
+from multiprocessing import Queue
+from multiprocessing.synchronize import Event as EventClass
+from typing import List
 
 from tqdm import tqdm
 
@@ -15,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 def execute_tests(
     worker: TestWorker,
-    tests: [AbstractTestStatistic],
+    tests: List[AbstractTestStatistic],
     rvs_store: IRvsStore,
     result_store: IResultStore,
     thread_count: int = 0,
@@ -41,25 +43,31 @@ def execute_tests(
 def process_entries(
     generate_queue: Queue,
     info_queue: Queue,
-    generate_shutdown_event: Event,
-    info_shutdown_event: Event,
+    generate_shutdown_event: EventClass,
+    info_shutdown_event: EventClass,
     kwargs,
 ):
-    worker = kwargs["worker"]
+    worker: TestWorker = kwargs["worker"]
+    result_store: IResultStore = kwargs["result_store"]
     worker.init()
 
     while not (generate_shutdown_event.is_set() and generate_queue.empty()):
         if not generate_queue.empty():
             test, data, code, size = generate_queue.get()
-            result = worker.execute(test, data, code, size)
-            worker.save_result(result)
+            result_id = worker.build_id(test, data, code, size)
+            result = result_store.get_result(result_id)
+
+            if result is None:
+                result = worker.execute(test, data, code, size)
+                result_store.insert_result(result_id, result)
+
             info_queue.put(1)
 
     info_shutdown_event.set()
 
 
 def fill_queue(
-    queue, generate_shutdown_event, tests: [AbstractTestStatistic] = None, store=None, **kwargs
+    queue, generate_shutdown_event, tests: List[AbstractTestStatistic], store=None, **kwargs
 ):
     stat = store.get_rvs_stat()
 
@@ -73,7 +81,9 @@ def fill_queue(
     return len(stat) * len(tests)
 
 
-def execute_test_step(configuration: TestConfiguration, rvs_store: IRvsStore):
+def execute_test_step(
+    configuration: TestConfiguration, rvs_store: IRvsStore, result_store: IResultStore
+):
     threads_count = configuration.threads
     worker = configuration.worker
     tests = configuration.tests
@@ -90,7 +100,13 @@ def execute_test_step(configuration: TestConfiguration, rvs_store: IRvsStore):
         listener.before()
 
     start_pipeline(
-        fill_queue, process_entries, threads_count, worker=worker, tests=tests, store=rvs_store
+        fill_queue,
+        process_entries,
+        threads_count,
+        worker=worker,
+        tests=tests,
+        store=rvs_store,
+        result_store=result_store,
     )
 
     # Execute after all listeners

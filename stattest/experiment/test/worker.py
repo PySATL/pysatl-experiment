@@ -1,3 +1,5 @@
+from typing import List
+
 from typing_extensions import override
 
 from stattest.experiment.configuration.configuration import TestWorker, TestWorkerResult
@@ -17,7 +19,7 @@ class PowerWorkerResult(TestWorkerResult):
 
 
 class BenchmarkWorkerResult(TestWorkerResult):
-    def __init__(self, size: int, test_code: str, benchmark: [float]):
+    def __init__(self, size: int, test_code: str, benchmark: List[float]):
         self.size = size
         self.benchmark = benchmark
         self.test_code = test_code
@@ -26,8 +28,8 @@ class BenchmarkWorkerResult(TestWorkerResult):
 class PowerCalculationWorker(TestWorker):
     def __init__(
         self,
-        alpha,
-        monte_carlo_count,
+        alpha: float,
+        monte_carlo_count: int,
         cv_store: ICriticalValueStore,
         hypothesis: AbstractHypothesis,
     ):
@@ -40,12 +42,14 @@ class PowerCalculationWorker(TestWorker):
     def init(self):
         self.cv_store.init()
 
-    def build_id(self, test: AbstractTestStatistic, data: [[float]], code: str, size: int) -> str:
-        return "_".join([self.alpha, size, test.code(), code])
+    def build_id(
+        self, test: AbstractTestStatistic, data: List[List[float]], code: str, size: int
+    ) -> str:
+        return "_".join([str(self.alpha), str(size), test.code(), code])
 
     @override
     def execute(
-        self, test: AbstractTestStatistic, data: [[float]], code: str, size: int
+        self, test: AbstractTestStatistic, data: List[List[float]], code: str, size: int
     ) -> PowerWorkerResult:
         power = calculate_test_power(
             test, data, self.hypothesis, self.alpha, self.cv_store, self.monte_carlo_count

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Any, List, Optional, Tuple
 
 
 class IStore:
@@ -17,7 +17,7 @@ class IStore:
 
 
 class IRvsStore(IStore, ABC):
-    def insert_all_rvs(self, generator_code: str, size: int, data: [[float]]):
+    def insert_all_rvs(self, generator_code: str, size: int, data: List[List[float]]):
         """
         Insert several rvs data to store.
         By default use single rvs insert.
@@ -30,7 +30,7 @@ class IRvsStore(IStore, ABC):
             self.insert_rvs(generator_code, size, d)
 
     @abstractmethod
-    def insert_rvs(self, generator_code: str, size: int, data: [float]):
+    def insert_rvs(self, generator_code: str, size: int, data: List[float]):
         """
         Insert one rvs data to store.
 
@@ -53,7 +53,7 @@ class IRvsStore(IStore, ABC):
         return len(self.get_rvs(generator_code, size))
 
     @abstractmethod
-    def get_rvs(self, generator_code: str, size: int) -> [[float]]:
+    def get_rvs(self, generator_code: str, size: int) -> List[List[float]]:
         """
         Get rvs data from store.
 
@@ -65,7 +65,7 @@ class IRvsStore(IStore, ABC):
         pass
 
     @abstractmethod
-    def get_rvs_stat(self) -> [(str, int, int)]:
+    def get_rvs_stat(self) -> List[Tuple[str, int, int]]:
         """
         Get rvs data statistics.
 
@@ -95,7 +95,7 @@ class ICriticalValueStore(IStore, ABC):
         pass
 
     @abstractmethod
-    def insert_distribution(self, code: str, size: int, data: [float]):
+    def insert_distribution(self, code: str, size: int, data: List[float]):
         """
         Insert distribution to store.
 
@@ -116,7 +116,7 @@ class ICriticalValueStore(IStore, ABC):
         pass
 
     @abstractmethod
-    def get_distribution(self, code: str, size: int) -> [float]:
+    def get_distribution(self, code: str, size: int) -> Optional[List[float]]:
         """
         Get distribution from store.
 
@@ -128,7 +128,7 @@ class ICriticalValueStore(IStore, ABC):
 
 class IResultStore(IStore):
     @abstractmethod
-    def insert_result(self, result_id: str, result: any):
+    def insert_result(self, result_id: str, result: Any):
         """
         Insert benchmark to store.
 
@@ -138,7 +138,7 @@ class IResultStore(IStore):
         pass
 
     @abstractmethod
-    def get_result(self, result_id: str) -> any:
+    def get_result(self, result_id: str) -> Any:
         """
         Get benchmark from store.
 
