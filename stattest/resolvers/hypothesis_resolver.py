@@ -30,7 +30,7 @@ class HypothesisResolver(IResolver):
 
     @staticmethod
     def load_hypothesis(
-        hypothesis_name: str, path: str = None, params: dict[str, Any] = None
+        hypothesis_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
     ) -> AbstractHypothesis:
         """
         Load the custom class from config parameter
@@ -53,7 +53,7 @@ class HypothesisResolver(IResolver):
     @staticmethod
     def _load_hypothesis(
         hypothesis_name: str,
-        params: dict[str, Any],
+        params: Optional[dict[str, Any]],
         extra_dir: Optional[str] = None,
     ) -> AbstractHypothesis:
         """
@@ -81,7 +81,7 @@ class HypothesisResolver(IResolver):
 
         if not hypothesis:
             hypothesis = HypothesisResolver._load_module_object(
-                object_name=hypothesis_name, kwargs=params
+                object_name=hypothesis_name, kwargs=params, module_name=""
             )
 
         if hypothesis:

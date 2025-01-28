@@ -1,5 +1,8 @@
+from typing import Any, List
+
 from matplotlib import pyplot as plt
 
+from stattest.experiment.configuration import TestWorkerResult
 from stattest.experiment.configuration.configuration import ReportBuilder
 from stattest.experiment.test.worker import PowerWorkerResult
 from stattest.persistence.models import IResultStore
@@ -51,7 +54,10 @@ class ChartPowerReportBuilder(ReportBuilder):
     def __init__(self):
         self.data = {}
 
-    def process(self, result: PowerWorkerResult):
+    def process(self, result: TestWorkerResult):
+        if not isinstance(result, PowerWorkerResult):
+            raise TypeError(f"Type {type(result)} is not instance of PowerWorkerResult")
+
         key = ChartPowerReportBuilder.__build_path(result)
         point = (result.size, result.power)
         if key in self.data.keys():
@@ -88,7 +94,7 @@ class PdfPowerReportBuilder(ReportBuilder):
     def __init__(self):
         self.data = {}
 
-    def process(self, result: PowerWorkerResult):
+    def process(self, result: TestWorkerResult):
         pass
 
     def build(self):
@@ -100,7 +106,7 @@ class ResultReader:
         self.result_store = result_store
         self.batch_size = batch_size
         self.offset = 0
-        self.items = []
+        self.items: List[Any] = []
         self.i = 0
 
     def __iter__(self):

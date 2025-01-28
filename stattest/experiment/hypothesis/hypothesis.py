@@ -13,8 +13,8 @@ class NormalHypothesis(AbstractHypothesis):
 
 class WeibullHypothesis(AbstractHypothesis):
     def __init__(self, a=1, k=5):
-        self.l = a
+        self.a = a
         self.k = k
 
     def generate(self, size, **kwargs):
-        return weibull.generate_weibull(size, self.l, self.k)
+        return weibull.generate_weibull(size, self.a, self.k)

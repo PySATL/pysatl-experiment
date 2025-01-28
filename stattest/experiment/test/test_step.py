@@ -1,12 +1,12 @@
 import logging
-import multiprocessing
-from itertools import repeat
-from multiprocessing import freeze_support
+from multiprocessing import Queue
+from multiprocessing.synchronize import Event as EventClass
+from typing import List
 
-import numpy as np
 from tqdm import tqdm
 
 from stattest.experiment.configuration.configuration import TestConfiguration, TestWorker
+from stattest.experiment.pipeline import start_pipeline
 from stattest.persistence import IRvsStore
 from stattest.persistence.models import IResultStore
 from stattest.test import AbstractTestStatistic
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 def execute_tests(
     worker: TestWorker,
-    tests: [AbstractTestStatistic],
+    tests: List[AbstractTestStatistic],
     rvs_store: IRvsStore,
     result_store: IResultStore,
     thread_count: int = 0,
@@ -40,6 +40,47 @@ def execute_tests(
             pbar.update(1)
 
 
+def process_entries(
+    generate_queue: Queue,
+    info_queue: Queue,
+    generate_shutdown_event: EventClass,
+    info_shutdown_event: EventClass,
+    kwargs,
+):
+    worker: TestWorker = kwargs["worker"]
+    result_store: IResultStore = kwargs["result_store"]
+    worker.init()
+
+    while not (generate_shutdown_event.is_set() and generate_queue.empty()):
+        if not generate_queue.empty():
+            test, data, code, size = generate_queue.get()
+            result_id = worker.build_id(test, data, code, size)
+            result = result_store.get_result(result_id)
+
+            if result is None:
+                result = worker.execute(test, data, code, size)
+                result_store.insert_result(result_id, result)
+
+            info_queue.put(1)
+
+    info_shutdown_event.set()
+
+
+def fill_queue(
+    queue, generate_shutdown_event, tests: List[AbstractTestStatistic], store=None, **kwargs
+):
+    stat = store.get_rvs_stat()
+
+    for code, size, _ in stat:
+        data = store.get_rvs(code, size)
+        for test in tests:
+            queue.put((test, data, code, size))
+
+    generate_shutdown_event.set()
+
+    return len(stat) * len(tests)
+
+
 def execute_test_step(
     configuration: TestConfiguration, rvs_store: IRvsStore, result_store: IResultStore
 ):
@@ -58,24 +99,15 @@ def execute_test_step(
     for listener in configuration.listeners:
         listener.before()
 
-    if threads_count > 1:
-        freeze_support()  # for Windows support
-        tqdm.set_lock(multiprocessing.RLock())  # for managing output contention
-        tests_chunks = np.array_split(tests, threads_count)
-        threads_counts = list(range(threads_count))
-        with multiprocessing.Pool(threads_count) as pool:
-            pool.starmap(
-                execute_tests,
-                zip(
-                    repeat(worker),
-                    tests_chunks,
-                    repeat(rvs_store),
-                    repeat(result_store),
-                    threads_counts,
-                ),
-            )
-    else:
-        execute_tests(worker, tests, rvs_store, result_store)
+    start_pipeline(
+        fill_queue,
+        process_entries,
+        threads_count,
+        worker=worker,
+        tests=tests,
+        store=rvs_store,
+        result_store=result_store,
+    )
 
     # Execute after all listeners
     for listener in configuration.listeners:

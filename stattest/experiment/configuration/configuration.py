@@ -1,3 +1,5 @@
+from typing import List, Optional, Sequence
+
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.persistence import IRvsStore
@@ -30,16 +32,20 @@ class TestWorker:
         pass
 
     def execute(
-        self, test: AbstractTestStatistic, data: [[float]], code, size: int
+        self, test: AbstractTestStatistic, data: List[List[float]], code, size: int
     ) -> TestWorkerResult:
-        pass
+        raise NotImplementedError("Method is not implemented")
 
-    def build_id(self, test: AbstractTestStatistic, data: [[float]], code, size: int) -> str:
-        pass
+    def build_id(
+        self, test: AbstractTestStatistic, data: List[List[float]], code, size: int
+    ) -> str:
+        raise NotImplementedError("Method is not implemented")
 
 
 class ReportConfiguration:
-    def __init__(self, report_builder: ReportBuilder, listeners: [StepListener] = None):
+    def __init__(
+        self, report_builder: ReportBuilder, listeners: Optional[Sequence[StepListener]] = None
+    ):
         """
         Report configuration provides configuration for report.
 
@@ -54,15 +60,15 @@ class ReportConfiguration:
 class AlternativeConfiguration:
     def __init__(
         self,
-        alternatives: [AbstractRVSGenerator],
-        sizes: [int],
+        alternatives: Sequence[AbstractRVSGenerator],
+        sizes: Sequence[int],
         count=1_000,
         threads=4,
         skip_if_exists: bool = True,
         clear_before: bool = False,
         skip_step: bool = False,
         show_progress: bool = False,
-        listeners: [StepListener] = None,
+        listeners: Optional[Sequence[StepListener]] = None,
     ):
         if listeners is None:
             listeners = []
@@ -82,11 +88,11 @@ class TestConfiguration:
 
     def __init__(
         self,
-        tests: [AbstractTestStatistic],
+        tests: Sequence[AbstractTestStatistic],
         worker: TestWorker,
         hypothesis: AbstractHypothesis,
         threads=4,
-        listeners: [StepListener] = None,
+        listeners: Optional[Sequence[StepListener]] = None,
         skip_step: bool = False,
     ):
         if listeners is None:

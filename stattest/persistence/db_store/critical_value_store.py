@@ -1,4 +1,4 @@
-from typing import ClassVar, Optional
+from typing import ClassVar, List, Optional
 
 from sqlalchemy import Float, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -47,7 +47,7 @@ class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
         CriticalValueDbStore.session.commit()
 
     @override
-    def insert_distribution(self, code: str, size: int, data: [float]):
+    def insert_distribution(self, code: str, size: int, data: List[float]):
         data_to_insert = CriticalValueDbStore.__separator.join(map(str, data))
         CriticalValueDbStore.session.add(
             Distribution(code=code, size=int(size), data=data_to_insert)
@@ -59,9 +59,13 @@ class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
         critical_value = CriticalValueDbStore.session.get(CriticalValue, (code, size, sl))
         if critical_value is not None:
             return critical_value.value
+        else:
+            return None
 
     @override
-    def get_distribution(self, code: str, size: int) -> [float]:
+    def get_distribution(self, code: str, size: int) -> Optional[List[float]]:
         distribution = CriticalValueDbStore.session.get(Distribution, (code, size))
         if distribution is not None:
             return [float(x) for x in distribution.data.split(CriticalValueDbStore.__separator)]
+        else:
+            return None

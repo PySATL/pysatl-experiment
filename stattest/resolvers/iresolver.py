@@ -10,7 +10,7 @@ import logging
 import sys
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 from stattest.constants import Config
 from stattest.exceptions import OperationalException
@@ -47,12 +47,12 @@ class IResolver:
     initial_search_path: Optional[Path] = None
     # Optional a path (generator_path, report_generator_path)
     extra_path: Optional[str] = None
-    module_names: [str] = None
+    module_names: Optional[List[str]] = None
 
     @classmethod
     def build_search_paths(
         cls,
-        user_data_dir: Optional[str] = None,
+        user_data_dir: Optional[Path] = None,
         user_subdir: Optional[str] = None,
         extra_dirs: Optional[list[str]] = None,
     ) -> list[Path]:
@@ -166,7 +166,7 @@ class IResolver:
         *,
         object_name: str,
         add_source: bool = False,
-        kwargs: dict,
+        kwargs: Optional[dict[str, Any]],
     ) -> Optional[Any]:
         """
         Try to load object from path list.
@@ -189,7 +189,9 @@ class IResolver:
         return None
 
     @classmethod
-    def _load_modules_object(cls, *, object_name: str, kwargs: dict) -> Optional[Any]:
+    def _load_modules_object(
+        cls, *, object_name: str, kwargs: Optional[dict[str, Any]]
+    ) -> Optional[Any]:
         """
         Try to load object from path list.
         """
@@ -206,7 +208,7 @@ class IResolver:
 
     @classmethod
     def _load_module_object(
-        cls, *, object_name: str, kwargs: dict, module_name: str
+        cls, *, object_name: str, kwargs: Optional[dict[str, Any]], module_name: str
     ) -> Optional[Any]:
         """
         Try to load object from path list.
@@ -247,9 +249,8 @@ class IResolver:
         if extra_dir:
             extra_dirs.append(extra_dir)
 
-        abs_paths = cls.build_search_paths(
-            config, user_subdir=cls.user_subdir, extra_dirs=extra_dirs
-        )
+        # TODO: fix
+        abs_paths = cls.build_search_paths(None, user_subdir=cls.user_subdir, extra_dirs=extra_dirs)
 
         found_object = cls._load_object(paths=abs_paths, object_name=object_name, kwargs=kwargs)
         if found_object:

@@ -1,13 +1,11 @@
 import logging
-import multiprocessing
-from itertools import repeat
-from multiprocessing import RLock, freeze_support
-
-import numpy as np
-from tqdm import tqdm
+from multiprocessing import Queue
+from multiprocessing.synchronize import Event as EventClass
+from typing import List, Optional
 
 from stattest.experiment.configuration.configuration import AlternativeConfiguration
 from stattest.experiment.generator import AbstractRVSGenerator
+from stattest.experiment.pipeline import start_pipeline
 from stattest.persistence.models import IRvsStore
 
 
@@ -24,55 +22,48 @@ def generate_rvs_data(rvs_generator: AbstractRVSGenerator, size, count):
     :return: Data Frame, where rows is rvs
     """
 
-    return [rvs_generator.generate(size) for i in range(count)]
+    return [rvs_generator.generate(size) for _ in range(count)]
 
 
-def prepare_one_size_rvs_data(
-    rvs_generators: [AbstractRVSGenerator], size, count, store: IRvsStore, pbar=None
+def process_entries(
+    generate_queue: Queue,
+    info_queue: Queue,
+    generate_shutdown_event: EventClass,
+    info_shutdown_event: EventClass,
+    kwargs,
 ):
-    """
-    Generate data rvs and save it to store.
-
-    :param size: size of rvs
-    :param store: store to persist data
-    :param rvs_generators: generators list to generate rvs data
-    :param count: rvs count
-    """
-
-    for generator in rvs_generators:
-        code = generator.code()
-        data_count = store.get_rvs_count(code, size)
-        if data_count < count:
-            count = count - data_count
-            data = generate_rvs_data(generator, size, count)
-            store.insert_all_rvs(code, size, data)
-        if pbar:
-            pbar.update(1)
-
-
-def prepare_rvs_data(
-    rvs_generators: [AbstractRVSGenerator],
-    sizes,
-    count,
-    store: IRvsStore,
-    thread_count: int = 0,
-):
-    """
-    Generate data rvs and save it to store.
-
-    :param rvs_generators: generators list to generate rvs data
-    :param sizes: sizes of rvs
-    :param store: store to persist data
-    :param count: rvs count
-    """
-
+    store = kwargs["store"]
     store.init()
 
-    text = f"#{thread_count}"
-    pbar = tqdm(total=len(sizes) * len(rvs_generators), desc=text, position=thread_count)
+    while not (generate_shutdown_event.is_set() and generate_queue.empty()):
+        if not generate_queue.empty():
+            generator, size, count = generate_queue.get()
+            data = generate_rvs_data(generator, size, count)
+            store.insert_all_rvs(generator.code(), size, data)
+            info_queue.put(1)
+
+    info_shutdown_event.set()
+
+
+def fill_queue(
+    queue,
+    generate_shutdown_event,
+    sizes=None,
+    count=0,
+    store=None,
+    rvs_generators: Optional[List[AbstractRVSGenerator]] = None,
+):
     for size in sizes:
-        prepare_one_size_rvs_data(rvs_generators, size, count, store, pbar)
-    pbar.close()
+        for generator in rvs_generators:
+            code = generator.code()
+            data_count = store.get_rvs_count(code, size)
+            if data_count < count:
+                count = count - data_count
+                queue.put((generator, size, count))
+
+    generate_shutdown_event.set()
+
+    return len(sizes) * len(rvs_generators)
 
 
 def data_generation_step(alternative_configuration: AlternativeConfiguration, store: IRvsStore):
@@ -102,29 +93,15 @@ def data_generation_step(alternative_configuration: AlternativeConfiguration, st
     rvs_generators = alternative_configuration.alternatives
     sizes = alternative_configuration.sizes
 
-    if threads_count > 1:
-        sizes_chunks = np.array_split(sizes, threads_count)
-        count = len(sizes_chunks) * [alternative_configuration.count]
-        store_chunks = len(sizes_chunks) * [store]
-        threads_counts = list(range(threads_count))
-
-        freeze_support()  # for Windows support
-        tqdm.set_lock(RLock())  # for managing output contention
-        with multiprocessing.Pool(
-            threads_count, initializer=tqdm.set_lock, initargs=(tqdm.get_lock(),)
-        ) as pool:
-            pool.starmap(
-                prepare_rvs_data,
-                zip(
-                    repeat(rvs_generators),
-                    sizes_chunks,
-                    count,
-                    store_chunks,
-                    threads_counts,
-                ),
-            )
-    else:
-        prepare_rvs_data(rvs_generators, sizes, alternative_configuration.count, store)
+    start_pipeline(
+        fill_queue,
+        process_entries,
+        threads_count,
+        sizes=sizes,
+        count=alternative_configuration.count,
+        rvs_generators=rvs_generators,
+        store=store,
+    )
 
     # Execute after all listeners
     for listener in alternative_configuration.listeners:
