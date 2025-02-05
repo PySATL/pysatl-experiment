@@ -55,11 +55,14 @@ def fill_queue(
 ):
     for size in sizes:
         for generator in rvs_generators:
-            code = generator.code()
-            data_count = store.get_rvs_count(code, size)
-            if data_count < count:
-                count = count - data_count
-                queue.put((generator, size, count))
+            try:
+                code = generator.code()
+                data_count = store.get_rvs_count(code, size)
+                if data_count < count:
+                    count = count - data_count
+                    queue.put((generator, size, count))
+            except Exception as e:
+                logger.warning(f"Error on generation ${generator.code()} with size ${size}", e)
 
     generate_shutdown_event.set()
 

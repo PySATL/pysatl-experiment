@@ -1,7 +1,6 @@
 from typing import List, Optional, Sequence
 
 from stattest.experiment.generator import AbstractRVSGenerator
-from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.persistence import IRvsStore
 from stattest.persistence.models import IResultStore
 from stattest.test import AbstractTestStatistic
@@ -90,7 +89,6 @@ class TestConfiguration:
         self,
         tests: Sequence[AbstractTestStatistic],
         worker: TestWorker,
-        hypothesis: AbstractHypothesis,
         threads=4,
         listeners: Optional[Sequence[StepListener]] = None,
         skip_step: bool = False,
@@ -101,7 +99,6 @@ class TestConfiguration:
         self.threads = threads
         self.listeners = listeners
         self.worker = worker
-        self.hypothesis = hypothesis
         self.skip_step = skip_step
 
 
