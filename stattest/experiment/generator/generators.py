@@ -19,7 +19,7 @@ from stattest.core.distribution.student import generate_t
 from stattest.core.distribution.truncnormal import generate_truncnorm
 from stattest.core.distribution.tukey import generate_tukey
 from stattest.core.distribution.weibull import generate_weibull
-from stattest.experiment.generator import AbstractRVSGenerator
+from stattest.experiment.generator.model import AbstractRVSGenerator
 
 
 class BetaRVSGenerator(AbstractRVSGenerator):
@@ -27,9 +27,10 @@ class BetaRVSGenerator(AbstractRVSGenerator):
         super().__init__(**kwargs)
         self.a = a
         self.b = b
+
     @override
     def code(self):
-        return super()._convert_to_code(['beta', self.a, self.b])
+        return super()._convert_to_code(["beta", self.a, self.b])
 
     @override
     def generate(self, size):
@@ -44,7 +45,7 @@ class CauchyRVSGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['cauchy', self.t, self.s])
+        return super()._convert_to_code(["cauchy", self.t, self.s])
 
     @override
     def generate(self, size):
@@ -59,7 +60,7 @@ class LaplaceRVSGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['laplace', self.t, self.s])
+        return super()._convert_to_code(["laplace", self.t, self.s])
 
     @override
     def generate(self, size):
@@ -74,7 +75,7 @@ class LogisticRVSGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['logistic', self.t, self.s])
+        return super()._convert_to_code(["logistic", self.t, self.s])
 
     @override
     def generate(self, size):
@@ -88,7 +89,7 @@ class TRVSGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['student', self.df])
+        return super()._convert_to_code(["student", self.df])
 
     @override
     def generate(self, size):
@@ -102,7 +103,7 @@ class TukeyRVSGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['tukey', self.lam])
+        return super()._convert_to_code(["tukey", self.lam])
 
     @override
     def generate(self, size):
@@ -117,7 +118,7 @@ class LognormGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['lognorm', self.s, self.mu])
+        return super()._convert_to_code(["lognorm", self.s, self.mu])
 
     @override
     def generate(self, size):
@@ -132,7 +133,7 @@ class GammaGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['gamma', self.alfa, self.beta])
+        return super()._convert_to_code(["gamma", self.alfa, self.beta])
 
     @override
     def generate(self, size):
@@ -149,7 +150,7 @@ class TruncnormGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['truncnorm', self.mean, self.var, self.a, self.b])
+        return super()._convert_to_code(["truncnorm", self.mean, self.var, self.a, self.b])
 
     @override
     def generate(self, size):
@@ -163,7 +164,7 @@ class Chi2Generator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['chi2', self.df])
+        return super()._convert_to_code(["chi2", self.df])
 
     @override
     def generate(self, size):
@@ -178,7 +179,7 @@ class GumbelGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['gumbel', self.mu, self.beta])
+        return super()._convert_to_code(["gumbel", self.mu, self.beta])
 
     @override
     def generate(self, size):
@@ -186,18 +187,18 @@ class GumbelGenerator(AbstractRVSGenerator):
 
 
 class WeibullGenerator(AbstractRVSGenerator):
-    def __init__(self, l=1, k=5, **kwargs):
+    def __init__(self, a=1, k=5, **kwargs):
         super().__init__(**kwargs)
-        self.l = l
+        self.a = a
         self.k = k
 
     @override
     def code(self):
-        return super()._convert_to_code(['weibull', self.l, self.k])
+        return super()._convert_to_code(["weibull", self.a, self.k])
 
     @override
     def generate(self, size):
-        return generate_weibull(size=size, l=self.l, k=self.k)
+        return generate_weibull(size=size, a=self.a, k=self.k)
 
 
 class LoConNormGenerator(AbstractRVSGenerator):
@@ -208,7 +209,7 @@ class LoConNormGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['lo_con_norm', self.p, self.a])
+        return super()._convert_to_code(["lo_con_norm", self.p, self.a])
 
     @override
     def generate(self, size):
@@ -223,7 +224,7 @@ class ScConNormGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['scale_con_norm', self.p, self.b])
+        return super()._convert_to_code(["scale_con_norm", self.p, self.b])
 
     @override
     def generate(self, size):
@@ -239,11 +240,12 @@ class MixConNormGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['mix_con_norm', self.p, self.a, self.b])
+        return super()._convert_to_code(["mix_con_norm", self.p, self.a, self.b])
 
     @override
     def generate(self, size):
         return generate_mix_con_norm(size=size, p=self.p, a=self.a, b=self.b)
+
 
 class ExponentialGenerator(AbstractRVSGenerator):
     def __init__(self, lam=0.5, **kwargs):
@@ -252,7 +254,7 @@ class ExponentialGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['exponential', self.lam])
+        return super()._convert_to_code(["exponential", self.lam])
 
     @override
     def generate(self, size):
@@ -267,11 +269,12 @@ class InvGaussGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['invgauss', self.mu, self.lam])
+        return super()._convert_to_code(["invgauss", self.mu, self.lam])
 
     @override
     def generate(self, size):
         return generate_invgauss(size=size, mu=self.mu, lam=self.lam)
+
 
 class RiceGenerator(AbstractRVSGenerator):
     def __init__(self, nu=0, sigma=1, **kwargs):
@@ -281,11 +284,12 @@ class RiceGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['rice', self.nu, self.sigma])
+        return super()._convert_to_code(["rice", self.nu, self.sigma])
 
     @override
     def generate(self, size):
         return generate_rice(size=size, nu=self.nu, sigma=self.sigma)
+
 
 class GompertzGenerator(AbstractRVSGenerator):
     def __init__(self, eta=0, b=1, **kwargs):
@@ -295,7 +299,7 @@ class GompertzGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
-        return super()._convert_to_code(['gompertz', self.eta, self.b])
+        return super()._convert_to_code(["gompertz", self.eta, self.b])
 
     @override
     def generate(self, size):
