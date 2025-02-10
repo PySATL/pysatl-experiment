@@ -16,14 +16,20 @@ def __show_prog(queue: Queue, shutdown_event, total):
     prog.update(total - prog.n)
 
 
-def start_pipeline(fill_queue, process_entries, num_workers, **kwargs):
+def start_pipeline(
+    fill_queue, process_entries, num_workers, total_count=0, queue_size=2000, **kwargs
+):
     queue_manager = Manager()
-    queue = queue_manager.Queue(maxsize=2000)
+    queue = queue_manager.Queue(maxsize=queue_size)
     info_queue = queue_manager.Queue(maxsize=2000)
     shutdown_event = Event()
     info_shutdown_event = Event()
 
-    total_count = fill_queue(queue, shutdown_event, **kwargs)
+    process_fill_queue = Process(
+        target=fill_queue,
+        args=(queue, shutdown_event, kwargs),
+    )
+    process_fill_queue.start()
 
     processes = []
     for p in range(num_workers):
@@ -39,5 +45,6 @@ def start_pipeline(fill_queue, process_entries, num_workers, **kwargs):
         progress.start()
         progress.join()
 
+    process_fill_queue.join()
     for p in processes:
         p.join()

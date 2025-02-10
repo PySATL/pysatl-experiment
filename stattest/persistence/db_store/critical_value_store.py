@@ -31,8 +31,8 @@ class CriticalValue(ModelBase):
 
     code: Mapped[str] = mapped_column(String(50), primary_key=True)  # type: ignore
     size: Mapped[int] = mapped_column(Integer, primary_key=True)  # type: ignore
-    sl: Mapped[float] = mapped_column(Integer, primary_key=True)  # type: ignore
-    value: Mapped[float] = mapped_column(Float(), nullable=False)  # type: ignore
+    sl: Mapped[float] = mapped_column(Float, primary_key=True)  # type: ignore
+    value: Mapped[float] = mapped_column(Float, nullable=False)  # type: ignore
 
 
 class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
