@@ -34,6 +34,8 @@ from tests.normality.abstract_normality_test_case import AbstractNormalityTestCa
             ],
             0.0009059856,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 0.0005867649270227973),  # Negative values test
     ],
 )
 class TestCaseCoinNormalityTest(AbstractNormalityTestCase):
