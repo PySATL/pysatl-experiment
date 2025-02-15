@@ -34,6 +34,8 @@ from tests.normality.abstract_normality_test_case import AbstractNormalityTestCa
             ],
             0.4059704,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 0.6322923050038723),  # Negative values test
     ],
 )
 class TestCaseRobustJarqueBeraNormalityTest(AbstractNormalityTestCase):
