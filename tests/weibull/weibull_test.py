@@ -35,6 +35,8 @@ from stattest.test import (
             ],
             0.686501978410317,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 3.2388433290344802),  # Negative values test
     ],
 )
 def test_ks_weibull_test(data, result):
@@ -61,6 +63,8 @@ def test_ks_weibull_test(data, result):
             ],
             0.686501978410317,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 3.2388433290344802),  # Negative values test
     ],
 )
 @pytest.mark.skip(reason="no way of currently testing this")
@@ -88,6 +92,8 @@ def test_ad_weibull_test(data, result):
             ],
             1.1845,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 3.2388433290344802),  # Negative values test
     ],
 )
 def test_los_weibull_test(data, result):
@@ -114,6 +120,8 @@ def test_los_weibull_test(data, result):
             ],
             0.67173,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 3.2388433290344802),  # Negative values test
     ],
 )
 def test_msf_weibull_test(data, result):
@@ -140,6 +148,8 @@ def test_msf_weibull_test(data, result):
             ],
             1.8927,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 3.2388433290344802),  # Negative values test
     ],
 )
 def test_ok_weibull_test(data, result):
@@ -166,6 +176,8 @@ def test_ok_weibull_test(data, result):
             ],
             0.84064,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 3.2388433290344802),  # Negative values test
     ],
 )
 def test_rejg_weibull_test(data, result):
@@ -192,6 +204,8 @@ def test_rejg_weibull_test(data, result):
             ],
             8.4755,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 3.2388433290344802),  # Negative values test
     ],
 )
 def test_rsb_weibull_test(data, result):
@@ -218,6 +232,8 @@ def test_rsb_weibull_test(data, result):
             ],
             1.0644,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 3.2388433290344802),  # Negative values test
     ],
 )
 def test_sb_weibull_test(data, result):
@@ -244,6 +260,8 @@ def test_sb_weibull_test(data, result):
             ],
             0.78178,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 3.2388433290344802),  # Negative values test
     ],
 )
 def test_spp_weibull_test(data, result):
@@ -270,6 +288,8 @@ def test_spp_weibull_test(data, result):
             ],
             1.1202,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 3.2388433290344802),  # Negative values test
     ],
 )
 def test_st1_weibull_test(data, result):
@@ -296,6 +316,8 @@ def test_st1_weibull_test(data, result):
             ],
             3.218,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 3.2388433290344802),  # Negative values test
     ],
 )
 def test_st2_weibull_test(data, result):
@@ -322,8 +344,10 @@ def test_st2_weibull_test(data, result):
             ],
             0.71566,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 3.2388433290344802),  # Negative values test
     ],
 )
-def test_ts_weibull_test(data, result):
+def test_ts_weibull_test(data, result):  # TODO: should move it to abstract class??
     statistic = TSWeibullTestStatistic().execute_statistic(data)
     assert result == pytest.approx(statistic, 0.01)
