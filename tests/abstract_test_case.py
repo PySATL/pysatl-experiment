@@ -1,4 +1,4 @@
 class AbstractTestCase:
     @staticmethod
-    def test_execute_statistic(data, result, statistic_test):  # TODO: add generics?
+    def test_execute_statistic(data, result, statistic_test):
         raise NotImplementedError("Not implemented")
