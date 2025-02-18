@@ -751,6 +751,7 @@ class LT3Statistic(LTStatistic):
         return super().execute_statistic(rvs, m, a, self.code())
 
 
+# TODO: Check it. Throws exception on weibull test
 class CabanaQuirozStatistic(AbstractWeibullTestStatistic):
     # Test statistic of Cabana and Quiroz
 

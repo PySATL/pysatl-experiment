@@ -1,7 +1,7 @@
 import logging
 from multiprocessing import Queue
 from multiprocessing.synchronize import Event as EventClass
-from typing import List
+from typing import List, Sequence
 
 from tqdm import tqdm
 
@@ -66,9 +66,11 @@ def process_entries(
     info_shutdown_event.set()
 
 
-def fill_queue(
-    queue, generate_shutdown_event, tests: List[AbstractTestStatistic], store=None, **kwargs
-):
+def fill_queue(queue, generate_shutdown_event, kwargs):
+    tests: List[AbstractTestStatistic] = kwargs["tests"]
+    store: IRvsStore = kwargs["store"]
+
+    store.init()
     stat = store.get_rvs_stat()
 
     for code, size, _ in stat:
@@ -78,6 +80,12 @@ def fill_queue(
 
     generate_shutdown_event.set()
 
+    return len(stat) * len(tests)
+
+
+def get_total_count(tests: Sequence[AbstractTestStatistic], store: IRvsStore):
+    store.init()
+    stat = store.get_rvs_stat()
     return len(stat) * len(tests)
 
 
@@ -103,6 +111,8 @@ def execute_test_step(
         fill_queue,
         process_entries,
         threads_count,
+        total_count=get_total_count(tests, rvs_store),
+        queue_size=10,
         worker=worker,
         tests=tests,
         store=rvs_store,
