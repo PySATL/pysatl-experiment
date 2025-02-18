@@ -7,6 +7,10 @@ from typing_extensions import override
 
 from stattest.core.distribution import expon
 from stattest.test.goodness_of_fit import AbstractGoodnessOfFitTestStatistic
+from stattest.test.graph_goodness_of_fit import (
+    GraphEdgesNumberTestStatistic,
+    GraphMaxDegreeTestStatistic,
+)
 
 
 class AbstractExponentialityTestStatistic(AbstractGoodnessOfFitTestStatistic, ABC):
@@ -811,6 +815,24 @@ class HG2TestExp(AbstractExponentialityTestStatistic):
         hg = (n ** (-1)) * np.sum((rvs - b) ** 2)
 
         return hg
+
+
+class GraphEdgesNumberExpTest(AbstractExponentialityTestStatistic, GraphEdgesNumberTestStatistic):
+    @staticmethod
+    @override
+    def code():
+        super_class = AbstractExponentialityTestStatistic
+        parent_code = super(super_class, super_class).code()
+        return f"EdgesNumber_{parent_code}"
+
+
+class GraphMaxDegreeExpTest(AbstractExponentialityTestStatistic, GraphMaxDegreeTestStatistic):
+    @staticmethod
+    @override
+    def code():
+        super_class = AbstractExponentialityTestStatistic
+        parent_code = super(super_class, super_class).code()
+        return f"MaxDegree_{parent_code}"
 
 
 # TODO: check all mistype warnings

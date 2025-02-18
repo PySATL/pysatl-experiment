@@ -8,6 +8,10 @@ from typing_extensions import override
 
 from stattest.test.common import ADTestStatistic, KSTestStatistic, LillieforsTest
 from stattest.test.goodness_of_fit import AbstractGoodnessOfFitTestStatistic
+from stattest.test.graph_goodness_of_fit import (
+    GraphEdgesNumberTestStatistic,
+    GraphMaxDegreeTestStatistic,
+)
 
 
 class AbstractNormalityTestStatistic(AbstractGoodnessOfFitTestStatistic, ABC):
@@ -275,8 +279,7 @@ class SkewNormalityTest(AbstractNormalityTestStatistic):
         n = len(a)
         if n < 8:
             raise ValueError(
-                "skew test is not valid with less than 8 samples; %i samples"
-                " were given." % int(n)
+                "skew test is not valid with less than 8 samples; %i samples were given." % int(n)
             )
         b2 = scipy_stats.skew(a, axis=0)
         y = b2 * math.sqrt(((n + 1) * (n + 3)) / (6.0 * (n - 2)))
@@ -2173,6 +2176,24 @@ class DesgagneLafayeNormalityTest(AbstractNormalityTestStatistic):
             )
 
             return rn  # Here is the test statistic value
+
+
+class GraphEdgesNumberNormTest(AbstractNormalityTestStatistic, GraphEdgesNumberTestStatistic):
+    @staticmethod
+    @override
+    def code():
+        super_class = AbstractNormalityTestStatistic
+        parent_code = super(super_class, super_class).code()
+        return f"EdgesNumber_{parent_code}"
+
+
+class GraphMaxDegreeNormTest(AbstractNormalityTestStatistic, GraphMaxDegreeTestStatistic):
+    @staticmethod
+    @override
+    def code():
+        super_class = AbstractNormalityTestStatistic
+        parent_code = super(super_class, super_class).code()
+        return f"MaxDegree_{parent_code}"
 
 
 # TODO: fix all weak warnings
