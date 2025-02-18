@@ -822,9 +822,8 @@ class GraphEdgesNumberExpTest(AbstractExponentialityTestStatistic, GraphEdgesNum
     @override
     def code():
         return (
-            "EdgesNumber"
-            + "_"
-            + super(AbstractExponentialityTestStatistic, AbstractExponentialityTestStatistic).code()
+            f"EdgesNumber_"
+            f"{super(AbstractExponentialityTestStatistic, AbstractExponentialityTestStatistic).code()}"
         )
 
 
@@ -833,9 +832,8 @@ class GraphMaxDegreeExpTest(AbstractExponentialityTestStatistic, GraphMaxDegreeT
     @override
     def code():
         return (
-            "MaxDegree"
-            + "_"
-            + super(AbstractExponentialityTestStatistic, AbstractExponentialityTestStatistic).code()
+            f"MaxDegree_"
+            f"{super(AbstractExponentialityTestStatistic, AbstractExponentialityTestStatistic).code()}"
         )
 
 

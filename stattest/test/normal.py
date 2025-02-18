@@ -2183,9 +2183,8 @@ class GraphEdgesNumberNormTest(AbstractNormalityTestStatistic, GraphEdgesNumberT
     @override
     def code():
         return (
-            "EdgesNumber"
-            + "_"
-            + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
+            f"EdgesNumber_"
+            f"{super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()}"
         )
 
 
@@ -2194,9 +2193,8 @@ class GraphMaxDegreeNormTest(AbstractNormalityTestStatistic, GraphMaxDegreeTestS
     @override
     def code():
         return (
-            "MaxDegree"
-            + "_"
-            + super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()
+            f"MaxDegree_"
+            f"{super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()}"
         )
 
 
