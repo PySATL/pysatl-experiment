@@ -821,20 +821,18 @@ class GraphEdgesNumberExpTest(AbstractExponentialityTestStatistic, GraphEdgesNum
     @staticmethod
     @override
     def code():
-        return (
-            f"EdgesNumber_"
-            f"{super(AbstractExponentialityTestStatistic, AbstractExponentialityTestStatistic).code()}"
-        )
+        super_class = AbstractExponentialityTestStatistic
+        parent_code = super(super_class, super_class).code()
+        return f"EdgesNumber_{parent_code}"
 
 
 class GraphMaxDegreeExpTest(AbstractExponentialityTestStatistic, GraphMaxDegreeTestStatistic):
     @staticmethod
     @override
     def code():
-        return (
-            f"MaxDegree_"
-            f"{super(AbstractExponentialityTestStatistic, AbstractExponentialityTestStatistic).code()}"
-        )
+        super_class = AbstractExponentialityTestStatistic
+        parent_code = super(super_class, super_class).code()
+        return f"MaxDegree_{parent_code}"
 
 
 # TODO: check all mistype warnings

@@ -2182,20 +2182,18 @@ class GraphEdgesNumberNormTest(AbstractNormalityTestStatistic, GraphEdgesNumberT
     @staticmethod
     @override
     def code():
-        return (
-            f"EdgesNumber_"
-            f"{super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()}"
-        )
+        super_class = AbstractNormalityTestStatistic
+        parent_code = super(super_class, super_class).code()
+        return f"EdgesNumber_{parent_code}"
 
 
 class GraphMaxDegreeNormTest(AbstractNormalityTestStatistic, GraphMaxDegreeTestStatistic):
     @staticmethod
     @override
     def code():
-        return (
-            f"MaxDegree_"
-            f"{super(AbstractNormalityTestStatistic, AbstractNormalityTestStatistic).code()}"
-        )
+        super_class = AbstractNormalityTestStatistic
+        parent_code = super(super_class, super_class).code()
+        return f"MaxDegree_{parent_code}"
 
 
 # TODO: fix all weak warnings
