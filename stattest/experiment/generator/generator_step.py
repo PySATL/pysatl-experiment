@@ -48,22 +48,27 @@ def process_entries(
 def fill_queue(
     queue,
     generate_shutdown_event,
-    sizes=None,
-    count=0,
-    store=None,
-    rvs_generators: Optional[List[AbstractRVSGenerator]] = None,
+    kwargs,
 ):
+    sizes = kwargs["sizes"]
+    count = kwargs["count"]
+    store: IRvsStore = kwargs["store"]
+    rvs_generators: Optional[List[AbstractRVSGenerator]] = kwargs["rvs_generators"]
+
+    store.init()
+
     for size in sizes:
         for generator in rvs_generators:
-            code = generator.code()
-            data_count = store.get_rvs_count(code, size)
-            if data_count < count:
-                count = count - data_count
-                queue.put((generator, size, count))
+            try:
+                code = generator.code()
+                data_count = store.get_rvs_count(code, size)
+                if data_count < count:
+                    count = count - data_count
+                    queue.put((generator, size, count))
+            except Exception as e:
+                logger.warning(f"Error on generation ${generator.code()} with size ${size}", e)
 
     generate_shutdown_event.set()
-
-    return len(sizes) * len(rvs_generators)
 
 
 def data_generation_step(alternative_configuration: AlternativeConfiguration, store: IRvsStore):
@@ -97,6 +102,8 @@ def data_generation_step(alternative_configuration: AlternativeConfiguration, st
         fill_queue,
         process_entries,
         threads_count,
+        total_count=len(sizes) * len(rvs_generators),
+        queue_size=2000,
         sizes=sizes,
         count=alternative_configuration.count,
         rvs_generators=rvs_generators,

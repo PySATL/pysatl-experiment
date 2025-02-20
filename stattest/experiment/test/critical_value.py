@@ -3,7 +3,7 @@ from typing import List, Tuple
 import numpy as np
 import scipy.stats as scipy_stats
 
-from stattest.experiment.configuration.configuration import AbstractHypothesis
+from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.persistence.models import ICriticalValueStore
 from stattest.test import AbstractTestStatistic
 
