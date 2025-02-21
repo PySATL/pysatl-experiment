@@ -4,14 +4,16 @@ from stattest.test.exponent import EPSTestExp
 from tests.exponentiality.abstract_exponentiality_test_case import AbstractExponentialityTestCase
 
 
-@pytest.mark.parametrize(  # TODO: actual test (7; 10)
+@pytest.mark.parametrize(
     ("data", "result"),
     [
-        ([1, 2, 3, 4, 5, 6, 7], 0.17377394345044517),
-        ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0.16232061118184815),
+        ([1, 2, 3, 4, 5, 6, 7], 1.9805506001800177),
+        ([i for i in range(1, 10)], 2.8402544224554234),
+        ([i for i in range(1, 50)], 22.49300240015063),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 0.16232061118184815),  # Negative values test
     ],
 )
-@pytest.mark.skip(reason="fix test and check")
 class TestCaseEPSExponentialityTest(AbstractExponentialityTestCase):
     @pytest.fixture
     def statistic_test(self):
