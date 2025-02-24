@@ -7,10 +7,7 @@ from stattest.experiment.configuration.configuration import (
     ReportConfiguration,
     TestConfiguration,
 )
-from stattest.experiment.generator.generators import (
-    ExponentialGenerator,
-    GammaGenerator,
-)
+from stattest.experiment.generator.generators import ExponentialGenerator, GammaGenerator
 from stattest.experiment.hypothesis import NormalHypothesis
 from stattest.experiment.listener.listeners import TimeEstimationListener
 from stattest.experiment.report.model import PdfPowerReportBuilder
