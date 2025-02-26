@@ -1,6 +1,7 @@
-from typing import ClassVar, List, Optional
+from typing import ClassVar, List, Optional, Tuple, Union
 
 from sqlalchemy import Float, Integer, String
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Mapped, mapped_column
 from typing_extensions import override
 
@@ -32,7 +33,8 @@ class CriticalValue(ModelBase):
     code: Mapped[str] = mapped_column(String(50), primary_key=True)  # type: ignore
     size: Mapped[int] = mapped_column(Integer, primary_key=True)  # type: ignore
     sl: Mapped[float] = mapped_column(Float, primary_key=True)  # type: ignore
-    value: Mapped[float] = mapped_column(Float, nullable=False)  # type: ignore
+    lower_value: Mapped[float] = mapped_column(Float, nullable=True)
+    upper_value: Mapped[float] = mapped_column(Float, nullable=True)
 
 
 class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
@@ -40,25 +42,49 @@ class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
     __separator = ";"
 
     @override
-    def insert_critical_value(self, code: str, size: int, sl: float, value: float):
-        CriticalValueDbStore.session.add(
-            CriticalValue(code=code, sl=sl, size=int(size), value=value)
-        )
-        CriticalValueDbStore.session.commit()
+    def insert_critical_value(
+        self, code: str, size: int, sl: float, value: Union[float, Tuple[float, float]]
+    ):
+        if isinstance(value, tuple):
+            lower_value, upper_value = value
+        else:
+            lower_value, upper_value = value, None
+
+        try:
+            CriticalValueDbStore.session.add(
+                CriticalValue(
+                    code=code,
+                    size=int(size),
+                    sl=sl,
+                    lower_value=lower_value,
+                    upper_value=upper_value,
+                )
+            )
+            CriticalValueDbStore.session.commit()
+        except IntegrityError:
+            CriticalValueDbStore.session.rollback()
 
     @override
     def insert_distribution(self, code: str, size: int, data: List[float]):
         data_to_insert = CriticalValueDbStore.__separator.join(map(str, data))
-        CriticalValueDbStore.session.add(
-            Distribution(code=code, size=int(size), data=data_to_insert)
-        )
-        CriticalValueDbStore.session.commit()
+        try:
+            CriticalValueDbStore.session.add(
+                Distribution(code=code, size=int(size), data=data_to_insert)
+            )
+            CriticalValueDbStore.session.commit()
+        except IntegrityError:
+            CriticalValueDbStore.session.rollback()
 
     @override
-    def get_critical_value(self, code: str, size: int, sl: float) -> Optional[float]:
+    def get_critical_value(
+        self, code: str, size: int, sl: float
+    ) -> Optional[Union[float, Tuple[float, float]]]:
         critical_value = CriticalValueDbStore.session.get(CriticalValue, (code, size, sl))
         if critical_value is not None:
-            return critical_value.value
+            if critical_value.upper_value is not None:
+                return critical_value.lower_value, critical_value.upper_value
+            else:
+                return critical_value.lower_value
         else:
             return None
 

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Union
 
 
 class IStore:
@@ -83,7 +83,9 @@ class IRvsStore(IStore, ABC):
 
 class ICriticalValueStore(IStore, ABC):
     @abstractmethod
-    def insert_critical_value(self, code: str, size: int, sl: float, value: float):
+    def insert_critical_value(
+        self, code: str, size: int, sl: float, value: Union[float, Tuple[float, float]]
+    ):
         """
         Insert critical value to store.
 
@@ -106,7 +108,9 @@ class ICriticalValueStore(IStore, ABC):
         pass
 
     @abstractmethod
-    def get_critical_value(self, code: str, size: int, sl: float) -> Optional[float]:
+    def get_critical_value(
+        self, code: str, size: int, sl: float
+    ) -> Optional[Union[float, Tuple[float, float]]]:
         """
         Get critical value from store.
         :param code: test code

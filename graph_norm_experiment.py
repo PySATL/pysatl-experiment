@@ -1,5 +1,7 @@
 import multiprocessing
 
+from numpy import random as rd
+
 from stattest.experiment import Experiment
 from stattest.experiment.configuration.configuration import (
     AlternativeConfiguration,
@@ -7,16 +9,21 @@ from stattest.experiment.configuration.configuration import (
     ReportConfiguration,
     TestConfiguration,
 )
-from stattest.experiment.generator.generators import ExponentialGenerator, GammaGenerator
+from stattest.experiment.generator.generators import (
+    Chi2Generator,
+    ExponentialGenerator,
+    GammaGenerator,
+    LaplaceRVSGenerator,
+    WeibullGenerator,
+)
 from stattest.experiment.hypothesis import NormalHypothesis
 from stattest.experiment.listener.listeners import TimeEstimationListener
 from stattest.experiment.report.model import PdfPowerReportBuilder
 from stattest.experiment.test.worker import PowerCalculationWorker
 from stattest.persistence.db_store import CriticalValueDbStore, RvsDbStore
 from stattest.persistence.db_store.result_store import ResultDbStore
+from stattest.test import KSNormalityTest
 from stattest.test.normal import (
-    CVMNormalityTest,
-    DAPNormalityTest,
     GraphEdgesNumberNormTest,
     GraphMaxDegreeNormTest,
 )
@@ -29,12 +36,12 @@ if __name__ == "__main__":
     test_data_tel = TimeEstimationListener()
     generate_data_tel = TimeEstimationListener()
 
-    db_url = "sqlite:///graph_norm_experiment4.sqlite"
+    db_url = "sqlite:///graph_norm_experiment_two_sided.sqlite"
     listeners = [generate_data_tel]
-    hypothesis = NormalHypothesis()
+    hypothesis = NormalHypothesis(rd.random() * 10, rd.random() * 30)
     test_threads = multiprocessing.cpu_count()
     generation_threads = multiprocessing.cpu_count()
-    sizes = [10, 20, 50, 100, 200, 300]
+    sizes = [10, 20, 30, 40, 50]
 
     critical_value_store = CriticalValueDbStore(db_url=db_url)
     rvs_store = RvsDbStore(db_url=db_url)
@@ -42,26 +49,31 @@ if __name__ == "__main__":
 
     alternatives = [
         GammaGenerator(alfa=1, beta=2),
-        GammaGenerator(alfa=2, beta=2),
-        GammaGenerator(alfa=3, beta=2),
         GammaGenerator(alfa=0.5, beta=1),
-        ExponentialGenerator(),
-        ExponentialGenerator(1),
         ExponentialGenerator(2),
+        WeibullGenerator(a=1, k=2),
+        Chi2Generator(df=5),
+        LaplaceRVSGenerator(t=0, s=1),
     ]
+
+    edges_two_tailed = GraphEdgesNumberNormTest()
+    edges_two_tailed.two_tailed = True
+
+    max_degree_two_tailed = GraphMaxDegreeNormTest()
+    max_degree_two_tailed.two_tailed = True
+
     tests = [
-        GraphEdgesNumberNormTest(),
-        GraphMaxDegreeNormTest(),
-        CVMNormalityTest(),
-        DAPNormalityTest(),
+        edges_two_tailed,
+        max_degree_two_tailed,
+        KSNormalityTest(),
     ]
 
     alternatives_configuration = AlternativeConfiguration(
-        alternatives, sizes, count=1_00, threads=generation_threads, listeners=listeners
+        alternatives, sizes, count=1_000, threads=generation_threads, listeners=listeners
     )
 
     power_calculation_worker = PowerCalculationWorker(
-        0.05, 100_000, critical_value_store, hypothesis=hypothesis
+        0.05, 1_000_000, critical_value_store, hypothesis=hypothesis
     )
     test_configuration = TestConfiguration(
         tests,

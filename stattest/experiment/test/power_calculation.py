@@ -14,10 +14,17 @@ def execute_test(
     store: ICriticalValueStore,
     count: int,
 ):
-    x_cr = get_or_calculate_critical_value(test, hypothesis, len(rvs), alpha, store, count)
+    critical_values = get_or_calculate_critical_value(
+        test, hypothesis, len(rvs), alpha, store, count
+    )
+
     statistic = test.execute_statistic(rvs)
 
-    return False if statistic > x_cr else True
+    if isinstance(critical_values, tuple):
+        lower_critical, upper_critical = critical_values
+        return not (lower_critical > statistic or statistic > upper_critical)
+    else:
+        return not (statistic > critical_values)
 
 
 def calculate_test_power(
@@ -45,4 +52,5 @@ def calculate_test_power(
         x = execute_test(test, hypothesis, rvs, alpha, store, count)
         if x is False:
             k = k + 1
+
     return k / len(data)

@@ -1,6 +1,6 @@
 import csv
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple, Union
 
 from typing_extensions import override
 
@@ -28,7 +28,9 @@ class CriticalValueFileStore(ICriticalValueStore):
         self.cache = mem_cache
 
     @override
-    def insert_critical_value(self, code: str, size: int, sl: float, value: float):
+    def insert_critical_value(
+        self, code: str, size: int, sl: float, value: Union[float, Tuple[float, float]]
+    ):
         """
         Insert critical value to store.
 
@@ -56,7 +58,9 @@ class CriticalValueFileStore(ICriticalValueStore):
             writer = csv.writer(csvfile, delimiter=self.csv_delimiter, quoting=csv.QUOTE_NONNUMERIC)
             writer.writerow(data)
 
-    def get_critical_value(self, code: str, size: int, sl: float) -> Optional[float]:
+    def get_critical_value(
+        self, code: str, size: int, sl: float
+    ) -> Optional[float, Union[Tuple[float, float]]]:
         """
         Get critical value from store.
         :param code: test code
