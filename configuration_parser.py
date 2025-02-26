@@ -1,6 +1,7 @@
 import json
 import traceback
 from json import JSONDecodeError
+from pathlib import Path
 
 from stattest.experiment import Experiment
 from stattest.experiment.configuration.configuration import (
@@ -57,7 +58,7 @@ if __name__ == "__main__":
         # TODO: tested only on Weibull
 
         # Configuring experiment
-        with open("config_examples/weibull_experiment.json") as configFile:
+        with Path("config_examples/weibull_experiment.json").open() as configFile:
             configData = json.load(configFile)
 
         alterConfigData = configData["alternative_configuration"]
@@ -79,7 +80,8 @@ if __name__ == "__main__":
         testsWorkerConfigData = testsConfigData["worker"]
         testsWorkerParamsConfigData = testsWorkerConfigData["params"]
 
-        critical_value_store = _find_class(testsWorkerParamsConfigData["critical_value_store"]["name"])(
+        critical_value_store = _find_class(
+            testsWorkerParamsConfigData["critical_value_store"]["name"])(
             db_url=testsWorkerParamsConfigData["critical_value_store"]["params"]["db_url"])
         hypothesis = _find_class(testsWorkerConfigData["params"]["hypothesis"])
 
@@ -99,13 +101,15 @@ if __name__ == "__main__":
         reportData = configData["report_configuration"]
         report_builder = _find_class(reportData["report_builder"])
         report_listeners = _find_list_of_classes(reportData["listeners"])
-        report_configuration = ReportConfiguration(report_builder=report_builder, listeners=report_listeners)
+        report_configuration = ReportConfiguration(report_builder=report_builder
+                                                   , listeners=report_listeners)
 
         rvsStoreData = configData["rvs_store"]
         rvs_store = _find_class(rvsStoreData["name"])(db_url=rvsStoreData["params"]["db_url"])
 
         resultStoreData = configData["result_store"]
-        result_store = _find_class(resultStoreData["name"])(db_url=resultStoreData["params"]["db_url"])
+        result_store = (_find_class(resultStoreData["name"])
+                        (db_url=resultStoreData["params"]["db_url"]))
 
         experiment_configuration = ExperimentConfiguration(
             alternative_configuration=alternative_configuration,
@@ -120,11 +124,9 @@ if __name__ == "__main__":
         experiment.execute()
 
         print("Success")
-    except (JSONDecodeError, TypeError, IOError, FileExistsError) as e:
+    except (JSONDecodeError, TypeError, OSError, FileExistsError):
         print("Error with configuration file")
-        traceback.print_exc()
-    except ():
-        print("Experiment execution error")
+        traceback.print_exc()  # TODO: remove later
     finally:
         print("Ending work")
 
