@@ -1,5 +1,5 @@
 {
-  "alternatives_configuration": {
+  "alternative_configuration": {
     "alternatives": [
       {
         "name": "ExponentialGenerator",
@@ -218,28 +218,28 @@
   },
   "test_configuration": {
     "tests": [
-      "KSWeibullTest()",
-      "MinToshiyukiWeibullTestStatistic()",
-      "Chi2PearsonWiebullTest()",
-      "CrammerVonMisesWeibullTest()",
-      "ST2WeibullTestStatistic()",
-      "ST1WeibullTestStatistic()",
-      "TSWeibullTestStatistic()",
-      "LOSWeibullTestStatistic()",
-      "MSFWeibullTestStatistic()",
-      "OKWeibullTestStatistic()",
-      "SBWeibullTestStatistic()",
-      "RSBWeibullTestStatistic()",
-      "LT3Statistic()",
-      "LT2Statistic()",
-      "LTStatistic()",
-      "KullbackLeiblerStatistic()",
-      "LiaoShimokawaTest()",
-      "WatsonTest()",
-      "MDTest()",
-      "REJGWeibullTestStatistic()",
-      "ADWeibullTest()",
-      "LillieforsWiebullTest()"
+      "KSWeibullTest",
+      "MinToshiyukiWeibullTestStatistic",
+      "Chi2PearsonWiebullTest",
+      "CrammerVonMisesWeibullTest",
+      "ST2WeibullTestStatistic",
+      "ST1WeibullTestStatistic",
+      "TSWeibullTestStatistic",
+      "LOSWeibullTestStatistic",
+      "MSFWeibullTestStatistic",
+      "OKWeibullTestStatistic",
+      "SBWeibullTestStatistic",
+      "RSBWeibullTestStatistic",
+      "LT3Statistic",
+      "LT2Statistic",
+      "LTStatistic",
+      "KullbackLeiblerStatistic",
+      "LiaoShimokawaTest",
+      "WatsonTest",
+      "MDTest",
+      "REJGWeibullTestStatistic",
+      "ADWeibullTest",
+      "LillieforsWiebullTest"
     ],
     "threads": 8,
     "worker":
@@ -248,7 +248,12 @@
         "params": {
           "alpha": 0.05,
           "monte_carlo_count": 100000,
-          "critical_value_store": "CriticalValueDbStore",
+          "critical_value_store": {
+            "name": "CriticalValueDbStore",
+            "params": {
+              "db_url": "sqlite:///weibull_experiment.sqlite"
+            }
+          },
           "hypothesis": "WeibullHypothesis"
         }
     },
