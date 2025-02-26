@@ -262,7 +262,8 @@
     ]
   },
   "report_configuration": {
-    "report_builder": "PdfPowerReportBuilder"
+    "report_builder": "PdfPowerReportBuilder",
+    "listeners": []
   },
   "rvs_store": {
     "name": "RvsDbStore",
