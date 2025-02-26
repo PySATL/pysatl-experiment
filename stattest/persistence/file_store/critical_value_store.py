@@ -60,7 +60,7 @@ class CriticalValueFileStore(ICriticalValueStore):
 
     def get_critical_value(
         self, code: str, size: int, sl: float
-    ) -> Optional[float, Union[Tuple[float, float]]]:
+    ) -> Optional[Union[Tuple[float, float], float]]:
         """
         Get critical value from store.
         :param code: test code
