@@ -23,10 +23,7 @@ from stattest.experiment.test.worker import PowerCalculationWorker
 from stattest.persistence.db_store import CriticalValueDbStore, RvsDbStore
 from stattest.persistence.db_store.result_store import ResultDbStore
 from stattest.test import KSNormalityTest
-from stattest.test.normal import (
-    GraphEdgesNumberNormTest,
-    GraphMaxDegreeNormTest,
-)
+from stattest.test.normal import GraphEdgesNumberNormTest, GraphMaxDegreeNormTest
 
 
 if __name__ == "__main__":
