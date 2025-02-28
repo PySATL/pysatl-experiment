@@ -52,44 +52,41 @@ def _parse_alternatives(json_dicts_list):
     return res_list
 
 
-if __name__ == "__main__":
+def parse_config(path: str):
     try:
-        print("Starting experiment")
-        # TODO: tested only on Weibull
-
         # Configuring experiment
-        with Path("config_examples/weibull_experiment.json").open() as configFile:
-            configData = json.load(configFile)
+        with Path(path).open() as configFile:
+            config_data = json.load(configFile)
 
-        alterConfigData = configData["alternative_configuration"]
+        alter_config_data = config_data["alternative_configuration"]
 
         # TODO: default count of threads is multiprocessing.cpu_count()??
         alternative_configuration = AlternativeConfiguration(
-            alternatives=_parse_alternatives(alterConfigData["alternatives"]),
-            sizes=alterConfigData["sizes"],
-            count=alterConfigData["count"],
-            threads=alterConfigData["threads"],
-            listeners=_find_list_of_classes(alterConfigData["listeners"])
+            alternatives=_parse_alternatives(alter_config_data["alternatives"]),
+            sizes=alter_config_data["sizes"],
+            count=alter_config_data["count"],
+            threads=alter_config_data["threads"],
+            listeners=_find_list_of_classes(alter_config_data["listeners"])
         )
 
-        testsConfigData = configData["test_configuration"]
+        tests_config_data = config_data["test_configuration"]
 
-        tests = _find_list_of_classes(testsConfigData["tests"])
-        test_threads = testsConfigData["threads"]
+        tests = _find_list_of_classes(tests_config_data["tests"])
+        test_threads = tests_config_data["threads"]
 
-        testsWorkerConfigData = testsConfigData["worker"]
-        testsWorkerParamsConfigData = testsWorkerConfigData["params"]
+        tests_worker_config_data = tests_config_data["worker"]
+        tests_worker_params_config_data = tests_worker_config_data["params"]
 
         critical_value_store = _find_class(
-            testsWorkerParamsConfigData["critical_value_store"]["name"])(
-            db_url=testsWorkerParamsConfigData["critical_value_store"]["params"]["db_url"])
-        hypothesis = _find_class(testsWorkerConfigData["params"]["hypothesis"])
+            tests_worker_params_config_data["critical_value_store"]["name"])(
+            db_url=tests_worker_params_config_data["critical_value_store"]["params"]["db_url"])
+        hypothesis = _find_class(tests_worker_config_data["params"]["hypothesis"])
 
-        power_calculation_worker = _find_class(testsWorkerConfigData["name"])(
-            testsWorkerParamsConfigData["alpha"], testsWorkerParamsConfigData["monte_carlo_count"],
+        power_calculation_worker = _find_class(tests_worker_config_data["name"])(
+            tests_worker_params_config_data["alpha"], tests_worker_params_config_data["monte_carlo_count"],
             critical_value_store, hypothesis=hypothesis
         )
-        test_data_tels = _find_list_of_classes(testsConfigData["listeners"])
+        test_data_tels = _find_list_of_classes(tests_config_data["listeners"])
 
         test_configuration = TestConfiguration(
             tests=tests,
@@ -98,37 +95,49 @@ if __name__ == "__main__":
             listeners=test_data_tels,
         )
 
-        reportData = configData["report_configuration"]
-        report_builder = _find_class(reportData["report_builder"])
-        report_listeners = _find_list_of_classes(reportData["listeners"])
-        report_configuration = ReportConfiguration(report_builder=report_builder
-                                                   , listeners=report_listeners)
+        report_data = config_data["report_configuration"]
+        report_builder = _find_class(report_data["report_builder"])
+        report_listeners = _find_list_of_classes(report_data["listeners"])
+        report_configuration = ReportConfiguration(report_builder=report_builder,
+                                                   listeners=report_listeners)
 
-        rvsStoreData = configData["rvs_store"]
-        rvs_store = _find_class(rvsStoreData["name"])(db_url=rvsStoreData["params"]["db_url"])
+        rvs_store_data = config_data["rvs_store"]
+        rvs_store = _find_class(rvs_store_data["name"])(db_url=rvs_store_data["params"]["db_url"])
 
-        resultStoreData = configData["result_store"]
-        result_store = (_find_class(resultStoreData["name"])
-                        (db_url=resultStoreData["params"]["db_url"]))
+        result_store_data = config_data["result_store"]
+        result_store = (_find_class(result_store_data["name"])
+                        (db_url=result_store_data["params"]["db_url"]))
 
-        experiment_configuration = ExperimentConfiguration(
+        print("Successfully parsed configuration")
+        return ExperimentConfiguration(
             alternative_configuration=alternative_configuration,
             test_configuration=test_configuration,
             report_configuration=report_configuration,
             rvs_store=rvs_store,
             result_store=result_store,
         )
-        experiment = Experiment(experiment_configuration)
-
-        # Execute experiment
-        experiment.execute()
-
-        print("Success")
     except (JSONDecodeError, TypeError, OSError, FileExistsError):
         print("Error with configuration file")
         traceback.print_exc()  # TODO: remove later
-    finally:
-        print("Ending work")
+        return None
+
+
+if __name__ == "__main__":
+    # TODO: tested only on Weibull
+    print("Parsing configuration")
+    testPath = "config_examples/weibull_experiment.json"
+
+    experiment_configuration = parse_config(testPath)
+
+    if experiment_configuration is not None:
+        experiment = Experiment(experiment_configuration)
+        print("Starting experiment")
+
+        # Execute experiment
+        experiment.execute()
+        print("Success")
+
+    print("Ending work")
 
 #  TODO: dict alternatives, support for tests dict
 #  TODO: add parsing test
