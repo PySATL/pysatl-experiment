@@ -59,10 +59,7 @@ def parse_config(path: str):
         default_threads = multiprocessing.cpu_count()
 
         alter_config_data = config_data["generator_configuration"]
-        try:
-            threads = alter_config_data["threads"]
-        except KeyError:
-            threads = default_threads
+        threads = alter_config_data.get("threads", default_threads)
 
         alternative_configuration = AlternativeConfiguration(
             alternatives=_parse_json_class_list(GeneratorResolver, alter_config_data["generators"]),
@@ -75,10 +72,7 @@ def parse_config(path: str):
         tests_config_data = config_data["test_configuration"]
 
         tests = _parse_json_class_list(TestResolver, tests_config_data["tests"])
-        try:
-            test_threads = tests_config_data["threads"]
-        except KeyError:
-            test_threads = default_threads
+        test_threads = tests_config_data.get("threads", default_threads)
 
         tests_worker_config_data = tests_config_data["worker"]
         tests_worker_params_config_data = tests_worker_config_data["params"]
