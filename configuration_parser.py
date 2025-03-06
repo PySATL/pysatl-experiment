@@ -64,7 +64,6 @@ def _parse_hypothesis(json_dict):
         hyp_params = None
 
     hyp = HypothesisResolver.load(hypothesis_name=hyp_name, params=hyp_params)
-    # TODO: exception here: ValueError: Empty module name
 
     return hyp
 
@@ -160,7 +159,7 @@ def parse_config(path: str):
 
         hypothesis = _parse_hypothesis(tests_worker_config_data["params"]["hypothesis"])
 
-        power_calculation_worker = _parse_worker(tests_worker_config_data)  # TODO: exception here
+        power_calculation_worker = _parse_worker(tests_worker_config_data)
         power_calculation_worker.cv_store = critical_value_store
         power_calculation_worker.hypothesis = hypothesis
 
@@ -221,5 +220,5 @@ if __name__ == "__main__":
     print("Ending work")
 
 #  TODO: different methods for different stores?? also, fool check
-#  TODO: add parsing test
+#  TODO: add big parsing test
 #  TODO: update docker_file
