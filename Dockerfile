@@ -14,4 +14,4 @@ pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD python weibull_experiment.py
+CMD python weibull_experiment_from_config.py
