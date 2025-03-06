@@ -213,33 +213,79 @@
     "count": 1000,
     "threads": 8,
     "listeners": [
-      "TimeEstimationListener"
+      {
+        "name": "TimeEstimationListener"
+      }
     ]
   },
   "test_configuration": {
     "tests": [
-      "KSWeibullTest",
-      "MinToshiyukiWeibullTestStatistic",
-      "Chi2PearsonWiebullTest",
-      "CrammerVonMisesWeibullTest",
-      "ST2WeibullTestStatistic",
-      "ST1WeibullTestStatistic",
-      "TSWeibullTestStatistic",
-      "LOSWeibullTestStatistic",
-      "MSFWeibullTestStatistic",
-      "OKWeibullTestStatistic",
-      "SBWeibullTestStatistic",
-      "RSBWeibullTestStatistic",
-      "LT3Statistic",
-      "LT2Statistic",
-      "LTStatistic",
-      "KullbackLeiblerStatistic",
-      "LiaoShimokawaTest",
-      "WatsonTest",
-      "MDTest",
-      "REJGWeibullTestStatistic",
-      "ADWeibullTest",
-      "LillieforsWiebullTest"
+      {
+        "name": "KSWeibullTest"
+      },
+      {
+        "name": "MinToshiyukiWeibullTestStatistic"
+      },
+      {
+        "name": "Chi2PearsonWiebullTest"
+      },
+      {
+        "name": "CrammerVonMisesWeibullTest"
+      },
+      {
+        "name": "ST2WeibullTestStatistic"
+      },
+      {
+        "name": "ST1WeibullTestStatistic"
+      },
+      {
+        "name": "TSWeibullTestStatistic"
+      },
+      {
+        "name": "LOSWeibullTestStatistic"
+      },
+      {
+        "name": "MSFWeibullTestStatistic"
+      },
+      {
+        "name": "OKWeibullTestStatistic"
+      },
+      {
+        "name": "SBWeibullTestStatistic"
+      },
+      {
+        "name": "RSBWeibullTestStatistic"
+      },
+      {
+        "name": "LT3Statistic"
+      },
+      {
+        "name": "LT2Statistic"
+      },
+      {
+        "name": "LTStatistic"
+      },
+      {
+        "name": "KullbackLeiblerStatistic"
+      },
+      {
+        "name": "LiaoShimokawaTest"
+      },
+      {
+        "name": "WatsonTest"
+      },
+      {
+        "name": "MDTest"
+      },
+      {
+        "name": "REJGWeibullTestStatistic"
+      },
+      {
+        "name": "ADWeibullTest"
+      },
+      {
+        "name": "LillieforsWiebullTest"
+      }
     ],
     "threads": 8,
     "worker":
@@ -248,32 +294,42 @@
         "params": {
           "alpha": 0.05,
           "monte_carlo_count": 100000,
-          "critical_value_store": {
+          "cv_store": {
             "name": "CriticalValueDbStore",
             "params": {
               "db_url": "sqlite:///weibull_experiment.sqlite"
             }
           },
-          "hypothesis": "WeibullHypothesis"
+          "hypothesis": {
+            "name": "WeibullHypothesis"
+          }
         }
     },
     "listeners": [
-      "TimeEstimationListener"
+      {
+        "name": "TimeEstimationListener"
+      }
     ]
   },
   "report_configuration": {
-    "report_builder": "PdfPowerReportBuilder",
+    "report_builder": {
+      "name": "PdfPowerReportBuilder"
+    },
     "listeners": []
   },
-  "rvs_store": {
+  "rvs_store":
+  {
     "name": "RvsDbStore",
-    "params": {
+    "params":
+    {
       "db_url": "sqlite:///weibull_experiment.sqlite"
     }
   },
-  "result_store": {
+  "result_store":
+  {
     "name": "ResultDbStore",
-    "params": {
+    "params":
+    {
       "db_url": "sqlite:///weibull_experiment.sqlite"
     }
   }

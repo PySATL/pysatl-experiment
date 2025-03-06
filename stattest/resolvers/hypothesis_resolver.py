@@ -1,13 +1,13 @@
 # pragma pylint: disable=attribute-defined-outside-init
 
 """
-This module load custom RVS generators
+This module load custom hypothesis
 """
 
 import logging
 from typing import Any, Optional
 
-from stattest.constants import USERPATH_GENERATORS
+from stattest.constants import USERPATH_HYPOTHESIS
 from stattest.exceptions import OperationalException
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.resolvers.iresolver import IResolver
@@ -23,13 +23,13 @@ class HypothesisResolver(IResolver):
 
     object_type = AbstractHypothesis
     object_type_str = "AbstractHypothesis"
-    user_subdir = USERPATH_GENERATORS
+    user_subdir = USERPATH_HYPOTHESIS
     initial_search_path = None
     extra_path = "hypothesis_path"
-    module_name = "stattest.experiment.hypothesis"
+    module_names = ["stattest.experiment.hypothesis"]
 
     @staticmethod
-    def load_hypothesis(
+    def load(
         hypothesis_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
     ) -> AbstractHypothesis:
         """
@@ -39,19 +39,19 @@ class HypothesisResolver(IResolver):
         :param hypothesis_name:
         """
 
-        hypothesis: AbstractHypothesis = HypothesisResolver._load_hypothesis(
+        hypothesis: AbstractHypothesis = HypothesisResolver._load(
             hypothesis_name, params=params, extra_dir=path
         )
 
         return hypothesis
 
     @staticmethod
-    def validate_hypothesis(generator: AbstractHypothesis) -> AbstractHypothesis:
+    def validate_hypothesis(hypothesis: AbstractHypothesis) -> AbstractHypothesis:
         # Validation can be added
-        return generator
+        return hypothesis
 
     @staticmethod
-    def _load_hypothesis(
+    def _load(
         hypothesis_name: str,
         params: Optional[dict[str, Any]],
         extra_dir: Optional[str] = None,
@@ -59,7 +59,6 @@ class HypothesisResolver(IResolver):
         """
         Search and loads the specified strategy.
         :param hypothesis_name: name of the module to import
-        :param config: configuration for the strategy
         :param extra_dir: additional directory to search for the given strategy
         :return: Strategy instance or None
         """
@@ -69,8 +68,9 @@ class HypothesisResolver(IResolver):
             extra_dirs.append(extra_dir)
 
         abs_paths = HypothesisResolver.build_search_paths(
-            user_data_dir=None, user_subdir=USERPATH_GENERATORS, extra_dirs=extra_dirs
+            user_data_dir=None, user_subdir=USERPATH_HYPOTHESIS, extra_dirs=extra_dirs
         )
+        # TODO: check strange path 'E:/Documents/Projects/PySATL/pysatl-experiment/tests/resolvers/hypothesis_path'
 
         hypothesis = HypothesisResolver._load_object(
             paths=abs_paths,
@@ -79,9 +79,10 @@ class HypothesisResolver(IResolver):
             kwargs=params,
         )
 
+        # TODO: exception is here
         if not hypothesis:
-            hypothesis = HypothesisResolver._load_module_object(
-                object_name=hypothesis_name, kwargs=params, module_name=""
+            hypothesis = HypothesisResolver._load_modules_object(
+                object_name=hypothesis_name, kwargs=params
             )
 
         if hypothesis:
