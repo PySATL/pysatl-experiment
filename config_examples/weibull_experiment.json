@@ -1,6 +1,6 @@
 {
-  "alternative_configuration": {
-    "alternatives": [
+  "generator_configuration": {
+    "generators": [
       {
         "name": "ExponentialGenerator",
         "params": {
