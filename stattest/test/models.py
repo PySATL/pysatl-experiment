@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 
 from numpy import float64
 
 
 class AbstractTestStatistic(ABC):
+    two_tailed: bool = False
+
     @staticmethod
     @abstractmethod
     def code() -> str:
@@ -25,6 +27,16 @@ class AbstractTestStatistic(ABC):
     def calculate_critical_value(self, rvs_size, sl) -> Union[Optional[float], Optional[float64]]:
         """
         Calculate critical value for test statistics
+        :param rvs_size: rvs size
+        :param sl: significance level
+        """
+        return None
+
+    def calculate_two_tailed_critical_values(
+        self, rvs_size: int, sl
+    ) -> Optional[Tuple[float, float]]:
+        """
+        Calculate two-tailed critical values for test statistics
         :param rvs_size: rvs size
         :param sl: significance level
         """

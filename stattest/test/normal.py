@@ -2186,6 +2186,13 @@ class GraphEdgesNumberNormTest(AbstractNormalityTestStatistic, GraphEdgesNumberT
         parent_code = super(super_class, super_class).code()
         return f"EdgesNumber_{parent_code}"
 
+    @staticmethod
+    @override
+    def _compute_dist(rvs):
+        super_class = GraphEdgesNumberTestStatistic
+        parent_code = super(super_class, super_class)._compute_dist(rvs)
+        return parent_code / np.var(rvs)
+
 
 class GraphMaxDegreeNormTest(AbstractNormalityTestStatistic, GraphMaxDegreeTestStatistic):
     @staticmethod
@@ -2194,6 +2201,13 @@ class GraphMaxDegreeNormTest(AbstractNormalityTestStatistic, GraphMaxDegreeTestS
         super_class = AbstractNormalityTestStatistic
         parent_code = super(super_class, super_class).code()
         return f"MaxDegree_{parent_code}"
+
+    @staticmethod
+    @override
+    def _compute_dist(rvs):
+        super_class = GraphEdgesNumberTestStatistic
+        parent_code = super(super_class, super_class)._compute_dist(rvs)
+        return parent_code / np.var(rvs)
 
 
 # TODO: fix all weak warnings
