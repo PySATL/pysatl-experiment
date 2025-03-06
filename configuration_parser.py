@@ -129,11 +129,13 @@ def parse_config(path: str):
         with Path(path).open() as configFile:
             config_data = json.load(configFile)
 
+        default_threads = multiprocessing.cpu_count()
+
         alter_config_data = config_data["alternative_configuration"]
         try:
             threads = alter_config_data["threads"]
         except KeyError:
-            threads = multiprocessing.cpu_count()
+            threads = default_threads
 
         alternative_configuration = AlternativeConfiguration(
             alternatives=_parse_generators(alter_config_data["alternatives"]),
@@ -149,7 +151,7 @@ def parse_config(path: str):
         try:
             test_threads = tests_config_data["threads"]
         except KeyError:
-            test_threads = multiprocessing.cpu_count()
+            test_threads = default_threads
 
         tests_worker_config_data = tests_config_data["worker"]
         tests_worker_params_config_data = tests_worker_config_data["params"]
