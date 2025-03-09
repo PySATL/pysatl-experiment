@@ -1,7 +1,7 @@
 {
   "generator_path": "",
-  "alternatives_configuration": {
-    "alternatives": [
+  "generator_configuration": {
+    "generators": [
       {
         "name": "BBBRVSGenerator",
         "params": {

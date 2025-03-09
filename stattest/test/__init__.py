@@ -101,6 +101,16 @@ from stattest.test.weibull import (
     TSWeibullTestStatistic,
     WeibullNormalizeSpaceTestStatistic,
     WPPWeibullTestStatistic,
+    LT3Statistic,
+    LT2Statistic,
+    LTStatistic,
+    KullbackLeiblerStatistic,
+    LiaoShimokawaTest,
+    WatsonTest,
+    MDTest,
+    REJGWeibullTestStatistic,
+    ADWeibullTest,
+    LillieforsWiebullTest
 )
 
 
@@ -204,4 +214,14 @@ __all__ = [
     "ZhangQStarNormalityTest",
     "ZhangWuANormalityTest",
     "ZhangWuCNormalityTest",
+    "LT3Statistic",
+    "LT2Statistic",
+    "LTStatistic",
+    "KullbackLeiblerStatistic",
+    "LiaoShimokawaTest",
+    "WatsonTest",
+    "MDTest",
+    "REJGWeibullTestStatistic",
+    "ADWeibullTest",
+    "LillieforsWiebullTest"
 ]

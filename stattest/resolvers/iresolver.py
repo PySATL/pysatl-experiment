@@ -172,6 +172,9 @@ class IResolver:
         Try to load object from path list.
         """
 
+        if kwargs is None:
+            kwargs = {}
+
         for _path in paths:
             try:
                 (module, module_path) = cls._search_object(
@@ -213,6 +216,8 @@ class IResolver:
         """
         Try to load object from path list.
         """
+        if kwargs is None:
+            kwargs = {}
 
         try:
             module = getattr(importlib.import_module(module_name), object_name)
