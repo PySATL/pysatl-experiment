@@ -245,6 +245,7 @@ class IResolver:
         Search and loads the specified object as configured in the child class.
         :param object_name: name of the module to import
         :param config: configuration dictionary
+        :param kwargs: some additional parameters
         :param extra_dir: additional directory to search for the given pairlist
         :raises: OperationalException if the class is invalid or does not exist.
         :return: Object instance or None

@@ -1,9 +1,7 @@
 import pytest
 
-from stattest.experiment.test import PowerCalculationWorker
 from stattest.persistence import RvsDbStore, ResultDbStore, CriticalValueDbStore
 from stattest.resolvers.store_resolver import StoreResolver
-from stattest.resolvers.worker_resolver import WorkerResolver
 
 
 @pytest.mark.parametrize(
