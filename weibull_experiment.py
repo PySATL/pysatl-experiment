@@ -122,7 +122,7 @@ if __name__ == "__main__":
         MDTest(),
         REJGWeibullTestStatistic(),
         ADWeibullTest(),
-        LillieforsWiebullTest(),
+        LillieforsWiebullTest()
     ]
 
     alternatives_configuration = AlternativeConfiguration(
