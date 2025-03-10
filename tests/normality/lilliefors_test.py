@@ -35,6 +35,8 @@ from tests.normality.abstract_normality_test_case import AbstractNormalityTestCa
             ],
             0.1695222,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 0.15073232084833066),  # Negative values test
     ],
 )
 class TestCaseLillieforsTestNormalityTest(AbstractNormalityTestCase):

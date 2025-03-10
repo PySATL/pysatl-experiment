@@ -41,6 +41,8 @@ from tests.normality.abstract_normality_test_case import AbstractNormalityTestCa
             ],
             0.05191694742233466,
         ),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 0.10204382727741823),  # Negative values test
     ],
 )
 class TestCaseEPNormalityTest(AbstractNormalityTestCase):

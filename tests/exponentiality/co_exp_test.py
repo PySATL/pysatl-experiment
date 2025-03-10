@@ -4,14 +4,16 @@ from stattest.test.exponent import COTestExp
 from tests.exponentiality.abstract_exponentiality_test_case import AbstractExponentialityTestCase
 
 
-@pytest.mark.parametrize(  # TODO: actual test (7; 10)
+@pytest.mark.parametrize(
     ("data", "result"),
     [
-        ([1, 2, 3, 4, 5, 6, 7], 0.17377394345044517),
-        ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0.16232061118184815),
+        ([1, 2, 3, 4, 5, 6, 7], 4.863554837932963),
+        ([i for i in range(1, 10)], 5.990431555682576),
+        ([i for i in range(1, 50)], 26.85362640237867),
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 0.16232061118184815),  # Negative values test
     ],
 )
-@pytest.mark.skip(reason="fix test and check")
 class TestCaseCOExponentialityTest(AbstractExponentialityTestCase):
     @pytest.fixture
     def statistic_test(self):
