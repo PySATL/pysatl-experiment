@@ -2,6 +2,7 @@ import json
 import multiprocessing
 from json import JSONDecodeError
 from pathlib import Path
+from typing import List
 
 from stattest.experiment.configuration.configuration import (
     ExperimentConfiguration,
@@ -55,7 +56,11 @@ def parse_generator_config(config) -> GeneratorConfiguration:
     )
 
 
-def parse_config(path: str):
+def parse_configs(paths: List[str]) -> List[ExperimentConfiguration]:
+    return [parse_config(c) for c in paths]
+
+
+def parse_config(path: str) -> ExperimentConfiguration:
     try:
         # Configuring experiment
         with Path(path).open() as configFile:
