@@ -1,10 +1,10 @@
 FROM python:3.12.9-slim-bookworm AS base
 
 # Setup env
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONFAULTHANDLER 1
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONFAULTHANDLER=1
 ENV PATH=/home/pysatluser/.local/bin:$PATH
 ENV FT_APP_ENV="docker"
 
@@ -36,7 +36,7 @@ RUN  pip install --user --no-cache-dir "setuptools>=64.0.0"
 # Copy dependencies to runtime-image
 FROM base AS runtime-image
 COPY --from=python-deps /usr/local/lib /usr/local/lib
-ENV LD_LIBRARY_PATH /usr/local/lib
+ENV LD_LIBRARY_PATH=/usr/local/lib
 
 COPY --from=python-deps --chown=pysatluser:pysatluser /home/pysatluser/.local /home/pysatluser/.local
 
