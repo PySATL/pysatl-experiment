@@ -30,9 +30,8 @@ class StoreResolver(IResolver):
 
     @staticmethod
     def load(
-            store_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
+        store_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
     ) -> IStore:
-
         """
         Load the custom class from config parameter
         :param params:
@@ -40,9 +39,7 @@ class StoreResolver(IResolver):
         :param store_name:
         """
 
-        store: IStore = StoreResolver._load(
-            store_name, params=params, extra_dir=path
-        )
+        store: IStore = StoreResolver._load(store_name, params=params, extra_dir=path)
 
         return store
 
@@ -53,9 +50,9 @@ class StoreResolver(IResolver):
 
     @staticmethod
     def _load(
-            store_name: str,
-            params: Optional[dict[str, Any]],
-            extra_dir: Optional[str] = None,
+        store_name: str,
+        params: Optional[dict[str, Any]],
+        extra_dir: Optional[str] = None,
     ) -> IStore:
         """
         Search and loads the specified strategy.
@@ -81,9 +78,7 @@ class StoreResolver(IResolver):
         )
 
         if not store:
-            store = StoreResolver._load_modules_object(
-                object_name=store_name, kwargs=params
-            )
+            store = StoreResolver._load_modules_object(object_name=store_name, kwargs=params)
 
         if store:
             return StoreResolver.validate(store)

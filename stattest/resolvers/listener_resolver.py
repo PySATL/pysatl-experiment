@@ -30,9 +30,8 @@ class ListenerResolver(IResolver):
 
     @staticmethod
     def load(
-            listener_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
+        listener_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
     ) -> StepListener:
-
         """
         Load the custom class from config parameter
         :param params:

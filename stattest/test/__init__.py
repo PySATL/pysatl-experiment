@@ -82,8 +82,14 @@ from stattest.test.weibull import (
     Chi2PearsonWiebullTest,
     CrammerVonMisesWeibullTest,
     KSWeibullTest,
+    KullbackLeiblerStatistic,
+    LiaoShimokawaTest,
     LillieforsWiebullTest,
     LOSWeibullTestStatistic,
+    LT2Statistic,
+    LT3Statistic,
+    LTStatistic,
+    MDTest,
     MinToshiyukiWeibullTestStatistic,
     MSFWeibullTestStatistic,
     OKWeibullTestStatistic,
@@ -99,18 +105,9 @@ from stattest.test.weibull import (
     ST2TestStatistic,
     ST2WeibullTestStatistic,
     TSWeibullTestStatistic,
+    WatsonTest,
     WeibullNormalizeSpaceTestStatistic,
     WPPWeibullTestStatistic,
-    LT3Statistic,
-    LT2Statistic,
-    LTStatistic,
-    KullbackLeiblerStatistic,
-    LiaoShimokawaTest,
-    WatsonTest,
-    MDTest,
-    REJGWeibullTestStatistic,
-    ADWeibullTest,
-    LillieforsWiebullTest
 )
 
 
@@ -223,5 +220,5 @@ __all__ = [
     "MDTest",
     "REJGWeibullTestStatistic",
     "ADWeibullTest",
-    "LillieforsWiebullTest"
+    "LillieforsWiebullTest",
 ]

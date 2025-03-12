@@ -70,7 +70,7 @@ class HypothesisResolver(IResolver):
         abs_paths = HypothesisResolver.build_search_paths(
             user_data_dir=None, user_subdir=USERPATH_HYPOTHESIS, extra_dirs=extra_dirs
         )
-        # TODO: check strange path 'E:/Documents/Projects/PySATL/pysatl-experiment/tests/resolvers/hypothesis_path'
+        # TODO: check strange path 'pysatl-experiment/tests/resolvers/hypothesis_path'
 
         hypothesis = HypothesisResolver._load_object(
             paths=abs_paths,

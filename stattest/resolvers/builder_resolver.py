@@ -12,6 +12,7 @@ from stattest.exceptions import OperationalException
 from stattest.experiment.configuration import ReportBuilder
 from stattest.resolvers.iresolver import IResolver
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,9 +30,8 @@ class BuilderResolver(IResolver):
 
     @staticmethod
     def load(
-            builder_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
+        builder_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
     ) -> ReportBuilder:
-
         """
         Load the custom class from config parameter
         :param params:
@@ -39,9 +39,7 @@ class BuilderResolver(IResolver):
         :param builder_name:
         """
 
-        builder: ReportBuilder = BuilderResolver._load(
-            builder_name, params=params, extra_dir=path
-        )
+        builder: ReportBuilder = BuilderResolver._load(builder_name, params=params, extra_dir=path)
 
         return builder
 
@@ -52,9 +50,9 @@ class BuilderResolver(IResolver):
 
     @staticmethod
     def _load(
-            builder_name: str,
-            params: Optional[dict[str, Any]],
-            extra_dir: Optional[str] = None,
+        builder_name: str,
+        params: Optional[dict[str, Any]],
+        extra_dir: Optional[str] = None,
     ) -> ReportBuilder:
         """
         Search and loads the specified strategy.
@@ -80,9 +78,7 @@ class BuilderResolver(IResolver):
         )
 
         if not worker:
-            worker = BuilderResolver._load_modules_object(
-                object_name=builder_name, kwargs=params
-            )
+            worker = BuilderResolver._load_modules_object(object_name=builder_name, kwargs=params)
 
         if worker:
             return BuilderResolver.validate_generator(worker)

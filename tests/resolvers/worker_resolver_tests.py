@@ -6,9 +6,7 @@ from stattest.resolvers.worker_resolver import WorkerResolver
 
 @pytest.mark.parametrize(
     ("name", "expected"),
-    [
-        ("PowerCalculationWorker", PowerCalculationWorker)
-    ],
+    [("PowerCalculationWorker", PowerCalculationWorker)],
 )
 def test_load_without_params(name, expected):
     # Always load workers with params!

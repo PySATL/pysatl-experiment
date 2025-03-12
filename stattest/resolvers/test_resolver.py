@@ -24,9 +24,8 @@ class TestResolver(IResolver):
 
     @staticmethod
     def load(
-            test_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
+        test_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
     ) -> AbstractTestStatistic:
-
         """
         Load the custom class from config parameter
         :param params:
@@ -34,9 +33,7 @@ class TestResolver(IResolver):
         :param test_name:
         """
 
-        test: AbstractTestStatistic = TestResolver._load(
-            test_name, params=params, extra_dir=path
-        )
+        test: AbstractTestStatistic = TestResolver._load(test_name, params=params, extra_dir=path)
 
         return test
 
@@ -47,9 +44,9 @@ class TestResolver(IResolver):
 
     @staticmethod
     def _load(
-            test_name: str,
-            params: Optional[dict[str, Any]],
-            extra_dir: Optional[str] = None,
+        test_name: str,
+        params: Optional[dict[str, Any]],
+        extra_dir: Optional[str] = None,
     ) -> AbstractTestStatistic:
         """
         Search and loads the specified strategy.
@@ -75,9 +72,7 @@ class TestResolver(IResolver):
         )
 
         if not test:
-            test = TestResolver._load_modules_object(
-                object_name=test_name, kwargs=params
-            )
+            test = TestResolver._load_modules_object(object_name=test_name, kwargs=params)
 
         if test:
             return TestResolver.validate_generator(test)

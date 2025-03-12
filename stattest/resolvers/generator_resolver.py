@@ -43,9 +43,7 @@ class GeneratorResolver(IResolver):
         alternatives = alternatives_configuration["alternatives"]
         generators = []
         for generator_conf in alternatives:
-            generator = GeneratorResolver.load(
-                generator_conf["name"], generator_conf["params"]
-            )
+            generator = GeneratorResolver.load(generator_conf["name"], generator_conf["params"])
             generators.append(generator)
 
         return generators

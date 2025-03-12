@@ -12,6 +12,7 @@ from stattest.exceptions import OperationalException
 from stattest.experiment.test.worker import PowerCalculationWorker
 from stattest.resolvers.iresolver import IResolver
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,9 +30,8 @@ class WorkerResolver(IResolver):
 
     @staticmethod
     def load(
-            worker_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
+        worker_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
     ) -> PowerCalculationWorker:
-
         """
         Load the custom class from config parameter
         :param params:
@@ -52,9 +52,9 @@ class WorkerResolver(IResolver):
 
     @staticmethod
     def _load(
-            worker_name: str,
-            params: Optional[dict[str, Any]],
-            extra_dir: Optional[str] = None,
+        worker_name: str,
+        params: Optional[dict[str, Any]],
+        extra_dir: Optional[str] = None,
     ) -> PowerCalculationWorker:
         """
         Search and loads the specified strategy.
@@ -80,9 +80,7 @@ class WorkerResolver(IResolver):
         )
 
         if not worker:
-            worker = WorkerResolver._load_modules_object(
-                object_name=worker_name, kwargs=params
-            )
+            worker = WorkerResolver._load_modules_object(object_name=worker_name, kwargs=params)
 
         if worker:
             return WorkerResolver.validate_generator(worker)
@@ -91,5 +89,6 @@ class WorkerResolver(IResolver):
             f"Impossible to load RVS generator '{worker_name}'. This class does not exist "
             "or contains Python code errors."
         )
+
 
 # TODO: support for TestWorker

@@ -1,8 +1,14 @@
 import pytest
 
 from stattest.resolvers.test_resolver import TestResolver
-from stattest.test import ADWeibullTest, Chi2PearsonWiebullTest, CrammerVonMisesWeibullTest, KSWeibullTest, \
-    LillieforsWiebullTest, LOSWeibullTestStatistic
+from stattest.test import (
+    ADWeibullTest,
+    Chi2PearsonWiebullTest,
+    CrammerVonMisesWeibullTest,
+    KSWeibullTest,
+    LillieforsWiebullTest,
+    LOSWeibullTestStatistic,
+)
 
 
 @pytest.mark.parametrize(
@@ -13,7 +19,7 @@ from stattest.test import ADWeibullTest, Chi2PearsonWiebullTest, CrammerVonMises
         ("CrammerVonMisesWeibullTest", CrammerVonMisesWeibullTest),
         ("KSWeibullTest", KSWeibullTest),
         ("LillieforsWiebullTest", LillieforsWiebullTest),
-        ("LOSWeibullTestStatistic", LOSWeibullTestStatistic)
+        ("LOSWeibullTestStatistic", LOSWeibullTestStatistic),
     ],
 )
 def test_load_without_params(name, expected):

@@ -1,6 +1,7 @@
 from configuration_parser import parse_config
 from stattest.experiment import Experiment
 
+
 if __name__ == "__main__":
     print("Parsing configuration")
     testPath = "config_examples/weibull_experiment.json"

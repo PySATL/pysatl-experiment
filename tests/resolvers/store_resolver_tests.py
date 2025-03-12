@@ -1,6 +1,6 @@
 import pytest
 
-from stattest.persistence import RvsDbStore, ResultDbStore, CriticalValueDbStore
+from stattest.persistence import CriticalValueDbStore, ResultDbStore, RvsDbStore
 from stattest.resolvers.store_resolver import StoreResolver
 
 
@@ -9,7 +9,7 @@ from stattest.resolvers.store_resolver import StoreResolver
     [
         ("RvsDbStore", RvsDbStore),
         ("CriticalValueDbStore", CriticalValueDbStore),
-        ("ResultDbStore", ResultDbStore)
+        ("ResultDbStore", ResultDbStore),
     ],
 )
 def test_load_without_params(name, expected):

@@ -18,5 +18,5 @@ __all__ = [
     "StepListener",
     "TestConfiguration",
     "TestWorker",
-    "TestWorkerResult"
+    "TestWorkerResult",
 ]

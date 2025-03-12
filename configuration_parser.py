@@ -1,10 +1,8 @@
 import json
 import multiprocessing
-import traceback
 from json import JSONDecodeError
 from pathlib import Path
 
-from stattest.experiment import Experiment
 from stattest.experiment.configuration.configuration import (
     AlternativeConfiguration,
     ExperimentConfiguration,
@@ -66,7 +64,7 @@ def parse_config(path: str):
             sizes=alter_config_data["sizes"],
             count=alter_config_data["count"],
             threads=threads,
-            listeners=_parse_json_class_list(ListenerResolver, alter_config_data["listeners"])
+            listeners=_parse_json_class_list(ListenerResolver, alter_config_data["listeners"]),
         )
 
         tests_config_data = config_data["test_configuration"]
@@ -77,16 +75,18 @@ def parse_config(path: str):
         tests_worker_config_data = tests_config_data["worker"]
         tests_worker_params_config_data = tests_worker_config_data["params"]
 
-        critical_value_store = _parse_json_class(StoreResolver, tests_worker_params_config_data["cv_store"])
+        critical_value_store = _parse_json_class(
+            StoreResolver, tests_worker_params_config_data["cv_store"]
+        )
         # tests_worker_params_config_data["critical_value_store"]["params"]["db_url"]
 
-        hypothesis = _parse_json_class(HypothesisResolver, tests_worker_config_data["params"]["hypothesis"])
+        hypothesis = _parse_json_class(
+            HypothesisResolver, tests_worker_config_data["params"]["hypothesis"]
+        )
 
         power_calculation_worker = _parse_json_class(WorkerResolver, tests_worker_config_data)
         power_calculation_worker.cv_store = critical_value_store
         power_calculation_worker.hypothesis = hypothesis
-
-        # (tests_worker_params_config_data["alpha"], tests_worker_params_config_data["monte_carlo_count"],
 
         test_data_tels = _parse_json_class_list(ListenerResolver, tests_config_data["listeners"])
 
@@ -100,8 +100,9 @@ def parse_config(path: str):
         report_data = config_data["report_configuration"]
         report_builder = _parse_json_class(BuilderResolver, report_data["report_builder"])
         report_listeners = _parse_json_class_list(ListenerResolver, report_data["listeners"])
-        report_configuration = ReportConfiguration(report_builder=report_builder,
-                                                   listeners=report_listeners)
+        report_configuration = ReportConfiguration(
+            report_builder=report_builder, listeners=report_listeners
+        )
 
         rvs_store_data = config_data["rvs_store"]
         rvs_store = _parse_json_class(StoreResolver, rvs_store_data)

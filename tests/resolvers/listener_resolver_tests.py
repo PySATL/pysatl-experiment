@@ -6,9 +6,7 @@ from stattest.resolvers.listener_resolver import ListenerResolver
 
 @pytest.mark.parametrize(
     ("name", "expected"),
-    [
-        ("TimeEstimationListener", TimeEstimationListener)
-    ],
+    [("TimeEstimationListener", TimeEstimationListener)],
 )
 def test_load_without_params(name, expected):
     listener = ListenerResolver.load(name)
