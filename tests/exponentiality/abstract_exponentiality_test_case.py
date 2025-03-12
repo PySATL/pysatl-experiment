@@ -10,4 +10,4 @@ class AbstractExponentialityTestCase(AbstractTestCase):
     @override
     def test_execute_statistic(data, result, statistic_test: AbstractExponentialityTestStatistic):
         statistic = statistic_test.execute_statistic(data)
-        assert result == pytest.approx(statistic, 0.00001)
+        assert result == pytest.approx(statistic, 0.00001, nan_ok=True)
