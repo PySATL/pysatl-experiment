@@ -4,8 +4,8 @@ from json import JSONDecodeError
 from pathlib import Path
 
 from stattest.experiment.configuration.configuration import (
-    AlternativeConfiguration,
     ExperimentConfiguration,
+    GeneratorConfiguration,
     ReportConfiguration,
     TestConfiguration,
 )
@@ -22,12 +22,9 @@ def _parse_json_class_list(resolver, json_dicts_list):
     class_list = list()
 
     for json_dict in json_dicts_list:
-        class_name = json_dict["name"]
+        class_name = json_dict.get("name")
 
-        try:
-            class_params = json_dict["params"]
-        except KeyError:
-            class_params = None
+        class_params = json_dict.get("params")
 
         class_ = resolver.load(class_name, params=class_params)
         class_list.append(class_)
@@ -48,6 +45,16 @@ def _parse_json_class(resolver, json_dict):
     return class_
 
 
+def parse_generator_config(config) -> GeneratorConfiguration:
+    return GeneratorConfiguration(
+        alternatives=_parse_json_class_list(GeneratorResolver, config["generators"]),
+        sizes=config["sizes"],
+        count=config["count"],
+        threads=config.get("threads", multiprocessing.cpu_count()),
+        listeners=_parse_json_class_list(ListenerResolver, config["listeners"]),
+    )
+
+
 def parse_config(path: str):
     try:
         # Configuring experiment
@@ -56,16 +63,8 @@ def parse_config(path: str):
 
         default_threads = multiprocessing.cpu_count()
 
-        alter_config_data = config_data["generator_configuration"]
-        threads = alter_config_data.get("threads", default_threads)
-
-        alternative_configuration = AlternativeConfiguration(
-            alternatives=_parse_json_class_list(GeneratorResolver, alter_config_data["generators"]),
-            sizes=alter_config_data["sizes"],
-            count=alter_config_data["count"],
-            threads=threads,
-            listeners=_parse_json_class_list(ListenerResolver, alter_config_data["listeners"]),
-        )
+        generator_configuration = config_data.get("generator_configuration", {})
+        alternative_configuration = parse_generator_config(generator_configuration)
 
         tests_config_data = config_data["test_configuration"]
 

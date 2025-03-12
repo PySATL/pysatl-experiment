@@ -1,16 +1,16 @@
-import pytest
-
-from stattest.experiment.test import PowerCalculationWorker
 from stattest.resolvers.worker_resolver import WorkerResolver
 
 
-@pytest.mark.parametrize(
-    ("name", "expected"),
-    [("PowerCalculationWorker", PowerCalculationWorker)],
-)
-def test_load_without_params(name, expected):
-    # Always load workers with params!
-    worker = WorkerResolver.load(name)
+def test_load_power_calculation_worker():
+    params = {
+        "alpha": 0.05,
+        "monte_carlo_count": 100000,
+        "cv_store": {
+            "name": "CriticalValueDbStore",
+            "params": {"db_url": "sqlite:///weibull_experiment.sqlite"},
+        },
+        "hypothesis": {"name": "WeibullHypothesis"},
+    }
+    worker = WorkerResolver.load("PowerCalculationWorker", None, params)
 
     assert worker is not None
-    # assert type(worker) is expected

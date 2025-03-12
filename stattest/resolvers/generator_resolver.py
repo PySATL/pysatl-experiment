@@ -90,7 +90,6 @@ class GeneratorResolver(IResolver):
         abs_paths = GeneratorResolver.build_search_paths(
             user_data_dir=None, user_subdir=USERPATH_GENERATORS, extra_dirs=extra_dirs
         )
-        # TODO: 'E:/Documents/Projects/PySATL/pysatl-experiment/tests/resolvers/generator_path')
 
         generator = GeneratorResolver._load_object(
             paths=abs_paths,

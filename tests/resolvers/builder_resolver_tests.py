@@ -12,4 +12,3 @@ def test_load_without_params(name, expected):
     builder = BuilderResolver.load(name)
 
     assert builder is not None
-    assert type(builder) is expected

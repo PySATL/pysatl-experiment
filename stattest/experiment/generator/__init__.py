@@ -1,4 +1,46 @@
+from stattest.experiment.generator.generators import (
+    BetaRVSGenerator,
+    CauchyRVSGenerator,
+    Chi2Generator,
+    ExponentialGenerator,
+    GammaGenerator,
+    GompertzGenerator,
+    GumbelGenerator,
+    InvGaussGenerator,
+    LaplaceRVSGenerator,
+    LoConNormGenerator,
+    LogisticRVSGenerator,
+    LognormGenerator,
+    MixConNormGenerator,
+    RiceGenerator,
+    ScConNormGenerator,
+    TruncnormGenerator,
+    TRVSGenerator,
+    TukeyRVSGenerator,
+    WeibullGenerator,
+)
 from stattest.experiment.generator.model import AbstractRVSGenerator
 
 
-__all__ = ["AbstractRVSGenerator"]
+__all__ = [
+    "AbstractRVSGenerator",
+    "BetaRVSGenerator",
+    "CauchyRVSGenerator",
+    "Chi2Generator",
+    "ExponentialGenerator",
+    "GammaGenerator",
+    "GompertzGenerator",
+    "GumbelGenerator",
+    "InvGaussGenerator",
+    "LaplaceRVSGenerator",
+    "LoConNormGenerator",
+    "LogisticRVSGenerator",
+    "LognormGenerator",
+    "MixConNormGenerator",
+    "RiceGenerator",
+    "ScConNormGenerator",
+    "TruncnormGenerator",
+    "TRVSGenerator",
+    "TukeyRVSGenerator",
+    "WeibullGenerator",
+]

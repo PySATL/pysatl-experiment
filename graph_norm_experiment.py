@@ -4,8 +4,8 @@ from numpy import random as rd
 
 from stattest.experiment import Experiment
 from stattest.experiment.configuration.configuration import (
-    AlternativeConfiguration,
     ExperimentConfiguration,
+    GeneratorConfiguration,
     ReportConfiguration,
     TestConfiguration,
 )
@@ -18,7 +18,7 @@ from stattest.experiment.generator.generators import (
 )
 from stattest.experiment.hypothesis import NormalHypothesis
 from stattest.experiment.listener.listeners import TimeEstimationListener
-from stattest.experiment.report.model import PdfPowerReportBuilder
+from stattest.experiment.report.builders import PdfPowerReportBuilder
 from stattest.experiment.test.worker import PowerCalculationWorker
 from stattest.persistence.db_store import CriticalValueDbStore, RvsDbStore
 from stattest.persistence.db_store.result_store import ResultDbStore
@@ -65,7 +65,7 @@ if __name__ == "__main__":
         KSNormalityTest(),
     ]
 
-    alternatives_configuration = AlternativeConfiguration(
+    alternatives_configuration = GeneratorConfiguration(
         alternatives, sizes, count=1_000, threads=generation_threads, listeners=listeners
     )
 
