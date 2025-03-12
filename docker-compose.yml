@@ -5,7 +5,7 @@ services:
       context: .
     #   dockerfile: "./docker/Dockerfile.custom"
     restart: unless-stopped
-    container_name: freqtrade
+    container_name: pysatl-experiment
     volumes:
       - "./user_data:/stattest/user_data"
     # Default command used when running `docker compose up`

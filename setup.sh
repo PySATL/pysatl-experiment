@@ -40,7 +40,7 @@ function check_installed_python() {
     exit 1
 }
 
-function updateenv() {
+function update_env() {
     echo_block "Updating your virtual environment"
     if [ ! -f .venv/bin/activate ]; then
         echo "Something went wrong, no virtual environment found."
@@ -114,7 +114,7 @@ function update() {
         # Old environment found - updating to new environment.
         recreate_environments
     fi
-    updateenv
+    update_env
     echo "Update completed."
     echo_block "Don't forget to activate your virtual environment with 'source .venv/bin/activate'!"
 
@@ -179,11 +179,11 @@ function reset() {
     fi
     recreate_environments
 
-    updateenv
+    update_env
 }
 
 function config() {
-    echo_block "Please use 'freqtrade new-config -c user_data/config.json' to generate a new configuration file."
+    echo_block "Please use 'pysatl-experiment new-config -c user_data/config.json' to generate a new configuration file."
 }
 
 function install() {
@@ -209,9 +209,9 @@ function install() {
     reset
     config
     echo_block "Run the bot !"
-    echo "You can now use the bot by executing 'source .venv/bin/activate; freqtrade <subcommand>'."
-    echo "You can see the list of available bot sub-commands by executing 'source .venv/bin/activate; freqtrade --help'."
-    echo "You verify that freqtrade is installed successfully by running 'source .venv/bin/activate; freqtrade --version'."
+    echo "You can now use the bot by executing 'source .venv/bin/activate; pysatl-experiment <subcommand>'."
+    echo "You can see the list of available bot sub-commands by executing 'source .venv/bin/activate; pysatl-experiment --help'."
+    echo "You verify that pysatl-experiment is installed successfully by running 'source .venv/bin/activate; pysatl-experiment --version'."
 }
 
 function plot() {
