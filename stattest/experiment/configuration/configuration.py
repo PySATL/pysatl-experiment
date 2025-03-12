@@ -56,7 +56,7 @@ class ReportConfiguration:
         self.listeners = listeners
 
 
-class AlternativeConfiguration:
+class GeneratorConfiguration:
     def __init__(
         self,
         alternatives: Sequence[AbstractRVSGenerator],
@@ -105,7 +105,7 @@ class TestConfiguration:
 class ExperimentConfiguration:
     def __init__(
         self,
-        alternative_configuration: AlternativeConfiguration,
+        alternative_configuration: GeneratorConfiguration,
         test_configuration: TestConfiguration,
         report_configuration: ReportConfiguration,
         rvs_store: IRvsStore,

@@ -4,9 +4,9 @@ from sqlalchemy import Integer, String, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 from typing_extensions import override
 
-from stattest.persistence import IRvsStore
 from stattest.persistence.db_store.base import ModelBase, SessionType
 from stattest.persistence.db_store.model import AbstractDbStore
+from stattest.persistence.models import IRvsStore
 
 
 class RVS(ModelBase):

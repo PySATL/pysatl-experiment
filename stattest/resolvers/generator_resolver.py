@@ -29,7 +29,7 @@ class GeneratorResolver(IResolver):
     module_names = ["stattest.experiment.generator"]
 
     @staticmethod
-    def load_generators(config: Optional[Config]) -> List[AbstractRVSGenerator]:
+    def load_from_config(config: Optional[Config]) -> List[AbstractRVSGenerator]:
         if not config:
             raise OperationalException("No configuration set. Please specify configuration.")
 
@@ -43,15 +43,13 @@ class GeneratorResolver(IResolver):
         alternatives = alternatives_configuration["alternatives"]
         generators = []
         for generator_conf in alternatives:
-            generator = GeneratorResolver.load_generator(
-                generator_conf["name"], generator_conf["params"]
-            )
+            generator = GeneratorResolver.load(generator_conf["name"], generator_conf["params"])
             generators.append(generator)
 
         return generators
 
     @staticmethod
-    def load_generator(
+    def load(
         generator_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
     ) -> AbstractRVSGenerator:
         """
@@ -61,7 +59,7 @@ class GeneratorResolver(IResolver):
         :param generator_name:
         """
 
-        generator: AbstractRVSGenerator = GeneratorResolver._load_generator(
+        generator: AbstractRVSGenerator = GeneratorResolver._load(
             generator_name, params=params, extra_dir=path
         )
 
@@ -73,7 +71,7 @@ class GeneratorResolver(IResolver):
         return generator
 
     @staticmethod
-    def _load_generator(
+    def _load(
         generator_name: str,
         params: Optional[dict[str, Any]],
         extra_dir: Optional[str] = None,
@@ -81,7 +79,6 @@ class GeneratorResolver(IResolver):
         """
         Search and loads the specified strategy.
         :param generator_name: name of the module to import
-        :param config: configuration for the strategy
         :param extra_dir: additional directory to search for the given strategy
         :return: Strategy instance or None
         """
