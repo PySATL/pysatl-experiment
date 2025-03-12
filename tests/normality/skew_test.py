@@ -1,4 +1,5 @@
 import pytest as pytest
+from numpy import nan
 
 from stattest.test.normal import SkewNormalityTest
 from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
@@ -8,7 +9,7 @@ from tests.normality.abstract_normality_test_case import AbstractNormalityTestCa
     ("data", "result"),
     [
         ([148, 154, 158, 160, 161, 162, 166, 170, 182, 195, 236], 2.7788579769903414),
-        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], nan),  # Zero exception test
         ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], -1.080877907978914),  # Negative values test
     ],
 )

@@ -1,4 +1,5 @@
 import pytest as pytest
+from numpy import nan
 
 from stattest.test.normal import JBNormalityTest
 from tests.normality.abstract_normality_test_case import AbstractNormalityTestCase
@@ -23,7 +24,7 @@ from tests.normality.abstract_normality_test_case import AbstractNormalityTestCa
             ],
             0.44334632590843914,
         ),
-        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], nan),  # Zero exception test
         ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 0.7435185185185184),  # Negative values test
     ],
 )

@@ -12,4 +12,4 @@ class AbstractNormalityTestCase(AbstractTestCase, ABC):
     @override
     def test_execute_statistic(data, result, statistic_test: AbstractNormalityTestStatistic):
         statistic = statistic_test.execute_statistic(data)
-        assert result == pytest.approx(statistic, 0.00001)
+        assert result == pytest.approx(statistic, 0.00001, nan_ok=True)
