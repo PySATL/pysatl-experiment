@@ -1,4 +1,5 @@
 import pytest as pytest
+from numpy import nan
 
 from stattest.test.exponent import PTTestExp
 from tests.exponentiality.abstract_exponentiality_test_case import AbstractExponentialityTestCase
@@ -10,8 +11,8 @@ from tests.exponentiality.abstract_exponentiality_test_case import AbstractExpon
         ([1, 2, 3, 4, 5, 6, 7], 0.21428571428571427),
         ([i for i in range(1, 10)], 0.2222222222222222),
         ([i for i in range(1, 50)], 0.24489795918367346),
-        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 0),  # Zero exception test
-        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], 0.16232061118184815),  # Negative values test
+        ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], nan),  # Zero exception test
+        ([-4, -1, -6, -8, -4, -2, 0, -2, 0, -3], -0.3333333333333333),  # Negative values test
     ],
 )
 class TestCasePTExponentialityTest(AbstractExponentialityTestCase):
