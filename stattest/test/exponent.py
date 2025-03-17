@@ -87,7 +87,7 @@ class KSTestExp(AbstractExponentialityTestStatistic):
         z = np.sort(1 - np.exp(-y))
         j1 = np.arange(1, n + 1) / n
         m1 = np.max(j1 - z)
-        j2 = (np.arange(0, n) + 1) / n
+        j2 = np.arange(0, n) / n
         m2 = np.max(z - j2)
         ks = max(m1, m2)  # TODO: fix mistype
 
