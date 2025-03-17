@@ -1,5 +1,4 @@
 from abc import ABC
-from typing import Union
 
 from numpy import float64
 from typing_extensions import override
@@ -9,7 +8,7 @@ from stattest.test.goodness_of_fit import AbstractGoodnessOfFitTestStatistic
 
 class AbstractGraphTestStatistic(AbstractGoodnessOfFitTestStatistic, ABC):
     @override
-    def execute_statistic(self, rvs, **kwargs) -> Union[float, float64]:
+    def execute_statistic(self, rvs, **kwargs) -> float | float64:
         dist = self._compute_dist(rvs)
 
         adjacency_list = self._make_adjacency_list(rvs, dist)

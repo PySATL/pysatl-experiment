@@ -1,10 +1,8 @@
-from typing import List
-
 import numpy as np
 from scipy.stats import norm
 
 
-def generate_lo_con_norm(size, p=0.5, a=0) -> List[float]:
+def generate_lo_con_norm(size, p=0.5, a=0) -> list[float]:
     """
      Consisting of randomly selected observations with probability 1 − p
      drawn from a standard normal distribution and with probability p drawn from a

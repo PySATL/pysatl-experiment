@@ -23,13 +23,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          poetry --version
+        run: pip install poetry==2.1.1
 
       - name: Install dependencies with Poetry
-        run: poetry install --no-interaction --no-root
+        run: poetry install --with dev
 
       - name: Run Ruff lint
         run: poetry run ruff check --output-format=github
@@ -50,6 +47,9 @@ jobs:
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.coverallsToken }}
         run: poetry run coveralls || true
+
+      - name: Remove poetry.lock before checking for changes
+        run: rm -f poetry.lock
 
       - name: Check for repository changes
         run: |

@@ -1,4 +1,4 @@
-from typing import ClassVar, List, Tuple
+from typing import ClassVar
 
 from sqlalchemy import Integer, String, func, text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -41,7 +41,7 @@ class RvsDbStore(AbstractDbStore, IRvsStore):
     __separator = ";"
 
     @override
-    def insert_all_rvs(self, generator_code: str, size: int, data: List[List[float]]):
+    def insert_all_rvs(self, generator_code: str, size: int, data: list[list[float]]):
         if len(data) == 0:
             return
 
@@ -58,7 +58,7 @@ class RvsDbStore(AbstractDbStore, IRvsStore):
         RvsDbStore.session.commit()
 
     @override
-    def insert_rvs(self, code: str, size: int, data: List[float]):
+    def insert_rvs(self, code: str, size: int, data: list[float]):
         data_str = RvsDbStore.__separator.join(map(str, data))
         RvsDbStore.session.add(RVS(code=code, size=int(size), data=data_str))
         RvsDbStore.session.commit()
@@ -69,7 +69,7 @@ class RvsDbStore(AbstractDbStore, IRvsStore):
         return len(data)
 
     @override
-    def get_rvs(self, code: str, size: int) -> List[List[float]]:
+    def get_rvs(self, code: str, size: int) -> list[list[float]]:
         samples = (
             RvsDbStore.session.query(RVS)
             .filter(
@@ -85,7 +85,7 @@ class RvsDbStore(AbstractDbStore, IRvsStore):
         return [[float(x) for x in sample.data.split(RvsDbStore.__separator)] for sample in samples]
 
     @override
-    def get_rvs_stat(self) -> List[Tuple[str, int, int]]:
+    def get_rvs_stat(self) -> list[tuple[str, int, int]]:
         result = (
             RvsDbStore.session.query(RVS.code, RVS.size, func.count(RVS.code))
             .group_by(RVS.code, RVS.size)
