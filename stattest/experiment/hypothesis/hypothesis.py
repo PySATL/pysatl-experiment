@@ -1,4 +1,4 @@
-from stattest.core.distribution import norm, weibull
+from stattest.core.distribution import norm, weibull, expon
 from stattest.experiment.hypothesis.model import AbstractHypothesis
 
 
@@ -18,3 +18,10 @@ class WeibullHypothesis(AbstractHypothesis):
 
     def generate(self, size, **kwargs):
         return weibull.generate_weibull(size, self.a, self.k)
+
+class ExponentialHypothesis(AbstractHypothesis):
+    def __init__(self, lam=1):
+        self.lam = lam
+
+    def generate(self, size, **kwargs):
+        return expon.generate_expon(size, self.lam)
