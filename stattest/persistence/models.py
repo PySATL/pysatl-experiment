@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any
 
 
 class IStore:
@@ -17,7 +17,7 @@ class IStore:
 
 
 class IRvsStore(IStore, ABC):
-    def insert_all_rvs(self, generator_code: str, size: int, data: List[List[float]]):
+    def insert_all_rvs(self, generator_code: str, size: int, data: list[list[float]]):
         """
         Insert several rvs data to store.
         By default use single rvs insert.
@@ -30,7 +30,7 @@ class IRvsStore(IStore, ABC):
             self.insert_rvs(generator_code, size, d)
 
     @abstractmethod
-    def insert_rvs(self, generator_code: str, size: int, data: List[float]):
+    def insert_rvs(self, generator_code: str, size: int, data: list[float]):
         """
         Insert one rvs data to store.
 
@@ -53,7 +53,7 @@ class IRvsStore(IStore, ABC):
         return len(self.get_rvs(generator_code, size))
 
     @abstractmethod
-    def get_rvs(self, generator_code: str, size: int) -> List[List[float]]:
+    def get_rvs(self, generator_code: str, size: int) -> list[list[float]]:
         """
         Get rvs data from store.
 
@@ -65,7 +65,7 @@ class IRvsStore(IStore, ABC):
         pass
 
     @abstractmethod
-    def get_rvs_stat(self) -> List[Tuple[str, int, int]]:
+    def get_rvs_stat(self) -> list[tuple[str, int, int]]:
         """
         Get rvs data statistics.
 
@@ -84,7 +84,7 @@ class IRvsStore(IStore, ABC):
 class ICriticalValueStore(IStore, ABC):
     @abstractmethod
     def insert_critical_value(
-        self, code: str, size: int, sl: float, value: Union[float, Tuple[float, float]]
+        self, code: str, size: int, sl: float, value: float | tuple[float, float]
     ):
         """
         Insert critical value to store.
@@ -97,7 +97,7 @@ class ICriticalValueStore(IStore, ABC):
         pass
 
     @abstractmethod
-    def insert_distribution(self, code: str, size: int, data: List[float]):
+    def insert_distribution(self, code: str, size: int, data: list[float]):
         """
         Insert distribution to store.
 
@@ -110,7 +110,7 @@ class ICriticalValueStore(IStore, ABC):
     @abstractmethod
     def get_critical_value(
         self, code: str, size: int, sl: float
-    ) -> Optional[Union[float, Tuple[float, float]]]:
+    ) -> float | tuple[float, float] | None:
         """
         Get critical value from store.
         :param code: test code
@@ -120,7 +120,7 @@ class ICriticalValueStore(IStore, ABC):
         pass
 
     @abstractmethod
-    def get_distribution(self, code: str, size: int) -> Optional[List[float]]:
+    def get_distribution(self, code: str, size: int) -> list[float] | None:
         """
         Get distribution from store.
 

@@ -1,5 +1,3 @@
-from typing import List, Tuple, Union
-
 import numpy as np
 import scipy.stats as scipy_stats
 
@@ -14,7 +12,7 @@ def calculate_critical_value(
     size: int,
     alpha: float,
     count,
-) -> Tuple[float, List[float]]:
+) -> tuple[float, list[float]]:
     # Calculate critical value
     distribution = np.zeros(count)
 
@@ -35,7 +33,7 @@ def calculate_two_tailed_critical_value(
     size: int,
     alpha: float,
     count: int,
-) -> Tuple[Tuple[float, float], List[float]]:
+) -> tuple[tuple[float, float], list[float]]:
     distribution = np.zeros(count)
 
     for i in range(count):
@@ -58,7 +56,7 @@ def get_or_calculate_critical_value(
     alpha: float,
     store: ICriticalValueStore,
     count: int,
-) -> Union[float, Tuple[float, float]]:
+) -> float | tuple[float, float]:
     critical_values = test.calculate_two_tailed_critical_values(size, alpha)
     if critical_values is not None:
         return critical_values
