@@ -50,16 +50,16 @@ class ConfigurationParser:
     @staticmethod
     def parse_generator_config(config) -> GeneratorConfiguration:
         return GeneratorConfiguration(
-            alternatives=_parse_json_class_list(GeneratorResolver, config["generators"]),
+            alternatives=ConfigurationParser._parse_json_class_list(GeneratorResolver, config["generators"]),
             sizes=config["sizes"],
             count=config["count"],
             threads=config.get("threads", multiprocessing.cpu_count()),
-            listeners=_parse_json_class_list(ListenerResolver, config["listeners"]),
+            listeners=ConfigurationParser._parse_json_class_list(ListenerResolver, config["listeners"]),
         )
 
     @staticmethod
     def parse_configs(paths: list[str]) -> list[ExperimentConfiguration]:
-        return [parse_config(c) for c in paths]
+        return [ConfigurationParser.parse_config(c) for c in paths]
 
     @staticmethod
     def parse_config(path: str) -> ExperimentConfiguration:
@@ -71,31 +71,31 @@ class ConfigurationParser:
             default_threads = multiprocessing.cpu_count()
 
             generator_configuration = config_data.get("generator_configuration", {})
-            alternative_configuration = parse_generator_config(generator_configuration)
+            alternative_configuration = ConfigurationParser.parse_generator_config(generator_configuration)
 
             tests_config_data = config_data["test_configuration"]
 
-            tests = _parse_json_class_list(TestResolver, tests_config_data["tests"])
+            tests = ConfigurationParser._parse_json_class_list(TestResolver, tests_config_data["tests"])
             test_threads = tests_config_data.get("threads", default_threads)
 
             tests_worker_config_data = tests_config_data["worker"]
             tests_worker_params_config_data = tests_worker_config_data["params"]
 
-            critical_value_store = _parse_json_class(
+            critical_value_store = ConfigurationParser._parse_json_class(
                 StoreResolver, tests_worker_params_config_data["cv_store"]
             )
             # tests_worker_params_config_data["critical_value_store"]["params"]["db_url"]
 
-            hypothesis = _parse_json_class(
+            hypothesis = ConfigurationParser._parse_json_class(
                 HypothesisResolver, tests_worker_config_data["params"]["hypothesis"]
             )
 
-            power_calculation_worker = _parse_json_class(WorkerResolver, tests_worker_config_data)
+            power_calculation_worker = ConfigurationParser._parse_json_class(WorkerResolver, tests_worker_config_data)
             power_calculation_worker.cv_store = critical_value_store
             power_calculation_worker.hypothesis = hypothesis
 
-            test_data_tels = _parse_json_class_list(ListenerResolver,
-                                                    tests_config_data["listeners"])
+            test_data_tels = ConfigurationParser._parse_json_class_list(ListenerResolver,
+                                                                        tests_config_data["listeners"])
 
             test_configuration = TestConfiguration(
                 tests=tests,
@@ -105,18 +105,18 @@ class ConfigurationParser:
             )
 
             report_data = config_data["report_configuration"]
-            report_builder = _parse_json_class(BuilderResolver, report_data["report_builder"])
-            report_listeners = _parse_json_class_list(ListenerResolver, report_data["listeners"])
+            report_builder = ConfigurationParser._parse_json_class(BuilderResolver, report_data["report_builder"])
+            report_listeners = ConfigurationParser._parse_json_class_list(ListenerResolver, report_data["listeners"])
             report_configuration = ReportConfiguration(
                 report_builder=report_builder, listeners=report_listeners
             )
 
             rvs_store_data = config_data["rvs_store"]
-            rvs_store = _parse_json_class(StoreResolver, rvs_store_data)
+            rvs_store = ConfigurationParser._parse_json_class(StoreResolver, rvs_store_data)
             # (db_url=rvs_store_data["params"]["db_url"]))
 
             result_store_data = config_data["result_store"]
-            result_store = _parse_json_class(StoreResolver, result_store_data)
+            result_store = ConfigurationParser._parse_json_class(StoreResolver, result_store_data)
             # (db_url=result_store_data["params"]["db_url"]))
 
             print("Successfully parsed configuration")
