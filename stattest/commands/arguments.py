@@ -38,9 +38,7 @@ class Arguments:
 
         return parsed_arg
 
-    def _build_args(
-        self, optionlist: list[str], parser: ArgumentParser | _ArgumentGroup
-    ) -> None:
+    def _build_args(self, optionlist: list[str], parser: ArgumentParser | _ArgumentGroup) -> None:
         for val in optionlist:
             opt = AVAILABLE_CLI_OPTIONS[val]
             parser.add_argument(*opt.cli, dest=val, **opt.kwargs)
