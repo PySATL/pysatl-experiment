@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 from stattest.persistence.models import IResultStore
 
@@ -50,7 +50,7 @@ class ResultReader:
         self.result_store = result_store
         self.batch_size = batch_size
         self.offset = 0
-        self.items: List[Any] = []
+        self.items: list[Any] = []
         self.i = 0
 
     def __iter__(self):

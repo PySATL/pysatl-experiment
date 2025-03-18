@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence
+from collections.abc import Sequence
 
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.persistence import IRvsStore
@@ -31,19 +31,19 @@ class TestWorker:
         pass
 
     def execute(
-        self, test: AbstractTestStatistic, data: List[List[float]], code, size: int
+        self, test: AbstractTestStatistic, data: list[list[float]], code, size: int
     ) -> TestWorkerResult:
         raise NotImplementedError("Method is not implemented")
 
     def build_id(
-        self, test: AbstractTestStatistic, data: List[List[float]], code, size: int
+        self, test: AbstractTestStatistic, data: list[list[float]], code, size: int
     ) -> str:
         raise NotImplementedError("Method is not implemented")
 
 
 class ReportConfiguration:
     def __init__(
-        self, report_builder: ReportBuilder, listeners: Optional[Sequence[StepListener]] = None
+        self, report_builder: ReportBuilder, listeners: Sequence[StepListener] | None = None
     ):
         """
         Report configuration provides configuration for report.
@@ -67,7 +67,7 @@ class GeneratorConfiguration:
         clear_before: bool = False,
         skip_step: bool = False,
         show_progress: bool = False,
-        listeners: Optional[Sequence[StepListener]] = None,
+        listeners: Sequence[StepListener] | None = None,
     ):
         if listeners is None:
             listeners = []
@@ -90,7 +90,7 @@ class TestConfiguration:
         tests: Sequence[AbstractTestStatistic],
         worker: TestWorker,
         threads=4,
-        listeners: Optional[Sequence[StepListener]] = None,
+        listeners: Sequence[StepListener] | None = None,
         skip_step: bool = False,
     ):
         if listeners is None:

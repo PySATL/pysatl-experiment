@@ -1,10 +1,8 @@
-from typing import List
-
 import numpy as np
 from scipy.stats import norm
 
 
-def generate_mix_con_norm(size, p=0.5, a=0, b=1) -> List[float]:
+def generate_mix_con_norm(size, p=0.5, a=0, b=1) -> list[float]:
     """
      Consisting of randomly selected observations with probability 1 − p drawn from a standard
      normal distribution and with probability p drawn from a normal distribution with mean a and

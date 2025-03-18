@@ -1,5 +1,3 @@
-from typing import List
-
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.experiment.test.critical_value import get_or_calculate_critical_value
 from stattest.persistence.models import ICriticalValueStore
@@ -9,7 +7,7 @@ from stattest.test import AbstractTestStatistic
 def execute_test(
     test: AbstractTestStatistic,
     hypothesis: AbstractHypothesis,
-    rvs: List[float],
+    rvs: list[float],
     alpha: float,
     store: ICriticalValueStore,
     count: int,
@@ -29,7 +27,7 @@ def execute_test(
 
 def calculate_test_power(
     test: AbstractTestStatistic,
-    data: List[List[float]],
+    data: list[list[float]],
     hypothesis: AbstractHypothesis,
     alpha: float,
     store: ICriticalValueStore,

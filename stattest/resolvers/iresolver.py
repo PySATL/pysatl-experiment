@@ -10,7 +10,7 @@ import logging
 import sys
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any
 
 from stattest.constants import Config
 from stattest.exceptions import OperationalException
@@ -43,18 +43,18 @@ class IResolver:
     # Child classes need to override this
     object_type: type[Any]
     object_type_str: str
-    user_subdir: Optional[str] = None
-    initial_search_path: Optional[Path] = None
+    user_subdir: str | None = None
+    initial_search_path: Path | None = None
     # Optional a path (generator_path, report_generator_path)
-    extra_path: Optional[str] = None
-    module_names: Optional[List[str]] = None
+    extra_path: str | None = None
+    module_names: list[str] | None = None
 
     @classmethod
     def build_search_paths(
         cls,
-        user_data_dir: Optional[Path] = None,
-        user_subdir: Optional[str] = None,
-        extra_dirs: Optional[list[str]] = None,
+        user_data_dir: Path | None = None,
+        user_subdir: str | None = None,
+        extra_dirs: list[str] | None = None,
     ) -> list[Path]:
         abs_paths: list[Path] = []
         if cls.initial_search_path:
@@ -75,7 +75,7 @@ class IResolver:
 
     @classmethod
     def _get_valid_object(
-        cls, module_path: Path, object_name: Optional[str], enum_failed: bool = False
+        cls, module_path: Path, object_name: str | None, enum_failed: bool = False
     ) -> Iterator[Any]:
         """
         Generator returning objects with matching object_type and object_name in the path given.
@@ -132,7 +132,7 @@ class IResolver:
     @classmethod
     def _search_object(
         cls, directory: Path, *, object_name: str, add_source: bool = False
-    ) -> Union[tuple[Any, Path], tuple[None, None]]:
+    ) -> tuple[Any, Path] | tuple[None, None]:
         """
         Search for the objectname in the given directory
         :param directory: relative or absolute directory path
@@ -166,8 +166,8 @@ class IResolver:
         *,
         object_name: str,
         add_source: bool = False,
-        kwargs: Optional[dict[str, Any]],
-    ) -> Optional[Any]:
+        kwargs: dict[str, Any] | None,
+    ) -> Any | None:
         """
         Try to load object from path list.
         """
@@ -192,9 +192,7 @@ class IResolver:
         return None
 
     @classmethod
-    def _load_modules_object(
-        cls, *, object_name: str, kwargs: Optional[dict[str, Any]]
-    ) -> Optional[Any]:
+    def _load_modules_object(cls, *, object_name: str, kwargs: dict[str, Any] | None) -> Any | None:
         """
         Try to load object from path list.
         """
@@ -211,8 +209,8 @@ class IResolver:
 
     @classmethod
     def _load_module_object(
-        cls, *, object_name: str, kwargs: Optional[dict[str, Any]], module_name: str
-    ) -> Optional[Any]:
+        cls, *, object_name: str, kwargs: dict[str, Any] | None, module_name: str
+    ) -> Any | None:
         """
         Try to load object from path list.
         """
@@ -239,7 +237,7 @@ class IResolver:
         config: Config,
         *,
         kwargs: dict,
-        extra_dir: Optional[str] = None,
+        extra_dir: str | None = None,
     ) -> Any:
         """
         Search and loads the specified object as configured in the child class.
@@ -281,7 +279,7 @@ class IResolver:
         directory: Path,
         enum_failed: bool,
         recursive: bool = False,
-        basedir: Optional[Path] = None,
+        basedir: Path | None = None,
     ) -> list[dict[str, Any]]:
         """
         Searches a directory for valid objects

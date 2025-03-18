@@ -1,7 +1,6 @@
 import logging
 from multiprocessing import Queue
 from multiprocessing.synchronize import Event as EventClass
-from typing import List, Optional
 
 from stattest.experiment.configuration.configuration import GeneratorConfiguration
 from stattest.experiment.generator import AbstractRVSGenerator
@@ -53,7 +52,7 @@ def fill_queue(
     sizes = kwargs["sizes"]
     count = kwargs["count"]
     store: IRvsStore = kwargs["store"]
-    rvs_generators: Optional[List[AbstractRVSGenerator]] = kwargs["rvs_generators"]
+    rvs_generators: list[AbstractRVSGenerator] | None = kwargs["rvs_generators"]
 
     store.init()
 
