@@ -20,11 +20,7 @@ class AbstractExponentialityTestStatistic(AbstractGoodnessOfFitTestStatistic, AB
     @staticmethod
     @override
     def code():
-        return (
-            "EXPONENTIALITY"
-            + "_"
-            + super(AbstractGoodnessOfFitTestStatistic, AbstractGoodnessOfFitTestStatistic).code()
-        )
+        return "EXP"
 
     @override
     def _generate(self, size):
