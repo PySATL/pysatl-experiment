@@ -46,7 +46,7 @@ class ListenerResolver(IResolver):
         return listener
 
     @staticmethod
-    def validate_generator(listener: StepListener) -> StepListener:
+    def validate(listener: StepListener) -> StepListener:
         # Validation can be added
         return listener
 
@@ -85,7 +85,7 @@ class ListenerResolver(IResolver):
             )
 
         if listener:
-            return ListenerResolver.validate_generator(listener)
+            return ListenerResolver.validate(listener)
 
         raise OperationalException(
             f"Impossible to load RVS generator '{listener_name}'. This class does not exist "

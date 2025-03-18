@@ -46,7 +46,7 @@ class HypothesisResolver(IResolver):
         return hypothesis
 
     @staticmethod
-    def validate_hypothesis(hypothesis: AbstractHypothesis) -> AbstractHypothesis:
+    def validate(hypothesis: AbstractHypothesis) -> AbstractHypothesis:
         # Validation can be added
         return hypothesis
 
@@ -86,7 +86,7 @@ class HypothesisResolver(IResolver):
             )
 
         if hypothesis:
-            return HypothesisResolver.validate_hypothesis(hypothesis)
+            return HypothesisResolver.validate(hypothesis)
 
         raise OperationalException(
             f"Impossible to load RVS hypothesis '{hypothesis_name}'. This class does not exist "

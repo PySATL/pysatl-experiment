@@ -44,7 +44,7 @@ class BuilderResolver(IResolver):
         return builder
 
     @staticmethod
-    def validate_generator(builder: ReportBuilder) -> ReportBuilder:
+    def validate(builder: ReportBuilder) -> ReportBuilder:
         # Validation can be added
         return builder
 
@@ -81,7 +81,7 @@ class BuilderResolver(IResolver):
             worker = BuilderResolver._load_modules_object(object_name=builder_name, kwargs=params)
 
         if worker:
-            return BuilderResolver.validate_generator(worker)
+            return BuilderResolver.validate(worker)
 
         raise OperationalException(
             f"Impossible to load RVS generator '{builder_name}'. This class does not exist "

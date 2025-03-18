@@ -46,7 +46,7 @@ class WorkerResolver(IResolver):
         return worker
 
     @staticmethod
-    def validate_generator(worker: PowerCalculationWorker) -> PowerCalculationWorker:
+    def validate(worker: PowerCalculationWorker) -> PowerCalculationWorker:
         # Validation can be added
         return worker
 
@@ -83,7 +83,7 @@ class WorkerResolver(IResolver):
             worker = WorkerResolver._load_modules_object(object_name=worker_name, kwargs=params)
 
         if worker:
-            return WorkerResolver.validate_generator(worker)
+            return WorkerResolver.validate(worker)
 
         raise OperationalException(
             f"Impossible to load RVS generator '{worker_name}'. This class does not exist "

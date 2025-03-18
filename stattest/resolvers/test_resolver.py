@@ -38,7 +38,7 @@ class TestResolver(IResolver):
         return test
 
     @staticmethod
-    def validate_generator(test: AbstractTestStatistic) -> AbstractTestStatistic:
+    def validate(test: AbstractTestStatistic) -> AbstractTestStatistic:
         # Validation can be added
         return test
 
@@ -75,7 +75,7 @@ class TestResolver(IResolver):
             test = TestResolver._load_modules_object(object_name=test_name, kwargs=params)
 
         if test:
-            return TestResolver.validate_generator(test)
+            return TestResolver.validate(test)
 
         raise OperationalException(
             f"Impossible to load RVS generator '{test_name}'. This class does not exist "

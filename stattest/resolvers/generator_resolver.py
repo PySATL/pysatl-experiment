@@ -66,7 +66,7 @@ class GeneratorResolver(IResolver):
         return generator
 
     @staticmethod
-    def validate_generator(generator: AbstractRVSGenerator) -> AbstractRVSGenerator:
+    def validate(generator: AbstractRVSGenerator) -> AbstractRVSGenerator:
         # Validation can be added
         return generator
 
@@ -104,7 +104,7 @@ class GeneratorResolver(IResolver):
             )
 
         if generator:
-            return GeneratorResolver.validate_generator(generator)
+            return GeneratorResolver.validate(generator)
 
         raise OperationalException(
             f"Impossible to load RVS generator '{generator_name}'. This class does not exist "

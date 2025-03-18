@@ -322,3 +322,15 @@ class IResolver:
                     }
                 )
         return objects
+
+    @staticmethod
+    def load(**kwargs):
+        raise "Not implemented"
+
+    @staticmethod
+    def validate(**kwargs):
+        raise "Not implemented"
+
+    @staticmethod
+    def _load(**kwargs):
+        raise "Not implemented"
