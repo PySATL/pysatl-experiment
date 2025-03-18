@@ -28,7 +28,7 @@ def _extend_validator(validator_class):
     return validators.extend(validator_class, {"properties": set_defaults})
 
 
-FreqtradeValidator = _extend_validator(Draft4Validator)
+PysatlValidator = _extend_validator(Draft4Validator)
 
 
 def validate_config_schema(conf: dict[str, Any], preliminary: bool = False) -> dict[str, Any]:
@@ -40,7 +40,7 @@ def validate_config_schema(conf: dict[str, Any], preliminary: bool = False) -> d
     """
     conf_schema = deepcopy(CONF_SCHEMA)
     try:
-        FreqtradeValidator(conf_schema).validate(conf)
+        PysatlValidator(conf_schema).validate(conf)
         return conf
     except ValidationError as e:
         logger.critical(f"Invalid configuration. Reason: {e}")
@@ -53,6 +53,7 @@ def validate_config_consistency(conf: dict[str, Any], *, preliminary: bool = Fal
     Should be run after loading both configuration and strategy,
     since strategies can set certain configuration settings too.
     :param conf: Config in JSON format
+    :preliminary: TODO
     :return: Returns None if everything is ok, otherwise throw an ConfigurationError
     """
 

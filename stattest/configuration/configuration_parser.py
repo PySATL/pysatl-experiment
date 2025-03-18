@@ -94,7 +94,8 @@ class ConfigurationParser:
             power_calculation_worker.cv_store = critical_value_store
             power_calculation_worker.hypothesis = hypothesis
 
-            test_data_tels = _parse_json_class_list(ListenerResolver, tests_config_data["listeners"])
+            test_data_tels = _parse_json_class_list(ListenerResolver,
+                                                    tests_config_data["listeners"])
 
             test_configuration = TestConfiguration(
                 tests=tests,

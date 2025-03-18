@@ -325,12 +325,12 @@ class IResolver:
 
     @staticmethod
     def load(**kwargs):
-        raise "Not implemented"
+        raise Exception("Not implemented")
 
     @staticmethod
     def validate(**kwargs):
-        raise "Not implemented"
+        raise Exception("Not implemented")
 
     @staticmethod
     def _load(**kwargs):
-        raise "Not implemented"
+        raise Exception("Not implemented")
