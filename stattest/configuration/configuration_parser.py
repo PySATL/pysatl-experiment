@@ -43,7 +43,7 @@ class ConfigurationParser:
         except KeyError:
             class_params = None
 
-        class_ = resolver.load(class_name, params=class_params)
+        class_ = resolver.load(name=class_name, params=class_params)
 
         return class_
 
