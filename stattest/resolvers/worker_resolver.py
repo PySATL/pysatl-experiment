@@ -88,6 +88,3 @@ class WorkerResolver(IResolver):
             f"Impossible to load RVS generator '{worker_name}'. This class does not exist "
             "or contains Python code errors."
         )
-
-
-# TODO: support for TestWorker
