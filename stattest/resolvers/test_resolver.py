@@ -1,3 +1,9 @@
+# pragma pylint: disable=attribute-defined-outside-init
+
+"""
+This module load custom statistic tests
+"""
+
 import logging
 from typing import Any
 
@@ -62,7 +68,6 @@ class TestResolver(IResolver):
         abs_paths = TestResolver.build_search_paths(
             user_data_dir=None, user_subdir=USERPATH_TESTS, extra_dirs=extra_dirs
         )
-        # TODO: 'E:/Documents/Projects/PySATL/pysatl-experiment/tests/resolvers/generator_path')
 
         test = TestResolver._load_object(
             paths=abs_paths,

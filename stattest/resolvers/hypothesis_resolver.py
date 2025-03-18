@@ -1,7 +1,7 @@
 # pragma pylint: disable=attribute-defined-outside-init
 
 """
-This module load custom hypothesis
+This module load custom hypotheses
 """
 
 import logging
@@ -70,7 +70,6 @@ class HypothesisResolver(IResolver):
         abs_paths = HypothesisResolver.build_search_paths(
             user_data_dir=None, user_subdir=USERPATH_HYPOTHESIS, extra_dirs=extra_dirs
         )
-        # TODO: check strange path 'pysatl-experiment/tests/resolvers/hypothesis_path'
 
         hypothesis = HypothesisResolver._load_object(
             paths=abs_paths,
@@ -79,7 +78,6 @@ class HypothesisResolver(IResolver):
             kwargs=params,
         )
 
-        # TODO: exception is here
         if not hypothesis:
             hypothesis = HypothesisResolver._load_modules_object(
                 object_name=hypothesis_name, kwargs=params

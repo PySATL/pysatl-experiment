@@ -1,7 +1,7 @@
 # pragma pylint: disable=attribute-defined-outside-init
 
 """
-This module load custom RVS generators
+This module load custom RVS stores
 """
 
 import logging
@@ -68,7 +68,6 @@ class StoreResolver(IResolver):
         abs_paths = StoreResolver.build_search_paths(
             user_data_dir=None, user_subdir=USERPATH_STORES, extra_dirs=extra_dirs
         )
-        # TODO: 'E:/Documents/Projects/PySATL/pysatl-experiment/tests/resolvers/generator_path')
 
         store = StoreResolver._load_object(
             paths=abs_paths,

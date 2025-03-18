@@ -1,7 +1,7 @@
 # pragma pylint: disable=attribute-defined-outside-init
 
 """
-This module load custom RVS generators
+This module load custom builders
 """
 
 import logging

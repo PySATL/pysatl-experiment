@@ -1,7 +1,7 @@
 # pragma pylint: disable=attribute-defined-outside-init
 
 """
-This module load custom RVS generators
+This module load custom workers
 """
 
 import logging
@@ -70,7 +70,6 @@ class WorkerResolver(IResolver):
         abs_paths = WorkerResolver.build_search_paths(
             user_data_dir=None, user_subdir=USERPATH_WORKERS, extra_dirs=extra_dirs
         )
-        # TODO: 'E:/Documents/Projects/PySATL/pysatl-experiment/tests/resolvers/generator_path')
 
         worker = WorkerResolver._load_object(
             paths=abs_paths,

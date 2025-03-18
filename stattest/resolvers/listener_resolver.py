@@ -1,7 +1,7 @@
 # pragma pylint: disable=attribute-defined-outside-init
 
 """
-This module load custom RVS generators
+This module load custom listeners
 """
 
 import logging
@@ -70,7 +70,6 @@ class ListenerResolver(IResolver):
         abs_paths = ListenerResolver.build_search_paths(
             user_data_dir=None, user_subdir=USERPATH_LISTENERS, extra_dirs=extra_dirs
         )
-        # TODO: 'E:/Documents/Projects/PySATL/pysatl-experiment/tests/resolvers/generator_path')
 
         listener = ListenerResolver._load_object(
             paths=abs_paths,
