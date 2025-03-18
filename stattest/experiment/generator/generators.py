@@ -13,6 +13,7 @@ from stattest.core.distribution.lo_con_norm import generate_lo_con_norm
 from stattest.core.distribution.logistic import generate_logistic
 from stattest.core.distribution.lognormal import generate_lognorm
 from stattest.core.distribution.mix_con_norm import generate_mix_con_norm
+from stattest.core.distribution.norm import generate_norm
 from stattest.core.distribution.rice import generate_rice
 from stattest.core.distribution.scale_con_norm import generate_scale_con_norm
 from stattest.core.distribution.student import generate_t
@@ -304,3 +305,17 @@ class GompertzGenerator(AbstractRVSGenerator):
     @override
     def generate(self, size):
         return generate_gompertz(size=size, eta=self.eta, b=self.b)
+
+class NormalRVSGenerator(AbstractRVSGenerator):
+    def __init__(self, mean, var, **kwargs):
+        super().__init__(**kwargs)
+        self.mean = mean
+        self.var = var
+
+    @override
+    def code(self):
+        return super()._convert_to_code(["norm", self.mean, self.var])
+
+    @override
+    def generate(self, size):
+        return generate_norm(size, mean=self.mean, var=self.var)
