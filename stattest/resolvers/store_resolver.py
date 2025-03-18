@@ -5,7 +5,7 @@ This module load custom RVS generators
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from stattest.constants import USERPATH_STORES
 from stattest.exceptions import OperationalException
@@ -30,7 +30,7 @@ class StoreResolver(IResolver):
 
     @staticmethod
     def load(
-        store_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
+        store_name: str, path: str | None = None, params: dict[str, Any] | None = None
     ) -> IStore:
         """
         Load the custom class from config parameter
@@ -51,8 +51,8 @@ class StoreResolver(IResolver):
     @staticmethod
     def _load(
         store_name: str,
-        params: Optional[dict[str, Any]],
-        extra_dir: Optional[str] = None,
+        params: dict[str, Any] | None,
+        extra_dir: str | None = None,
     ) -> IStore:
         """
         Search and loads the specified strategy.

@@ -2,7 +2,6 @@ import json
 import multiprocessing
 from json import JSONDecodeError
 from pathlib import Path
-from typing import List
 
 from stattest.experiment.configuration.configuration import (
     ExperimentConfiguration,
@@ -59,7 +58,7 @@ class ConfigurationParser:
         )
 
     @staticmethod
-    def parse_configs(paths: List[str]) -> List[ExperimentConfiguration]:
+    def parse_configs(paths: list[str]) -> list[ExperimentConfiguration]:
         return [parse_config(c) for c in paths]
 
     @staticmethod

@@ -5,7 +5,7 @@ This module load custom RVS generators
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from stattest.constants import USERPATH_WORKERS
 from stattest.exceptions import OperationalException
@@ -30,7 +30,7 @@ class WorkerResolver(IResolver):
 
     @staticmethod
     def load(
-        worker_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
+        worker_name: str, path: str | None = None, params: dict[str, Any] | None = None
     ) -> PowerCalculationWorker:
         """
         Load the custom class from config parameter
@@ -53,8 +53,8 @@ class WorkerResolver(IResolver):
     @staticmethod
     def _load(
         worker_name: str,
-        params: Optional[dict[str, Any]],
-        extra_dir: Optional[str] = None,
+        params: dict[str, Any] | None,
+        extra_dir: str | None = None,
     ) -> PowerCalculationWorker:
         """
         Search and loads the specified strategy.

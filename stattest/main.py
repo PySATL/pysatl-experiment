@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import Any, Union
+from typing import Any
 
 from stattest import __version__
 from stattest.commands.arguments import Arguments
@@ -13,7 +13,7 @@ from stattest.system.version_info import print_version_info
 logger = logging.getLogger(__name__)
 
 
-def main(sysargv: Union[list[str], None] = None) -> None:
+def main(sysargv: list[str] | None = None) -> None:
     return_code: Any = 1
     try:
         arguments = Arguments(sysargv)

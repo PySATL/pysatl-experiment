@@ -1,5 +1,5 @@
 from argparse import ArgumentParser, Namespace, _ArgumentGroup
-from typing import Any, Union
+from typing import Any
 
 from stattest.commands.cli_options import AVAILABLE_CLI_OPTIONS
 
@@ -14,10 +14,10 @@ class Arguments:
     Arguments Class. Manage the arguments received by the cli
     """
 
-    def __init__(self, args: Union[list[str], None]) -> None:
+    def __init__(self, args: list[str] | None) -> None:
         self.parser = None
         self.args = args
-        self._parsed_arg: Union[Namespace, None] = None
+        self._parsed_arg: Namespace | None = None
 
     def get_parsed_arg(self) -> dict[str, Any]:
         """
@@ -39,7 +39,7 @@ class Arguments:
         return parsed_arg
 
     def _build_args(
-        self, optionlist: list[str], parser: Union[ArgumentParser, _ArgumentGroup]
+        self, optionlist: list[str], parser: ArgumentParser | _ArgumentGroup
     ) -> None:
         for val in optionlist:
             opt = AVAILABLE_CLI_OPTIONS[val]
