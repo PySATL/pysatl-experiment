@@ -12,6 +12,7 @@ from stattest.experiment.configuration.configuration import (
 from stattest.resolvers.builder_resolver import BuilderResolver
 from stattest.resolvers.generator_resolver import GeneratorResolver
 from stattest.resolvers.hypothesis_resolver import HypothesisResolver
+from stattest.resolvers.iresolver import IResolver
 from stattest.resolvers.listener_resolver import ListenerResolver
 from stattest.resolvers.store_resolver import StoreResolver
 from stattest.resolvers.test_resolver import TestResolver
@@ -21,7 +22,7 @@ from stattest.resolvers.worker_resolver import WorkerResolver
 class ConfigurationParser:
 
     @staticmethod
-    def _parse_json_class_list(resolver, json_dicts_list):
+    def _parse_json_class_list(resolver: IResolver, json_dicts_list: list[dict]):
         class_list = list()
 
         for json_dict in json_dicts_list:
@@ -29,13 +30,13 @@ class ConfigurationParser:
 
             class_params = json_dict.get("params")
 
-            class_ = resolver.load(class_name, params=class_params)
+            class_ = resolver.load(name=class_name, params=class_params)
             class_list.append(class_)
 
         return class_list
 
     @staticmethod
-    def _parse_json_class(resolver, json_dict):
+    def _parse_json_class(resolver: IResolver, json_dict: dict):
         class_name = json_dict["name"]
 
         try:
@@ -64,7 +65,7 @@ class ConfigurationParser:
         return [ConfigurationParser.parse_config(c) for c in paths]
 
     @staticmethod
-    def parse_config(path: str) -> ExperimentConfiguration:
+    def parse_config(path: str) -> ExperimentConfiguration | None:
         try:
             # Configuring experiment
             with Path(path).open() as configFile:
