@@ -13,7 +13,7 @@ from stattest.experiment.generator.generators import (
     TruncnormGenerator,
     TRVSGenerator,
     TukeyRVSGenerator,
-    WeibullGenerator,
+    WeibullGenerator, NormalRVSGenerator, ExponentialGenerator, GompertzGenerator,
 )
 from stattest.experiment.generator.model import AbstractRVSGenerator
 
@@ -36,6 +36,11 @@ symmetric_generators = [
     TukeyRVSGenerator(lam=2),
     TukeyRVSGenerator(lam=5),
     TukeyRVSGenerator(lam=10),
+    NormalRVSGenerator(mean=0, var=1),
+    NormalRVSGenerator(mean=0, var=4),
+    NormalRVSGenerator(mean=4, var=1),
+    NormalRVSGenerator(mean=-4, var=1),
+    NormalRVSGenerator(mean=0, var=0.5),
 ]
 asymmetric_generators = [
     BetaRVSGenerator(a=2, b=1),
@@ -43,7 +48,7 @@ asymmetric_generators = [
     BetaRVSGenerator(a=4, b=0.5),
     BetaRVSGenerator(a=5, b=1),
     Chi2Generator(df=1),
-    Chi2Generator(df=2),
+    #Chi2Generator(df=2),
     Chi2Generator(df=4),
     Chi2Generator(df=10),
     GammaGenerator(alfa=2, beta=2),
@@ -55,9 +60,15 @@ asymmetric_generators = [
     GumbelGenerator(mu=1, beta=2),
     LognormGenerator(s=1, mu=0),
     WeibullGenerator(a=0.5, k=1),
-    WeibullGenerator(a=1, k=2),
+    #WeibullGenerator(a=1, k=2),
     WeibullGenerator(a=2, k=3.4),
     WeibullGenerator(a=3, k=4),
+    ExponentialGenerator(lam=1),
+    GompertzGenerator(eta=0.1, b=1),
+    GompertzGenerator(eta=2, b=1),
+    GompertzGenerator(eta=3, b=1),
+    GompertzGenerator(eta=1, b=2),
+    GompertzGenerator(eta=1, b=3),
 ]
 modified_generators = [
     TruncnormGenerator(a=-1, b=1),
