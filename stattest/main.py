@@ -52,7 +52,3 @@ def main(sysargv: list[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
-
-#  TODO: different methods for different stores?? also, fool check
-#  TODO: add big parsing test
-#  TODO: update docker_file
