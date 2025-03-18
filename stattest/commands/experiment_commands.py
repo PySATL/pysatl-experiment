@@ -11,7 +11,7 @@ def start_experiment(args: dict[str, Any]) -> int:
     Main entry point for experiment mode
     """
     # Import here to avoid loading worker module when it's not used
-    from stattest.configuration_parser import parse_configs
+    from stattest.configuration.configuration_parser import parse_configs
     from stattest.experiment import Experiment
 
     def term_handler(signum, frame):
