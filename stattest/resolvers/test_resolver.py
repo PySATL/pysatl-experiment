@@ -30,16 +30,16 @@ class TestResolver(IResolver):
 
     @staticmethod
     def load(
-        test_name: str, path: str | None = None, params: dict[str, Any] | None = None
+        name: str, path: str | None = None, params: dict[str, Any] | None = None
     ) -> AbstractTestStatistic:
         """
         Load the custom class from config parameter
         :param params:
         :param path:
-        :param test_name:
+        :param name:
         """
 
-        test: AbstractTestStatistic = TestResolver._load(test_name, params=params, extra_dir=path)
+        test: AbstractTestStatistic = TestResolver._load(name, params=params, extra_dir=path)
 
         return test
 

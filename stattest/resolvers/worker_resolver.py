@@ -30,17 +30,17 @@ class WorkerResolver(IResolver):
 
     @staticmethod
     def load(
-        worker_name: str, path: str | None = None, params: dict[str, Any] | None = None
+        name: str, path: str | None = None, params: dict[str, Any] | None = None
     ) -> PowerCalculationWorker:
         """
         Load the custom class from config parameter
         :param params:
         :param path:
-        :param worker_name:
+        :param name:
         """
 
         worker: PowerCalculationWorker = WorkerResolver._load(
-            worker_name, params=params, extra_dir=path
+            name, params=params, extra_dir=path
         )
 
         return worker

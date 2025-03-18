@@ -324,13 +324,9 @@ class IResolver:
         return objects
 
     @staticmethod
-    def load(**kwargs):
+    def load(name: str, path: str | None = None, params: dict[str, Any] | None = None):
         raise Exception("Not implemented")
 
     @staticmethod
-    def validate(**kwargs):
-        raise Exception("Not implemented")
-
-    @staticmethod
-    def _load(**kwargs):
+    def validate(resolver: Any):  # TODO: do validation properly
         raise Exception("Not implemented")

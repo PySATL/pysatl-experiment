@@ -30,16 +30,16 @@ class StoreResolver(IResolver):
 
     @staticmethod
     def load(
-        store_name: str, path: str | None = None, params: dict[str, Any] | None = None
+        name: str, path: str | None = None, params: dict[str, Any] | None = None
     ) -> IStore:
         """
         Load the custom class from config parameter
         :param params:
         :param path:
-        :param store_name:
+        :param name:
         """
 
-        store: IStore = StoreResolver._load(store_name, params=params, extra_dir=path)
+        store: IStore = StoreResolver._load(name, params=params, extra_dir=path)
 
         return store
 

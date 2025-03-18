@@ -30,16 +30,16 @@ class BuilderResolver(IResolver):
 
     @staticmethod
     def load(
-        builder_name: str, path: str | None = None, params: dict[str, Any] | None = None
+        name: str, path: str | None = None, params: dict[str, Any] | None = None
     ) -> ReportBuilder:
         """
         Load the custom class from config parameter
         :param params:
         :param path:
-        :param builder_name:
+        :param name:
         """
 
-        builder: ReportBuilder = BuilderResolver._load(builder_name, params=params, extra_dir=path)
+        builder: ReportBuilder = BuilderResolver._load(name, params=params, extra_dir=path)
 
         return builder
 

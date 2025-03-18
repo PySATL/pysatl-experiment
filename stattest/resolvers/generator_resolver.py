@@ -50,17 +50,17 @@ class GeneratorResolver(IResolver):
 
     @staticmethod
     def load(
-        generator_name: str, path: str | None = None, params: dict[str, Any] | None = None
+        name: str, path: str | None = None, params: dict[str, Any] | None = None
     ) -> AbstractRVSGenerator:
         """
         Load the custom class from config parameter
         :param params:
         :param path:
-        :param generator_name:
+        :param name:
         """
 
         generator: AbstractRVSGenerator = GeneratorResolver._load(
-            generator_name, params=params, extra_dir=path
+            name, params=params, extra_dir=path
         )
 
         return generator

@@ -30,17 +30,17 @@ class ListenerResolver(IResolver):
 
     @staticmethod
     def load(
-        listener_name: str, path: str | None = None, params: dict[str, Any] | None = None
+        name: str, path: str | None = None, params: dict[str, Any] | None = None
     ) -> StepListener:
         """
         Load the custom class from config parameter
         :param params:
         :param path:
-        :param listener_name:
+        :param name:
         """
 
         listener: StepListener = ListenerResolver._load(
-            listener_name, params=params, extra_dir=path
+            name, params=params, extra_dir=path
         )
 
         return listener
