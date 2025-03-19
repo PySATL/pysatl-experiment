@@ -2,7 +2,6 @@ import csv
 import os
 import shutil
 from pathlib import Path
-from typing import List
 
 from typing_extensions import override
 
@@ -23,7 +22,7 @@ class RvsFileStore(IRvsStore):
             Path(self.path).mkdir(parents=True)
 
     @override
-    def insert_all_rvs(self, generator_code: str, size: int, data: List[List[float]]):
+    def insert_all_rvs(self, generator_code: str, size: int, data: list[list[float]]):
         file_path = Path(self.path, RvsFileStore.build_rvs_file_name(generator_code, size) + ".csv")
         with Path(file_path).open("w", newline="") as csvfile:
             writer = csv.writer(
@@ -49,7 +48,7 @@ class RvsFileStore(IRvsStore):
         return result
 
     @override
-    def insert_rvs(self, code: str, size: int, data: List[float]):
+    def insert_rvs(self, code: str, size: int, data: list[float]):
         file_path = Path(self.path, RvsFileStore.build_rvs_file_name(code, size) + ".csv")
         with Path(file_path).open("w", newline="") as csvfile:
             writer = csv.writer(
@@ -67,7 +66,7 @@ class RvsFileStore(IRvsStore):
         return len(data)
 
     @override
-    def get_rvs(self, code: str, size: int) -> List[List[float]]:
+    def get_rvs(self, code: str, size: int) -> list[list[float]]:
         file_path = Path(self.path, RvsFileStore.build_rvs_file_name(code, size) + ".csv")
         if not Path(file_path).exists():
             return []

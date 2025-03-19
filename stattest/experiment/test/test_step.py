@@ -1,7 +1,7 @@
 import logging
+from collections.abc import Sequence
 from multiprocessing import Queue
 from multiprocessing.synchronize import Event as EventClass
-from typing import List, Sequence
 
 from tqdm import tqdm
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 def execute_tests(
     worker: TestWorker,
-    tests: List[AbstractTestStatistic],
+    tests: list[AbstractTestStatistic],
     rvs_store: IRvsStore,
     result_store: IResultStore,
     thread_count: int = 0,
@@ -67,7 +67,7 @@ def process_entries(
 
 
 def fill_queue(queue, generate_shutdown_event, kwargs):
-    tests: List[AbstractTestStatistic] = kwargs["tests"]
+    tests: list[AbstractTestStatistic] = kwargs["tests"]
     store: IRvsStore = kwargs["store"]
 
     store.init()

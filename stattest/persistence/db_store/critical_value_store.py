@@ -1,4 +1,4 @@
-from typing import ClassVar, List, Optional, Tuple, Union
+from typing import ClassVar
 
 from sqlalchemy import Float, Integer, String
 from sqlalchemy.exc import IntegrityError
@@ -43,7 +43,7 @@ class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
 
     @override
     def insert_critical_value(
-        self, code: str, size: int, sl: float, value: Union[float, Tuple[float, float]]
+        self, code: str, size: int, sl: float, value: float | tuple[float, float]
     ):
         if isinstance(value, tuple):
             lower_value, upper_value = value
@@ -65,7 +65,7 @@ class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
             CriticalValueDbStore.session.rollback()
 
     @override
-    def insert_distribution(self, code: str, size: int, data: List[float]):
+    def insert_distribution(self, code: str, size: int, data: list[float]):
         data_to_insert = CriticalValueDbStore.__separator.join(map(str, data))
         try:
             CriticalValueDbStore.session.add(
@@ -78,7 +78,7 @@ class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
     @override
     def get_critical_value(
         self, code: str, size: int, sl: float
-    ) -> Optional[Union[float, Tuple[float, float]]]:
+    ) -> float | tuple[float, float] | None:
         critical_value = CriticalValueDbStore.session.get(CriticalValue, (code, size, sl))
         if critical_value is not None:
             if critical_value.upper_value is not None:
@@ -89,7 +89,7 @@ class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
             return None
 
     @override
-    def get_distribution(self, code: str, size: int) -> Optional[List[float]]:
+    def get_distribution(self, code: str, size: int) -> list[float] | None:
         distribution = CriticalValueDbStore.session.get(Distribution, (code, size))
         if distribution is not None:
             return [float(x) for x in distribution.data.split(CriticalValueDbStore.__separator)]

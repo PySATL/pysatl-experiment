@@ -5,7 +5,7 @@ This module load custom RVS generators
 """
 
 import logging
-from typing import Any, List, Optional
+from typing import Any
 
 from stattest.constants import USERPATH_GENERATORS, Config
 from stattest.exceptions import OperationalException
@@ -29,7 +29,7 @@ class GeneratorResolver(IResolver):
     module_names = ["stattest.experiment.generator"]
 
     @staticmethod
-    def load_generators(config: Optional[Config]) -> List[AbstractRVSGenerator]:
+    def load_generators(config: Config | None) -> list[AbstractRVSGenerator]:
         if not config:
             raise OperationalException("No configuration set. Please specify configuration.")
 
@@ -52,7 +52,7 @@ class GeneratorResolver(IResolver):
 
     @staticmethod
     def load_generator(
-        generator_name: str, path: Optional[str] = None, params: Optional[dict[str, Any]] = None
+        generator_name: str, path: str | None = None, params: dict[str, Any] | None = None
     ) -> AbstractRVSGenerator:
         """
         Load the custom class from config parameter
@@ -75,8 +75,8 @@ class GeneratorResolver(IResolver):
     @staticmethod
     def _load_generator(
         generator_name: str,
-        params: Optional[dict[str, Any]],
-        extra_dir: Optional[str] = None,
+        params: dict[str, Any] | None,
+        extra_dir: str | None = None,
     ) -> AbstractRVSGenerator:
         """
         Search and loads the specified strategy.
