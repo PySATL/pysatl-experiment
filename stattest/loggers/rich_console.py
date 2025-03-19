@@ -1,11 +1,10 @@
 import sys
 from shutil import get_terminal_size
-from typing import Optional
 
 from rich.console import Console
 
 
-def console_width() -> Optional[int]:
+def console_width() -> int | None:
     """
     Get the width of the console
     """
