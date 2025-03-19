@@ -190,7 +190,7 @@ def _create_log_config(config: Config) -> dict[str, Any]:
                 raise OperationalException(
                     f'Failed to create or access log file "{logfile_path.absolute()}". '
                     "Please make sure you have the write permission to the log file or its parent "
-                    "directories. If you're running freqtrade using docker, you see this error "
+                    "directories. If you're running PySatl using docker, you see this error "
                     "message probably because you've logged in as the root user, please switch to "
                     "non-root user, delete and recreate the directories you need, and then try "
                     "again."

@@ -1,8 +1,6 @@
 import json
 import logging
 
-from ccxt.static_dependencies.parsimonious.expressions import Optional
-
 
 class JsonFormatter(logging.Formatter):
     """
@@ -15,7 +13,7 @@ class JsonFormatter(logging.Formatter):
 
     def __init__(
         self,
-        fmt_dict: Optional[dict] = None,
+        fmt_dict: dict | None = None,
         time_format: str = "%Y-%m-%dT%H:%M:%S",
         msec_format: str = "%s.%03dZ",
     ):
