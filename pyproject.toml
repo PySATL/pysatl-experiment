@@ -17,7 +17,8 @@ dependencies = [
     "pandas>=2.2.1",
     "sqlalchemy>=2.0.36",
     "python-rapidjson==1.20",
-    "jsonschema==4.23.0"
+    "jsonschema==4.23.0",
+    "rich==13.9.4"
 ]
 
 [build-system]
@@ -41,6 +42,7 @@ pytest = "8.3.3"
 pytest-cov = "6.0.0"
 pytest-random-order = "1.1.1"
 ruff = "0.7.4"
+pytest-mock = "3.14.0"
 pre-commit = "4.0.1"
 
 [tool.isort]
