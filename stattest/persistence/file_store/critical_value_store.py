@@ -3,8 +3,8 @@ from pathlib import Path
 
 from typing_extensions import override
 
-from stattest.persistence import ICriticalValueStore
 from stattest.persistence.file_store.store import read_json, write_json
+from stattest.persistence.models import ICriticalValueStore
 
 
 class CriticalValueFileStore(ICriticalValueStore):
