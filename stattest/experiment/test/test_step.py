@@ -3,13 +3,13 @@ from collections.abc import Sequence
 from multiprocessing import Queue
 from multiprocessing.synchronize import Event as EventClass
 
+from pysatl.criterion import AbstractStatistic
 from tqdm import tqdm
 
 from stattest.experiment.configuration.configuration import TestConfiguration, TestWorker
 from stattest.experiment.pipeline import start_pipeline
 from stattest.persistence import IRvsStore
 from stattest.persistence.models import IResultStore
-from stattest.test import AbstractTestStatistic
 
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 def execute_tests(
     worker: TestWorker,
-    tests: list[AbstractTestStatistic],
+    tests: list[AbstractStatistic],
     rvs_store: IRvsStore,
     result_store: IResultStore,
     thread_count: int = 0,
@@ -67,7 +67,7 @@ def process_entries(
 
 
 def fill_queue(queue, generate_shutdown_event, kwargs):
-    tests: list[AbstractTestStatistic] = kwargs["tests"]
+    tests: list[AbstractStatistic] = kwargs["tests"]
     store: IRvsStore = kwargs["store"]
 
     store.init()
@@ -83,7 +83,7 @@ def fill_queue(queue, generate_shutdown_event, kwargs):
     return len(stat) * len(tests)
 
 
-def get_total_count(tests: Sequence[AbstractTestStatistic], store: IRvsStore):
+def get_total_count(tests: Sequence[AbstractStatistic], store: IRvsStore):
     store.init()
     stat = store.get_rvs_stat()
     return len(stat) * len(tests)
