@@ -1,53 +1,52 @@
 import multiprocessing
 
-from stattest.experiment import Experiment
-from stattest.experiment.configuration.configuration import (
-    AlternativeConfiguration,
-    ExperimentConfiguration,
-    ReportConfiguration,
-    TestConfiguration,
+from pysatl.criterion import (
+    AndersonDarlingWeibullGofStatistic,
+    Chi2PearsonWeibullGofStatistic,
+    CrammerVonMisesWeibullGofStatistic,
+    KolmogorovSmirnovWeibullGofStatistic,
+    LillieforsWeibullGofStatistic,
+    LOSWeibullGofStatistic,
+    MinToshiyukiWeibullGofStatistic,
+    MSFWeibullGofStatistic,
+    OKWeibullGofStatistic,
+    RSBWeibullGofStatistic,
+    SBWeibullGofStatistic,
+    ST1WeibullGofStatistic,
+    ST2WeibullGofStatistic,
+    TikuSinghWeibullGofStatistic,
 )
-from stattest.experiment.generator import WeibullGenerator
-from stattest.experiment.generator.generators import (
+from pysatl.criterion.weibull import (
+    KullbackLeiblerWeibullGofStatistic,
+    LaplaceTransform2WeibullGofStatistic,
+    LaplaceTransform3WeibullGofStatistic,
+    LaplaceTransformWeibullGofStatistic,
+    LiaoShimokawaWeibullGofStatistic,
+    MahdiDoostparastWeibullGofStatistic,
+    REJGWeibullGofStatistic,
+    WatsonWeibullGofStatistic,
+)
+
+from pysatl_experiment import (
+    AlternativeConfiguration,
+    Experiment,
+    ExperimentConfiguration,
     ExponentialGenerator,
     GammaGenerator,
     GompertzGenerator,
     InvGaussGenerator,
     LognormGenerator,
+    PdfPowerReportBuilder,
+    PowerCalculationWorker,
+    ReportConfiguration,
     RiceGenerator,
+    TestConfiguration,
+    TimeEstimationListener,
+    WeibullGenerator,
+    WeibullHypothesis,
 )
-from stattest.experiment.hypothesis import WeibullHypothesis
-from stattest.experiment.listener.listeners import TimeEstimationListener
-from stattest.experiment.report.model import PdfPowerReportBuilder
-from stattest.experiment.test.worker import PowerCalculationWorker
-from stattest.persistence.db_store import CriticalValueDbStore, RvsDbStore
-from stattest.persistence.db_store.result_store import ResultDbStore
-from stattest.test import (
-    ADWeibullTest,
-    Chi2PearsonWiebullTest,
-    CrammerVonMisesWeibullTest,
-    KSWeibullTest,
-    LillieforsWiebullTest,
-    LOSWeibullTestStatistic,
-    MinToshiyukiWeibullTestStatistic,
-    MSFWeibullTestStatistic,
-    OKWeibullTestStatistic,
-    RSBWeibullTestStatistic,
-    SBWeibullTestStatistic,
-    ST1WeibullTestStatistic,
-    ST2WeibullTestStatistic,
-    TSWeibullTestStatistic,
-)
-from stattest.test.weibull import (
-    KullbackLeiblerStatistic,
-    LiaoShimokawaTest,
-    LT2Statistic,
-    LT3Statistic,
-    LTStatistic,
-    MDTest,
-    REJGWeibullTestStatistic,
-    WatsonTest,
-)
+from pysatl_experiment.persistence.db_store import CriticalValueDbStore, RvsDbStore
+from pysatl_experiment.persistence.db_store.result_store import ResultDbStore
 
 
 if __name__ == "__main__":
@@ -101,32 +100,37 @@ if __name__ == "__main__":
         WeibullGenerator(l=2, k=5),
     ]
     tests = [
-        KSWeibullTest(),
-        MinToshiyukiWeibullTestStatistic(),
-        Chi2PearsonWiebullTest(),
-        CrammerVonMisesWeibullTest(),
-        ST2WeibullTestStatistic(),
-        ST1WeibullTestStatistic(),
-        TSWeibullTestStatistic(),
-        LOSWeibullTestStatistic(),
-        MSFWeibullTestStatistic(),
-        OKWeibullTestStatistic(),
-        SBWeibullTestStatistic(),
-        RSBWeibullTestStatistic(),
-        LT3Statistic(),
-        LT2Statistic(),
-        LTStatistic(),
-        KullbackLeiblerStatistic(),
-        LiaoShimokawaTest(),
-        WatsonTest(),
-        MDTest(),
-        REJGWeibullTestStatistic(),
-        ADWeibullTest(),
-        LillieforsWiebullTest(),
+        KolmogorovSmirnovWeibullGofStatistic(),
+        MinToshiyukiWeibullGofStatistic(),
+        Chi2PearsonWeibullGofStatistic(),
+        CrammerVonMisesWeibullGofStatistic(),
+        ST1WeibullGofStatistic(),
+        ST2WeibullGofStatistic(),
+        TikuSinghWeibullGofStatistic(),
+        LOSWeibullGofStatistic(),
+        MSFWeibullGofStatistic(),
+        OKWeibullGofStatistic(),
+        SBWeibullGofStatistic(),
+        RSBWeibullGofStatistic(),
+        LaplaceTransform3WeibullGofStatistic(),
+        LaplaceTransform2WeibullGofStatistic(),
+        LaplaceTransformWeibullGofStatistic(),
+        KullbackLeiblerWeibullGofStatistic(),
+        LiaoShimokawaWeibullGofStatistic(),
+        WatsonWeibullGofStatistic(),
+        MahdiDoostparastWeibullGofStatistic(),
+        REJGWeibullGofStatistic(),
+        AndersonDarlingWeibullGofStatistic(),
+        LillieforsWeibullGofStatistic(),
     ]
 
     alternatives_configuration = AlternativeConfiguration(
-        alternatives, sizes, count=1_000, threads=generation_threads, listeners=listeners
+        alternatives,
+        sizes,
+        count=1_000,
+        threads=generation_threads,
+        listeners=listeners,
+        skip_step=True,
     )
 
     power_calculation_worker = PowerCalculationWorker(
@@ -137,6 +141,7 @@ if __name__ == "__main__":
         threads=test_threads,
         worker=power_calculation_worker,
         listeners=[test_data_tel],
+        skip_step=True,
     )
 
     report_builder = PdfPowerReportBuilder()

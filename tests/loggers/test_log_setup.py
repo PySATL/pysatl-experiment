@@ -4,9 +4,14 @@ import sys
 
 import pytest
 
-from stattest.exceptions import OperationalException
-from stattest.loggers import FTBufferingHandler, FtRichHandler, setup_logging, setup_logging_pre
-from stattest.loggers.set_log_levels import (
+from pysatl_experiment.exceptions import OperationalException
+from pysatl_experiment.loggers import (
+    FTBufferingHandler,
+    FtRichHandler,
+    setup_logging,
+    setup_logging_pre,
+)
+from pysatl_experiment.loggers.set_log_levels import (
     reduce_verbosity_for_bias_tester,
     restore_verbosity_for_bias_tester,
 )
@@ -188,7 +193,7 @@ def test_set_loggers_json_format(capsys):
             "version": 1,
             "formatters": {
                 "json": {
-                    "()": "stattest.loggers.json_formatter.JsonFormatter",
+                    "()": "pysatl_experiment.loggers.json_formatter.JsonFormatter",
                     "fmt_dict": {
                         "timestamp": "asctime",
                         "level": "levelname",
@@ -228,14 +233,14 @@ def test_set_loggers_json_format(capsys):
 def test_reduce_verbosity():
     setup_logging_pre()
     reduce_verbosity_for_bias_tester()
-    prior_level = logging.getLogger("stattest").getEffectiveLevel()
+    prior_level = logging.getLogger("pysatl_experiment").getEffectiveLevel()
 
-    assert logging.getLogger("stattest.resolvers").getEffectiveLevel() == logging.WARNING
+    assert logging.getLogger("pysatl_experiment.resolvers").getEffectiveLevel() == logging.WARNING
     # base level wasn't changed
-    assert logging.getLogger("stattest").getEffectiveLevel() == prior_level
+    assert logging.getLogger("pysatl_experiment").getEffectiveLevel() == prior_level
 
     restore_verbosity_for_bias_tester()
 
-    assert logging.getLogger("stattest.resolvers").getEffectiveLevel() == prior_level
-    assert logging.getLogger("stattest").getEffectiveLevel() == prior_level
+    assert logging.getLogger("pysatl_experiment.resolvers").getEffectiveLevel() == prior_level
+    assert logging.getLogger("pysatl_experiment").getEffectiveLevel() == prior_level
     # base level wasn't changed

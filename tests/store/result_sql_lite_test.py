@@ -3,8 +3,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from stattest.experiment.configuration import TestWorkerResult
-from stattest.persistence.db_store import ResultDbStore
+from pysatl_experiment.experiment.configuration import TestWorkerResult
+from pysatl_experiment.persistence.db_store import ResultDbStore
 
 
 store_name = "pysatl.sqlite"

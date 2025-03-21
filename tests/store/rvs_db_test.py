@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from stattest.persistence.db_store import RvsDbStore
+from pysatl_experiment.persistence.db_store import RvsDbStore
 
 
 store_name = "pysatl.sqlite"
