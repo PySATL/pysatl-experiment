@@ -1,13 +1,13 @@
 [project]
 name = "pysatl-experiment"
-version = "0.1.0"
+version = "0.0.1"
 description = "package for PySATL math statistics experiments"
 authors = [
-    {name = "Ivan Pokhabov", email = "vanek3372@gmail.com"},
+    {name = "PySATL Team", email = "pysatl@yahoo.com"},
 ]
 license = {text = "MIT"}
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.9,<3.13"
 dependencies = [
     "numpy>=1.25.1",
     "scipy>=1.11.2",
@@ -27,7 +27,20 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-package-mode = false
+name = "pysatl_experiment"
+packages = [
+    { include = "pysatl_experiment" },
+]
+package-mode = true
+
+[tool.mypy]
+ignore_missing_imports = true
+namespace_packages = false
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
 
 [tool.poetry.group.dev.dependencies]
 markdown = "3.7"
@@ -45,6 +58,7 @@ pytest-random-order = "1.1.1"
 ruff = "0.7.4"
 pytest-mock = "3.14.0"
 pre-commit = "4.0.1"
+mypy = "1.15.0"
 
 [tool.isort]
 line_length = 100

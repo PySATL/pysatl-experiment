@@ -27,28 +27,26 @@ from pysatl.criterion.weibull import (
     WatsonWeibullGofStatistic,
 )
 
-from stattest.experiment import Experiment
-from stattest.experiment.configuration.configuration import (
+from pysatl_experiment import (
     AlternativeConfiguration,
+    Experiment,
     ExperimentConfiguration,
-    ReportConfiguration,
-    TestConfiguration,
-)
-from stattest.experiment.generator import WeibullGenerator
-from stattest.experiment.generator.generators import (
     ExponentialGenerator,
     GammaGenerator,
     GompertzGenerator,
     InvGaussGenerator,
     LognormGenerator,
+    PdfPowerReportBuilder,
+    PowerCalculationWorker,
+    ReportConfiguration,
     RiceGenerator,
+    TestConfiguration,
+    TimeEstimationListener,
+    WeibullGenerator,
+    WeibullHypothesis,
 )
-from stattest.experiment.hypothesis import WeibullHypothesis
-from stattest.experiment.listener.listeners import TimeEstimationListener
-from stattest.experiment.report.model import PdfPowerReportBuilder
-from stattest.experiment.test.worker import PowerCalculationWorker
-from stattest.persistence.db_store import CriticalValueDbStore, RvsDbStore
-from stattest.persistence.db_store.result_store import ResultDbStore
+from pysatl_experiment.persistence.db_store import CriticalValueDbStore, RvsDbStore
+from pysatl_experiment.persistence.db_store.result_store import ResultDbStore
 
 
 if __name__ == "__main__":
