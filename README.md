@@ -37,8 +37,6 @@ PowerCalculationWorker - calculates goodness-of-fit test power
 
 ### Report builders
 
-## Goodness-of-fit tests
-
 ### Weibull distribution
 
 | №  | Test                                           | Status |
@@ -81,3 +79,37 @@ PowerCalculationWorker - calculates goodness-of-fit test power
 ## Configuration
 
 ### Configuration example
+
+### Installation
+
+```bash
+git clone https://github.com/PySATL/pysatl-experiment
+```
+
+Install dependencies:
+
+```bash
+poetry install
+```
+
+### Development
+
+Install requirements
+
+```bash
+poetry install --with dev
+```
+
+### Pre-commit
+
+Install pre-commit hooks:
+
+```shell
+poetry run pre-commit install
+```
+
+Starting manually:
+
+```shell
+poetry run pre-commit run --all-files --color always --verbose --show-diff-on-failure
+```
