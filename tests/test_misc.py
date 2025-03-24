@@ -1,8 +1,6 @@
 from copy import deepcopy
 
-from pysatl_experiment.misc import (
-    deep_merge_dicts,
-)
+from pysatl_experiment.misc import deep_merge_dicts
 
 
 def test_deep_merge_dicts():

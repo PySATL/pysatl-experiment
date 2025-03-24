@@ -7,22 +7,24 @@ from pysatl.criterion.normal import (
     GraphMaxDegreeNormalityGofStatistic,
 )
 
-from pysatl_experiment import (
+from pysatl_experiment.experiment.configuration import (
     AlternativeConfiguration,
-    Chi2Generator,
-    Experiment,
     ExperimentConfiguration,
-    ExponentialGenerator,
-    GammaGenerator,
-    LaplaceRVSGenerator,
-    NormalHypothesis,
-    PdfPowerReportBuilder,
-    PowerCalculationWorker,
     ReportConfiguration,
     TestConfiguration,
-    TimeEstimationListener,
+)
+from pysatl_experiment.experiment.experiment import Experiment
+from pysatl_experiment.experiment.generator import GammaGenerator
+from pysatl_experiment.experiment.generator.generators import (
+    Chi2Generator,
+    ExponentialGenerator,
+    LaplaceRVSGenerator,
     WeibullGenerator,
 )
+from pysatl_experiment.experiment.hypothesis.hypothesis import NormalHypothesis
+from pysatl_experiment.experiment.listener.listeners import TimeEstimationListener
+from pysatl_experiment.experiment.report.model import PdfPowerReportBuilder
+from pysatl_experiment.experiment.test.worker import PowerCalculationWorker
 from pysatl_experiment.persistence.db_store import CriticalValueDbStore, RvsDbStore
 from pysatl_experiment.persistence.db_store.result_store import ResultDbStore
 

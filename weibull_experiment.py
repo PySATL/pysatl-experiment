@@ -27,24 +27,26 @@ from pysatl.criterion.weibull import (
     WatsonWeibullGofStatistic,
 )
 
-from pysatl_experiment import (
+from pysatl_experiment.experiment.configuration import (
     AlternativeConfiguration,
-    Experiment,
     ExperimentConfiguration,
+    ReportConfiguration,
+    TestConfiguration,
+)
+from pysatl_experiment.experiment.experiment import Experiment
+from pysatl_experiment.experiment.generator.generators import (
     ExponentialGenerator,
     GammaGenerator,
     GompertzGenerator,
     InvGaussGenerator,
     LognormGenerator,
-    PdfPowerReportBuilder,
-    PowerCalculationWorker,
-    ReportConfiguration,
     RiceGenerator,
-    TestConfiguration,
-    TimeEstimationListener,
     WeibullGenerator,
-    WeibullHypothesis,
 )
+from pysatl_experiment.experiment.hypothesis.hypothesis import WeibullHypothesis
+from pysatl_experiment.experiment.listener.listeners import TimeEstimationListener
+from pysatl_experiment.experiment.report.model import PdfPowerReportBuilder
+from pysatl_experiment.experiment.test.worker import PowerCalculationWorker
 from pysatl_experiment.persistence.db_store import CriticalValueDbStore, RvsDbStore
 from pysatl_experiment.persistence.db_store.result_store import ResultDbStore
 
