@@ -21,7 +21,7 @@ from pysatl_experiment.experiment.generator.generators import (
     LaplaceRVSGenerator,
     WeibullGenerator,
 )
-from pysatl_experiment.experiment.hypothesis.hypothesis import NormalHypothesis
+from pysatl_experiment.experiment.hypothesis.hypothesis import NormalGofHypothesis
 from pysatl_experiment.experiment.listener.listeners import TimeEstimationListener
 from pysatl_experiment.experiment.report.model import PdfPowerReportBuilder
 from pysatl_experiment.experiment.test.worker import PowerCalculationWorker
@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     db_url = "sqlite:///graph_norm_experiment_two_sided.sqlite"
     listeners = [generate_data_tel]
-    hypothesis = NormalHypothesis(rd.random() * 10, rd.random() * 30)
+    hypothesis = NormalGofHypothesis(rd.random() * 10, rd.random() * 30)
     test_threads = multiprocessing.cpu_count()
     generation_threads = multiprocessing.cpu_count()
     sizes = [10, 20, 30, 40, 50]

@@ -2,7 +2,7 @@ from pysatl.criterion import AbstractStatistic
 from typing_extensions import override
 
 from pysatl_experiment.experiment.configuration import TestWorker, TestWorkerResult
-from pysatl_experiment.experiment.hypothesis.model import AbstractHypothesis
+from pysatl_experiment.experiment.hypothesis.model import AbstractGofHypothesis
 from pysatl_experiment.experiment.test.power_calculation import calculate_test_power
 from pysatl_experiment.persistence.models import ICriticalValueStore
 
@@ -29,7 +29,7 @@ class PowerCalculationWorker(TestWorker):
         alpha: float,
         monte_carlo_count: int,
         cv_store: ICriticalValueStore,
-        hypothesis: AbstractHypothesis,
+        hypothesis: AbstractGofHypothesis,
     ):
         self.alpha = alpha
         self.monte_carlo_count = monte_carlo_count

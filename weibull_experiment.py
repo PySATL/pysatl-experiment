@@ -43,7 +43,7 @@ from pysatl_experiment.experiment.generator.generators import (
     RiceGenerator,
     WeibullGenerator,
 )
-from pysatl_experiment.experiment.hypothesis.hypothesis import WeibullHypothesis
+from pysatl_experiment.experiment.hypothesis.hypothesis import WeibullGofHypothesis
 from pysatl_experiment.experiment.listener.listeners import TimeEstimationListener
 from pysatl_experiment.experiment.report.model import PdfPowerReportBuilder
 from pysatl_experiment.experiment.test.worker import PowerCalculationWorker
@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     db_url = "sqlite:///weibull_experiment.sqlite"
     listeners = [generate_data_tel]
-    hypothesis = WeibullHypothesis()
+    hypothesis = WeibullGofHypothesis()
     test_threads = multiprocessing.cpu_count()
     generation_threads = multiprocessing.cpu_count()
     sizes = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
