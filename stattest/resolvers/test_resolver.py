@@ -7,10 +7,11 @@ This module load custom statistic tests
 import logging
 from typing import Any
 
+from pysatl.criterion import AbstractTestStatistic
+
 from stattest.constants import USERPATH_TESTS
 from stattest.exceptions import OperationalException
 from stattest.resolvers.iresolver import IResolver
-from stattest.test import AbstractTestStatistic
 
 
 logger = logging.getLogger(__name__)
