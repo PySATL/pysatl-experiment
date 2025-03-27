@@ -1,6 +1,4 @@
 import pytest
-
-from stattest.resolvers.test_resolver import TestResolver
 from pysatl.criterion import (
     AndersonDarlingWeibullGofStatistic,
     Chi2PearsonWeibullGofStatistic,
@@ -9,6 +7,8 @@ from pysatl.criterion import (
     LillieforsWeibullGofStatistic,
     LOSWeibullGofStatistic,
 )
+
+from stattest.resolvers.test_resolver import TestResolver
 
 
 @pytest.mark.parametrize(
