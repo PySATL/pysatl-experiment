@@ -39,9 +39,7 @@ class ListenerResolver(IResolver):
         :param name:
         """
 
-        listener: StepListener = ListenerResolver._load(
-            name, params=params, extra_dir=path
-        )
+        listener: StepListener = ListenerResolver._load(name, params=params, extra_dir=path)
 
         return listener
 

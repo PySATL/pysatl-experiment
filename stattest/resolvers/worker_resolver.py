@@ -39,9 +39,7 @@ class WorkerResolver(IResolver):
         :param name:
         """
 
-        worker: PowerCalculationWorker = WorkerResolver._load(
-            name, params=params, extra_dir=path
-        )
+        worker: PowerCalculationWorker = WorkerResolver._load(name, params=params, extra_dir=path)
 
         return worker
 

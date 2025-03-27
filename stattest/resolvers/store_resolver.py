@@ -29,9 +29,7 @@ class StoreResolver(IResolver):
     module_names = ["stattest.persistence"]
 
     @staticmethod
-    def load(
-        name: str, path: str | None = None, params: dict[str, Any] | None = None
-    ) -> IStore:
+    def load(name: str, path: str | None = None, params: dict[str, Any] | None = None) -> IStore:
         """
         Load the custom class from config parameter
         :param params:
