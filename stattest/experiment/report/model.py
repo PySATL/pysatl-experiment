@@ -1,5 +1,6 @@
 from typing import Any
 
+from fpdf import FPDF
 from matplotlib import pyplot as plt
 
 from stattest.experiment.configuration import TestWorkerResult
@@ -93,12 +94,92 @@ class ChartPowerReportBuilder(ReportBuilder):
 class PdfPowerReportBuilder(ReportBuilder):
     def __init__(self):
         self.data = {}
+        self.sizes = set()
+        self.tests = set()
+        self.font = "helvetica"
+        self.border = 1
+        self.align = "C"
+        self.col_width = 30
+        self.header_font_size = 12
+        self.entry_font_size = 10
+        self.output_filename = "power_report.pdf"
 
     def process(self, result: TestWorkerResult):
-        pass
+        if not isinstance(result, PowerWorkerResult):
+            raise TypeError(f"Type {type(result)} is not an instance of PowerWorkerResult")
+
+        key = PdfPowerReportBuilder.__build_path(result)
+        self.sizes.add(result.size)
+        self.tests.add(result.test_code)
+
+        if key not in self.data:
+            self.data[key] = {}
+
+        if result.test_code not in self.data[key]:
+            self.data[key][result.test_code] = {}
+
+        self.data[key][result.test_code][result.size] = result.power
 
     def build(self):
-        pass
+        pdf = FPDF(orientation="L")
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+        pdf.set_font(self.font, size=self.entry_font_size)
+
+        sorted_sizes = sorted(self.sizes)
+        sorted_tests = sorted(self.tests)
+        table_width = (len(sorted_sizes) + 1) * self.col_width
+        margin_x = (pdf.w - table_width) / 2
+
+        for key, results in self.data.items():
+            pdf.set_font(self.font, "B", self.header_font_size)
+            pdf.cell(0, self.entry_font_size, f"{key}", ln=True, align="C")
+            pdf.ln(5)
+
+            pdf.set_x(margin_x)
+            pdf.set_font(self.font, "B", self.entry_font_size)
+            pdf.cell(
+                self.col_width, self.entry_font_size, "Test", border=self.border, align=self.align
+            )
+            for size in sorted_sizes:
+                pdf.cell(
+                    self.col_width,
+                    self.entry_font_size,
+                    str(size),
+                    border=self.border,
+                    align=self.align,
+                )
+            pdf.ln()
+
+            pdf.set_font(self.font, size=self.entry_font_size)
+            for test in sorted_tests:
+                test_name = test.split("_")[0]
+                pdf.set_x(margin_x)
+                pdf.cell(
+                    self.col_width,
+                    self.entry_font_size,
+                    test_name,
+                    border=self.border,
+                    align=self.align,
+                )
+                for size in sorted_sizes:
+                    power = results.get(test, {}).get(size, "N/A")
+                    pdf.cell(
+                        self.col_width,
+                        self.entry_font_size,
+                        f"{power:.3f}" if isinstance(power, float) else str(power),
+                        border=self.border,
+                        align=self.align,
+                    )
+                pdf.ln()
+            pdf.ln(self.entry_font_size)
+
+        pdf.output(self.output_filename)
+        print(f"PDF report saved as: {self.output_filename}")
+
+    @staticmethod
+    def __build_path(result: PowerWorkerResult):
+        return f"Alternative: {result.alternative_code} alpha: {result.alpha}"
 
 
 class ResultReader:
