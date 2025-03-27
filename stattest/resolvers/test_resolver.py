@@ -7,7 +7,7 @@ This module load custom statistic tests
 import logging
 from typing import Any
 
-from pysatl.criterion import AbstractTestStatistic
+from pysatl.criterion import AbstractStatistic
 
 from stattest.constants import USERPATH_TESTS
 from stattest.exceptions import OperationalException
@@ -22,17 +22,17 @@ class TestResolver(IResolver):
     This class contains the logic to load custom RVS generator class
     """
 
-    object_type = AbstractTestStatistic
+    object_type = AbstractStatistic
     object_type_str = "AbstractTestStatistic"
     user_subdir = USERPATH_TESTS
     initial_search_path = None
     extra_path = "test_path"
-    module_names = ["stattest.test"]
+    module_names = ["pysatl.criterion"]
 
     @staticmethod
     def load(
         name: str, path: str | None = None, params: dict[str, Any] | None = None
-    ) -> AbstractTestStatistic:
+    ) -> AbstractStatistic:
         """
         Load the custom class from config parameter
         :param params:
@@ -40,12 +40,12 @@ class TestResolver(IResolver):
         :param name:
         """
 
-        test: AbstractTestStatistic = TestResolver._load(name, params=params, extra_dir=path)
+        test: AbstractStatistic = TestResolver._load(name, params=params, extra_dir=path)
 
         return test
 
     @staticmethod
-    def validate(test: AbstractTestStatistic) -> AbstractTestStatistic:
+    def validate(test: AbstractStatistic) -> AbstractStatistic:
         # Validation can be added
         return test
 
@@ -54,7 +54,7 @@ class TestResolver(IResolver):
         test_name: str,
         params: dict[str, Any] | None,
         extra_dir: str | None = None,
-    ) -> AbstractTestStatistic:
+    ) -> AbstractStatistic:
         """
         Search and loads the specified strategy.
         :param test_name: name of the module to import

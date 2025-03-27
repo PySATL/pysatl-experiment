@@ -20,8 +20,9 @@ from stattest.resolvers.worker_resolver import WorkerResolver
 
 
 class ConfigurationParser:
+    # TODO: solve type problem!!!!
     @staticmethod
-    def _parse_json_class_list(resolver: IResolver, json_dicts_list: list[dict]):
+    def _parse_json_class_list(resolver: IResolver, json_dicts_list: list[dict]) -> Any:
         class_list = list()
 
         for json_dict in json_dicts_list:
@@ -35,7 +36,7 @@ class ConfigurationParser:
         return class_list
 
     @staticmethod
-    def _parse_json_class(resolver: IResolver, json_dict: dict):
+    def _parse_json_class(resolver: IResolver, json_dict: dict) -> Any:
         class_name = json_dict["name"]
 
         try:
