@@ -1,11 +1,12 @@
+from pysatl.criterion import AbstractStatistic
+
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.experiment.test.critical_value import get_or_calculate_critical_value
 from stattest.persistence.models import ICriticalValueStore
-from stattest.test import AbstractTestStatistic
 
 
 def execute_test(
-    test: AbstractTestStatistic,
+    test: AbstractStatistic,
     hypothesis: AbstractHypothesis,
     rvs: list[float],
     alpha: float,
@@ -26,7 +27,7 @@ def execute_test(
 
 
 def calculate_test_power(
-    test: AbstractTestStatistic,
+    test: AbstractStatistic,
     data: list[list[float]],
     hypothesis: AbstractHypothesis,
     alpha: float,
