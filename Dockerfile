@@ -22,16 +22,19 @@ WORKDIR /stattest
 
 # Install dependencies
 FROM base AS python-deps
-RUN  apt-get update \
-  && apt-get -y install build-essential libssl-dev git libffi-dev libgfortran5 pkg-config cmake gcc \
+RUN  apt-get update --fix-missing \
+  && apt-get -y install build-essential libssl-dev git libffi-dev libgfortran5 pkg-config cmake gcc pre-commit \
   && apt-get clean \
   && pip install --upgrade pip wheel
 
 # Install dependencies
-COPY --chown=pysatluser:pysatluser requirements.txt /stattest/
+# COPY --chown=pysatluser:pysatluser requirements.txt /stattest/ TODO: remove
 USER pysatluser
 RUN  pip install --user --no-cache-dir "numpy<2.0"
 RUN  pip install --user --no-cache-dir "setuptools>=64.0.0"
+
+# Poetry installation
+RUN curl -sSL https://install.python-poetry.org | python3 -
 
 # Copy dependencies to runtime-image
 FROM base AS runtime-image
@@ -43,6 +46,9 @@ COPY --from=python-deps --chown=pysatluser:pysatluser /home/pysatluser/.local /h
 USER pysatluser
 # Install and execute
 COPY --chown=pysatluser:pysatluser . /stattest/
+
+# Poetry inintialization
+RUN poetry install
 
 RUN pip install -e . --user --no-cache-dir --no-build-isolation \
   && mkdir /stattest/user_data/
