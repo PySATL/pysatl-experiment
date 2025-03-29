@@ -172,6 +172,9 @@ class IResolver:
         Try to load object from path list.
         """
 
+        if kwargs is None:
+            kwargs = {}
+
         for _path in paths:
             try:
                 (module, module_path) = cls._search_object(
@@ -211,6 +214,8 @@ class IResolver:
         """
         Try to load object from path list.
         """
+        if kwargs is None:
+            kwargs = {}
 
         try:
             module = getattr(importlib.import_module(module_name), object_name)
@@ -238,6 +243,7 @@ class IResolver:
         Search and loads the specified object as configured in the child class.
         :param object_name: name of the module to import
         :param config: configuration dictionary
+        :param kwargs: some additional parameters
         :param extra_dir: additional directory to search for the given pairlist
         :raises: OperationalException if the class is invalid or does not exist.
         :return: Object instance or None
@@ -316,3 +322,11 @@ class IResolver:
                     }
                 )
         return objects
+
+    @staticmethod
+    def load(name: str, path: str | None = None, params: dict[str, Any] | None = None):
+        raise Exception("Not implemented")
+
+    @staticmethod
+    def validate(resolver: Any):  # TODO: do validation properly
+        raise Exception("Not implemented")
