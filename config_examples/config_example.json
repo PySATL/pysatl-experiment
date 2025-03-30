@@ -11,6 +11,10 @@
     "sizes": [100, 200],
     "count": 1000,
     "threads": 1,
+    "skip_if_exists": true,
+    "clear_before": false,
+    "skip_step": false,
+    "show_progress": false,
     "listeners": [
       {
         "name": "TimeEstimationListener"

@@ -56,6 +56,10 @@ class ConfigurationParser:
             ),
             sizes=config["sizes"],
             count=config["count"],
+            skip_if_exists=config.get("skip_if_exists", True),
+            clear_before=config.get("clear_before", False),
+            skip_step=config.get("skip_step", False),
+            show_progress=config.get("show_progress", False),
             threads=config.get("threads", multiprocessing.cpu_count()),
             listeners=ConfigurationParser._parse_json_class_list(
                 ListenerResolver, config["listeners"]
