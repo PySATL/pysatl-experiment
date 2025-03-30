@@ -23,7 +23,7 @@
   "test_configuration": {
     "tests": [
       {
-        "name": "KSWeibullTest"
+        "name": "KolmogorovSmirnovWeibullGofStatistic"
       }
     ],
     "threads": 8,
