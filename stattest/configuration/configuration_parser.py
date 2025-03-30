@@ -21,7 +21,6 @@ from stattest.resolvers.worker_resolver import WorkerResolver
 
 
 class ConfigurationParser:
-    # TODO: solve type problem!!!!
     @staticmethod
     def _parse_json_class_list(resolver: IResolver, json_dicts_list: list[dict]) -> list[Parsable]:
         class_list = list()
