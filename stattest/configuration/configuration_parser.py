@@ -143,6 +143,6 @@ class ConfigurationParser:
                 rvs_store=rvs_store,
                 result_store=result_store,
             )
-        except (JSONDecodeError, TypeError, OSError, FileExistsError):
-            print("Error with configuration file")
+        except (JSONDecodeError, TypeError, OSError, FileExistsError) as e:
+            print(f"Error with configuration file: {e}")
             return None
