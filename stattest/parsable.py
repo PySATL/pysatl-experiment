@@ -1,5 +1,4 @@
-from abc import ABC
 
 
-class Parsable(ABC):
+class Parsable:
     pass
