@@ -70,7 +70,8 @@ class ConfigurationParser:
     def parse_config(path: str) -> ExperimentConfiguration | None:
         try:
             # Configuring experiment
-            with Path(path).open() as configFile:
+            abs_path = Path(path).resolve()
+            with abs_path.open() as configFile:
                 config_data = json.load(configFile)
 
             default_threads = multiprocessing.cpu_count()
