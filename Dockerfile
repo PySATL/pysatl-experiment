@@ -1,58 +1,29 @@
 FROM python:3.12.9-slim-bookworm AS base
 
-# Setup env
+WORKDIR /app
+
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONFAULTHANDLER=1
 ENV PATH=/home/pysatluser/.local/bin:$PATH
-ENV FT_APP_ENV="docker"
+ENV POETRY_HOME=/opt/poetry
 
-# Prepare environment
-RUN mkdir /stattest \
-  && apt-get update \
-  && apt-get -y install sudo libatlas3-base curl sqlite3 libgomp1 \
-  && apt-get clean \
-  && useradd -u 1000 -G sudo -U -m -s /bin/bash pysatluser \
-  && chown pysatluser:pysatluser /stattest \
-  # Allow sudoers
-  && echo "pysatluser ALL=(ALL) NOPASSWD: /bin/chown" >> /etc/sudoers
+RUN apt-get update && apt-get install -y curl && \
+    curl -sSL https://install.python-poetry.org | python - && \
+    cd /usr/local/bin && \
+    ln -s /opt/poetry/bin/poetry && \
+    poetry config virtualenvs.create true
 
-WORKDIR /stattest
+# Копируем файлы зависимостей
+COPY pyproject.toml ./
 
-# Install dependencies
-FROM base AS python-deps
-RUN  apt-get update --fix-missing \
-  && apt-get -y install build-essential libssl-dev git libffi-dev libgfortran5 pkg-config cmake gcc pre-commit \
-  && apt-get clean \
-  && pip install --upgrade pip wheel
+# Устанавливаем зависимости
+RUN poetry install --no-interaction --no-ansi
 
-# Install dependencies
-# COPY --chown=pysatluser:pysatluser requirements.txt /stattest/ TODO: remove
-USER pysatluser
-RUN  pip install --user --no-cache-dir "numpy<2.0"
-RUN  pip install --user --no-cache-dir "setuptools>=64.0.0"
+# Копируем остальные файлы
+COPY . .
 
-# Poetry installation
-RUN curl -sSL https://install.python-poetry.org | python3 -
-
-# Copy dependencies to runtime-image
-FROM base AS runtime-image
-COPY --from=python-deps /usr/local/lib /usr/local/lib
-ENV LD_LIBRARY_PATH=/usr/local/lib
-
-COPY --from=python-deps --chown=pysatluser:pysatluser /home/pysatluser/.local /home/pysatluser/.local
-
-USER pysatluser
-# Install and execute
-COPY --chown=pysatluser:pysatluser . /stattest/
-
-# Poetry inintialization
-RUN poetry install
-
-RUN pip install -e . --user --no-cache-dir --no-build-isolation \
-  && mkdir /stattest/user_data/
-
-ENTRYPOINT ["stattest"]
+ENTRYPOINT ["poetry", "run", "python", "-m", "stattest.main"]
 # Default to experiment mode
-CMD [ "experiment" ]
+CMD [ "experiment", "--config", "../../config_examples/config_example.json" ]
