@@ -1,4 +1,7 @@
-class AbstractRVSGenerator:
+from stattest.parsable import Parsable
+
+
+class AbstractRVSGenerator(Parsable):
     def __init__(self, **kwargs):
         pass
 

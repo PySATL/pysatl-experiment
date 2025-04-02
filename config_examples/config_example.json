@@ -1,0 +1,76 @@
+{
+  "generator_configuration": {
+    "generators": [
+      {
+        "name": "ExponentialGenerator",
+        "params": {
+          "lam": 0.5
+        }
+      }
+    ],
+    "sizes": [100, 200],
+    "count": 1000,
+    "threads": 1,
+    "skip_if_exists": true,
+    "clear_before": false,
+    "skip_step": false,
+    "show_progress": false,
+    "listeners": [
+      {
+        "name": "TimeEstimationListener"
+      }
+    ]
+  },
+  "test_configuration": {
+    "tests": [
+      {
+        "name": "KolmogorovSmirnovWeibullGofStatistic"
+      }
+    ],
+    "threads": 8,
+    "worker":
+    {
+      "name": "PowerCalculationWorker",
+      "params": {
+        "alpha": 0.05,
+        "monte_carlo_count": 100000,
+        "cv_store": {
+          "name": "CriticalValueDbStore",
+          "params": {
+            "db_url": "sqlite:///weibull_experiment.sqlite"
+          }
+        },
+        "hypothesis": {
+          "name": "WeibullHypothesis"
+        }
+      }
+    },
+    "listeners": [
+      {
+        "name": "TimeEstimationListener"
+      }
+    ]
+  },
+  "report_configuration": {
+    "report_builder": {
+      "name": "PdfPowerReportBuilder"
+    },
+    "listeners": []
+  },
+  "rvs_store":
+  {
+    "name": "RvsDbStore",
+    "params":
+    {
+      "db_url": "sqlite:///weibull_experiment.sqlite"
+    }
+  },
+  "result_store":
+  {
+    "name": "ResultDbStore",
+    "params":
+    {
+      "db_url": "sqlite:///weibull_experiment.sqlite"
+    }
+  }
+}

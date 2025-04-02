@@ -1,13 +1,13 @@
 # pragma pylint: disable=attribute-defined-outside-init
 
 """
-This module load custom RVS generators
+This module load custom hypotheses
 """
 
 import logging
 from typing import Any
 
-from stattest.constants import USERPATH_GENERATORS
+from stattest.constants import USERPATH_HYPOTHESIS
 from stattest.exceptions import OperationalException
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.resolvers.iresolver import IResolver
@@ -23,35 +23,35 @@ class HypothesisResolver(IResolver):
 
     object_type = AbstractHypothesis
     object_type_str = "AbstractHypothesis"
-    user_subdir = USERPATH_GENERATORS
+    user_subdir = USERPATH_HYPOTHESIS
     initial_search_path = None
     extra_path = "hypothesis_path"
-    module_name = "stattest.experiment.hypothesis"
+    module_names = ["stattest.experiment.hypothesis"]
 
     @staticmethod
-    def load_hypothesis(
-        hypothesis_name: str, path: str | None = None, params: dict[str, Any] | None = None
+    def load(
+        name: str, path: str | None = None, params: dict[str, Any] | None = None
     ) -> AbstractHypothesis:
         """
         Load the custom class from config parameter
         :param params:
         :param path:
-        :param hypothesis_name:
+        :param name:
         """
 
-        hypothesis: AbstractHypothesis = HypothesisResolver._load_hypothesis(
-            hypothesis_name, params=params, extra_dir=path
+        hypothesis: AbstractHypothesis = HypothesisResolver._load(
+            name, params=params, extra_dir=path
         )
 
         return hypothesis
 
     @staticmethod
-    def validate_hypothesis(generator: AbstractHypothesis) -> AbstractHypothesis:
+    def validate(hypothesis: AbstractHypothesis) -> AbstractHypothesis:
         # Validation can be added
-        return generator
+        return hypothesis
 
     @staticmethod
-    def _load_hypothesis(
+    def _load(
         hypothesis_name: str,
         params: dict[str, Any] | None,
         extra_dir: str | None = None,
@@ -59,7 +59,6 @@ class HypothesisResolver(IResolver):
         """
         Search and loads the specified strategy.
         :param hypothesis_name: name of the module to import
-        :param config: configuration for the strategy
         :param extra_dir: additional directory to search for the given strategy
         :return: Strategy instance or None
         """
@@ -69,7 +68,7 @@ class HypothesisResolver(IResolver):
             extra_dirs.append(extra_dir)
 
         abs_paths = HypothesisResolver.build_search_paths(
-            user_data_dir=None, user_subdir=USERPATH_GENERATORS, extra_dirs=extra_dirs
+            user_data_dir=None, user_subdir=USERPATH_HYPOTHESIS, extra_dirs=extra_dirs
         )
 
         hypothesis = HypothesisResolver._load_object(
@@ -80,12 +79,12 @@ class HypothesisResolver(IResolver):
         )
 
         if not hypothesis:
-            hypothesis = HypothesisResolver._load_module_object(
-                object_name=hypothesis_name, kwargs=params, module_name=""
+            hypothesis = HypothesisResolver._load_modules_object(
+                object_name=hypothesis_name, kwargs=params
             )
 
         if hypothesis:
-            return HypothesisResolver.validate_hypothesis(hypothesis)
+            return HypothesisResolver.validate(hypothesis)
 
         raise OperationalException(
             f"Impossible to load RVS hypothesis '{hypothesis_name}'. This class does not exist "

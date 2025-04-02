@@ -1,0 +1,15 @@
+---
+services:
+  stattest:
+    build:
+      context: .
+    #   dockerfile: "./docker/Dockerfile.custom"
+    restart: unless-stopped
+    container_name: pysatl-experiment
+    volumes:
+      - "./user_data:/stattest/user_data"
+    # Default command used when running `docker compose up`
+    command: >
+      experiment
+      --logfile /stattest/user_data/logs/pysatl_experiment.log
+      --config /stattest/user_data/config.json
