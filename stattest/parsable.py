@@ -1,2 +1,0 @@
-class Parsable:
-    pass

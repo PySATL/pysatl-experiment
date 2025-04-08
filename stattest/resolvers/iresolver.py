@@ -14,7 +14,7 @@ from typing import Any
 
 from stattest.constants import Config
 from stattest.exceptions import OperationalException
-
+from stattest.iparsable import IParsable
 
 logger = logging.getLogger(__name__)
 
@@ -324,7 +324,7 @@ class IResolver:
         return objects
 
     @staticmethod
-    def load(name: str, path: str | None = None, params: dict[str, Any] | None = None):
+    def load(name: str, path: str | None = None, params: dict[str, Any] | None = None) -> IParsable:
         raise Exception("Not implemented")
 
     @staticmethod

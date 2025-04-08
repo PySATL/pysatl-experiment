@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
-from stattest.parsable import Parsable
+from stattest.iparsable import IParsable
 
 
-class AbstractHypothesis(Parsable, ABC):
+class AbstractHypothesis(IParsable, ABC):
     @abstractmethod
     def generate(self, size, **kwargs):
         raise NotImplementedError("Method is not implemented")

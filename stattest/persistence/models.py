@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from stattest.parsable import Parsable
+from stattest.iparsable import IParsable
 
 
-class IStore(Parsable):
+class IStore(IParsable):
     def migrate(self):
         """
         Migrate store.

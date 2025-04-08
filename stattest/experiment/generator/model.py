@@ -1,7 +1,7 @@
-from stattest.parsable import Parsable
+from stattest.iparsable import IParsable
 
 
-class AbstractRVSGenerator(Parsable):
+class AbstractRVSGenerator(IParsable):
     def __init__(self, **kwargs):
         pass
 
