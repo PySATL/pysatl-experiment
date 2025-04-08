@@ -1,5 +1,6 @@
 import json
 import sqlite3
+from collections import Counter
 
 from fpdf import FPDF, XPos, YPos
 
@@ -11,7 +12,7 @@ def format_alternative(alt_code):
 
 
 def format_test_name(test_name):
-    return test_name.replace("_GOODNESS_OF_FIT", "")
+    return test_name.replace("_GOODNESS_OF_FIT", "").replace("_EXP", "")
 
 
 def fetch_data_from_db(db_path):
@@ -59,6 +60,25 @@ def generate_pdf(data, output_filename):
         grouped_data[key]["sizes"] = sorted(grouped_data[key]["sizes"])
         grouped_data[key]["tests"] = dict(sorted(grouped_data[key]["tests"].items()))
 
+    res = dict()
+    s = 1000
+    low = 500
+    top_count: int = 3
+    for key in grouped_data:
+        sizes = list(filter(lambda x: s >= x >= low, grouped_data[key]["sizes"]))
+        tests = grouped_data[key]["tests"]
+        for size in sizes:
+            top_tests = list(
+                dict(
+                    sorted(tests.items(), key=lambda item: item[1][size], reverse=True)[:top_count]
+                ).keys()
+            )
+            if s not in res:
+                res[s] = []
+            res[s].extend(top_tests)
+
+    print(Counter(res[s]).items())
+
     for key in sorted(grouped_data.keys(), key=lambda x: (x[0], x[1])):
         alt_code, alpha = key
         group = grouped_data[key]
@@ -102,7 +122,7 @@ def generate_pdf(data, output_filename):
 
 def main():
     db_path = "exponential_experiment_cv.sqlite"
-    output_filename = "test_comparison_report_exponential_experiment.pdf"
+    output_filename = "exponential_experiment_results.pdf"
 
     data = fetch_data_from_db(db_path)
     generate_pdf(data, output_filename)

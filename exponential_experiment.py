@@ -59,16 +59,21 @@ if __name__ == "__main__":
     test_data_tel = TimeEstimationListener()
     generate_data_tel = TimeEstimationListener()
 
+    cv_db_url = "sqlite:///exponential_experiment_cv.sqlite"
+    rvs_db_url = "sqlite:///exponential_experiment_rvs.sqlite"
+    result_db_url = "sqlite:///exponential_experiment_result.sqlite"
+
     db_url = "sqlite:///exponential_experiment.sqlite"
+
     listeners = [generate_data_tel]
     hypothesis = ExponentialHypothesis()
     test_threads = multiprocessing.cpu_count()
-    generation_threads = multiprocessing.cpu_count()
+    generation_threads = 4
     sizes = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
 
-    critical_value_store = CriticalValueDbStore(db_url=db_url)
+    critical_value_store = CriticalValueDbStore(db_url=cv_db_url)
     rvs_store = RvsDbStore(db_url=db_url)
-    result_store = ResultDbStore(db_url=db_url)
+    result_store = ResultDbStore(db_url=result_db_url)
 
     alternatives = symmetric_generators + asymmetric_generators
 
@@ -94,6 +99,9 @@ if __name__ == "__main__":
         SWTestExp(),
         WETestExp(),
         WWTestExp(),
+        # HPTestExp(),
+        # AHSTestExp(),
+        # RSTestExp()
     ]
 
     alternatives_configuration = AlternativeConfiguration(
@@ -120,6 +128,7 @@ if __name__ == "__main__":
         rvs_store=rvs_store,
         result_store=result_store,
     )
+
     experiment = Experiment(experiment_configuration)
 
     # Execute experiment

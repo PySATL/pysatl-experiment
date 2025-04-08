@@ -64,6 +64,8 @@ asymmetric_generators = [
     WeibullGenerator(a=2, k=3.4),
     WeibullGenerator(a=3, k=4),
     ExponentialGenerator(lam=1),
+    ExponentialGenerator(lam=4),
+    ExponentialGenerator(lam=10),
     GompertzGenerator(eta=0.1, b=1),
     GompertzGenerator(eta=2, b=1),
     GompertzGenerator(eta=3, b=1),
