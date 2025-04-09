@@ -49,6 +49,7 @@ def process_entries(
 ):
     worker: TestWorker = kwargs["worker"]
     result_store: IResultStore = kwargs["result_store"]
+    result_store.init()
     worker.init()
 
     while not (generate_shutdown_event.is_set() and generate_queue.empty()):

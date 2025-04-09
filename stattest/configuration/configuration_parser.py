@@ -96,20 +96,20 @@ class ConfigurationParser:
             tests_worker_config_data = tests_config_data["worker"]
             tests_worker_params_config_data = tests_worker_config_data["params"]
 
-            critical_value_store = ConfigurationParser._parse_json_class(
-                StoreResolver, tests_worker_params_config_data["cv_store"]
-            )
-            # tests_worker_params_config_data["critical_value_store"]["params"]["db_url"]
+            worker = ConfigurationParser._parse_json_class(WorkerResolver, tests_worker_config_data)
 
-            hypothesis = ConfigurationParser._parse_json_class(
-                HypothesisResolver, tests_worker_config_data["params"]["hypothesis"]
-            )
+            # TODO: parse worker arguments
+            if tests_worker_params_config_data:
+                critical_value_store = ConfigurationParser._parse_json_class(
+                    StoreResolver, tests_worker_params_config_data["cv_store"]
+                )
+                # tests_worker_params_config_data["critical_value_store"]["params"]["db_url"]
 
-            power_calculation_worker = ConfigurationParser._parse_json_class(
-                WorkerResolver, tests_worker_config_data
-            )
-            power_calculation_worker.cv_store = critical_value_store
-            power_calculation_worker.hypothesis = hypothesis
+                hypothesis = ConfigurationParser._parse_json_class(
+                    HypothesisResolver, tests_worker_config_data["params"]["hypothesis"]
+                )
+                worker.cv_store = critical_value_store
+                worker.hypothesis = hypothesis
 
             test_data_tels = ConfigurationParser._parse_json_class_list(
                 ListenerResolver, tests_config_data["listeners"]
@@ -118,7 +118,7 @@ class ConfigurationParser:
             test_configuration = TestConfiguration(
                 tests=tests,
                 threads=test_threads,
-                worker=power_calculation_worker,
+                worker=worker,
                 listeners=test_data_tels,
             )
 

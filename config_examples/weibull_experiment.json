@@ -6,9 +6,21 @@
         "params": {
           "lam": 0.5
         }
+      },
+      {
+        "name": "LaplaceRVSGenerator",
+        "params": {
+          "t": 0,
+          "s": 1
+        }
       }
     ],
-    "sizes": [100, 200],
+    "sizes": [
+      50,
+      100,
+      200,
+      1000
+    ],
     "count": 1000,
     "threads": 1,
     "listeners": [
@@ -20,26 +32,25 @@
   "test_configuration": {
     "tests": [
       {
-        "name": "KSWeibullTest"
+        "name": "KolmogorovSmirnovWeibullGofStatistic"
       }
     ],
-    "threads": 8,
-    "worker":
-      {
-        "name": "PowerCalculationWorker",
-        "params": {
-          "alpha": 0.05,
-          "monte_carlo_count": 100000,
-          "cv_store": {
-            "name": "CriticalValueDbStore",
-            "params": {
-              "db_url": "sqlite:///weibull_experiment.sqlite"
-            }
-          },
-          "hypothesis": {
-            "name": "WeibullHypothesis"
+    "threads": 1,
+    "worker": {
+      "name": "PowerCalculationWorker",
+      "params": {
+        "alpha": 0.05,
+        "monte_carlo_count": 100000,
+        "cv_store": {
+          "name": "CriticalValueDbStore",
+          "params": {
+            "db_url": "sqlite:///weibull_experiment.sqlite"
           }
+        },
+        "hypothesis": {
+          "name": "WeibullHypothesis"
         }
+      }
     },
     "listeners": [
       {
@@ -53,19 +64,15 @@
     },
     "listeners": []
   },
-  "rvs_store":
-  {
+  "rvs_store": {
     "name": "RvsDbStore",
-    "params":
-    {
+    "params": {
       "db_url": "sqlite:///weibull_experiment.sqlite"
     }
   },
-  "result_store":
-  {
+  "result_store": {
     "name": "ResultDbStore",
-    "params":
-    {
+    "params": {
       "db_url": "sqlite:///weibull_experiment.sqlite"
     }
   }
