@@ -46,13 +46,13 @@
   "rvs_store": {
     "name": "RvsDbStore",
     "params": {
-      "db_url": "sqlite:///weibull_experiment.sqlite"
+      "db_url": "sqlite:///weibull_benchmark.sqlite"
     }
   },
   "result_store": {
     "name": "ResultDbStore",
     "params": {
-      "db_url": "sqlite:///weibull_experiment.sqlite"
+      "db_url": "sqlite:///weibull_benchmark.sqlite"
     }
   }
 }
