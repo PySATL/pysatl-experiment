@@ -1,3 +1,6 @@
+import time
+
+import numpy as np
 from pysatl.criterion import AbstractStatistic
 from typing_extensions import override
 
@@ -18,10 +21,38 @@ class PowerWorkerResult(TestWorkerResult):
 
 
 class BenchmarkWorkerResult(TestWorkerResult):
-    def __init__(self, size: int, test_code: str, benchmark: list[float]):
+    def __init__(self, size: int, test_code: str, mean: float, median: float, std: float):
         self.size = size
-        self.benchmark = benchmark
+        self.mean = mean
+        self.median = median
+        self.std = std
         self.test_code = test_code
+
+
+class BenchmarkWorker(TestWorker, Parsable):
+    def __init__(self):
+        super().__init__()
+
+    def build_id(
+        self, test: AbstractStatistic, data: list[list[float]], code: str, size: int
+    ) -> str:
+        return "_".join(["benchmark", str(size), test.code(), code])
+
+    @override
+    def execute(
+        self, test: AbstractStatistic, data: list[list[float]], code: str, size: int
+    ) -> BenchmarkWorkerResult:
+        result = []
+        for rvs in data:
+            t1 = time.time()
+            test.execute_statistic(rvs)
+            t2 = time.time()
+            result.append((t2 - t1) * 1000)
+
+        mean = float(np.mean(result))
+        median = float(np.median(result))
+        std = float(np.std(result))
+        return BenchmarkWorkerResult(size, test.code(), mean, median, std)
 
 
 class PowerCalculationWorker(TestWorker, Parsable):

@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from collections.abc import Sequence
 
 from pysatl.criterion import AbstractStatistic
@@ -32,11 +33,13 @@ class TestWorker:
     def init(self):
         pass
 
+    @abstractmethod
     def execute(
         self, test: AbstractStatistic, data: list[list[float]], code, size: int
     ) -> TestWorkerResult:
         raise NotImplementedError("Method is not implemented")
 
+    @abstractmethod
     def build_id(self, test: AbstractStatistic, data: list[list[float]], code, size: int) -> str:
         raise NotImplementedError("Method is not implemented")
 

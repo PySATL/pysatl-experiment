@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class TestResolver(IResolver):
     """
-    This class contains the logic to load custom RVS generator class
+    This class contains the logic to load criterion class
     """
 
     object_type = AbstractStatistic

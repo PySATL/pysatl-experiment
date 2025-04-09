@@ -6,61 +6,40 @@
         "params": {
           "lam": 0.5
         }
-      },
-      {
-        "name": "LaplaceRVSGenerator",
-        "params": {
-          "t": 0,
-          "s": 1
-        }
       }
     ],
     "sizes": [
       50,
       100,
-      200,
+      500,
       1000
     ],
-    "count": 1000,
+    "count": 10000,
     "threads": 1,
-    "listeners": [
-      {
-        "name": "TimeEstimationListener"
-      }
-    ]
+    "listeners": []
   },
   "test_configuration": {
     "tests": [
       {
         "name": "KolmogorovSmirnovWeibullGofStatistic"
+      },
+      {
+        "name": "CrammerVonMisesWeibullGofStatistic"
+      },
+      {
+        "name": "AndersonDarlingWeibullGofStatistic"
       }
     ],
     "threads": 1,
     "worker": {
-      "name": "PowerCalculationWorker",
-      "params": {
-        "alpha": 0.05,
-        "monte_carlo_count": 100000,
-        "cv_store": {
-          "name": "CriticalValueDbStore",
-          "params": {
-            "db_url": "sqlite:///weibull_experiment.sqlite"
-          }
-        },
-        "hypothesis": {
-          "name": "WeibullHypothesis"
-        }
-      }
+      "name": "BenchmarkWorker",
+      "params": {}
     },
-    "listeners": [
-      {
-        "name": "TimeEstimationListener"
-      }
-    ]
+    "listeners": []
   },
   "report_configuration": {
     "report_builder": {
-      "name": "PdfPowerReportBuilder"
+      "name": "ChartBenchmarkMeanReportBuilder"
     },
     "listeners": []
   },
