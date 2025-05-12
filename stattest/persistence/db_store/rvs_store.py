@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from sqlalchemy import Integer, String, func, text
+from sqlalchemy import Integer, Row, String, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 from typing_extensions import override
 
@@ -86,16 +86,13 @@ class RvsDbStore(AbstractDbStore, IRvsStore):
 
     @override
     def get_rvs_stat(self) -> list[tuple[str, int, int]]:
-        result = (
+        query_result: list[Row[tuple[str, int, int]]] = (
             RvsDbStore.session.query(RVS.code, RVS.size, func.count(RVS.code))
             .group_by(RVS.code, RVS.size)
             .all()
         )
 
-        if result is None:
-            return []
-
-        return result
+        return [tuple(row) for row in query_result]
 
     @override
     def clear_all_rvs(self):
