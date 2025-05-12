@@ -1,6 +1,6 @@
 from stattest.experiment.configuration.configuration import (
-    AlternativeConfiguration,
     ExperimentConfiguration,
+    GeneratorConfiguration,
     ReportBuilder,
     ReportConfiguration,
     StepListener,
@@ -11,7 +11,7 @@ from stattest.experiment.configuration.configuration import (
 
 
 __all__ = [
-    "AlternativeConfiguration",
+    "GeneratorConfiguration",
     "ExperimentConfiguration",
     "ReportBuilder",
     "ReportConfiguration",

@@ -29,7 +29,7 @@ class GeneratorResolver(IResolver):
     module_names = ["stattest.experiment.generator"]
 
     @staticmethod
-    def load_generators(config: Config | None) -> list[AbstractRVSGenerator]:
+    def load_from_config(config: Config | None) -> list[AbstractRVSGenerator]:
         if not config:
             raise OperationalException("No configuration set. Please specify configuration.")
 
@@ -43,37 +43,35 @@ class GeneratorResolver(IResolver):
         alternatives = alternatives_configuration["alternatives"]
         generators = []
         for generator_conf in alternatives:
-            generator = GeneratorResolver.load_generator(
-                generator_conf["name"], generator_conf["params"]
-            )
+            generator = GeneratorResolver.load(generator_conf["name"], generator_conf["params"])
             generators.append(generator)
 
         return generators
 
     @staticmethod
-    def load_generator(
-        generator_name: str, path: str | None = None, params: dict[str, Any] | None = None
+    def load(
+        name: str, path: str | None = None, params: dict[str, Any] | None = None
     ) -> AbstractRVSGenerator:
         """
         Load the custom class from config parameter
         :param params:
         :param path:
-        :param generator_name:
+        :param name:
         """
 
-        generator: AbstractRVSGenerator = GeneratorResolver._load_generator(
-            generator_name, params=params, extra_dir=path
+        generator: AbstractRVSGenerator = GeneratorResolver._load(
+            name, params=params, extra_dir=path
         )
 
         return generator
 
     @staticmethod
-    def validate_generator(generator: AbstractRVSGenerator) -> AbstractRVSGenerator:
+    def validate(generator: AbstractRVSGenerator) -> AbstractRVSGenerator:
         # Validation can be added
         return generator
 
     @staticmethod
-    def _load_generator(
+    def _load(
         generator_name: str,
         params: dict[str, Any] | None,
         extra_dir: str | None = None,
@@ -81,7 +79,6 @@ class GeneratorResolver(IResolver):
         """
         Search and loads the specified strategy.
         :param generator_name: name of the module to import
-        :param config: configuration for the strategy
         :param extra_dir: additional directory to search for the given strategy
         :return: Strategy instance or None
         """
@@ -107,7 +104,7 @@ class GeneratorResolver(IResolver):
             )
 
         if generator:
-            return GeneratorResolver.validate_generator(generator)
+            return GeneratorResolver.validate(generator)
 
         raise OperationalException(
             f"Impossible to load RVS generator '{generator_name}'. This class does not exist "

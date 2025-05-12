@@ -1,8 +1,10 @@
+from abc import abstractmethod
 from collections.abc import Sequence
 
 from pysatl.criterion import AbstractStatistic
 
 from stattest.experiment.generator import AbstractRVSGenerator
+from stattest.parsable import Parsable
 from stattest.persistence import IRvsStore
 from stattest.persistence.models import IResultStore
 
@@ -11,7 +13,7 @@ class TestWorkerResult:
     pass
 
 
-class ReportBuilder:
+class ReportBuilder(Parsable):
     def process(self, data: TestWorkerResult):
         pass
 
@@ -19,7 +21,7 @@ class ReportBuilder:
         pass
 
 
-class StepListener:
+class StepListener(Parsable):
     def before(self) -> None:
         pass
 
@@ -31,11 +33,13 @@ class TestWorker:
     def init(self):
         pass
 
+    @abstractmethod
     def execute(
         self, test: AbstractStatistic, data: list[list[float]], code, size: int
     ) -> TestWorkerResult:
         raise NotImplementedError("Method is not implemented")
 
+    @abstractmethod
     def build_id(self, test: AbstractStatistic, data: list[list[float]], code, size: int) -> str:
         raise NotImplementedError("Method is not implemented")
 
@@ -55,7 +59,7 @@ class ReportConfiguration:
         self.listeners = listeners
 
 
-class AlternativeConfiguration:
+class GeneratorConfiguration:
     def __init__(
         self,
         alternatives: Sequence[AbstractRVSGenerator],
@@ -104,7 +108,7 @@ class TestConfiguration:
 class ExperimentConfiguration:
     def __init__(
         self,
-        alternative_configuration: AlternativeConfiguration,
+        alternative_configuration: GeneratorConfiguration,
         test_configuration: TestConfiguration,
         report_configuration: ReportConfiguration,
         rvs_store: IRvsStore,
