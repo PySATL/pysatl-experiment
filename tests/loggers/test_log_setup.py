@@ -23,10 +23,7 @@ def test_set_loggers() -> None:
     previous_value1 = logging.getLogger("requests").level
     previous_value2 = logging.getLogger("ccxt.base.exchange").level
     previous_value3 = logging.getLogger("telegram").level
-    config = {
-        "verbosity": 1,
-        "tests_force_logging": True,
-    }
+    config = {"verbosity": 1, "tests_force_logging": True, "api_server": dict[str, str]}
     setup_logging(config)
 
     value1 = logging.getLogger("requests").level

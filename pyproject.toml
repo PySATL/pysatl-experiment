@@ -64,6 +64,9 @@ extend-ignore = [
   "E241", "E272", "E221", "B007", "B904", "S603", "S607", "S608", "NPY002"
 ]
 
+[tool.mypy]
+ignore_missing_imports = true
+
 [tool.ruff.lint.mccabe]
 max-complexity = 12
 
