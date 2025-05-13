@@ -4,6 +4,7 @@ from typing_extensions import override
 from stattest.experiment.configuration.configuration import TestWorker, TestWorkerResult
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.experiment.test.power_calculation import calculate_test_power
+from stattest.parsable import Parsable
 from stattest.persistence.models import ICriticalValueStore
 
 
@@ -23,7 +24,7 @@ class BenchmarkWorkerResult(TestWorkerResult):
         self.test_code = test_code
 
 
-class PowerCalculationWorker(TestWorker):
+class PowerCalculationWorker(TestWorker, Parsable):
     def __init__(
         self,
         alpha: float,

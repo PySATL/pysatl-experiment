@@ -5,7 +5,7 @@ from pathlib import Path
 
 from typing_extensions import override
 
-from stattest.persistence import IRvsStore
+from stattest.persistence.models import IRvsStore
 
 
 class RvsFileStore(IRvsStore):

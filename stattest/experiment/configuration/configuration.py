@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from pysatl.criterion import AbstractStatistic
 
 from stattest.experiment.generator import AbstractRVSGenerator
+from stattest.parsable import Parsable
 from stattest.persistence import IRvsStore
 from stattest.persistence.models import IResultStore
 
@@ -11,7 +12,7 @@ class TestWorkerResult:
     pass
 
 
-class ReportBuilder:
+class ReportBuilder(Parsable):
     def process(self, data: TestWorkerResult):
         pass
 
@@ -19,7 +20,7 @@ class ReportBuilder:
         pass
 
 
-class StepListener:
+class StepListener(Parsable):
     def before(self) -> None:
         pass
 
@@ -55,7 +56,7 @@ class ReportConfiguration:
         self.listeners = listeners
 
 
-class AlternativeConfiguration:
+class GeneratorConfiguration:
     def __init__(
         self,
         alternatives: Sequence[AbstractRVSGenerator],
@@ -104,7 +105,7 @@ class TestConfiguration:
 class ExperimentConfiguration:
     def __init__(
         self,
-        alternative_configuration: AlternativeConfiguration,
+        alternative_configuration: GeneratorConfiguration,
         test_configuration: TestConfiguration,
         report_configuration: ReportConfiguration,
         rvs_store: IRvsStore,

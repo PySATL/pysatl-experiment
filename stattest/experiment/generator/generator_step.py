@@ -2,7 +2,7 @@ import logging
 from multiprocessing import Queue
 from multiprocessing.synchronize import Event as EventClass
 
-from stattest.experiment.configuration.configuration import AlternativeConfiguration
+from stattest.experiment.configuration.configuration import GeneratorConfiguration
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.experiment.pipeline import start_pipeline
 from stattest.persistence.models import IRvsStore
@@ -70,7 +70,7 @@ def fill_queue(
     generate_shutdown_event.set()
 
 
-def data_generation_step(alternative_configuration: AlternativeConfiguration, store: IRvsStore):
+def data_generation_step(alternative_configuration: GeneratorConfiguration, store: IRvsStore):
     """
 
     Generate data and save it to store.
