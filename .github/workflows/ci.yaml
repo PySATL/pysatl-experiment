@@ -37,6 +37,10 @@ jobs:
       - name: Run tests
         run: poetry run pytest --random-order
 
+      - name: Check types
+        run: |
+          poetry run mypy .
+
       - name: Tests with Coveralls
         if: matrix.python-version == '3.12'
         run: |

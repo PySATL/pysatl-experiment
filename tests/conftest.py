@@ -1,3 +1,5 @@
+from collections.abc import Generator
+
 import pytest
 
 
@@ -10,7 +12,7 @@ def keep_log_config_loggers(mocker):
 
 
 @pytest.fixture(scope="function")
-def import_fails() -> None:
+def import_fails() -> Generator[None, None, None]:
     # Source of this test-method:
     # https://stackoverflow.com/questions/2481511/mocking-importerror-in-python
     import builtins
