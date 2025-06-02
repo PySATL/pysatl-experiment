@@ -19,7 +19,7 @@ dependencies = [
     "python-rapidjson==1.20",
     "jsonschema==4.23.0",
     "rich==13.9.4",
-    "pysatl-criterion==0.0.1a0"
+    "pysatl-criterion @ git+https://github.com/PySATL/pysatl-criterion.git"
 ]
 
 [build-system]
