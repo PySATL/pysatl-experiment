@@ -12,6 +12,7 @@ class ExperimentConfig:
     """
     Experiment configuration.
     """
+
     experiment_type: ExperimentType
     storage_connection: str
     run_mode: RunMode

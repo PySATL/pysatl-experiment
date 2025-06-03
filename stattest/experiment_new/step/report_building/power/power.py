@@ -10,9 +10,16 @@ class PowerReportBuildingStep:
     Standard power experiment report building step.
     """
 
-    def __init__(self, criteria: list[AbstractGoodnessOfFitStatistic], significance_levels: list[float],
-                 alternatives: [AbstractRVSGenerator], sizes: list[int], monte_carlo_count: int,
-                 report_builder: PowerReportBuilder, result_storage: IPowerStorage):
+    def __init__(
+        self,
+        criteria: list[AbstractGoodnessOfFitStatistic],
+        significance_levels: list[float],
+        alternatives: [AbstractRVSGenerator],
+        sizes: list[int],
+        monte_carlo_count: int,
+        report_builder: PowerReportBuilder,
+        result_storage: IPowerStorage,
+    ):
         self.criteria = criteria
         self.significance_levels = significance_levels
         self.alternatives = alternatives

@@ -1,16 +1,22 @@
-from stattest.configuration.experiment_config.critical_value.critical_value import CriticalValueExperimentConfig
+from stattest.configuration.experiment_config.critical_value.critical_value import (
+    CriticalValueExperimentConfig,
+)
 from stattest.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
 from stattest.experiment_new.step.execution.power.power import PowerExecutionStep
 from stattest.experiment_new.step.generation.generation import GenerationStep
 from stattest.experiment_new.step.report_building.power.power import PowerReportBuildingStep
-from stattest.factory.model.abstract_experiment_factory.abstract_experiment_factory import IAbstractExperimentFactory
+from stattest.factory.model.abstract_experiment_factory.abstract_experiment_factory import (
+    IAbstractExperimentFactory,
+)
 
 
 class PowerExperimentFactory(
-    IAbstractExperimentFactory[GenerationStep, PowerExecutionStep, PowerReportBuildingStep]):
+    IAbstractExperimentFactory[GenerationStep, PowerExecutionStep, PowerReportBuildingStep]
+):
     """
     Power experiment factory.
     """
+
     pass
 
     def __init__(self, experiment_config: CriticalValueExperimentConfig):

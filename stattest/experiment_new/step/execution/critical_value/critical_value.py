@@ -1,8 +1,12 @@
 from dataclasses import dataclass
 
-from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import ILimitDistributionStorage
+from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import (
+    ILimitDistributionStorage,
+)
 
-from stattest.experiment_new.step.execution.common.execution_step_data.execution_step_data import ExecutionStepData
+from stattest.experiment_new.step.execution.common.execution_step_data.execution_step_data import (
+    ExecutionStepData,
+)
 from stattest.persistence.model.random_values.random_values import IRandomValuesStorage
 from stattest.worker.critical_value.critical_value import CriticalValueWorker
 
@@ -19,8 +23,14 @@ class CriticalValueExecutionStep:
     Standard critical value experiment execution step.
     """
 
-    def __init__(self, worker: CriticalValueWorker, step_data: list[CriticalValueStepData], monte_carlo_count: int,
-                 data_storage: IRandomValuesStorage, result_storage: ILimitDistributionStorage):
+    def __init__(
+        self,
+        worker: CriticalValueWorker,
+        step_data: list[CriticalValueStepData],
+        monte_carlo_count: int,
+        data_storage: IRandomValuesStorage,
+        result_storage: ILimitDistributionStorage,
+    ):
         self.worker = worker
         self.step_data = step_data
         self.monte_carlo_count = monte_carlo_count

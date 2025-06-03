@@ -9,8 +9,14 @@ class TimeComplexityReportBuildingStep:
     Standard time complexity experiment report building step.
     """
 
-    def __init__(self, criteria: list[AbstractGoodnessOfFitStatistic], sizes: list[int], monte_carlo_count: int,
-                 report_builder: TimeComplexityReportBuilder, result_storage: ITimeComplexityStorage):
+    def __init__(
+        self,
+        criteria: list[AbstractGoodnessOfFitStatistic],
+        sizes: list[int],
+        monte_carlo_count: int,
+        report_builder: TimeComplexityReportBuilder,
+        result_storage: ITimeComplexityStorage,
+    ):
         self.criteria = criteria
         self.sizes = sizes
         self.monte_carlo_count = monte_carlo_count

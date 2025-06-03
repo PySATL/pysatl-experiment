@@ -8,4 +8,5 @@ class CriticalValueExperimentConfig(ExperimentConfig):
     """
     Critical value experiment configuration.
     """
+
     significance_levels: list[float]

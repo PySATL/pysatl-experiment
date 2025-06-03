@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
-from stattest.experiment_new.step.execution.common.execution_step_data.execution_step_data import ExecutionStepData
+from stattest.experiment_new.step.execution.common.execution_step_data.execution_step_data import (
+    ExecutionStepData,
+)
 from stattest.persistence.model.random_values.random_values import IRandomValuesStorage
 from stattest.persistence.model.time_complexity.time_complexity import ITimeComplexityStorage
 from stattest.worker.time_complexity.time_complexity import TimeComplexityWorker
@@ -18,8 +20,14 @@ class TimeComplexityExecutionStep:
     Standard time complexity experiment execution step.
     """
 
-    def __init__(self, worker: TimeComplexityWorker, step_data: list[TimeComplexityStepData], monte_carlo_count: int,
-                 data_storage: IRandomValuesStorage, result_storage: ITimeComplexityStorage):
+    def __init__(
+        self,
+        worker: TimeComplexityWorker,
+        step_data: list[TimeComplexityStepData],
+        monte_carlo_count: int,
+        data_storage: IRandomValuesStorage,
+        result_storage: ITimeComplexityStorage,
+    ):
         self.worker = worker
         self.step_data = step_data
         self.monte_carlo_count = monte_carlo_count

@@ -1,16 +1,28 @@
-from stattest.configuration.experiment_config.critical_value.critical_value import CriticalValueExperimentConfig
+from stattest.configuration.experiment_config.critical_value.critical_value import (
+    CriticalValueExperimentConfig,
+)
 from stattest.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
-from stattest.experiment_new.step.execution.critical_value.critical_value import CriticalValueExecutionStep
+from stattest.experiment_new.step.execution.critical_value.critical_value import (
+    CriticalValueExecutionStep,
+)
 from stattest.experiment_new.step.generation.generation import GenerationStep
-from stattest.experiment_new.step.report_building.critical_value.critical_value import CriticalValueReportBuildingStep
-from stattest.factory.model.abstract_experiment_factory.abstract_experiment_factory import IAbstractExperimentFactory
+from stattest.experiment_new.step.report_building.critical_value.critical_value import (
+    CriticalValueReportBuildingStep,
+)
+from stattest.factory.model.abstract_experiment_factory.abstract_experiment_factory import (
+    IAbstractExperimentFactory,
+)
 
 
 class CriticalValueExperimentFactory(
-    IAbstractExperimentFactory[GenerationStep, CriticalValueExecutionStep, CriticalValueReportBuildingStep]):
+    IAbstractExperimentFactory[
+        GenerationStep, CriticalValueExecutionStep, CriticalValueReportBuildingStep
+    ]
+):
     """
     Critical value experiment factory.
     """
+
     pass
 
     def __init__(self, experiment_config: CriticalValueExperimentConfig):

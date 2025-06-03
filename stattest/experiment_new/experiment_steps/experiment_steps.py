@@ -8,6 +8,7 @@ class ExperimentSteps:
     """
     Experiment steps dataclass.
     """
+
     generation_step: IExperimentStep
     execution_step: IExperimentStep
     report_building_step: IExperimentStep

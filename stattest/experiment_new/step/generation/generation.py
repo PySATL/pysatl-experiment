@@ -9,6 +9,7 @@ class GenerationStepData:
     """
     Data for generation step.
     """
+
     generator: AbstractRVSGenerator
     sample_size: int
     count: int
@@ -19,8 +20,12 @@ class GenerationStep:
     Standard experiment generation step.
     """
 
-    def __init__(self, step_config: list[GenerationStepData], monte_carlo_count: int,
-                 data_storage: IRandomValuesStorage):
+    def __init__(
+        self,
+        step_config: list[GenerationStepData],
+        monte_carlo_count: int,
+        data_storage: IRandomValuesStorage,
+    ):
         self.step_config = step_config
         self.monte_carlo_count = monte_carlo_count
         self.data_storage = data_storage

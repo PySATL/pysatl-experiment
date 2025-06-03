@@ -6,5 +6,6 @@ class Alternative:
     """
     Alternative configuration (generator code + parameters).
     """
+
     generator_code: str
     parameters: list[float]
