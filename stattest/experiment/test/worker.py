@@ -1,4 +1,4 @@
-from pysatl.criterion import AbstractStatistic
+from pysatl_criterion.statistics import AbstractStatistic
 from typing_extensions import override
 
 from stattest.experiment.configuration.configuration import TestWorker, TestWorkerResult

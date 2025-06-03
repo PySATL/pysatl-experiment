@@ -1,6 +1,6 @@
 import multiprocessing
 
-from pysatl.criterion import (
+from pysatl_criterion.statistics.weibull import (
     AndersonDarlingWeibullGofStatistic,
     Chi2PearsonWeibullGofStatistic,
     CrammerVonMisesWeibullGofStatistic,
@@ -15,8 +15,6 @@ from pysatl.criterion import (
     ST1WeibullGofStatistic,
     ST2WeibullGofStatistic,
     TikuSinghWeibullGofStatistic,
-)
-from pysatl.criterion.weibull import (
     KullbackLeiblerWeibullGofStatistic,
     LaplaceTransform2WeibullGofStatistic,
     LaplaceTransform3WeibullGofStatistic,

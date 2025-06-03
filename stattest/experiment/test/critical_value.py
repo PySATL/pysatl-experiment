@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.stats as scipy_stats
-from pysatl.criterion import AbstractStatistic
+from pysatl_criterion.statistics import AbstractStatistic
 
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.persistence.models import ICriticalValueStore
