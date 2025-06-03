@@ -25,9 +25,7 @@ class RandomValuesQuery(DataQuery):
     sample_size: int
 
 
-class IRandomValuesStorage(
-    IDataStorage[RandomValuesModel, RandomValuesQuery], Protocol
-):
+class IRandomValuesStorage(IDataStorage[RandomValuesModel, RandomValuesQuery], Protocol):
     """
     Random values storage interface.
     """

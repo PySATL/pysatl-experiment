@@ -26,9 +26,7 @@ class TimeComplexityQuery(DataQuery):
     monte_carlo_count: int
 
 
-class IRandomValuesStorage(
-    IDataStorage[TimeComplexityModel, TimeComplexityQuery], Protocol
-):
+class ITimeComplexityStorage(IDataStorage[TimeComplexityModel, TimeComplexityQuery], Protocol):
     """
     Time complexity storage interface.
     """

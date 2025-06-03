@@ -43,9 +43,7 @@ class ExperimentQuery(DataQuery):
     significance_levels: list[float]
 
 
-class IRandomValuesStorage(
-    IDataStorage[ExperimentModel, ExperimentQuery], Protocol
-):
+class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], Protocol):
     """
     Experiment configuration storage interface.
     """

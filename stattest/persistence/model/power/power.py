@@ -32,9 +32,7 @@ class PowerQuery(DataQuery):
     significance_level: float
 
 
-class IRandomValuesStorage(
-    IDataStorage[PowerModel, PowerQuery], Protocol
-):
+class IPowerStorage(IDataStorage[PowerModel, PowerQuery], Protocol):
     """
     Power storage interface.
     """
