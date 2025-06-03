@@ -28,7 +28,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-package-mode = false
+package-mode = true
 
 [tool.poetry.group.dev.dependencies]
 markdown = "3.7"
@@ -87,4 +87,4 @@ exclude = [".git", "__pycache__", ".eggs", "user_data", ".venv", ".env"]
 ]
 
 [tool.poetry.scripts]
-experiment = "stattest:cli:cli:cli"
+experiment = "stattest.cli.cli:cli"
