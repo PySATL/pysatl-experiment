@@ -38,4 +38,4 @@ class TimeComplexityExecutionStep:
         """
         Run standard time complexity execution step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")

@@ -21,4 +21,4 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         """
         Execute power worker.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")

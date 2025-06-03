@@ -26,22 +26,22 @@ class PowerExperimentFactory(
         """
         Create power experiment steps.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")
 
     def _create_generation_step(self) -> GenerationStep:
         """
         Create generation step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")
 
     def _create_execution_step(self) -> PowerExecutionStep:
         """
         Create power execution step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")
 
     def _create_report_building_step(self) -> PowerReportBuildingStep:
         """
         Create power report building step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")

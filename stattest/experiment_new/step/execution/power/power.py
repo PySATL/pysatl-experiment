@@ -42,4 +42,4 @@ class PowerExecutionStep:
         """
         Run standard power execution step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")

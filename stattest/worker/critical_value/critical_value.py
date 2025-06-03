@@ -21,4 +21,4 @@ class CriticalValueWorker(IWorker[CriticalValueWorkerResult]):
         """
         Execute critical value worker.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")

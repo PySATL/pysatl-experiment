@@ -32,22 +32,22 @@ class CriticalValueExperimentFactory(
         """
         Create critical value experiment steps.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")
 
     def _create_generation_step(self) -> GenerationStep:
         """
         Create generation step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")
 
     def _create_execution_step(self) -> CriticalValueExecutionStep:
         """
         Create critical value execution step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")
 
     def _create_report_building_step(self) -> CriticalValueReportBuildingStep:
         """
         Create critical value report building step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")

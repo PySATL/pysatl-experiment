@@ -41,4 +41,4 @@ class CriticalValueExecutionStep:
         """
         Run standard critical value execution step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")

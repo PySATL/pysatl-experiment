@@ -31,4 +31,4 @@ class CriticalValueReportBuildingStep:
         """
         Run standard critical value report building step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")

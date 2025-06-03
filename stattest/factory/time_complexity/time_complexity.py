@@ -32,22 +32,22 @@ class TimeComplexityExperimentFactory(
         """
         Create time complexity experiment steps.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")
 
     def _create_generation_step(self) -> GenerationStep:
         """
         Create generation step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")
 
     def _create_execution_step(self) -> TimeComplexityExecutionStep:
         """
         Create time complexity execution step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")
 
     def _create_report_building_step(self) -> TimeComplexityReportBuildingStep:
         """
         Create time complexity report building step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")

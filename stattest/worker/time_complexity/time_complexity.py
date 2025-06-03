@@ -21,4 +21,4 @@ class TimeComplexityWorker(IWorker[TimeComplexityWorkerResult]):
         """
         Execute time complexity worker.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")

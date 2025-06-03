@@ -27,4 +27,4 @@ class TimeComplexityReportBuildingStep:
         """
         Run standard time complexity report building step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")

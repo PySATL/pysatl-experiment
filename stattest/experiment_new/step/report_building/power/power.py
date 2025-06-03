@@ -14,7 +14,7 @@ class PowerReportBuildingStep:
         self,
         criteria: list[AbstractGoodnessOfFitStatistic],
         significance_levels: list[float],
-        alternatives: [AbstractRVSGenerator],
+        alternatives: list[AbstractRVSGenerator],
         sizes: list[int],
         monte_carlo_count: int,
         report_builder: PowerReportBuilder,
@@ -32,4 +32,4 @@ class PowerReportBuildingStep:
         """
         Run standard power report building step.
         """
-        pass
+        raise NotImplementedError("Method is not yet implemented")
