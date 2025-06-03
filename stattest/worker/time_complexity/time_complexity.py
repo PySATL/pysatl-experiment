@@ -18,4 +18,7 @@ class TimeComplexityWorker(IWorker[TimeComplexityWorkerResult]):
     """
 
     def execute(self) -> TimeComplexityWorkerResult:
+        """
+        Execute time complexity worker.
+        """
         pass

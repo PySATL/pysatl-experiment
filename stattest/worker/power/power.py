@@ -18,4 +18,7 @@ class PowerWorker(IWorker[PowerWorkerResult]):
     """
 
     def execute(self) -> PowerWorkerResult:
+        """
+        Execute power worker.
+        """
         pass

@@ -19,6 +19,7 @@ dependencies = [
     "python-rapidjson==1.20",
     "jsonschema==4.23.0",
     "rich==13.9.4",
+    "click>=8.2.1",
     "pysatl-criterion @ git+https://github.com/PySATL/pysatl-criterion.git"
 ]
 
@@ -84,3 +85,6 @@ exclude = [".git", "__pycache__", ".eggs", "user_data", ".venv", ".env"]
 "tests/**/*.py" = [
   "S101", "S104", "S311", "S105", "S106", "S110"
 ]
+
+[tool.poetry.scripts]
+experiment = "stattest:cli:cli:cli"

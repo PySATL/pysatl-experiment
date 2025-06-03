@@ -18,4 +18,7 @@ class CriticalValueWorker(IWorker[CriticalValueWorkerResult]):
     """
 
     def execute(self) -> CriticalValueWorkerResult:
+        """
+        Execute critical value worker.
+        """
         pass
