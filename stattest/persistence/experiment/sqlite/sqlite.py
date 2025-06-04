@@ -5,6 +5,9 @@ class SQLiteExperimentStorage:
     """
     SQLite experiment config storage.
     """
+    def __init__(self, connection: str):
+        self.connection = connection
+
     def get_data(self, query: ExperimentQuery) -> ExperimentModel:
         """
         Get experiment config from SQLite storage.

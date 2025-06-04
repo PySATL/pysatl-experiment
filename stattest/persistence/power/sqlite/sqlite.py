@@ -5,6 +5,8 @@ class SQLitePowerStorage:
     """
     SQLite power storage.
     """
+    def __init__(self, connection: str):
+        self.connection = connection
 
     def get_data(self, query: PowerQuery) -> PowerModel:
         """

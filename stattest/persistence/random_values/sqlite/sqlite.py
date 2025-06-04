@@ -1,11 +1,12 @@
 from stattest.persistence.model.random_values.random_values import RandomValuesQuery, RandomValuesModel
-from stattest.persistence.model.time_complexity.time_complexity import TimeComplexityQuery, TimeComplexityModel
 
 
 class SQLiteRandomValuesStorage:
     """
     SQLite random values storage.
     """
+    def __init__(self, connection: str):
+        self.connection = connection
 
     def get_data(self, query: RandomValuesQuery) -> RandomValuesModel:
         """
