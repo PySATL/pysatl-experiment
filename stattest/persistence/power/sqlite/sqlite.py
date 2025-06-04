@@ -1,10 +1,11 @@
-from stattest.persistence.model.power.power import PowerQuery, PowerModel
+from stattest.persistence.model.power.power import PowerModel, PowerQuery
 
 
 class SQLitePowerStorage:
     """
     SQLite power storage.
     """
+
     def __init__(self, connection: str):
         self.connection = connection
 

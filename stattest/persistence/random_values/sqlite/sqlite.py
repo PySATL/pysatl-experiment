@@ -1,10 +1,14 @@
-from stattest.persistence.model.random_values.random_values import RandomValuesQuery, RandomValuesModel
+from stattest.persistence.model.random_values.random_values import (
+    RandomValuesModel,
+    RandomValuesQuery,
+)
 
 
 class SQLiteRandomValuesStorage:
     """
     SQLite random values storage.
     """
+
     def __init__(self, connection: str):
         self.connection = connection
 

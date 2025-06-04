@@ -1,10 +1,11 @@
-from stattest.persistence.model.experiment.experiment import ExperimentQuery, ExperimentModel
+from stattest.persistence.model.experiment.experiment import ExperimentModel, ExperimentQuery
 
 
 class SQLiteExperimentStorage:
     """
     SQLite experiment config storage.
     """
+
     def __init__(self, connection: str):
         self.connection = connection
 

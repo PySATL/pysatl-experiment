@@ -1,10 +1,14 @@
-from stattest.persistence.model.time_complexity.time_complexity import TimeComplexityQuery, TimeComplexityModel
+from stattest.persistence.model.time_complexity.time_complexity import (
+    TimeComplexityModel,
+    TimeComplexityQuery,
+)
 
 
 class SQLiteTimeComplexityStorage:
     """
     SQLite time complexity storage.
     """
+
     def __init__(self, connection: str):
         self.connection = connection
 
