@@ -6,6 +6,6 @@ class ExperimentType(Enum):
     Experiment type.
     """
 
-    CRITICAL_VALUE = 1
-    POWER = 2
-    TIME_COMPLEXITY = 3
+    CRITICAL_VALUE = "critical_value"
+    POWER = "power"
+    TIME_COMPLEXITY = "time_complexity"
