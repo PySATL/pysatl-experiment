@@ -30,4 +30,8 @@ class IRandomValuesStorage(IDataStorage[RandomValuesModel, RandomValuesQuery], P
     Random values storage interface.
     """
 
-    pass
+    def get_rvs_count(self, query: RandomValuesQuery) -> int:
+        """
+        Get count of samples.
+        """
+        pass

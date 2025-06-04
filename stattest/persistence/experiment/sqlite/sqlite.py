@@ -1,0 +1,18 @@
+from stattest.persistence.model.experiment.experiment import ExperimentQuery, ExperimentModel
+
+
+class SQLiteExperimentStorage:
+    """
+    SQLite experiment config storage.
+    """
+    def get_data(self, query: ExperimentQuery) -> ExperimentModel:
+        """
+        Get experiment config from SQLite storage.
+        """
+        raise NotImplementedError("Method is not yet implemented")
+
+    def insert_data(self, data: ExperimentModel) -> None:
+        """
+        Insert experiment config to SQLite storage.
+        """
+        raise NotImplementedError("Method is not yet implemented")
