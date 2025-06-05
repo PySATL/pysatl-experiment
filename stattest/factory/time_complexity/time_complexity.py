@@ -1,6 +1,7 @@
 from stattest.configuration.experiment_config.critical_value.critical_value import (
     CriticalValueExperimentConfig,
 )
+from stattest.configuration.experiment_config.time_complexity.time_complexity import TimeComplexityExperimentConfig
 from stattest.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
 from stattest.experiment_new.step.execution.time_complexity.time_complexity import (
     TimeComplexityExecutionStep,
@@ -25,7 +26,7 @@ class TimeComplexityExperimentFactory(
 
     pass
 
-    def __init__(self, experiment_config: CriticalValueExperimentConfig):
+    def __init__(self, experiment_config: TimeComplexityExperimentConfig):
         self.experiment_config = experiment_config
 
     def create_experiment_steps(self) -> ExperimentSteps:

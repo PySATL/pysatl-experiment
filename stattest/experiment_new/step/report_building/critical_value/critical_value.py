@@ -19,6 +19,7 @@ class CriticalValueReportBuildingStep:
         monte_carlo_count: int,
         report_builder: CriticalValueReportBuilder,
         result_storage: ILimitDistributionStorage,
+        results_path: str,
     ):
         self.criteria = criteria
         self.significance_levels = significance_levels
@@ -26,6 +27,7 @@ class CriticalValueReportBuildingStep:
         self.monte_carlo_count = monte_carlo_count
         self.report_builder = report_builder
         self.result_storage = result_storage
+        self.results_path = results_path
 
     def run(self) -> None:
         """

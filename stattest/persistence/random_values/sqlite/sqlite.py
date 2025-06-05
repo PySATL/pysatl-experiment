@@ -1,10 +1,10 @@
 from stattest.persistence.model.random_values.random_values import (
     RandomValuesModel,
-    RandomValuesQuery,
+    RandomValuesQuery, IRandomValuesStorage,
 )
 
 
-class SQLiteRandomValuesStorage:
+class SQLiteRandomValuesStorage(IRandomValuesStorage):
     """
     SQLite random values storage.
     """

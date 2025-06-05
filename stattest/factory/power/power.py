@@ -1,6 +1,4 @@
-from stattest.configuration.experiment_config.critical_value.critical_value import (
-    CriticalValueExperimentConfig,
-)
+from stattest.configuration.experiment_config.power.power import PowerExperimentConfig
 from stattest.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
 from stattest.experiment_new.step.execution.power.power import PowerExecutionStep
 from stattest.experiment_new.step.generation.generation import GenerationStep
@@ -19,7 +17,7 @@ class PowerExperimentFactory(
 
     pass
 
-    def __init__(self, experiment_config: CriticalValueExperimentConfig):
+    def __init__(self, experiment_config: PowerExperimentConfig):
         self.experiment_config = experiment_config
 
     def create_experiment_steps(self) -> ExperimentSteps:

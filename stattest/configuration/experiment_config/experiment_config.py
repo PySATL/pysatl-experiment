@@ -17,7 +17,7 @@ class ExperimentConfig:
     storage_connection: str
     run_mode: RunMode
     hypothesis: Hypothesis
-    data_generator_type: StepType
+    generator_type: StepType
     executor_type: StepType
     report_builder_type: StepType
     sample_sizes: list[int]

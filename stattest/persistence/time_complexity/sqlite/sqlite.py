@@ -1,10 +1,10 @@
 from stattest.persistence.model.time_complexity.time_complexity import (
     TimeComplexityModel,
-    TimeComplexityQuery,
+    TimeComplexityQuery, ITimeComplexityStorage,
 )
 
 
-class SQLiteTimeComplexityStorage:
+class SQLiteTimeComplexityStorage(ITimeComplexityStorage):
     """
     SQLite time complexity storage.
     """
