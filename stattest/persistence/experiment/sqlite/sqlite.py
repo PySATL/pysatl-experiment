@@ -1,4 +1,8 @@
-from stattest.persistence.model.experiment.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
+from stattest.persistence.model.experiment.experiment import (
+    ExperimentModel,
+    ExperimentQuery,
+    IExperimentStorage,
+)
 
 
 class SQLiteExperimentStorage(IExperimentStorage):

@@ -1,6 +1,7 @@
 from stattest.persistence.model.random_values.random_values import (
+    IRandomValuesStorage,
     RandomValuesModel,
-    RandomValuesQuery, IRandomValuesStorage,
+    RandomValuesQuery,
 )
 
 

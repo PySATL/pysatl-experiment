@@ -1,4 +1,4 @@
-from stattest.persistence.model.power.power import PowerModel, PowerQuery, IPowerStorage
+from stattest.persistence.model.power.power import IPowerStorage, PowerModel, PowerQuery
 
 
 class SQLitePowerStorage(IPowerStorage):

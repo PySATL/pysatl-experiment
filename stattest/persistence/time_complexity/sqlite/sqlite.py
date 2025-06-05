@@ -1,6 +1,7 @@
 from stattest.persistence.model.time_complexity.time_complexity import (
+    ITimeComplexityStorage,
     TimeComplexityModel,
-    TimeComplexityQuery, ITimeComplexityStorage,
+    TimeComplexityQuery,
 )
 
 
