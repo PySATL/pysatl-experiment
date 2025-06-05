@@ -83,7 +83,7 @@ def _create_experiment_data_from_dict(
 
     experiment_data_type = experiment_type_str_to_class[experiment_type]
 
-    experiment_data = from_dict(
+    experiment_data: ExperimentData[ExperimentConfig] = from_dict(
         data_class=experiment_data_type,
         data=experiment_data_dict,
         config=Config(type_hooks=enum_mapping, cast=[Enum]),
