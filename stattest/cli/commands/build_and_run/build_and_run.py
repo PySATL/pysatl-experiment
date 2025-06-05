@@ -75,12 +75,10 @@ def _create_experiment_data_from_dict(
     }
 
     enum_mapping = {
-        "experiment_type": ExperimentType,
-        "run_mode": RunMode,
-        "hypothesis": Hypothesis,
-        "data_generator_type": StepType,
-        "executor_type": StepType,
-        "report_builder_type": StepType,
+        ExperimentType: lambda x: ExperimentType(x),
+        RunMode: lambda x: RunMode(x),
+        Hypothesis: lambda x: Hypothesis(x),
+        StepType: lambda x: StepType(x),
     }
 
     experiment_data_type = experiment_type_str_to_class[experiment_type]
