@@ -1,4 +1,4 @@
-from stattest.configuration.experiment_config.power.power import PowerExperimentConfig
+from stattest.configuration.experiment_data.power.power import PowerExperimentData
 from stattest.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
 from stattest.experiment_new.step.execution.power.power import PowerExecutionStep
 from stattest.experiment_new.step.generation.generation import GenerationStep
@@ -17,8 +17,8 @@ class PowerExperimentFactory(
 
     pass
 
-    def __init__(self, experiment_config: PowerExperimentConfig):
-        self.experiment_config = experiment_config
+    def __init__(self, experiment_data: PowerExperimentData):
+        self.experiment_data = experiment_data
 
     def create_experiment_steps(self) -> ExperimentSteps:
         """

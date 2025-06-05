@@ -1,5 +1,5 @@
-from stattest.configuration.experiment_config.critical_value.critical_value import (
-    CriticalValueExperimentConfig,
+from stattest.configuration.experiment_data.critical_value.critical_value import (
+    CriticalValueExperimentData,
 )
 from stattest.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
 from stattest.experiment_new.step.execution.critical_value.critical_value import (
@@ -25,8 +25,8 @@ class CriticalValueExperimentFactory(
 
     pass
 
-    def __init__(self, experiment_config: CriticalValueExperimentConfig):
-        self.experiment_config = experiment_config
+    def __init__(self, experiment_data: CriticalValueExperimentData):
+        self.experiment_data = experiment_data
 
     def create_experiment_steps(self) -> ExperimentSteps:
         """
