@@ -28,6 +28,24 @@ def create_experiment_path(name: str) -> Path:
     return experiment_path
 
 
+def create_result_path(name: str) -> Path:
+    """
+    Create experiment result path.
+
+    :param name: name of the experiment.
+
+    :return: path to the experiment result.
+    """
+
+    # pysatl-experiment/.results
+    experiments_dir = Path(__file__).resolve().parents[4] / ".results"
+    experiment_file_name = f"{name}.json"
+
+    experiment_path = experiments_dir / experiment_file_name
+
+    return experiment_path
+
+
 def save_experiment_data(experiment_name: str, experiment_data: dict) -> None:
     """
     Save experiment data.
@@ -89,7 +107,7 @@ def get_statistics_codes_for_hypothesis(hypothesis: str) -> list[str]:
 
     base_class = hypothesis_to_base_class[hypothesis]
 
-    valid_criteria_types = [cls for cls in base_class.__subclasses__()]
+    valid_criteria_types = base_class.__subclasses__()
     valid_criteria_codes = [cls.code().split("_")[0] for cls in valid_criteria_types]
 
     return valid_criteria_codes

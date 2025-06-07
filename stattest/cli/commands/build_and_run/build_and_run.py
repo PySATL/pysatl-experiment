@@ -42,54 +42,15 @@ def build_and_run(name: str) -> None:
     experiment_data_dict = read_experiment_data(name)
     experiment_config = get_experiment_config(experiment_data_dict)
 
-    validate_build_and_run(experiment_config)
+    experiment_data = validate_build_and_run(experiment_data_dict)
 
     experiment_type = experiment_config["experiment_type"]
-
-    experiment_data = _create_experiment_data_from_dict(experiment_data_dict, experiment_type)
 
     experiment_steps = _build_experiment(experiment_data, experiment_type)
 
     experiment = Experiment(experiment_steps)
 
     experiment.run_experiment()
-
-
-def _create_experiment_data_from_dict(
-    experiment_data_dict: dict,
-    experiment_type: str,
-) -> ExperimentData[ExperimentConfig]:
-    """
-    Create experiment data from dictionary.
-
-    :param experiment_data_dict: experiment data dictionary.
-    :param experiment_type: experiment type.
-
-    :return: experiment data.
-    """
-
-    experiment_type_str_to_class = {
-        "power": PowerExperimentData,
-        "critical_value": CriticalValueExperimentData,
-        "time_complexity": TimeComplexityExperimentData,
-    }
-
-    enum_mapping = {
-        ExperimentType: lambda x: ExperimentType(x),
-        RunMode: lambda x: RunMode(x),
-        Hypothesis: lambda x: Hypothesis(x),
-        StepType: lambda x: StepType(x),
-    }
-
-    experiment_data_type = experiment_type_str_to_class[experiment_type]
-
-    experiment_data: ExperimentData[ExperimentConfig] = from_dict(
-        data_class=experiment_data_type,
-        data=experiment_data_dict,
-        config=Config(type_hooks=enum_mapping, cast=[Enum]),
-    )
-
-    return experiment_data
 
 
 def _build_experiment(
