@@ -3,6 +3,7 @@ from enum import Enum
 from pathlib import Path
 
 from click import ClickException, Context
+
 from pysatl_criterion.statistics import (
     AbstractExponentialityGofStatistic,
     AbstractNormalityGofStatistic,

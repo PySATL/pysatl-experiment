@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats as scipy_stats
-from pysatl_criterion.statistics import AbstractStatistic
 
+from pysatl_criterion.statistics import AbstractStatistic
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.persistence.models import ICriticalValueStore
 
@@ -83,13 +83,9 @@ def get_or_calculate_critical_value(
         return critical_value
 
     if test.two_tailed:
-        critical_value, distribution = calculate_two_tailed_critical_value(
-            test, hypothesis, size, alpha, count
-        )
+        critical_value, distribution = calculate_two_tailed_critical_value(test, hypothesis, size, alpha, count)
     else:
-        critical_value, distribution = calculate_critical_value(
-            test, hypothesis, size, alpha, count
-        )
+        critical_value, distribution = calculate_critical_value(test, hypothesis, size, alpha, count)
 
     store.insert_critical_value(test.code(), size, alpha, critical_value)
     store.insert_distribution(test.code(), size, distribution)

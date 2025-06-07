@@ -1,22 +1,8 @@
-from enum import Enum
-
 from click import BadParameter, argument, command
-from dacite import Config, from_dict
 
 from stattest.cli.commands.common.common import get_experiment_config, read_experiment_data
 from stattest.configuration.experiment_config.experiment_config import ExperimentConfig
-from stattest.configuration.experiment_data.critical_value.critical_value import (
-    CriticalValueExperimentData,
-)
 from stattest.configuration.experiment_data.experiment_data import ExperimentData
-from stattest.configuration.experiment_data.power.power import PowerExperimentData
-from stattest.configuration.experiment_data.time_complexity.time_complexity import (
-    TimeComplexityExperimentData,
-)
-from stattest.configuration.model.experiment_type.experiment_type import ExperimentType
-from stattest.configuration.model.hypothesis.hypothesis import Hypothesis
-from stattest.configuration.model.run_mode.run_mode import RunMode
-from stattest.configuration.model.step_type.step_type import StepType
 from stattest.experiment_new.experiment.experiment import Experiment
 from stattest.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
 from stattest.factory.critical_value.critical_value import CriticalValueExperimentFactory
@@ -53,9 +39,7 @@ def build_and_run(name: str) -> None:
     experiment.run_experiment()
 
 
-def _build_experiment(
-    experiment_data: ExperimentData[ExperimentConfig], experiment_type: str
-) -> ExperimentSteps:
+def _build_experiment(experiment_data: ExperimentData[ExperimentConfig], experiment_type: str) -> ExperimentSteps:
     """
     Build experiment.
 

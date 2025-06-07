@@ -1,6 +1,6 @@
-from pysatl_criterion.statistics import AbstractStatistic
 from typing_extensions import override
 
+from pysatl_criterion.statistics import AbstractStatistic
 from stattest.experiment.configuration.configuration import TestWorker, TestWorkerResult
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.experiment.test.power_calculation import calculate_test_power
@@ -40,16 +40,10 @@ class PowerCalculationWorker(TestWorker):
     def init(self):
         self.cv_store.init()
 
-    def build_id(
-        self, test: AbstractStatistic, data: list[list[float]], code: str, size: int
-    ) -> str:
+    def build_id(self, test: AbstractStatistic, data: list[list[float]], code: str, size: int) -> str:
         return "_".join([str(self.alpha), str(size), test.code(), code])
 
     @override
-    def execute(
-        self, test: AbstractStatistic, data: list[list[float]], code: str, size: int
-    ) -> PowerWorkerResult:
-        power = calculate_test_power(
-            test, data, self.hypothesis, self.alpha, self.cv_store, self.monte_carlo_count
-        )
+    def execute(self, test: AbstractStatistic, data: list[list[float]], code: str, size: int) -> PowerWorkerResult:
+        power = calculate_test_power(test, data, self.hypothesis, self.alpha, self.cv_store, self.monte_carlo_count)
         return PowerWorkerResult(test.code(), code, size, self.alpha, power)

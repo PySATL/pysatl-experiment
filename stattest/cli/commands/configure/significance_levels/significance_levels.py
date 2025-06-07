@@ -1,9 +1,6 @@
 from click import ClickException, Context, FloatRange, argument, echo, pass_context
 
-from stattest.cli.commands.common.common import (
-    get_experiment_name_and_config,
-    save_experiment_config,
-)
+from stattest.cli.commands.common.common import get_experiment_name_and_config, save_experiment_config
 from stattest.cli.commands.configure.configure import configure
 
 
@@ -28,9 +25,7 @@ def significance_levels(ctx: Context, levels: tuple[float, ...]) -> None:
             f"'experiment configure {experiment_name} experiment_type <type>'."
         )
     elif experiment_type == "time_complexity":
-        raise ClickException(
-            "Significance levels are not supported for time complexity experiments."
-        )
+        raise ClickException("Significance levels are not supported for time complexity experiments.")
 
     levels_list = list(levels)
     experiment_config["significance_levels"] = levels_list

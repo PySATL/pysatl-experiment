@@ -42,9 +42,7 @@ class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
     __separator = ";"
 
     @override
-    def insert_critical_value(
-        self, code: str, size: int, sl: float, value: float | tuple[float, float]
-    ):
+    def insert_critical_value(self, code: str, size: int, sl: float, value: float | tuple[float, float]):
         if isinstance(value, tuple):
             lower_value, upper_value = value
         else:
@@ -68,17 +66,13 @@ class CriticalValueDbStore(AbstractDbStore, ICriticalValueStore):
     def insert_distribution(self, code: str, size: int, data: list[float]):
         data_to_insert = CriticalValueDbStore.__separator.join(map(str, data))
         try:
-            CriticalValueDbStore.session.add(
-                Distribution(code=code, size=int(size), data=data_to_insert)
-            )
+            CriticalValueDbStore.session.add(Distribution(code=code, size=int(size), data=data_to_insert))
             CriticalValueDbStore.session.commit()
         except IntegrityError:
             CriticalValueDbStore.session.rollback()
 
     @override
-    def get_critical_value(
-        self, code: str, size: int, sl: float
-    ) -> float | tuple[float, float] | None:
+    def get_critical_value(self, code: str, size: int, sl: float) -> float | tuple[float, float] | None:
         critical_value = CriticalValueDbStore.session.get(CriticalValue, (code, size, sl))
         if critical_value is not None:
             if critical_value.upper_value is not None:

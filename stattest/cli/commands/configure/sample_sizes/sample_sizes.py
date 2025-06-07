@@ -1,9 +1,6 @@
 from click import Context, IntRange, argument, echo, pass_context
 
-from stattest.cli.commands.common.common import (
-    get_experiment_name_and_config,
-    save_experiment_config,
-)
+from stattest.cli.commands.common.common import get_experiment_name_and_config, save_experiment_config
 from stattest.cli.commands.configure.configure import configure
 
 

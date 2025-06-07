@@ -13,6 +13,4 @@ def validate_run_mode(run_mode: str) -> None:
     run_mode_lower = run_mode.lower()
     if run_mode_lower not in (item.value for item in RunMode):
         possible_values = list_possible_parameter_values(RunMode)
-        raise BadParameter(
-            f"Run mode '{run_mode}' is not valid.\nPossible values are: {possible_values}."
-        )
+        raise BadParameter(f"Run mode '{run_mode}' is not valid.\nPossible values are: {possible_values}.")

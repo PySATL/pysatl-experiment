@@ -74,9 +74,7 @@ class IResolver:
         return abs_paths
 
     @classmethod
-    def _get_valid_object(
-        cls, module_path: Path, object_name: str | None, enum_failed: bool = False
-    ) -> Iterator[Any]:
+    def _get_valid_object(cls, module_path: Path, object_name: str | None, enum_failed: bool = False) -> Iterator[Any]:
         """
         Generator returning objects with matching object_type and object_name in the path given.
         :param module_path: absolute path to the module
@@ -197,17 +195,13 @@ class IResolver:
             return None
 
         for module_name in cls.module_names:
-            module_object = cls._load_module_object(
-                object_name=object_name, kwargs=kwargs, module_name=module_name
-            )
+            module_object = cls._load_module_object(object_name=object_name, kwargs=kwargs, module_name=module_name)
             if module_object is not None:
                 return module_object
         return None
 
     @classmethod
-    def _load_module_object(
-        cls, *, object_name: str, kwargs: dict[str, Any] | None, module_name: str
-    ) -> Any | None:
+    def _load_module_object(cls, *, object_name: str, kwargs: dict[str, Any] | None, module_name: str) -> Any | None:
         """
         Try to load object from path list.
         """
@@ -216,8 +210,7 @@ class IResolver:
             module = getattr(importlib.import_module(module_name), object_name)
             if module:
                 logger.info(
-                    f"Using resolved {cls.object_type.__name__.lower()[1:]} {object_name} "
-                    f"from '{module_name}'..."
+                    f"Using resolved {cls.object_type.__name__.lower()[1:]} {object_name} " f"from '{module_name}'..."
                 )
                 return module(**kwargs)
         except FileNotFoundError:
@@ -261,11 +254,7 @@ class IResolver:
     @classmethod
     def _build_rel_location(cls, directory: Path, entry: Path) -> str:
         builtin = cls.initial_search_path == directory
-        return (
-            f"<builtin>/{entry.relative_to(directory)}"
-            if builtin
-            else str(entry.relative_to(directory))
-        )
+        return f"<builtin>/{entry.relative_to(directory)}" if builtin else str(entry.relative_to(directory))
 
     @classmethod
     def _search_all_objects(
@@ -289,24 +278,15 @@ class IResolver:
             logger.info(f"'{directory}' is not a directory, skipping.")
             return objects
         for entry in directory.iterdir():
-            if (
-                recursive
-                and entry.is_dir()
-                and not entry.name.startswith("__")
-                and not entry.name.startswith(".")
-            ):
-                objects.extend(
-                    cls._search_all_objects(entry, enum_failed, recursive, basedir or directory)
-                )
+            if recursive and entry.is_dir() and not entry.name.startswith("__") and not entry.name.startswith("."):
+                objects.extend(cls._search_all_objects(entry, enum_failed, recursive, basedir or directory))
             # Only consider python files
             if entry.suffix != ".py":
                 logger.debug("Ignoring %s", entry)
                 continue
             module_path = entry.resolve()
             logger.debug(f"Path {module_path}")
-            for obj in cls._get_valid_object(
-                module_path, object_name=None, enum_failed=enum_failed
-            ):
+            for obj in cls._get_valid_object(module_path, object_name=None, enum_failed=enum_failed):
                 objects.append(
                     {
                         "name": obj[0].__name__ if obj is not None else "",

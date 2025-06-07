@@ -15,11 +15,7 @@ def validate_step_type(step_type: str, step: str) -> None:
     step_type_lower = step_type.lower()
     if step_type_lower not in (item.value for item in StepType):
         possible_values = list_possible_parameter_values(StepType)
-        raise BadParameter(
-            f"Type of {step} '{step_type}' is not valid.\nPossible values are: {possible_values}."
-        )
+        raise BadParameter(f"Type of {step} '{step_type}' is not valid.\nPossible values are: {possible_values}.")
 
     if step_type_lower == "custom":
-        raise BadParameter(
-            f"Custom {step} type is not supported yet.\nPlease, choose standard one."
-        )
+        raise BadParameter(f"Custom {step} type is not supported yet.\nPlease, choose standard one.")

@@ -1,12 +1,12 @@
 import multiprocessing
 
 from numpy import random as rd
+
 from pysatl_criterion.statistics.normal import (
     GraphEdgesNumberNormalityGofStatistic,
     GraphMaxDegreeNormalityGofStatistic,
     KolmogorovSmirnovNormalityGofStatistic,
 )
-
 from stattest.experiment import Experiment
 from stattest.experiment.configuration.configuration import (
     AlternativeConfiguration,
@@ -71,9 +71,7 @@ if __name__ == "__main__":
         alternatives, sizes, count=1_000, threads=generation_threads, listeners=listeners
     )
 
-    power_calculation_worker = PowerCalculationWorker(
-        0.05, 1_000_000, critical_value_store, hypothesis=hypothesis
-    )
+    power_calculation_worker = PowerCalculationWorker(0.05, 1_000_000, critical_value_store, hypothesis=hypothesis)
     test_configuration = TestConfiguration(
         tests,
         threads=test_threads,

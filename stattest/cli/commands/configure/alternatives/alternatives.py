@@ -1,13 +1,8 @@
 from click import ClickException, Context, echo, option, pass_context
 
-from stattest.cli.commands.common.common import (
-    get_experiment_name_and_config,
-    save_experiment_config,
-)
+from stattest.cli.commands.common.common import get_experiment_name_and_config, save_experiment_config
 from stattest.cli.commands.configure.configure import configure
-from stattest.validation.cli.commands.configure.alternatives.alternatives import (
-    validate_alternatives,
-)
+from stattest.validation.cli.commands.configure.alternatives.alternatives import validate_alternatives
 
 
 @configure.command()
@@ -36,7 +31,4 @@ def alternatives(ctx: Context, alt: tuple[str]) -> None:
 
     save_experiment_config(ctx, experiment_name, experiment_config)
 
-    echo(
-        f"Alternatives of the experiment '{experiment_name}' "
-        f"are successfully set to {alternatives_data}."
-    )
+    echo(f"Alternatives of the experiment '{experiment_name}' " f"are successfully set to {alternatives_data}.")

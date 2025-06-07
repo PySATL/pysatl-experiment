@@ -18,13 +18,15 @@ class Experiment:
         execution_step: IExperimentStep = self.experiment_steps.execution_step
         report_building_step: IExperimentStep = self.experiment_steps.report_building_step
 
-        print("Running generation step...")
-        generation_step.run()
-        print("Generation step finished")
+        if generation_step is not None:
+            print("Running generation step...")
+            generation_step.run()
+            print("Generation step finished")
 
-        print("Running execution step...")
-        execution_step.run()
-        print("Execution step finished")
+        if execution_step is not None:
+            print("Running execution step...")
+            execution_step.run()
+            print("Execution step finished")
 
         print("Running report building step...")
         report_building_step.run()

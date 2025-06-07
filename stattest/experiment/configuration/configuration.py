@@ -1,7 +1,6 @@
 from collections.abc import Sequence
 
 from pysatl_criterion.statistics import AbstractStatistic
-
 from stattest.experiment.generator import AbstractRVSGenerator
 from stattest.persistence import IRvsStore
 from stattest.persistence.models import IResultStore
@@ -31,9 +30,7 @@ class TestWorker:
     def init(self):
         pass
 
-    def execute(
-        self, test: AbstractStatistic, data: list[list[float]], code, size: int
-    ) -> TestWorkerResult:
+    def execute(self, test: AbstractStatistic, data: list[list[float]], code, size: int) -> TestWorkerResult:
         raise NotImplementedError("Method is not implemented")
 
     def build_id(self, test: AbstractStatistic, data: list[list[float]], code, size: int) -> str:
@@ -41,9 +38,7 @@ class TestWorker:
 
 
 class ReportConfiguration:
-    def __init__(
-        self, report_builder: ReportBuilder, listeners: Sequence[StepListener] | None = None
-    ):
+    def __init__(self, report_builder: ReportBuilder, listeners: Sequence[StepListener] | None = None):
         """
         Report configuration provides configuration for report.
 

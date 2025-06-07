@@ -11,15 +11,11 @@ from stattest.cli.commands.configure.experiment_type.experiment_type import expe
 from stattest.cli.commands.configure.generator_type.generator_type import generator_type
 from stattest.cli.commands.configure.hypothesis.hypothesis import hypothesis
 from stattest.cli.commands.configure.monte_carlo_count.monte_carlo_count import monte_carlo_count
-from stattest.cli.commands.configure.report_builder_type.report_builder_type import (
-    report_builder_type,
-)
+from stattest.cli.commands.configure.report_builder_type.report_builder_type import report_builder_type
 from stattest.cli.commands.configure.run_mode.run_mode import run_mode
 from stattest.cli.commands.configure.sample_sizes.sample_sizes import sample_sizes
 from stattest.cli.commands.configure.show.show import show
-from stattest.cli.commands.configure.significance_levels.significance_levels import (
-    significance_levels,
-)
+from stattest.cli.commands.configure.significance_levels.significance_levels import significance_levels
 from stattest.cli.commands.configure.storage_connection.storage_connection import storage_connection
 from stattest.cli.commands.create.create import create
 

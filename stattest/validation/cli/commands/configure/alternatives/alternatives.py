@@ -13,9 +13,7 @@ def validate_alternatives(alternatives: tuple[str], experiment_type: str) -> lis
     :param experiment_type: experiment type.
     """
     if experiment_type != "power":
-        raise BadParameter(
-            f"Alternatives are not supported for the experiment type '{experiment_type}'."
-        )
+        raise BadParameter(f"Alternatives are not supported for the experiment type '{experiment_type}'.")
 
     parsed = []
 
@@ -25,14 +23,11 @@ def validate_alternatives(alternatives: tuple[str], experiment_type: str) -> lis
         generator_name, parameters = _parse_alternative(alt_str)
         generator_name_upper = generator_name.upper()
 
-        param_names, param_count = _get_generator_parameter_names_and_count(
-            generator_name, generator_by_name
-        )
+        param_names, param_count = _get_generator_parameter_names_and_count(generator_name, generator_by_name)
 
         if len(parameters) != param_count:
             raise BadParameter(
-                f"Generator '{generator_name}' needs {param_count} parameters, "
-                f"got {len(parameters)}."
+                f"Generator '{generator_name}' needs {param_count} parameters, " f"got {len(parameters)}."
             )
 
         alternative_data = {"generator_name": generator_name_upper, "parameters": parameters}
@@ -75,11 +70,7 @@ def _get_generator_parameter_names_and_count(
         raise BadParameter(f"Generator '{generator_name}' is not found.")
 
     sig = inspect.signature(cls.__init__)
-    param_names = [
-        p.name
-        for p in sig.parameters.values()
-        if p.name != "self" and p.kind == p.POSITIONAL_OR_KEYWORD
-    ]
+    param_names = [p.name for p in sig.parameters.values() if p.name != "self" and p.kind == p.POSITIONAL_OR_KEYWORD]
     param_count = len(param_names)
 
     return param_names, param_count

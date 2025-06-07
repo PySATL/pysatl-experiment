@@ -27,9 +27,7 @@ class CriticalValueFileStore(ICriticalValueStore):
         self.cache = mem_cache
 
     @override
-    def insert_critical_value(
-        self, code: str, size: int, sl: float, value: float | tuple[float, float]
-    ):
+    def insert_critical_value(self, code: str, size: int, sl: float, value: float | tuple[float, float]):
         """
         Insert critical value to store.
 
@@ -57,9 +55,7 @@ class CriticalValueFileStore(ICriticalValueStore):
             writer = csv.writer(csvfile, delimiter=self.csv_delimiter, quoting=csv.QUOTE_NONNUMERIC)
             writer.writerow(data)
 
-    def get_critical_value(
-        self, code: str, size: int, sl: float
-    ) -> tuple[float, float] | float | None:
+    def get_critical_value(self, code: str, size: int, sl: float) -> tuple[float, float] | float | None:
         """
         Get critical value from store.
         :param code: test code

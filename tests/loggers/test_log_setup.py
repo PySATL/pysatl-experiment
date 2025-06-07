@@ -6,10 +6,7 @@ import pytest
 
 from stattest.exceptions import OperationalException
 from stattest.loggers import FTBufferingHandler, FtRichHandler, setup_logging, setup_logging_pre
-from stattest.loggers.set_log_levels import (
-    reduce_verbosity_for_bias_tester,
-    restore_verbosity_for_bias_tester,
-)
+from stattest.loggers.set_log_levels import reduce_verbosity_for_bias_tester, restore_verbosity_for_bias_tester
 
 
 @pytest.mark.usefixtures("keep_log_config_loggers")

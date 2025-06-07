@@ -1,9 +1,6 @@
 from click import Context, argument, echo, pass_context
 
-from stattest.cli.commands.common.common import (
-    get_experiment_name_and_config,
-    save_experiment_config,
-)
+from stattest.cli.commands.common.common import get_experiment_name_and_config, save_experiment_config
 from stattest.cli.commands.configure.configure import configure
 from stattest.validation.cli.commands.configure.run_mode.run_mode import validate_run_mode
 

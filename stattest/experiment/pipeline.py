@@ -16,9 +16,7 @@ def __show_prog(queue: Queue, shutdown_event, total):
     prog.update(total - prog.n)
 
 
-def start_pipeline(
-    fill_queue, process_entries, num_workers, total_count=0, queue_size=2000, **kwargs
-):
+def start_pipeline(fill_queue, process_entries, num_workers, total_count=0, queue_size=2000, **kwargs):
     queue_manager = Manager()
     queue = queue_manager.Queue(maxsize=queue_size)
     info_queue = queue_manager.Queue(maxsize=2000)

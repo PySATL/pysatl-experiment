@@ -2,7 +2,7 @@ from enum import Enum
 from typing import TypeVar
 
 from click import ClickException
-from dacite import from_dict, Config
+from dacite import Config, from_dict
 
 from stattest.cli.commands.common.common import create_result_path
 from stattest.configuration.experiment_config.critical_value.critical_value import CriticalValueExperimentConfig
@@ -65,7 +65,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
         storage=experiment_storage,
     )
     if experiment_config_from_storage is not None:
-        steps_done =_check_if_experiment_finished(experiment_config_from_storage)
+        steps_done = _check_if_experiment_finished(experiment_config_from_storage)
     else:
         _save_experiment_config_to_storage(
             config=experiment_config_dataclass,
@@ -78,7 +78,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
         name=experiment_name,
         config=experiment_config_dataclass,
         steps_done=steps_done,
-        results_path=result_path
+        results_path=result_path,
     )
 
     return experiment_data
@@ -109,9 +109,7 @@ def _raise_missing_parameters_exception(missing_parameters: list[str]) -> None:
 
     :param missing_parameters: missing parameters.
     """
-    raise ClickException(
-        f"Experiment configuration is missing required parameters: {missing_parameters}."
-    )
+    raise ClickException(f"Experiment configuration is missing required parameters: {missing_parameters}.")
 
 
 def _create_experiment_config_from_dict(
@@ -150,7 +148,9 @@ def _create_experiment_config_from_dict(
 
     return experiment_config
 
-C = TypeVar('C', contravariant=True, bound=ExperimentConfig)
+
+C = TypeVar("C", contravariant=True, bound=ExperimentConfig)
+
 
 def _get_experiment_config_from_storage(config: C, storage: IExperimentStorage) -> ExperimentModel:
     """
@@ -170,10 +170,7 @@ def _get_experiment_config_from_storage(config: C, storage: IExperimentStorage) 
         significance_levels = config.significance_levels
     elif experiment_type == ExperimentType.POWER:
         significance_levels = config.significance_levels
-        alternatives = {
-            alternative.generator_name: alternative.parameters
-            for alternative in config.alternatives
-        }
+        alternatives = {alternative.generator_name: alternative.parameters for alternative in config.alternatives}
 
     query = ExperimentQuery(
         experiment_type=experiment_type.value,
@@ -187,12 +184,13 @@ def _get_experiment_config_from_storage(config: C, storage: IExperimentStorage) 
         monte_carlo_count=config.monte_carlo_count,
         criteria=criteria,
         significance_levels=significance_levels,
-        alternatives=alternatives
+        alternatives=alternatives,
     )
 
     experiment_config_from_db = storage.get_data(query)
 
     return experiment_config_from_db
+
 
 def _save_experiment_config_to_storage(config: C, storage: IExperimentStorage) -> None:
     """
@@ -211,10 +209,7 @@ def _save_experiment_config_to_storage(config: C, storage: IExperimentStorage) -
         significance_levels = config.significance_levels
     elif experiment_type == ExperimentType.POWER:
         significance_levels = config.significance_levels
-        alternatives = {
-            alternative.generator_name: alternative.parameters
-            for alternative in config.alternatives
-        }
+        alternatives = {alternative.generator_name: alternative.parameters for alternative in config.alternatives}
 
     query = ExperimentModel(
         experiment_type=experiment_type.value,
@@ -231,7 +226,7 @@ def _save_experiment_config_to_storage(config: C, storage: IExperimentStorage) -
         alternatives=alternatives,
         is_generation_done=False,
         is_execution_done=False,
-        is_report_building_done=False
+        is_report_building_done=False,
     )
 
     storage.insert_data(query)
@@ -254,7 +249,7 @@ def _check_if_experiment_finished(experiment_config_from_db: ExperimentModel) ->
     steps_done = StepsDone(
         is_generation_step_done=is_generation_done,
         is_execution_step_done=is_execution_done,
-        is_report_building_step_done=is_report_building_done
+        is_report_building_step_done=is_report_building_done,
     )
 
     return steps_done

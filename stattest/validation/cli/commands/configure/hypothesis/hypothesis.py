@@ -13,6 +13,4 @@ def validate_hypothesis(hypothesis: str) -> None:
     hypothesis_lower = hypothesis.lower()
     if hypothesis_lower not in (item.value for item in Hypothesis):
         possible_values = list_possible_parameter_values(Hypothesis)
-        raise BadParameter(
-            f"Hypothesis '{hypothesis}' is not valid.\nPossible values are: {possible_values}."
-        )
+        raise BadParameter(f"Hypothesis '{hypothesis}' is not valid.\nPossible values are: {possible_values}.")
