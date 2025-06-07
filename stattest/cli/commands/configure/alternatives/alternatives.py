@@ -31,4 +31,4 @@ def alternatives(ctx: Context, alt: tuple[str]) -> None:
 
     save_experiment_config(ctx, experiment_name, experiment_config)
 
-    echo(f"Alternatives of the experiment '{experiment_name}' " f"are successfully set to {alternatives_data}.")
+    echo(f"Alternatives of the experiment '{experiment_name}' are successfully set to {alternatives_data}.")
