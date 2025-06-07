@@ -165,14 +165,14 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
                 )
                 data_storage.delete_all_data(all_data_query)
 
-    def _get_hypothesis_generator_metadata(self) -> (str, list[float], AbstractRVSGenerator):
+    def _get_hypothesis_generator_metadata(self) -> tuple[str, list[float], AbstractRVSGenerator]:
         """
         Get hypothesis generator metadata.
 
         :return: generator name, generator parameters, generator object
         """
 
-        hypothesis_generator = AbstractRVSGenerator
+        hypothesis_generator: AbstractRVSGenerator
         generator_name = ""
         generator_parameters = []
 
@@ -189,6 +189,8 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             hypothesis_generator = WeibullGenerator()
             generator_name = "WEIBULLGENERATOR"
             generator_parameters = [hypothesis_generator.a, hypothesis_generator.k]
+        else:
+            raise ValueError(f"Unknown hypothesis: {hypothesis}")
 
         return generator_name, generator_parameters, hypothesis_generator
 
@@ -454,3 +456,5 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
                 # arguments are passed in the order of the parameters list,
                 # which is set by the user in CLI
                 return sub(*generator_parameters)
+
+        raise ValueError(f"Unknown generator: {generator_name}")

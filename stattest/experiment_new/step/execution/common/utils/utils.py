@@ -2,11 +2,11 @@ from stattest.persistence.model.random_values.random_values import IRandomValues
 
 
 def get_sample_data_from_storage(
-        generator_name: str,
-        generator_parameters: list[float],
-        sample_size: int,
-        count: int,
-        data_storage: IRandomValuesStorage,
+    generator_name: str,
+    generator_parameters: list[float],
+    sample_size: int,
+    count: int,
+    data_storage: IRandomValuesStorage,
 ) -> list[list[float]]:
     """
     Get data from storage based on the hypothesis and sample size.
@@ -23,10 +23,7 @@ def get_sample_data_from_storage(
     data = []
 
     query = RandomValuesCountQuery(
-        generator_name=generator_name,
-        generator_parameters=generator_parameters,
-        sample_size=sample_size,
-        count=count
+        generator_name=generator_name, generator_parameters=generator_parameters, sample_size=sample_size, count=count
     )
 
     data_from_db = data_storage.get_count_data(query)

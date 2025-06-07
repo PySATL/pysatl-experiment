@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import TypeVar
+from typing import cast
 
 from click import ClickException
 from dacite import Config, from_dict
@@ -27,7 +27,12 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
     """
 
     experiment_name = experiment_data_dict.get("experiment_name")
+    if experiment_name is None:
+        raise ClickException("Missing experiment_name")
+
     experiment_config = experiment_data_dict.get("config")
+    if experiment_config is None:
+        raise ClickException("Missing config")
 
     base_required_parameters = [
         "experiment_type",
@@ -149,10 +154,7 @@ def _create_experiment_config_from_dict(
     return experiment_config
 
 
-C = TypeVar("C", contravariant=True, bound=ExperimentConfig)
-
-
-def _get_experiment_config_from_storage(config: C, storage: IExperimentStorage) -> ExperimentModel:
+def _get_experiment_config_from_storage(config: ExperimentConfig, storage: IExperimentStorage) -> ExperimentModel:
     """
     Get experiment config from database.
 
@@ -167,10 +169,12 @@ def _get_experiment_config_from_storage(config: C, storage: IExperimentStorage) 
     significance_levels = []
     alternatives = {}
     if experiment_type == ExperimentType.CRITICAL_VALUE:
-        significance_levels = config.significance_levels
+        critical_value_config = cast(PowerExperimentConfig, config)
+        significance_levels = critical_value_config.significance_levels
     elif experiment_type == ExperimentType.POWER:
-        significance_levels = config.significance_levels
-        alternatives = {alternative.generator_name: alternative.parameters for alternative in config.alternatives}
+        power_config = cast(PowerExperimentConfig, config)
+        significance_levels = power_config.significance_levels
+        alternatives = {alternative.generator_name: alternative.parameters for alternative in power_config.alternatives}
 
     query = ExperimentQuery(
         experiment_type=experiment_type.value,
@@ -192,7 +196,7 @@ def _get_experiment_config_from_storage(config: C, storage: IExperimentStorage) 
     return experiment_config_from_db
 
 
-def _save_experiment_config_to_storage(config: C, storage: IExperimentStorage) -> None:
+def _save_experiment_config_to_storage(config: ExperimentConfig, storage: IExperimentStorage) -> None:
     """
     Save experiment config to database.
 
@@ -206,10 +210,12 @@ def _save_experiment_config_to_storage(config: C, storage: IExperimentStorage) -
     significance_levels = []
     alternatives = {}
     if experiment_type == ExperimentType.CRITICAL_VALUE:
-        significance_levels = config.significance_levels
+        critical_value_config = cast(PowerExperimentConfig, config)
+        significance_levels = critical_value_config.significance_levels
     elif experiment_type == ExperimentType.POWER:
-        significance_levels = config.significance_levels
-        alternatives = {alternative.generator_name: alternative.parameters for alternative in config.alternatives}
+        power_config = cast(PowerExperimentConfig, config)
+        significance_levels = power_config.significance_levels
+        alternatives = {alternative.generator_name: alternative.parameters for alternative in power_config.alternatives}
 
     query = ExperimentModel(
         experiment_type=experiment_type.value,

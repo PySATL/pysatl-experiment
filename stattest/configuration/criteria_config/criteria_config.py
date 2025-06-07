@@ -9,6 +9,7 @@ class CriterionConfig:
     """
     Criteria configuration.
     """
+
     criterion: Criterion
     criterion_code: str
     statistics_class_object: AbstractGoodnessOfFitStatistic

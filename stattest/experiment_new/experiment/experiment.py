@@ -14,9 +14,9 @@ class Experiment:
         """
         Run experiment.
         """
-        generation_step: IExperimentStep = self.experiment_steps.generation_step
-        execution_step: IExperimentStep = self.experiment_steps.execution_step
-        report_building_step: IExperimentStep = self.experiment_steps.report_building_step
+        generation_step: IExperimentStep | None = self.experiment_steps.generation_step
+        execution_step: IExperimentStep | None = self.experiment_steps.execution_step
+        report_building_step: IExperimentStep | None = self.experiment_steps.report_building_step
 
         if generation_step is not None:
             print("Running generation step...")
@@ -28,6 +28,7 @@ class Experiment:
             execution_step.run()
             print("Execution step finished")
 
-        print("Running report building step...")
-        report_building_step.run()
-        print("Report building step finished")
+        if report_building_step is not None:
+            print("Running report building step...")
+            report_building_step.run()
+            print("Report building step finished")
