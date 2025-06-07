@@ -22,10 +22,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install submodules
-        run: |
-          git submodule add https://github.com/PySATL/pysatl-criterion.git pysatl_criterion
-          git submodule update --init --recursive
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install Poetry
         run: pip install poetry==2.1.1
