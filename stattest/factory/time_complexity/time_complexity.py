@@ -87,7 +87,7 @@ class TimeComplexityExperimentFactory(
         monte_carlo_count = config.monte_carlo_count
         criteria_config = self._get_criteria_config()
 
-        step_config = []
+        step_config: list[TimeComplexityStepData] = []
         for criterion_config in criteria_config:
             for sample_size in config.sample_sizes:
                 query = TimeComplexityQuery(

@@ -30,7 +30,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 package-mode = true
-packages = [{include = "stattest"}, {include = "pysatl_criterion"}]
+packages = [{include = "stattest"}]
 
 [tool.poetry.group.dev.dependencies]
 markdown = "3.7"
