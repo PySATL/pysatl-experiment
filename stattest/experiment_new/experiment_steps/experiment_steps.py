@@ -9,6 +9,6 @@ class ExperimentSteps:
     Experiment steps dataclass.
     """
 
-    generation_step: IExperimentStep
-    execution_step: IExperimentStep
-    report_building_step: IExperimentStep
+    generation_step: IExperimentStep | None
+    execution_step: IExperimentStep | None
+    report_building_step: IExperimentStep | None

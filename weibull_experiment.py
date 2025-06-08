@@ -24,7 +24,6 @@ from pysatl_criterion.statistics.weibull import (
     TikuSinghWeibullGofStatistic,
     WatsonWeibullGofStatistic,
 )
-
 from stattest.experiment import Experiment
 from stattest.experiment.configuration.configuration import (
     AlternativeConfiguration,
@@ -133,9 +132,7 @@ if __name__ == "__main__":
         skip_step=True,
     )
 
-    power_calculation_worker = PowerCalculationWorker(
-        0.05, 100_000, critical_value_store, hypothesis=hypothesis
-    )
+    power_calculation_worker = PowerCalculationWorker(0.05, 100_000, critical_value_store, hypothesis=hypothesis)
     test_configuration = TestConfiguration(
         tests,
         threads=test_threads,

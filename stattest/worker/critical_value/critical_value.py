@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 from stattest.worker.model.abstract_worker.abstract_worker import IWorker, WorkerResult
 
 
@@ -17,8 +18,20 @@ class CriticalValueWorker(IWorker[CriticalValueWorkerResult]):
     Critical value worker.
     """
 
+    def __init__(self, statistics: AbstractGoodnessOfFitStatistic, sample_data: list[list[float]]):
+        self.statistics = statistics
+        self.sample_data = sample_data
+
     def execute(self) -> CriticalValueWorkerResult:
         """
         Execute critical value worker.
         """
-        raise NotImplementedError("Method is not yet implemented")
+
+        results_statistics = []
+        for data in self.sample_data:
+            statistics_value = self.statistics.execute_statistic(rvs=data)
+            results_statistics.append(statistics_value)
+
+        result = CriticalValueWorkerResult(results_statistics=results_statistics)
+
+        return result

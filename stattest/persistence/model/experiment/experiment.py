@@ -1,11 +1,7 @@
 from dataclasses import dataclass
 from typing import Protocol
 
-from pysatl_criterion.persistence.model.common.data_storage.data_storage import (
-    DataModel,
-    DataQuery,
-    IDataStorage,
-)
+from pysatl_criterion.persistence.model.common.data_storage.data_storage import DataModel, DataQuery, IDataStorage
 
 
 @dataclass
@@ -14,7 +10,7 @@ class ExperimentModel(DataModel):
     storage_connection: str
     run_mode: str
     hypothesis: str
-    data_generator_type: str
+    generator_type: str
     executor_type: str
     report_builder_type: str
     sample_sizes: list[int]
@@ -33,7 +29,7 @@ class ExperimentQuery(DataQuery):
     storage_connection: str
     run_mode: str
     hypothesis: str
-    data_generator_type: str
+    generator_type: str
     executor_type: str
     report_builder_type: str
     sample_sizes: list[int]
@@ -48,4 +44,10 @@ class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], Protoco
     Experiment configuration storage interface.
     """
 
-    pass
+    def get_experiment_id(self, query: ExperimentQuery) -> int:
+        """
+        Get experiment id.
+
+        :return: experiment id
+        """
+        pass

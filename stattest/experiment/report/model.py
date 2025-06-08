@@ -138,9 +138,7 @@ class PdfPowerReportBuilder(ReportBuilder):
 
             pdf.set_x(margin_x)
             pdf.set_font(self.font, "B", self.entry_font_size)
-            pdf.cell(
-                self.col_width, self.entry_font_size, "Test", border=self.border, align=self.align
-            )
+            pdf.cell(self.col_width, self.entry_font_size, "Test", border=self.border, align=self.align)
             for size in sorted_sizes:
                 pdf.cell(
                     self.col_width,

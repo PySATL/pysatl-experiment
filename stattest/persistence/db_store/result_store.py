@@ -73,14 +73,6 @@ class ResultDbStore(AbstractDbStore, IResultStore):
 
         :return list of PowerResultModel
         """
-        result = (
-            ResultDbStore.session.query(ResultModel)
-            .order_by(ResultModel.id)
-            .offset(offset)
-            .limit(limit)
-        ).all()
-        result = [
-            getattr(importlib.import_module(r.module), r.className)(**json.loads(r.data))
-            for r in result
-        ]
+        result = (ResultDbStore.session.query(ResultModel).order_by(ResultModel.id).offset(offset).limit(limit)).all()
+        result = [getattr(importlib.import_module(r.module), r.className)(**json.loads(r.data)) for r in result]
         return result
