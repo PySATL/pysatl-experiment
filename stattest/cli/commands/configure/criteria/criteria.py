@@ -1,6 +1,7 @@
 from click import ClickException, Context, argument, echo, pass_context
 
 from stattest.cli.commands.common.common import (
+    criteria_from_codes,
     get_experiment_name_and_config,
     save_experiment_config,
 )
@@ -32,27 +33,10 @@ def criteria(ctx: Context, criteria_codes: tuple[str, ...]) -> None:
     criteria_codes_upper = [code.upper() for code in criteria_codes]
     validate_criteria(criteria_codes_upper, experiment_hypothesis)
 
-    criteria_data = _criteria_from_codes(criteria_codes_upper)
+    criteria_data = criteria_from_codes(criteria_codes_upper)
 
     experiment_config["criteria"] = criteria_data
 
     save_experiment_config(ctx, experiment_name, experiment_config)
 
     echo(f"Criteria of the experiment '{experiment_name}' are set to {criteria_codes_upper}.")
-
-
-def _criteria_from_codes(codes: list[str]) -> list[dict]:
-    """
-    Convert criteria codes to criteria.
-
-    :param codes: criteria codes.
-
-    :return: criteria.
-    """
-
-    criteria_data = []
-    for code in codes:
-        criterion = {"criterion_code": code, "parameters": []}
-        criteria_data.append(criterion)
-
-    return criteria_data

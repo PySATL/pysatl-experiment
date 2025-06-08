@@ -1,8 +1,9 @@
 from click import Context, argument, echo, pass_context
 
 from stattest.cli.commands.common.common import (
+    criteria_from_codes,
     get_experiment_name_and_config,
-    get_statistics_codes_for_hypothesis,
+    get_statistics_short_codes_for_hypothesis,
     save_experiment_config,
 )
 from stattest.cli.commands.configure.configure import configure
@@ -27,8 +28,9 @@ def hypothesis(ctx: Context, hyp: str) -> None:
 
     experiment_config["hypothesis"] = hyp_lower
 
-    criteria_for_hypothesis = get_statistics_codes_for_hypothesis(hyp_lower)
-    experiment_config["criteria"] = criteria_for_hypothesis
+    criteria_for_hypothesis = get_statistics_short_codes_for_hypothesis(hyp_lower)
+    criteria_data = criteria_from_codes(criteria_for_hypothesis)
+    experiment_config["criteria"] = criteria_data
 
     save_experiment_config(ctx, experiment_name, experiment_config)
 

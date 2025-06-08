@@ -1,6 +1,6 @@
 from click import BadParameter
 
-from stattest.cli.commands.common.common import get_statistics_codes_for_hypothesis
+from stattest.cli.commands.common.common import get_statistics_short_codes_for_hypothesis
 
 
 def validate_criteria(criteria_codes: list[str], hypothesis: str) -> None:
@@ -11,7 +11,7 @@ def validate_criteria(criteria_codes: list[str], hypothesis: str) -> None:
     :param hypothesis: hypothesis.
     """
 
-    valid_criteria_codes = get_statistics_codes_for_hypothesis(hypothesis)
+    valid_criteria_codes = get_statistics_short_codes_for_hypothesis(hypothesis)
 
     for code in criteria_codes:
         if code not in valid_criteria_codes:

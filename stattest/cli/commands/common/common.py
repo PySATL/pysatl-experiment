@@ -93,7 +93,7 @@ def list_possible_parameter_values(param_type: type[Enum]) -> str:
     return param_type_values_str
 
 
-def get_statistics_codes_for_hypothesis(hypothesis: str) -> list[str]:
+def get_statistics_short_codes_for_hypothesis(hypothesis: str) -> list[str]:
     """
     Get statistics codes for hypothesis.
 
@@ -197,3 +197,20 @@ def save_experiment_config(ctx: Context, experiment_name: str, experiment_config
     experiment_data = get_experiment_data(ctx)
     experiment_data["config"] = experiment_config
     save_experiment_data(experiment_name, experiment_data)
+
+
+def criteria_from_codes(codes: list[str]) -> list[dict]:
+    """
+    Convert criteria codes to criteria
+
+    :param codes: criteria codes.
+
+    :return: criteria.
+    """
+
+    criteria_data = []
+    for code in codes:
+        criterion = {"criterion_code": code, "parameters": []}
+        criteria_data.append(criterion)
+
+    return criteria_data
