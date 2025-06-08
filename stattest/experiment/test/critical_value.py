@@ -83,9 +83,13 @@ def get_or_calculate_critical_value(
         return critical_value
 
     if test.two_tailed:
-        critical_value, distribution = calculate_two_tailed_critical_value(test, hypothesis, size, alpha, count)
+        critical_value, distribution = calculate_two_tailed_critical_value(
+            test, hypothesis, size, alpha, count
+        )
     else:
-        critical_value, distribution = calculate_critical_value(test, hypothesis, size, alpha, count)
+        critical_value, distribution = calculate_critical_value(
+            test, hypothesis, size, alpha, count
+        )
 
     store.insert_critical_value(test.code(), size, alpha, critical_value)
     store.insert_distribution(test.code(), size, distribution)

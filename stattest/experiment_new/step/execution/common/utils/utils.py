@@ -1,4 +1,7 @@
-from stattest.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesCountQuery
+from stattest.persistence.model.random_values.random_values import (
+    IRandomValuesStorage,
+    RandomValuesCountQuery,
+)
 
 
 def get_sample_data_from_storage(
@@ -23,7 +26,10 @@ def get_sample_data_from_storage(
     data = []
 
     query = RandomValuesCountQuery(
-        generator_name=generator_name, generator_parameters=generator_parameters, sample_size=sample_size, count=count
+        generator_name=generator_name,
+        generator_parameters=generator_parameters,
+        sample_size=sample_size,
+        count=count,
     )
 
     data_from_db = data_storage.get_count_data(query)

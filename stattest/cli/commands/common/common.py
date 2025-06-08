@@ -1,6 +1,7 @@
 import json
 from enum import Enum
 from pathlib import Path
+from typing import cast
 
 from click import ClickException, Context
 
@@ -9,6 +10,7 @@ from pysatl_criterion.statistics import (
     AbstractNormalityGofStatistic,
     AbstractWeibullGofStatistic,
 )
+from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 
 
 def create_experiment_path(name: str) -> Path:
@@ -108,7 +110,10 @@ def get_statistics_codes_for_hypothesis(hypothesis: str) -> list[str]:
 
     base_class = hypothesis_to_base_class[hypothesis]
 
-    valid_criteria_types = base_class.__subclasses__()
+    valid_criteria_types = cast(
+        list[type[AbstractGoodnessOfFitStatistic]],
+        base_class.__subclasses__(),
+    )
     valid_criteria_codes = [cls.code().split("_")[0] for cls in valid_criteria_types]
 
     return valid_criteria_codes

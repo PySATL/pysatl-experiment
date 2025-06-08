@@ -78,7 +78,9 @@ FT_LOGGING_CONFIG = {
 }
 
 
-def _set_log_levels(log_config: dict[str, Any], verbosity: int = 0, api_verbosity: str = "info") -> None:
+def _set_log_levels(
+    log_config: dict[str, Any], verbosity: int = 0, api_verbosity: str = "info"
+) -> None:
     """
     Set the logging level for the different loggers
     """
@@ -202,7 +204,9 @@ def setup_logging(config: Config) -> None:
     verbosity = config["verbosity"]
     if os.environ.get("PYTEST_VERSION") is None or config.get("tests_force_logging"):
         log_config = _create_log_config(config)
-        _set_log_levels(log_config, verbosity, config.get("api_server", {}).get("verbosity", "info"))
+        _set_log_levels(
+            log_config, verbosity, config.get("api_server", {}).get("verbosity", "info")
+        )
 
         logging.config.dictConfig(log_config)
 

@@ -34,7 +34,9 @@ class FtRichHandler(Handler):
                 self.handleError(record)
                 return
 
-            self._console.print(Text() + log_time + gray_sep + name + gray_sep + log_level + gray_sep + msg)
+            self._console.print(
+                Text() + log_time + gray_sep + name + gray_sep + log_level + gray_sep + msg
+            )
 
         except RecursionError:
             raise

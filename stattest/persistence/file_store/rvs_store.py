@@ -40,7 +40,9 @@ class RvsFileStore(IRvsStore):
             rvs_code, size = RvsFileStore.parse_rvs_file_name(filename)
             file_path = Path(self.path, RvsFileStore.build_rvs_file_name(rvs_code, size) + ".csv")
             with Path(file_path).open(newline="") as f:
-                reader = csv.reader(f, delimiter=RvsFileStore.__separator, quoting=csv.QUOTE_NONNUMERIC)
+                reader = csv.reader(
+                    f, delimiter=RvsFileStore.__separator, quoting=csv.QUOTE_NONNUMERIC
+                )
                 result.append((rvs_code, size, len(list(reader))))
 
         return result
@@ -84,4 +86,9 @@ class RvsFileStore(IRvsStore):
 
     @staticmethod
     def build_rvs_file_name(generator_code: str, size: int) -> str:
-        return generator_code + RvsFileStore.__file_separator + str(size) + RvsFileStore.__file_separator
+        return (
+            generator_code
+            + RvsFileStore.__file_separator
+            + str(size)
+            + RvsFileStore.__file_separator
+        )

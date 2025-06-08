@@ -1,7 +1,10 @@
 from pathlib import Path
 
 from stattest.configuration.criteria_config.criteria_config import CriterionConfig
-from stattest.persistence.model.time_complexity.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
+from stattest.persistence.model.time_complexity.time_complexity import (
+    ITimeComplexityStorage,
+    TimeComplexityQuery,
+)
 from stattest.report.time_complexity.time_complexity import TimeComplexityReportBuilder
 
 

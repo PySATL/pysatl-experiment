@@ -2,7 +2,9 @@ from pysatl_criterion.persistence.model.limit_distribution.limit_distribution im
     ILimitDistributionStorage,
     LimitDistributionQuery,
 )
-from stattest.configuration.experiment_data.critical_value.critical_value import CriticalValueExperimentData
+from stattest.configuration.experiment_data.critical_value.critical_value import (
+    CriticalValueExperimentData,
+)
 from stattest.experiment_new.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (
     HypothesisGeneratorData,
 )
@@ -11,9 +13,16 @@ from stattest.experiment_new.step.execution.critical_value.critical_value import
     CriticalValueStepData,
 )
 from stattest.experiment_new.step.generation.generation import GenerationStep, GenerationStepData
-from stattest.experiment_new.step.report_building.critical_value.critical_value import CriticalValueReportBuildingStep
-from stattest.factory.model.abstract_experiment_factory.abstract_experiment_factory import AbstractExperimentFactory
-from stattest.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesAllQuery
+from stattest.experiment_new.step.report_building.critical_value.critical_value import (
+    CriticalValueReportBuildingStep,
+)
+from stattest.factory.model.abstract_experiment_factory.abstract_experiment_factory import (
+    AbstractExperimentFactory,
+)
+from stattest.persistence.model.random_values.random_values import (
+    IRandomValuesStorage,
+    RandomValuesAllQuery,
+)
 
 
 class CriticalValueExperimentFactory(
@@ -102,10 +111,14 @@ class CriticalValueExperimentFactory(
                 result = result_storage.get_data(query)
                 if result is None:
                     statistics = criterion_config.statistics_class_object
-                    step_data = CriticalValueStepData(statistics=statistics, sample_size=sample_size)
+                    step_data = CriticalValueStepData(
+                        statistics=statistics, sample_size=sample_size
+                    )
                     step_config.append(step_data)
 
-        hypothesis_generator_name, hypothesis_generator_parameters, _ = self._get_hypothesis_generator_metadata()
+        hypothesis_generator_name, hypothesis_generator_parameters, _ = (
+            self._get_hypothesis_generator_metadata()
+        )
         hypothesis_generator_data = HypothesisGeneratorData(
             generator_name=hypothesis_generator_name, parameters=hypothesis_generator_parameters
         )

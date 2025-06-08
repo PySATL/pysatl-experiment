@@ -87,7 +87,9 @@ class RvsDbStore(AbstractDbStore, IRvsStore):
     @override
     def get_rvs_stat(self) -> list[tuple[str, int, int]]:
         query_result: list[Row[tuple[str, int, int]]] = (
-            RvsDbStore.session.query(RVS.code, RVS.size, func.count(RVS.code)).group_by(RVS.code, RVS.size).all()
+            RvsDbStore.session.query(RVS.code, RVS.size, func.count(RVS.code))
+            .group_by(RVS.code, RVS.size)
+            .all()
         )
 
         return [tuple(row) for row in query_result]

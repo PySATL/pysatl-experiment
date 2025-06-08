@@ -89,7 +89,9 @@ def get_total_count(tests: Sequence[AbstractStatistic], store: IRvsStore):
     return len(stat) * len(tests)
 
 
-def execute_test_step(configuration: TestConfiguration, rvs_store: IRvsStore, result_store: IResultStore):
+def execute_test_step(
+    configuration: TestConfiguration, rvs_store: IRvsStore, result_store: IResultStore
+):
     threads_count = configuration.threads
     worker = configuration.worker
     tests = configuration.tests

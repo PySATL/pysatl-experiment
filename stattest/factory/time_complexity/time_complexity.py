@@ -1,4 +1,6 @@
-from stattest.configuration.experiment_data.time_complexity.time_complexity import TimeComplexityExperimentData
+from stattest.configuration.experiment_data.time_complexity.time_complexity import (
+    TimeComplexityExperimentData,
+)
 from stattest.experiment_new.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (
     HypothesisGeneratorData,
 )
@@ -10,9 +12,17 @@ from stattest.experiment_new.step.generation.generation import GenerationStep, G
 from stattest.experiment_new.step.report_building.time_complexity.time_complexity import (
     TimeComplexityReportBuildingStep,
 )
-from stattest.factory.model.abstract_experiment_factory.abstract_experiment_factory import AbstractExperimentFactory
-from stattest.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesAllQuery
-from stattest.persistence.model.time_complexity.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
+from stattest.factory.model.abstract_experiment_factory.abstract_experiment_factory import (
+    AbstractExperimentFactory,
+)
+from stattest.persistence.model.random_values.random_values import (
+    IRandomValuesStorage,
+    RandomValuesAllQuery,
+)
+from stattest.persistence.model.time_complexity.time_complexity import (
+    ITimeComplexityStorage,
+    TimeComplexityQuery,
+)
 
 
 class TimeComplexityExperimentFactory(
@@ -99,10 +109,14 @@ class TimeComplexityExperimentFactory(
                 result = result_storage.get_data(query)
                 if result is None:
                     statistics = criterion_config.statistics_class_object
-                    step_data = TimeComplexityStepData(statistics=statistics, sample_size=sample_size)
+                    step_data = TimeComplexityStepData(
+                        statistics=statistics, sample_size=sample_size
+                    )
                     step_config.append(step_data)
 
-        hypothesis_generator_name, hypothesis_generator_parameters, _ = self._get_hypothesis_generator_metadata()
+        hypothesis_generator_name, hypothesis_generator_parameters, _ = (
+            self._get_hypothesis_generator_metadata()
+        )
         hypothesis_generator_data = HypothesisGeneratorData(
             generator_name=hypothesis_generator_name, parameters=hypothesis_generator_parameters
         )
@@ -118,7 +132,9 @@ class TimeComplexityExperimentFactory(
 
         return execution_step
 
-    def _create_report_building_step(self, result_storage: ITimeComplexityStorage) -> TimeComplexityReportBuildingStep:
+    def _create_report_building_step(
+        self, result_storage: ITimeComplexityStorage
+    ) -> TimeComplexityReportBuildingStep:
         """
         Create time complexity report building step.
 

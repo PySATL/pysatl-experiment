@@ -1,7 +1,10 @@
 from dataclasses import dataclass
 
 from stattest.experiment.generator import AbstractRVSGenerator
-from stattest.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesModel
+from stattest.persistence.model.random_values.random_values import (
+    IRandomValuesStorage,
+    RandomValuesModel,
+)
 
 
 @dataclass

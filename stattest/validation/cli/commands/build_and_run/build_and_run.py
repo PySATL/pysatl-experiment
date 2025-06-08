@@ -5,10 +5,14 @@ from click import ClickException
 from dacite import Config, from_dict
 
 from stattest.cli.commands.common.common import create_result_path
-from stattest.configuration.experiment_config.critical_value.critical_value import CriticalValueExperimentConfig
+from stattest.configuration.experiment_config.critical_value.critical_value import (
+    CriticalValueExperimentConfig,
+)
 from stattest.configuration.experiment_config.experiment_config import ExperimentConfig
 from stattest.configuration.experiment_config.power.power import PowerExperimentConfig
-from stattest.configuration.experiment_config.time_complexity.time_complexity import TimeComplexityExperimentConfig
+from stattest.configuration.experiment_config.time_complexity.time_complexity import (
+    TimeComplexityExperimentConfig,
+)
 from stattest.configuration.experiment_data.common.steps_done.steps_done import StepsDone
 from stattest.configuration.experiment_data.experiment_data import ExperimentData
 from stattest.configuration.model.experiment_type.experiment_type import ExperimentType
@@ -16,7 +20,11 @@ from stattest.configuration.model.hypothesis.hypothesis import Hypothesis
 from stattest.configuration.model.run_mode.run_mode import RunMode
 from stattest.configuration.model.step_type.step_type import StepType
 from stattest.persistence.experiment.sqlite.sqlite import SQLiteExperimentStorage
-from stattest.persistence.model.experiment.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
+from stattest.persistence.model.experiment.experiment import (
+    ExperimentModel,
+    ExperimentQuery,
+    IExperimentStorage,
+)
 
 
 def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
@@ -114,7 +122,9 @@ def _raise_missing_parameters_exception(missing_parameters: list[str]) -> None:
 
     :param missing_parameters: missing parameters.
     """
-    raise ClickException(f"Experiment configuration is missing required parameters: {missing_parameters}.")
+    raise ClickException(
+        f"Experiment configuration is missing required parameters: {missing_parameters}."
+    )
 
 
 def _create_experiment_config_from_dict(
@@ -154,7 +164,9 @@ def _create_experiment_config_from_dict(
     return experiment_config
 
 
-def _get_experiment_config_from_storage(config: ExperimentConfig, storage: IExperimentStorage) -> ExperimentModel:
+def _get_experiment_config_from_storage(
+    config: ExperimentConfig, storage: IExperimentStorage
+) -> ExperimentModel:
     """
     Get experiment config from database.
 
@@ -174,7 +186,10 @@ def _get_experiment_config_from_storage(config: ExperimentConfig, storage: IExpe
     elif experiment_type == ExperimentType.POWER:
         power_config = cast(PowerExperimentConfig, config)
         significance_levels = power_config.significance_levels
-        alternatives = {alternative.generator_name: alternative.parameters for alternative in power_config.alternatives}
+        alternatives = {
+            alternative.generator_name: alternative.parameters
+            for alternative in power_config.alternatives
+        }
 
     query = ExperimentQuery(
         experiment_type=experiment_type.value,
@@ -196,7 +211,9 @@ def _get_experiment_config_from_storage(config: ExperimentConfig, storage: IExpe
     return experiment_config_from_db
 
 
-def _save_experiment_config_to_storage(config: ExperimentConfig, storage: IExperimentStorage) -> None:
+def _save_experiment_config_to_storage(
+    config: ExperimentConfig, storage: IExperimentStorage
+) -> None:
     """
     Save experiment config to database.
 
@@ -215,7 +232,10 @@ def _save_experiment_config_to_storage(config: ExperimentConfig, storage: IExper
     elif experiment_type == ExperimentType.POWER:
         power_config = cast(PowerExperimentConfig, config)
         significance_levels = power_config.significance_levels
-        alternatives = {alternative.generator_name: alternative.parameters for alternative in power_config.alternatives}
+        alternatives = {
+            alternative.generator_name: alternative.parameters
+            for alternative in power_config.alternatives
+        }
 
     query = ExperimentModel(
         experiment_type=experiment_type.value,

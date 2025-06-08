@@ -2,9 +2,14 @@ from stattest.configuration.experiment_data.power.power import PowerExperimentDa
 from stattest.experiment_new.step.execution.power.power import PowerExecutionStep, PowerStepData
 from stattest.experiment_new.step.generation.generation import GenerationStep, GenerationStepData
 from stattest.experiment_new.step.report_building.power.power import PowerReportBuildingStep
-from stattest.factory.model.abstract_experiment_factory.abstract_experiment_factory import AbstractExperimentFactory
+from stattest.factory.model.abstract_experiment_factory.abstract_experiment_factory import (
+    AbstractExperimentFactory,
+)
 from stattest.persistence.model.power.power import IPowerStorage, PowerQuery
-from stattest.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesAllQuery
+from stattest.persistence.model.random_values.random_values import (
+    IRandomValuesStorage,
+    RandomValuesAllQuery,
+)
 
 
 class PowerExperimentFactory(
@@ -48,7 +53,9 @@ class PowerExperimentFactory(
                 rvs_count = data_storage.get_rvs_count(query)
                 if rvs_count < monte_carlo_count:
                     needed_rvs_count = monte_carlo_count - rvs_count
-                    generator = self._get_generator_class_object(generator_name, generator_parameters)
+                    generator = self._get_generator_class_object(
+                        generator_name, generator_parameters
+                    )
                     step_data = GenerationStepData(
                         generator=generator,
                         generator_name=generator_name,
@@ -117,7 +124,9 @@ class PowerExperimentFactory(
 
         return execution_step
 
-    def _create_report_building_step(self, result_storage: IPowerStorage) -> PowerReportBuildingStep:
+    def _create_report_building_step(
+        self, result_storage: IPowerStorage
+    ) -> PowerReportBuildingStep:
         """
         Create power report building step.
 

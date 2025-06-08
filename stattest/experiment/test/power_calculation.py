@@ -12,7 +12,9 @@ def execute_test(
     store: ICriticalValueStore,
     count: int,
 ):
-    critical_values = get_or_calculate_critical_value(test, hypothesis, len(rvs), alpha, store, count)
+    critical_values = get_or_calculate_critical_value(
+        test, hypothesis, len(rvs), alpha, store, count
+    )
 
     statistic = test.execute_statistic(rvs)
 

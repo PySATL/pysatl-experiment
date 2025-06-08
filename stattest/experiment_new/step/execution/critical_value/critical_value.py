@@ -4,7 +4,9 @@ from pysatl_criterion.persistence.model.limit_distribution.limit_distribution im
     ILimitDistributionStorage,
     LimitDistributionModel,
 )
-from stattest.experiment_new.step.execution.common.execution_step_data.execution_step_data import ExecutionStepData
+from stattest.experiment_new.step.execution.common.execution_step_data.execution_step_data import (
+    ExecutionStepData,
+)
 from stattest.experiment_new.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (
     HypothesisGeneratorData,
 )

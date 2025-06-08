@@ -1,9 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-from pysatl_criterion.persistence.limit_distribution.sqlite.sqlite import SQLiteLimitDistributionStorage
+from pysatl_criterion.persistence.limit_distribution.sqlite.sqlite import (
+    SQLiteLimitDistributionStorage,
+)
 from pysatl_criterion.persistence.model.common.data_storage.data_storage import IDataStorage
-from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import LimitDistributionQuery
+from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import (
+    LimitDistributionQuery,
+)
 from pysatl_criterion.statistics import (
     AbstractExponentialityGofStatistic,
     AbstractNormalityGofStatistic,
@@ -16,13 +20,20 @@ from stattest.configuration.model.experiment_type.experiment_type import Experim
 from stattest.configuration.model.hypothesis.hypothesis import Hypothesis
 from stattest.configuration.model.run_mode.run_mode import RunMode
 from stattest.experiment.generator import AbstractRVSGenerator
-from stattest.experiment.generator.generators import ExponentialGenerator, NormalGenerator, WeibullGenerator
+from stattest.experiment.generator.generators import (
+    ExponentialGenerator,
+    NormalGenerator,
+    WeibullGenerator,
+)
 from stattest.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
 from stattest.experiment_new.model.experiment_step.experiment_step import IExperimentStep
 from stattest.persistence.experiment.sqlite.sqlite import SQLiteExperimentStorage
 from stattest.persistence.model.experiment.experiment import ExperimentQuery
 from stattest.persistence.model.power.power import PowerQuery
-from stattest.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesAllQuery
+from stattest.persistence.model.random_values.random_values import (
+    IRandomValuesStorage,
+    RandomValuesAllQuery,
+)
 from stattest.persistence.model.time_complexity.time_complexity import TimeComplexityQuery
 from stattest.persistence.power.sqlite.sqlite import SQLitePowerStorage
 from stattest.persistence.random_values.sqlite.sqlite import SQLiteRandomValuesStorage
@@ -59,7 +70,9 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             self._delete_sample_data(data_storage)
             self._delete_results_from_storage(result_storage)
 
-        experiment_steps = ExperimentSteps(generation_step=None, execution_step=None, report_building_step=None)
+        experiment_steps = ExperimentSteps(
+            generation_step=None, execution_step=None, report_building_step=None
+        )
 
         is_generation_step_done = self.experiment_data.steps_done.is_generation_step_done
         is_execution_step_done = self.experiment_data.steps_done.is_execution_step_done
@@ -379,7 +392,10 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             significance_levels = config.significance_levels
         elif experiment_type == ExperimentType.POWER:
             significance_levels = config.significance_levels
-            alternatives = {alternative.generator_name: alternative.parameters for alternative in config.alternatives}
+            alternatives = {
+                alternative.generator_name: alternative.parameters
+                for alternative in config.alternatives
+            }
 
         query = ExperimentQuery(
             experiment_type=experiment_type.value,

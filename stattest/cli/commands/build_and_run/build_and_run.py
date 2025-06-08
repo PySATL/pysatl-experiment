@@ -39,7 +39,9 @@ def build_and_run(name: str) -> None:
     experiment.run_experiment()
 
 
-def _build_experiment(experiment_data: ExperimentData[ExperimentConfig], experiment_type: str) -> ExperimentSteps:
+def _build_experiment(
+    experiment_data: ExperimentData[ExperimentConfig], experiment_type: str
+) -> ExperimentSteps:
     """
     Build experiment.
 

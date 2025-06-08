@@ -51,13 +51,13 @@ pre-commit = "4.2.0"
 mypy = "^1.15.0"
 
 [tool.isort]
-line_length = 120
+line_length = 100
 profile = "black"
 lines_after_imports = 2
 skip_glob = ["**/.env*", "**/env/*", "**/.venv/*", "**/docs/*", "**/user_data/*"]
 
 [tool.ruff]
-line-length = 120
+line-length = 100
 extend-exclude = [".env", ".venv"]
 
 [tool.ruff.lint]
@@ -79,7 +79,7 @@ lines-after-imports = 2
 
 [tool.flake8]
 ignore = ["E121", "E123", "E126", "E24", "E203", "E704", "W503", "W504"]
-max-line-length = 120
+max-line-length = 100
 max-complexity = 12
 exclude = [".git", "__pycache__", ".eggs", "user_data", ".venv", ".env"]
 

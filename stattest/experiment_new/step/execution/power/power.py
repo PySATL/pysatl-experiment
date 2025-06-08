@@ -2,7 +2,9 @@ from dataclasses import dataclass
 
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 from stattest.configuration.model.alternative.alternative import Alternative
-from stattest.experiment_new.step.execution.common.execution_step_data.execution_step_data import ExecutionStepData
+from stattest.experiment_new.step.execution.common.execution_step_data.execution_step_data import (
+    ExecutionStepData,
+)
 from stattest.experiment_new.step.execution.common.utils.utils import get_sample_data_from_storage
 from stattest.persistence.model.power.power import IPowerStorage, PowerModel
 from stattest.persistence.model.random_values.random_values import IRandomValuesStorage

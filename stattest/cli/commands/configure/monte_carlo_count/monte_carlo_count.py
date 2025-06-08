@@ -1,6 +1,9 @@
 from click import Context, IntRange, argument, echo, pass_context
 
-from stattest.cli.commands.common.common import get_experiment_name_and_config, save_experiment_config
+from stattest.cli.commands.common.common import (
+    get_experiment_name_and_config,
+    save_experiment_config,
+)
 from stattest.cli.commands.configure.configure import configure
 
 
@@ -21,4 +24,6 @@ def monte_carlo_count(ctx: Context, count: int) -> None:
 
     save_experiment_config(ctx, experiment_name, experiment_config)
 
-    echo(f"Monte Carlo number of iterations of the experiment '{experiment_name}' is set to {count}.")
+    echo(
+        f"Monte Carlo number of iterations of the experiment '{experiment_name}' is set to {count}."
+    )
