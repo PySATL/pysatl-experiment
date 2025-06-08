@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from stattest.experiment_new.step.execution.common.execution_step_data.execution_step_data import (
+from stattest.experiment_new.step.execution.common.execution_step_data.execution_step_data import (  # noqa: E501
     ExecutionStepData,
 )
-from stattest.experiment_new.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (
+from stattest.experiment_new.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (  # noqa: E501
     HypothesisGeneratorData,
 )
 from stattest.experiment_new.step.execution.common.utils.utils import get_sample_data_from_storage

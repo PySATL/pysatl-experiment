@@ -5,7 +5,7 @@ from pysatl_criterion.persistence.model.limit_distribution.limit_distribution im
 from stattest.configuration.experiment_data.critical_value.critical_value import (
     CriticalValueExperimentData,
 )
-from stattest.experiment_new.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (
+from stattest.experiment_new.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (  # noqa: E501
     HypothesisGeneratorData,
 )
 from stattest.experiment_new.step.execution.critical_value.critical_value import (

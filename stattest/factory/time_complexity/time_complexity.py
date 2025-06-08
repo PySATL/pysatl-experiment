@@ -1,7 +1,7 @@
 from stattest.configuration.experiment_data.time_complexity.time_complexity import (
     TimeComplexityExperimentData,
 )
-from stattest.experiment_new.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (
+from stattest.experiment_new.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (  # noqa: E501
     HypothesisGeneratorData,
 )
 from stattest.experiment_new.step.execution.time_complexity.time_complexity import (

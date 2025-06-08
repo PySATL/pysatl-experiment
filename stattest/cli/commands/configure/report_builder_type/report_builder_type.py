@@ -29,5 +29,6 @@ def report_builder_type(ctx: Context, report_build_type: str) -> None:
     save_experiment_config(ctx, experiment_name, experiment_config)
 
     echo(
-        f"Report builder type of the experiment '{experiment_name}' is set to '{report_build_type_lower}'."
+        f"Report builder type of the experiment '{experiment_name}' "
+        f"is set to '{report_build_type_lower}'."
     )
