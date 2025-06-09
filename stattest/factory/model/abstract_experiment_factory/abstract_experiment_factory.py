@@ -28,7 +28,7 @@ from stattest.experiment.generator.generators import (
 from stattest.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
 from stattest.experiment_new.model.experiment_step.experiment_step import IExperimentStep
 from stattest.persistence.experiment.sqlite.sqlite import SQLiteExperimentStorage
-from stattest.persistence.model.experiment.experiment import ExperimentQuery
+from stattest.persistence.model.experiment.experiment import ExperimentQuery, IExperimentStorage
 from stattest.persistence.model.power.power import PowerQuery
 from stattest.persistence.model.random_values.random_values import (
     IRandomValuesStorage,
@@ -38,7 +38,6 @@ from stattest.persistence.model.time_complexity.time_complexity import TimeCompl
 from stattest.persistence.power.sqlite.sqlite import SQLitePowerStorage
 from stattest.persistence.random_values.sqlite.sqlite import SQLiteRandomValuesStorage
 from stattest.persistence.time_complexity.sqlite.sqlite import SQLiteTimeComplexityStorage
-
 
 D = TypeVar("D", contravariant=True, bound=ExperimentData)
 G = TypeVar("G", covariant=True, bound=IExperimentStep)
@@ -64,14 +63,20 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         data_storage = self._init_data_storage()
         result_storage = self._init_result_storage()
+        experiment_storage = self._init_experiment_storage()
 
         run_mode = self.experiment_data.config.run_mode
         if run_mode == RunMode.OVERWRITE:
             self._delete_sample_data(data_storage)
             self._delete_results_from_storage(result_storage)
 
+        experiment_id = self._get_experiment_id(experiment_storage)
         experiment_steps = ExperimentSteps(
-            generation_step=None, execution_step=None, report_building_step=None
+            experiment_id=experiment_id,
+            experiment_storage=experiment_storage,
+            generation_step=None,
+            execution_step=None,
+            report_building_step=None
         )
 
         is_generation_step_done = self.experiment_data.steps_done.is_generation_step_done
@@ -82,7 +87,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             experiment_steps.generation_step = generation_step
 
         if not is_execution_step_done:
-            execution_step = self._create_execution_step(data_storage, result_storage)
+            execution_step = self._create_execution_step(data_storage, result_storage, experiment_storage)
             experiment_steps.execution_step = execution_step
 
         report_building_step = self._create_report_building_step(result_storage)
@@ -102,12 +107,18 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         pass
 
     @abstractmethod
-    def _create_execution_step(self, data_storage: IRandomValuesStorage, result_storage: RS) -> E:
+    def _create_execution_step(
+            self,
+            data_storage: IRandomValuesStorage,
+            result_storage: RS,
+            experiment_storage: IExperimentStorage,
+    ) -> E:
         """
         Create execution step.
 
         :param data_storage: random values storage.
         :param result_storage: result storage.
+        :param experiment_storage: experiment storage.
 
         :return: execution step.
         """
@@ -376,9 +387,13 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         return queries
 
-    def _get_experiment_id(self) -> int:
+    def _get_experiment_id(self, storage: IExperimentStorage) -> int:
         """
         Get experiment id.
+
+        :storage: experiment configuration storage.
+
+        :return: experiment id.
         """
 
         config = self.experiment_data.config
@@ -412,9 +427,6 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             alternatives=alternatives,
         )
 
-        storage = SQLiteExperimentStorage(config.storage_connection)
-        storage.init()
-
         experiment_id = storage.get_experiment_id(query)
 
         return experiment_id
@@ -428,6 +440,19 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         storage_connection = self.experiment_data.config.storage_connection
         data_storage = SQLiteRandomValuesStorage(storage_connection)
+        data_storage.init()
+
+        return data_storage
+
+    def _init_experiment_storage(self) -> IExperimentStorage:
+        """
+        Init experiment configuration storage.
+
+        :return: data storage.
+        """
+
+        storage_connection = self.experiment_data.config.storage_connection
+        data_storage = SQLiteExperimentStorage(storage_connection)
         data_storage.init()
 
         return data_storage

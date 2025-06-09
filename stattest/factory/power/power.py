@@ -5,6 +5,7 @@ from stattest.experiment_new.step.report_building.power.power import PowerReport
 from stattest.factory.model.abstract_experiment_factory.abstract_experiment_factory import (
     AbstractExperimentFactory,
 )
+from stattest.persistence.model.experiment.experiment import IExperimentStorage
 from stattest.persistence.model.power.power import IPowerStorage, PowerQuery
 from stattest.persistence.model.random_values.random_values import (
     IRandomValuesStorage,
@@ -72,19 +73,23 @@ class PowerExperimentFactory(
         return generation_step
 
     def _create_execution_step(
-        self, data_storage: IRandomValuesStorage, result_storage: IPowerStorage
+        self,
+        data_storage: IRandomValuesStorage,
+        result_storage: IPowerStorage,
+        experiment_storage: IExperimentStorage,
     ) -> PowerExecutionStep:
         """
         Create power execution step.
 
         :param data_storage: data storage.
         :param result_storage: result power storage.
+        :param experiment_storage: experiment storage.
 
         :return: power execution step.
         """
 
         config = self.experiment_data.config
-        experiment_id = self._get_experiment_id()
+        experiment_id = self._get_experiment_id(experiment_storage)
         monte_carlo_count = config.monte_carlo_count
 
         criteria_config = self._get_criteria_config()

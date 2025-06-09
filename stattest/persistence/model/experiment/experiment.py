@@ -55,3 +55,27 @@ class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], Protoco
         :return: experiment id
         """
         pass
+
+    def set_generation_done(self, experiment_id: int) -> None:
+        """
+        Set generation step as done.
+
+        :param experiment_id: experiment id.
+        """
+        pass
+
+    def set_execution_done(self, experiment_id: int) -> None:
+        """
+        Set execution step as done.
+
+        :param experiment_id: experiment id.
+        """
+        pass
+
+    def set_report_building_done(self, experiment_id: int) -> None:
+        """
+        Set report building step as done.
+
+        :param experiment_id: experiment id.
+        """
+        pass

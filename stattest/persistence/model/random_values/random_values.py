@@ -13,6 +13,7 @@ class RandomValuesModel(DataModel):
     generator_name: str
     generator_parameters: list[float]
     sample_size: int
+    sample_num: int
     data: list[float]
 
 
@@ -21,6 +22,7 @@ class RandomValuesQuery(DataQuery):
     generator_name: str
     generator_parameters: list[float]
     sample_size: int
+    sample_num: int
 
 
 @dataclass

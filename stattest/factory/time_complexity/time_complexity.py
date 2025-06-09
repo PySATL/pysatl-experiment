@@ -15,6 +15,7 @@ from stattest.experiment_new.step.report_building.time_complexity.time_complexit
 from stattest.factory.model.abstract_experiment_factory.abstract_experiment_factory import (
     AbstractExperimentFactory,
 )
+from stattest.persistence.model.experiment.experiment import IExperimentStorage
 from stattest.persistence.model.random_values.random_values import (
     IRandomValuesStorage,
     RandomValuesAllQuery,
@@ -81,19 +82,23 @@ class TimeComplexityExperimentFactory(
         return generation_step
 
     def _create_execution_step(
-        self, data_storage: IRandomValuesStorage, result_storage: ITimeComplexityStorage
+        self,
+        data_storage: IRandomValuesStorage,
+        result_storage: ITimeComplexityStorage,
+        experiment_storage: IExperimentStorage,
     ) -> TimeComplexityExecutionStep:
         """
         Create time complexity execution step.
 
         :param data_storage: data storage.
         :param result_storage: result time complexity storage.
+        :param experiment_storage: experiment storage.
 
         :return: time complexity execution step.
         """
 
         config = self.experiment_data.config
-        experiment_id = self._get_experiment_id()
+        experiment_id = self._get_experiment_id(experiment_storage)
         monte_carlo_count = config.monte_carlo_count
         criteria_config = self._get_criteria_config()
 
