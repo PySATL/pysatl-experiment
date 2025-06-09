@@ -39,6 +39,7 @@ from stattest.persistence.power.sqlite.sqlite import SQLitePowerStorage
 from stattest.persistence.random_values.sqlite.sqlite import SQLiteRandomValuesStorage
 from stattest.persistence.time_complexity.sqlite.sqlite import SQLiteTimeComplexityStorage
 
+
 D = TypeVar("D", contravariant=True, bound=ExperimentData)
 G = TypeVar("G", covariant=True, bound=IExperimentStep)
 E = TypeVar("E", covariant=True, bound=IExperimentStep)
@@ -76,7 +77,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             experiment_storage=experiment_storage,
             generation_step=None,
             execution_step=None,
-            report_building_step=None
+            report_building_step=None,
         )
 
         is_generation_step_done = self.experiment_data.steps_done.is_generation_step_done
@@ -87,7 +88,9 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             experiment_steps.generation_step = generation_step
 
         if not is_execution_step_done:
-            execution_step = self._create_execution_step(data_storage, result_storage, experiment_storage)
+            execution_step = self._create_execution_step(
+                data_storage, result_storage, experiment_storage
+            )
             experiment_steps.execution_step = execution_step
 
         report_building_step = self._create_report_building_step(result_storage)
@@ -108,10 +111,10 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     @abstractmethod
     def _create_execution_step(
-            self,
-            data_storage: IRandomValuesStorage,
-            result_storage: RS,
-            experiment_storage: IExperimentStorage,
+        self,
+        data_storage: IRandomValuesStorage,
+        result_storage: RS,
+        experiment_storage: IExperimentStorage,
     ) -> E:
         """
         Create execution step.
