@@ -33,12 +33,14 @@ class PowerExecutionStep:
         monte_carlo_count: int,
         data_storage: IRandomValuesStorage,
         result_storage: IPowerStorage,
+        storage_connection: str,
     ):
         self.experiment_id = experiment_id
         self.step_config = step_config
         self.monte_carlo_count = monte_carlo_count
         self.data_storage = data_storage
         self.result_storage = result_storage
+        self.storage_connection = storage_connection
 
     def run(self) -> None:
         """
@@ -63,7 +65,7 @@ class PowerExecutionStep:
                 statistics=statistics,
                 sample_data=samples,
                 significance_level=significance_level,
-                storage_connection=self.result_storage.connection_string,
+                storage_connection=self.storage_connection,
             )
 
             result = worker.execute()

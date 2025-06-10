@@ -69,13 +69,15 @@ class GenerationStep:
         :param step_data: step data.
         """
 
-        for sample in samples:
+        for i in range(1, len(samples) + 1):
+            sample = samples[i]
             generator_name = step_data.generator_name
             generator_parameters = step_data.generator_parameters
             data_to_save = RandomValuesModel(
                 generator_name=generator_name,
                 generator_parameters=generator_parameters,
                 sample_size=sample_size,
+                sample_num=i,
                 data=sample,
             )
             self.data_storage.insert_data(data_to_save)

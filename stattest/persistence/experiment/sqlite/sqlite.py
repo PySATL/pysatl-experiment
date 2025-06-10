@@ -45,3 +45,27 @@ class SQLiteExperimentStorage(IExperimentStorage):
         :return: experiment id
         """
         raise NotImplementedError("Method is not yet implemented")
+
+    def set_generation_done(self, experiment_id: int) -> None:
+        """
+        Set generation step as done.
+
+        :param experiment_id: experiment id.
+        """
+        raise NotImplementedError("Method is not yet implemented")
+
+    def set_execution_done(self, experiment_id: int) -> None:
+        """
+        Set execution step as done.
+
+        :param experiment_id: experiment id.
+        """
+        raise NotImplementedError("Method is not yet implemented")
+
+    def set_report_building_done(self, experiment_id: int) -> None:
+        """
+        Set report building step as done.
+
+        :param experiment_id: experiment id.
+        """
+        raise NotImplementedError("Method is not yet implemented")
