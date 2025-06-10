@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar, cast
 
 from pysatl_criterion.persistence.limit_distribution.sqlite.sqlite import (
     SQLiteLimitDistributionStorage,
@@ -44,7 +44,7 @@ D = TypeVar("D", contravariant=True, bound=ExperimentData)
 G = TypeVar("G", covariant=True, bound=IExperimentStep)
 E = TypeVar("E", covariant=True, bound=IExperimentStep)
 R = TypeVar("R", covariant=True, bound=IExperimentStep)
-RS = TypeVar("RS", contravariant=True, bound=IDataStorage)
+RS = TypeVar("RS", bound=IDataStorage)
 
 
 class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
@@ -231,11 +231,13 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         base_class = AbstractGoodnessOfFitStatistic
         if hypothesis == Hypothesis.NORMAL:
-            base_class = AbstractNormalityGofStatistic
+            base_class = cast(type[AbstractNormalityGofStatistic], base_class)
         elif hypothesis == Hypothesis.EXPONENTIAL:
-            base_class = AbstractExponentialityGofStatistic
+            base_class = cast(type[AbstractExponentialityGofStatistic], base_class)
         elif hypothesis == Hypothesis.WEIBULL:
-            base_class = AbstractWeibullGofStatistic
+            base_class = cast(type[AbstractWeibullGofStatistic], base_class)
+        else:
+            raise ValueError("Unknown hypothesis")
 
         criteria_config = []
         subclasses = base_class.__subclasses__()
@@ -270,25 +272,27 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         for criterion_config in criteria_config:
             statistics_codes.append(criterion_config.criterion_code)
 
-        queries = []
+        queries: list[Any] = []
         if experiment_type == ExperimentType.CRITICAL_VALUE:
-            queries, storage = self._create_critical_value_queries(
+            queries = self._create_critical_value_queries(
                 statistics_codes=statistics_codes,
                 sample_sizes=sample_sizes,
                 monte_carlo_count=monte_carlo_count,
             )
         elif experiment_type == ExperimentType.POWER:
-            queries, storage = self._create_power_queries(
+            queries = self._create_power_queries(
                 statistics_codes=statistics_codes,
                 sample_sizes=sample_sizes,
                 monte_carlo_count=monte_carlo_count,
             )
         elif experiment_type == ExperimentType.TIME_COMPLEXITY:
-            queries, storage = self._create_time_complexity_queries(
+            queries = self._create_time_complexity_queries(
                 statistics_codes=statistics_codes,
                 sample_sizes=sample_sizes,
                 monte_carlo_count=monte_carlo_count,
             )
+        else:
+            raise ValueError("Unknown experiment type")
 
         for query in queries:
             result_storage.delete_data(query)
@@ -460,7 +464,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         return data_storage
 
-    def _init_result_storage(self) -> IDataStorage:
+    def _init_result_storage(self) -> RS:
         """
         Init result storage.
 
@@ -469,17 +473,20 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         experiment_type = self.experiment_data.config.experiment_type
         storage_connection = self.experiment_data.config.storage_connection
-        result_storage = IDataStorage
         if experiment_type == ExperimentType.CRITICAL_VALUE:
-            result_storage = SQLiteLimitDistributionStorage(storage_connection)
+            limit_distribution_storage = SQLiteLimitDistributionStorage(storage_connection)
+            limit_distribution_storage.init()
+            return cast(RS, limit_distribution_storage)
         elif experiment_type == ExperimentType.POWER:
-            result_storage = SQLitePowerStorage(storage_connection)
+            power_storage = SQLitePowerStorage(storage_connection)
+            power_storage.init()
+            return cast(RS, power_storage)
         elif experiment_type == ExperimentType.TIME_COMPLEXITY:
-            result_storage = SQLiteTimeComplexityStorage(storage_connection)
-
-        result_storage.init()
-
-        return result_storage
+            time_complexity_storage = SQLiteTimeComplexityStorage(storage_connection)
+            time_complexity_storage.init()
+            return cast(RS, time_complexity_storage)
+        else:
+            raise ValueError(f"Unsupported experiment type: {experiment_type}")
 
     def _get_generator_class_object(
         self, generator_name: str, generator_parameters: list[float]

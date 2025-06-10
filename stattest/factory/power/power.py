@@ -91,10 +91,11 @@ class PowerExperimentFactory(
         config = self.experiment_data.config
         experiment_id = self._get_experiment_id(experiment_storage)
         monte_carlo_count = config.monte_carlo_count
+        storage_connection = config.storage_connection
 
         criteria_config = self._get_criteria_config()
 
-        step_config = []
+        step_config: list[PowerStepData] = []
         for criterion_config in criteria_config:
             for sample_size in config.sample_sizes:
                 for alternative in config.alternatives:
@@ -125,6 +126,7 @@ class PowerExperimentFactory(
             monte_carlo_count=monte_carlo_count,
             data_storage=data_storage,
             result_storage=result_storage,
+            storage_connection=storage_connection,
         )
 
         return execution_step
