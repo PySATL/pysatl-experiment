@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats as scipy_stats
-from pysatl_criterion.statistics import AbstractStatistic
 
+from pysatl_criterion.statistics import AbstractStatistic
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.persistence.models import ICriticalValueStore
 
@@ -57,13 +57,13 @@ def get_or_calculate_critical_value(
     store: ICriticalValueStore,
     count: int,
 ) -> float | tuple[float, float]:
-    critical_values = test.calculate_two_tailed_critical_values(size, alpha)
-    if critical_values is not None:
-        return critical_values
+    critical_values_from_common_criterion = test.calculate_two_tailed_critical_values(size, alpha)
+    if critical_values_from_common_criterion is not None:
+        return critical_values_from_common_criterion
 
-    critical_value = test.calculate_critical_value(size, alpha)
-    if critical_value is not None:
-        return critical_value
+    critical_value_from_common_criterion = test.calculate_critical_value(size, alpha)
+    if critical_value_from_common_criterion is not None:
+        return critical_value_from_common_criterion
 
     critical_value = store.get_critical_value(test.code(), size, alpha)
     if critical_value is not None:

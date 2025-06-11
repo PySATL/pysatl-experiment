@@ -1,6 +1,6 @@
-from pysatl_criterion.statistics import AbstractStatistic
 from typing_extensions import override
 
+from pysatl_criterion.statistics import AbstractStatistic
 from stattest.experiment.configuration.configuration import TestWorker, TestWorkerResult
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.experiment.test.power_calculation import calculate_test_power

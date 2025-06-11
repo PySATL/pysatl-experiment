@@ -14,18 +14,27 @@ class Experiment:
         """
         Run experiment.
         """
-        generation_step: IExperimentStep = self.experiment_steps.generation_step
-        execution_step: IExperimentStep = self.experiment_steps.execution_step
-        report_building_step: IExperimentStep = self.experiment_steps.report_building_step
 
-        print("Running generation step...")
-        generation_step.run()
-        print("Generation step finished")
+        generation_step: IExperimentStep | None = self.experiment_steps.generation_step
+        execution_step: IExperimentStep | None = self.experiment_steps.execution_step
+        report_building_step: IExperimentStep | None = self.experiment_steps.report_building_step
+        experiment_id = self.experiment_steps.experiment_id
+        experiment_storage = self.experiment_steps.experiment_storage
 
-        print("Running execution step...")
-        execution_step.run()
-        print("Execution step finished")
+        if generation_step is not None:
+            print("Running generation step...")
+            generation_step.run()
+            experiment_storage.set_generation_done(experiment_id)
+            print("Generation step finished")
 
-        print("Running report building step...")
-        report_building_step.run()
-        print("Report building step finished")
+        if execution_step is not None:
+            print("Running execution step...")
+            execution_step.run()
+            experiment_storage.set_execution_done(experiment_id)
+            print("Execution step finished")
+
+        if report_building_step is not None:
+            print("Running report building step...")
+            report_building_step.run()
+            experiment_storage.set_report_building_done(experiment_id)
+            print("Report building step finished")

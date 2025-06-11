@@ -1,12 +1,12 @@
 import multiprocessing
 
 from numpy import random as rd
+
 from pysatl_criterion.statistics.normal import (
     GraphEdgesNumberNormalityGofStatistic,
     GraphMaxDegreeNormalityGofStatistic,
     KolmogorovSmirnovNormalityGofStatistic,
 )
-
 from stattest.experiment import Experiment
 from stattest.experiment.configuration.configuration import (
     AlternativeConfiguration,

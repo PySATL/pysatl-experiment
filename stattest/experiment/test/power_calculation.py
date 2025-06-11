@@ -1,5 +1,4 @@
 from pysatl_criterion.statistics import AbstractStatistic
-
 from stattest.experiment.hypothesis import AbstractHypothesis
 from stattest.experiment.test.critical_value import get_or_calculate_critical_value
 from stattest.persistence.models import ICriticalValueStore

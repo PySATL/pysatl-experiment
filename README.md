@@ -84,6 +84,9 @@ PowerCalculationWorker - calculates goodness-of-fit test power
 
 ```bash
 git clone https://github.com/PySATL/pysatl-experiment
+cd pysatl-experiment
+git submodule add https://github.com/PySATL/pysatl-criterion.git pysatl_criterion
+git submodule update --init --recursive
 ```
 
 Install dependencies:

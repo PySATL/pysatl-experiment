@@ -3,9 +3,9 @@ from collections.abc import Sequence
 from multiprocessing import Queue
 from multiprocessing.synchronize import Event as EventClass
 
-from pysatl_criterion.statistics import AbstractStatistic
 from tqdm import tqdm
 
+from pysatl_criterion.statistics import AbstractStatistic
 from stattest.experiment.configuration.configuration import TestConfiguration, TestWorker
 from stattest.experiment.pipeline import start_pipeline
 from stattest.persistence import IRvsStore

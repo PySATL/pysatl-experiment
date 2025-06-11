@@ -9,5 +9,5 @@ class ExecutionStepData:
     Data for execution step.
     """
 
-    criterion: AbstractGoodnessOfFitStatistic
+    statistics: AbstractGoodnessOfFitStatistic
     sample_size: int

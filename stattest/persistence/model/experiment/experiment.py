@@ -14,7 +14,7 @@ class ExperimentModel(DataModel):
     storage_connection: str
     run_mode: str
     hypothesis: str
-    data_generator_type: str
+    generator_type: str
     executor_type: str
     report_builder_type: str
     sample_sizes: list[int]
@@ -33,7 +33,7 @@ class ExperimentQuery(DataQuery):
     storage_connection: str
     run_mode: str
     hypothesis: str
-    data_generator_type: str
+    generator_type: str
     executor_type: str
     report_builder_type: str
     sample_sizes: list[int]
@@ -48,4 +48,34 @@ class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], Protoco
     Experiment configuration storage interface.
     """
 
-    pass
+    def get_experiment_id(self, query: ExperimentQuery) -> int | None:
+        """
+        Get experiment id.
+
+        :return: experiment id
+        """
+        pass
+
+    def set_generation_done(self, experiment_id: int) -> None:
+        """
+        Set generation step as done.
+
+        :param experiment_id: experiment id.
+        """
+        pass
+
+    def set_execution_done(self, experiment_id: int) -> None:
+        """
+        Set execution step as done.
+
+        :param experiment_id: experiment id.
+        """
+        pass
+
+    def set_report_building_done(self, experiment_id: int) -> None:
+        """
+        Set report building step as done.
+
+        :param experiment_id: experiment id.
+        """
+        pass

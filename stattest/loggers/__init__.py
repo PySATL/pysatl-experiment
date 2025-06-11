@@ -149,8 +149,8 @@ def _create_log_config(config: Config) -> dict[str, Any]:
                 from cysystemd.journal import JournaldLogHandler  # noqa: F401
             except ImportError:
                 raise OperationalException(
-                    "You need the cysystemd python package be installed in "
-                    "order to use logging to journald."
+                    "You need the cysystemd python package be installed "
+                    "in order to use logging to journald."
                 )
 
             # Add journald handler to the config
