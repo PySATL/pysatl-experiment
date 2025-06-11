@@ -176,7 +176,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
 
         sql = f"""
             SELECT * FROM experiments
-            WHERE {' AND '.join(conditions)}
+            WHERE {" AND ".join(conditions)}
         """
 
         cursor = conn.execute(sql, values)
@@ -219,7 +219,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
 
         sql = f"""
             DELETE FROM experiments
-            WHERE {' AND '.join(conditions)}
+            WHERE {" AND ".join(conditions)}
         """
 
         with conn:
@@ -253,7 +253,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
 
         sql = f"""
             SELECT id FROM experiments
-            WHERE {' AND '.join(conditions)}
+            WHERE {" AND ".join(conditions)}
         """
 
         cursor = conn.execute(sql, values)
