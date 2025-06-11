@@ -31,22 +31,35 @@ def create_experiment_path(name: str) -> Path:
     return experiment_path
 
 
-def create_result_path(name: str) -> Path:
+def create_result_path() -> Path:
     """
     Create experiment result path.
-
-    :param name: name of the experiment.
 
     :return: path to the experiment result.
     """
 
     # pysatl-experiment/.results
-    experiments_dir = Path(__file__).resolve().parents[4] / ".results"
-    experiment_file_name = f"{name}.json"
+    results_dir = Path(__file__).resolve().parents[4] / ".results"
 
-    experiment_path = experiments_dir / experiment_file_name
+    return results_dir
 
-    return experiment_path
+
+def create_storage_path(storage_name: str) -> str:
+    """
+    Create storage path.
+
+    :param storage_name: name of the storage.
+
+    :return: path to the storage.
+    """
+
+    # pysatl-experiment/.storage
+    storage_dir = Path(__file__).resolve().parents[4] / ".storage"
+    storage_file_name = f"{storage_name}.sqlite"
+
+    storage_path = storage_dir / storage_file_name
+
+    return str(storage_path)
 
 
 def save_experiment_data(experiment_name: str, experiment_data: dict) -> None:

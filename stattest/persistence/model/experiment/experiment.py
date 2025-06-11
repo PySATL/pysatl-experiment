@@ -48,7 +48,7 @@ class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], Protoco
     Experiment configuration storage interface.
     """
 
-    def get_experiment_id(self, query: ExperimentQuery) -> int:
+    def get_experiment_id(self, query: ExperimentQuery) -> int | None:
         """
         Get experiment id.
 

@@ -1,6 +1,7 @@
 from click import Context, argument, echo, pass_context
 
 from stattest.cli.commands.common.common import (
+    create_storage_path,
     get_experiment_name_and_config,
     save_experiment_config,
 )
@@ -20,8 +21,9 @@ def storage_connection(ctx: Context, connection: str) -> None:
 
     experiment_name, experiment_config = get_experiment_name_and_config(ctx)
 
-    experiment_config["storage_connection"] = connection
+    storage_path = create_storage_path(connection)
+    experiment_config["storage_connection"] = storage_path
 
     save_experiment_config(ctx, experiment_name, experiment_config)
 
-    echo(f"Storage connection of the experiment {experiment_name} is set to {connection}.")
+    echo(f"Storage connection of the experiment {experiment_name} is set to '{storage_path}'.")
