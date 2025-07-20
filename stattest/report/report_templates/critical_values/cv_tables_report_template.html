@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Critical Values Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 1.5cm;
+            line-height: 1.6;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+        }
+
+        h1 {
+            font-size: 2.6em;
+            color: #2c3e50;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .report-meta {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .table-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 12px;
+            table-layout: fixed;
+        }
+
+        table th, table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+            overflow: hidden;
+            word-wrap: break-word;
+            box-sizing: border-box;
+        }
+
+        table th:first-child,
+        table td:first-child {
+            width: 100px;
+            color: white;
+            font-weight: bold;
+            white-space: nowrap;
+            background-color: #2c3e50;
+            padding: 8px;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .table-caption {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.6em;
+            margin: 30px 0 10px 0;
+            color: #2c3e50;
+            width: 100%;
+        }
+
+        .footer {
+            margin-top: 40px;
+            font-size: 0.9em;
+            text-align: center;
+            color: #666;
+            padding-top: 10px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Critical Values Report</h1>
+
+    <div class="report-meta">
+        <p><strong>Generated:</strong> {{ timestamp }}</p>
+        <p><strong>Total Criteria:</strong> {{ criteria_count }}</p>
+        <p><strong>Sample Sizes:</strong> {{ sample_sizes | join(', ') }}</p>
+        <p><strong>Significance Levels:</strong> {{ significance_levels | join(', ') }}</p>
+    </div>
+
+    {% for table in tables %}
+        <div class="table-caption">{{ table.title }}</div>
+        <div class="table-container">
+            {{ table.content | safe }}
+        </div>
+    {% endfor %}
+
+    <div class="footer">
+        Report generated automatically by Statistical Analysis System
+    </div>
+</body>
+</html>
