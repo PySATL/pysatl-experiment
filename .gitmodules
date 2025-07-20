@@ -1,0 +1,3 @@
+[submodule "pysatl_criterion"]
+	path = pysatl_criterion
+	url = https://github.com/PySATL/pysatl-criterion.git
