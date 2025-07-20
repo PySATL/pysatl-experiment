@@ -50,7 +50,7 @@ def _parse_alternative(alternative: str) -> tuple[str, list[float]]:
     """
 
     parts = alternative.split()
-    generator_name = parts[0]
+    generator_name = parts[0].upper()
 
     try:
         parameters = [float(v) for v in parts[1:]]

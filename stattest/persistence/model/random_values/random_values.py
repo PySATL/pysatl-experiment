@@ -65,7 +65,7 @@ class IRandomValuesStorage(IDataStorage[RandomValuesModel, RandomValuesQuery], P
         """
         pass
 
-    def get_all_data(self, query: RandomValuesAllQuery) -> list[RandomValuesModel]:
+    def get_all_data(self, query: RandomValuesAllQuery) -> list[RandomValuesModel] | None:
         """
         Get all data based on hypothesis and sample size.
         """
@@ -77,7 +77,7 @@ class IRandomValuesStorage(IDataStorage[RandomValuesModel, RandomValuesQuery], P
         """
         pass
 
-    def get_count_data(self, query: RandomValuesCountQuery) -> list[RandomValuesModel]:
+    def get_count_data(self, query: RandomValuesCountQuery) -> list[RandomValuesModel] | None:
         """
         Get count data based on hypothesis and sample size.
         """

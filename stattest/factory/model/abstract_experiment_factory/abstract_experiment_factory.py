@@ -13,7 +13,6 @@ from pysatl_criterion.statistics import (
     AbstractNormalityGofStatistic,
     AbstractWeibullGofStatistic,
 )
-from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 from stattest.configuration.criteria_config.criteria_config import CriterionConfig
 from stattest.configuration.experiment_data.experiment_data import ExperimentData
 from stattest.configuration.model.experiment_type.experiment_type import ExperimentType
@@ -211,7 +210,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         elif hypothesis == Hypothesis.EXPONENTIAL:
             hypothesis_generator = ExponentialGenerator()
             generator_name = "EXPONENTIALGENERATOR"
-            generator_parameters = [hypothesis.parameters.lam]
+            generator_parameters = [hypothesis_generator.lam]
         elif hypothesis == Hypothesis.WEIBULL:
             hypothesis_generator = WeibullGenerator()
             generator_name = "WEIBULLGENERATOR"
@@ -229,19 +228,21 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         config = self.experiment_data.config
         hypothesis = config.hypothesis
 
-        base_class = AbstractGoodnessOfFitStatistic
+        base_class: type[Any]
         if hypothesis == Hypothesis.NORMAL:
-            base_class = cast(type[AbstractNormalityGofStatistic], base_class)
+            base_class = AbstractNormalityGofStatistic
         elif hypothesis == Hypothesis.EXPONENTIAL:
-            base_class = cast(type[AbstractExponentialityGofStatistic], base_class)
+            base_class = AbstractExponentialityGofStatistic
         elif hypothesis == Hypothesis.WEIBULL:
-            base_class = cast(type[AbstractWeibullGofStatistic], base_class)
+            base_class = AbstractWeibullGofStatistic
         else:
             raise ValueError("Unknown hypothesis")
 
         criteria_config = []
         subclasses = base_class.__subclasses__()
         for sub in subclasses:
+            if getattr(sub, "__abstractmethods__", None):
+                continue
             potential_code = sub.code()
             potential_short_code = sub.code().split("_")[0]
             for criterion in config.criteria:
@@ -435,6 +436,8 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         )
 
         experiment_id = storage.get_experiment_id(query)
+        if experiment_id is None:
+            raise ValueError("Experiment not found")
 
         return experiment_id
 

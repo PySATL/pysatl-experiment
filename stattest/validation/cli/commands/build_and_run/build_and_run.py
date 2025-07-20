@@ -34,7 +34,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
     :param experiment_data_dict: experiment data dictionary.
     """
 
-    experiment_name = experiment_data_dict.get("experiment_name")
+    experiment_name = experiment_data_dict.get("name")
     if experiment_name is None:
         raise ClickException("Missing experiment_name")
 
@@ -85,7 +85,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
             storage=experiment_storage,
         )
 
-    result_path = create_result_path(experiment_name)
+    result_path = create_result_path()
 
     experiment_data = ExperimentData(
         name=experiment_name,
@@ -166,7 +166,7 @@ def _create_experiment_config_from_dict(
 
 def _get_experiment_config_from_storage(
     config: ExperimentConfig, storage: IExperimentStorage
-) -> ExperimentModel:
+) -> ExperimentModel | None:
     """
     Get experiment config from database.
 
