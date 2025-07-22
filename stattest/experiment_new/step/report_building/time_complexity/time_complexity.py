@@ -1,4 +1,7 @@
 from pathlib import Path
+from typing import Dict, List, Tuple
+
+import numpy as np
 
 from stattest.configuration.criteria_config.criteria_config import CriterionConfig
 from stattest.persistence.model.time_complexity.time_complexity import (
@@ -22,7 +25,7 @@ class TimeComplexityReportBuildingStep:
         results_path: Path,
     ):
         self.criteria_config = criteria_config
-        self.sizes = sample_sizes
+        self.sizes = sorted(sample_sizes)
         self.monte_carlo_count = monte_carlo_count
         self.result_storage = result_storage
         self.results_path = results_path
@@ -32,21 +35,42 @@ class TimeComplexityReportBuildingStep:
         Run standard time complexity report building step.
         """
 
-        for criterion_config in self.criteria_config:
-            for sample_size in self.sizes:
+        times_data = self._collect_statistics()
+
+        report_builder = TimeComplexityReportBuilder(
+            criteria_config=self.criteria_config,
+            sample_sizes=self.sizes,
+            times=times_data,
+            results_path=self.results_path,
+        )
+        report_builder.build()
+
+    def _collect_statistics(self) -> Dict[str, List[Tuple[int, float]]]:
+        """
+        Collect and pre-calculate statistics for each criterion and sample size.
+
+        :returns: dictionary of statistics.
+        """
+        stats = {}
+
+        for criterion in self.criteria_config:
+            criterion_stats = []
+
+            for size in self.sizes:
                 times = self._get_times_from_storage(
                     storage=self.result_storage,
-                    criterion_config=criterion_config,
-                    sample_size=sample_size,
+                    criterion_config=criterion,
+                    sample_size=size,
                     monte_carlo_count=self.monte_carlo_count,
                 )
-                report_builder = TimeComplexityReportBuilder(
-                    criterion_config=criterion_config,
-                    sample_size=sample_size,
-                    times=times,
-                    results_path=self.results_path,
-                )
-                report_builder.build()
+
+                if times:
+                    mean = float(np.mean(times))
+                    criterion_stats.append((size, mean))
+
+            stats[criterion.criterion_code] = criterion_stats
+
+        return stats
 
     def _get_times_from_storage(
         self,
@@ -80,3 +104,5 @@ class TimeComplexityReportBuildingStep:
         times = result.results_times
 
         return times
+
+

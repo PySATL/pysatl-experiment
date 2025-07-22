@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Time Complexity Report</title>
+    <style>
+        html, body {
+            width: 100%;
+            font-size: 12px;
+            background: #fff;
+            padding: 0;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .header-table {
+            width: 100%;
+            border: 0;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .data-table {
+            width: 100%;
+            border: 0;
+            margin-top: 10px;
+            border-collapse: collapse;
+        }
+        .data-table td {
+            padding: 5px 0px 1px 5px;
+            text-align: left;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+        .header-row {
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+            font-weight: bold;
+            background: #fff;
+        }
+        b {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <table class="header-table">
+        <tr>
+            <td style="text-align:left;">
+                <b><span>Time Complexity Report</span></b>
+            </td>
+            <td style="text-align:right;">
+                <b><span>{{ timestamp }}</span></b>
+            </td>
+        </tr>
+    </table>
+
+    <table class="data-table">
+        <tr class="header-row">
+            <td>Size</td>
+            {% for criterion in criteria %}
+            <td>{{ criterion }} Test</td>
+            {% endfor %}
+        </tr>
+
+        {% for size in sizes %}
+        <tr>
+        <td>{{ size }}</td>
+            {% for criterion in report_data %}
+            <td>
+                {% for item in report_data[criterion] %}
+                    {% if item[0] == size %}
+                            {{ "%.2f ms"|format(item[1] * 1000) }}
+                    {% endif %}
+                {% endfor %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
