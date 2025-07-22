@@ -39,7 +39,40 @@ class TimeComplexityReportBuilder:
         pdf_path = self.results_path / "time_complexity_report.pdf"
         convert_html_to_pdf(html_content, pdf_path)
 
+    """def _generate_chart(self) -> Path:
+        
+        chart_file = self.charts_path / "time_complexity_chart.png"
+        plt.figure(figsize=(8, 6))
+
+        for criterion in self.times.keys():
+            sizes, times_list = zip(*self.times[criterion])
+            sizes = np.array(sizes)
+            times_list = np.array(times_list) * 1000
+
+            plt.plot(sizes, times_list, marker='o', linestyle='-', label=criterion)
+
+        plt.xlabel('Sample Size')
+        plt.ylabel('Time (ms)')
+        plt.title('Time Complexity of Criteria')
+        plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+        plt.legend()
+
+        plt.minorticks_on()
+
+        plt.tick_params(which='minor', width=0.5, length=2, color='gray')
+        plt.tick_params(which='major', length=6, width=1)
+
+        plt.tight_layout()
+
+        plt.savefig(chart_file, format='png', dpi=100)
+        plt.close()
+
+        return chart_file"""
+
     def _get_criterion_names(self) -> List[str]:
+        """
+        Return list of criterion names for reporting.
+        """
         return [c.criterion_code.partition('_')[0] for c in self.criteria_config]
 
     def _generate_html(self) -> str:
@@ -53,6 +86,7 @@ class TimeComplexityReportBuilder:
             criteria=self._get_criterion_names(),
             report_data=self.times,
             sizes=self.sample_sizes,
+            #chart_path=chart_path,
             timestamp=pd.Timestamp.now().strftime("%Y-%m-%d")
         )
 
