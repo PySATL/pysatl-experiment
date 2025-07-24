@@ -1,13 +1,17 @@
 ﻿from pathlib import Path
+from typing import List
+
 from xhtml2pdf import pisa
+
+from stattest.configuration.criteria_config.criteria_config import CriterionConfig
 
 
 def convert_html_to_pdf(html: str, output_path: Path) -> None:
     """
-    Convert HTML to PDF
+    Convert HTML to PDF.
 
-    :param html: HTML to convert
-    :param output_path: Path to output PDF
+    :param html: HTML to convert.
+    :param output_path: path to output PDF.
     """
 
     with open(output_path, "w+b") as pdf_file:
@@ -18,3 +22,15 @@ def convert_html_to_pdf(html: str, output_path: Path) -> None:
 
     if pisa_status.err:
         raise RuntimeError(f"PDF generation failed: {pisa_status.err}")
+
+
+def get_criterion_names(criteria_config: list[CriterionConfig]) -> List[str]:
+    """
+    Extract simplified criterion names.
+
+    :param criteria_config: list of criteria configs.
+
+    :return: list of criterion names.
+    """
+
+    return [c.criterion_code.partition('_')[0] for c in criteria_config]

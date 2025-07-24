@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Critical Values Report</title>
+    <style>
+        html, body {
+            width: 100%;
+            font-size: 12px;
+            background: #fff;
+            padding: 0;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .header-table {
+            width: 100%;
+            border: 0;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .data-table {
+            width: 100%;
+            border: 0;
+            margin-top: 10px;
+            border-collapse: collapse;
+        }
+
+        .data-table td {
+            padding: 5px 0 1px 5px;
+            text-align: left;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table th {
+            padding: 5px 0 1px 5px;
+            text-align: left;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+
+        .header-row {
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+            font-weight: bold;
+            background: #fff;
+        }
+
+        b {
+            font-weight: bold;
+        }
+
+        .table-caption {
+            font-weight: bold;
+            margin: 20px 0 5px 0;
+            text-align: left;
+            font-size: 12px;
+            color: #000;
+        }
+
+        .chart {
+        text-align: center;
+        margin: 40px 0 20px 0;
+        }
+
+        .chart img {
+            width: 700px;
+            height: auto;
+            display: block;
+            margin: 40px auto;
+        }
+    </style>
+</head>
+<body>
+
+    <table class="header-table">
+        <tr>
+            <td style="text-align:left;">
+                <b><span>Critical Values Report</span></b>
+            </td>
+            <td style="text-align:right;">
+                <b><span>{{ timestamp }}</span></b>
+            </td>
+        </tr>
+    </table>
+
+    {% for table in tables %}
+        <div class="table-caption">{{ table.title }}</div>
+        <table class="data-table">
+            <tr class="header-row">
+                <td>Size</td>
+                {% for level in table['levels'] %}
+                    <td>{{ level }}</td>
+                {% endfor %}
+            </tr>
+            {% for row in table['rows'] %}
+                <tr>
+                    <td>{{ row.size }}</td>
+                    {% for value in row['values'] %}
+                        <td>{{ "%.3f"|format(value) }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+        {% if table.chart %}
+        <div class="chart">
+            <img src="{{ table.chart }}" alt="Critical Value vs Sample Size" />
+        </div>
+        {% endif %}
+    {% endfor %}
+
+</body>
+</html>

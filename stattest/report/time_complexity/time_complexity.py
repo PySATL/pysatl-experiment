@@ -1,11 +1,16 @@
+import base64
+from io import BytesIO
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+import numpy as np
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
+from matplotlib import pyplot as plt
 
 from stattest.configuration.criteria_config.criteria_config import CriterionConfig
-from stattest.report.common.utils import convert_html_to_pdf
+from stattest.configuration.model.report_mode.report_mode import ReportMode
+from stattest.report.common.utils import convert_html_to_pdf, get_criterion_names
 
 
 class TimeComplexityReportBuilder:
@@ -19,12 +24,14 @@ class TimeComplexityReportBuilder:
             sample_sizes: list[int],
             times: Dict[str, List[Tuple[int, float]]],
             results_path: Path,
+            with_chart: ReportMode,
 
     ):
         self.criteria_config = criteria_config
         self.sample_sizes = sample_sizes
         self.times = times
         self.results_path = results_path
+        self.with_chart = with_chart
 
         template_dir = Path(__file__).parents[1] / "report_templates/time_complexity"
         self.template_env = Environment(loader=FileSystemLoader(template_dir))
@@ -39,54 +46,73 @@ class TimeComplexityReportBuilder:
         pdf_path = self.results_path / "time_complexity_report.pdf"
         convert_html_to_pdf(html_content, pdf_path)
 
-    """def _generate_chart(self) -> Path:
-        
-        chart_file = self.charts_path / "time_complexity_chart.png"
-        plt.figure(figsize=(8, 6))
+    def _generate_chart(self) -> str | None:
+        """
+        Generate a line chart of execution time vs sample size for all criteria.
+
+        :return: data URL string or None if chart could not be generated.
+        """
+
+        buf = BytesIO()
+        plt.figure(figsize=(10, 7))
 
         for criterion in self.times.keys():
-            sizes, times_list = zip(*self.times[criterion])
+            data = self.times[criterion]
+            if not data:
+                continue
+            sizes, times_list = zip(*data)
             sizes = np.array(sizes)
-            times_list = np.array(times_list) * 1000
+            times_ms = np.array(times_list) * 1000
 
-            plt.plot(sizes, times_list, marker='o', linestyle='-', label=criterion)
+            plt.plot(sizes, times_ms, marker='o', linestyle='-', label=criterion)
 
         plt.xlabel('Sample Size')
         plt.ylabel('Time (ms)')
         plt.title('Time Complexity of Criteria')
         plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-        plt.legend()
+        plt.legend(
+            bbox_to_anchor=(1.02, 1),
+            loc='upper left',
+            fontsize='medium',
+            frameon=True,
+            fancybox=False,
+            shadow=False,
+            borderaxespad=0.0,
+            handlelength=1.5,
+            columnspacing=1.0
+        )
 
         plt.minorticks_on()
-
         plt.tick_params(which='minor', width=0.5, length=2, color='gray')
         plt.tick_params(which='major', length=6, width=1)
+        plt.tight_layout(rect=(0, 0, 0.85, 1))
 
-        plt.tight_layout()
-
-        plt.savefig(chart_file, format='png', dpi=100)
+        plt.savefig(buf, format='png', dpi=150)
         plt.close()
 
-        return chart_file"""
+        buf.seek(0)
+        image_data = buf.read()
+        image_base64 = base64.b64encode(image_data).decode('utf-8')
+        buf.close()
 
-    def _get_criterion_names(self) -> List[str]:
-        """
-        Return list of criterion names for reporting.
-        """
-        return [c.criterion_code.partition('_')[0] for c in self.criteria_config]
+        return f"data:image/png;base64,{image_base64}"
 
     def _generate_html(self) -> str:
         """
         Generate HTML report from processed data.
-
-        :returns: HTML report string.
         """
+        plot_data = None
+        if self.with_chart == ReportMode.WITH_CHART:
+            try:
+                plot_data = self._generate_chart()
+            except Exception as e:
+                print(f"Failed to generate plot: {e}")
+                plot_data = None
 
-        return self.template_env.get_template("tc_table_template.html").render(
-            criteria=self._get_criterion_names(),
+        return self.template_env.get_template("tc_template.html").render(
+            criteria=get_criterion_names(self.criteria_config),
             report_data=self.times,
             sizes=self.sample_sizes,
-            #chart_path=chart_path,
-            timestamp=pd.Timestamp.now().strftime("%Y-%m-%d")
+            plot_image=plot_data,
+            timestamp=pd.Timestamp.now().strftime("%Y-%m-%d"),
         )
-

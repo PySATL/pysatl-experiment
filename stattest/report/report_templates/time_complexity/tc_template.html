@@ -76,5 +76,11 @@
         </tr>
         {% endfor %}
     </table>
+
+    {% if plot_image %}
+    <div style="text-align: center; margin: 30px 0;">
+        <img src="{{ plot_image }}" width="700" style="height: auto;" />
+    </div>
+    {% endif %}
 </body>
 </html>

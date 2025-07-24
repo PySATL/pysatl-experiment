@@ -4,6 +4,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 
 from stattest.configuration.criteria_config.criteria_config import CriterionConfig
+from stattest.configuration.model.report_mode.report_mode import ReportMode
 from stattest.persistence.model.time_complexity.time_complexity import (
     ITimeComplexityStorage,
     TimeComplexityQuery,
@@ -17,18 +18,21 @@ class TimeComplexityReportBuildingStep:
     """
 
     def __init__(
-        self,
-        criteria_config: list[CriterionConfig],
-        sample_sizes: list[int],
-        monte_carlo_count: int,
-        result_storage: ITimeComplexityStorage,
-        results_path: Path,
+            self,
+            criteria_config: list[CriterionConfig],
+            sample_sizes: list[int],
+            monte_carlo_count: int,
+            result_storage: ITimeComplexityStorage,
+            results_path: Path,
+            with_chart: ReportMode,
+
     ):
         self.criteria_config = criteria_config
         self.sizes = sorted(sample_sizes)
         self.monte_carlo_count = monte_carlo_count
         self.result_storage = result_storage
         self.results_path = results_path
+        self.with_chart = with_chart
 
     def run(self) -> None:
         """
@@ -42,6 +46,7 @@ class TimeComplexityReportBuildingStep:
             sample_sizes=self.sizes,
             times=times_data,
             results_path=self.results_path,
+            with_chart=self.with_chart,
         )
         report_builder.build()
 
@@ -73,11 +78,11 @@ class TimeComplexityReportBuildingStep:
         return stats
 
     def _get_times_from_storage(
-        self,
-        storage: ITimeComplexityStorage,
-        criterion_config: CriterionConfig,
-        sample_size: int,
-        monte_carlo_count: int,
+            self,
+            storage: ITimeComplexityStorage,
+            criterion_config: CriterionConfig,
+            sample_size: int,
+            monte_carlo_count: int,
     ) -> list[float]:
         """
         Get times from time complexity storage.
@@ -104,5 +109,3 @@ class TimeComplexityReportBuildingStep:
         times = result.results_times
 
         return times
-
-
