@@ -24,6 +24,7 @@ def create(name: str) -> None:
             "executor_type": "standard",
             "report_builder_type": "standard",
             "run_mode": "reuse",
+            "report_mode": "with-chart"
         },
     }
 

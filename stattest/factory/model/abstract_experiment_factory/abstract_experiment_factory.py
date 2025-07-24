@@ -92,7 +92,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             )
             experiment_steps.execution_step = execution_step
 
-        report_building_step = self._create_report_building_step(result_storage)
+        report_building_step = self._create_report_building_step(result_storage, experiment_storage)
         experiment_steps.report_building_step = report_building_step
 
         return experiment_steps
@@ -127,7 +127,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         pass
 
     @abstractmethod
-    def _create_report_building_step(self, result_storage: RS) -> R:
+    def _create_report_building_step(self, result_storage: RS, experiment_storage: IExperimentStorage) -> R:
         """
         Create report building step.
 
@@ -424,6 +424,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             experiment_type=experiment_type.value,
             storage_connection=config.storage_connection,
             run_mode=config.run_mode.value,
+            report_mode=config.report_mode.value,
             hypothesis=config.hypothesis.value,
             generator_type=config.generator_type.value,
             executor_type=config.executor_type.value,
