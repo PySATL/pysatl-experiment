@@ -5,7 +5,6 @@ from pysatl_criterion.persistence.model.limit_distribution.limit_distribution im
     ILimitDistributionStorage,
     LimitDistributionQuery,
 )
-
 from stattest.configuration.criteria_config.criteria_config import CriterionConfig
 from stattest.configuration.model.report_mode.report_mode import ReportMode
 from stattest.report.critical_value.critical_value import CriticalValueReportBuilder

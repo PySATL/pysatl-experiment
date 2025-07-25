@@ -38,6 +38,7 @@ from stattest.persistence.power.sqlite.sqlite import SQLitePowerStorage
 from stattest.persistence.random_values.sqlite.sqlite import SQLiteRandomValuesStorage
 from stattest.persistence.time_complexity.sqlite.sqlite import SQLiteTimeComplexityStorage
 
+
 D = TypeVar("D", contravariant=True, bound=ExperimentData)
 G = TypeVar("G", covariant=True, bound=IExperimentStep)
 E = TypeVar("E", covariant=True, bound=IExperimentStep)

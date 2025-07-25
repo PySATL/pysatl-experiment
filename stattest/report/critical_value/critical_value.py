@@ -3,7 +3,7 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 import pandas as pd
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from jinja2 import Environment, FileSystemLoader
 from matplotlib import pyplot as plt
 
 from stattest.configuration.criteria_config.criteria_config import CriterionConfig
