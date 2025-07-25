@@ -1,10 +1,11 @@
-﻿import pytest
-from unittest.mock import patch, MagicMock
-import tempfile
+﻿import tempfile
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
-from stattest.report.power.power import PowerReportBuilder
+import pytest
+
 from stattest.configuration.model.report_mode.report_mode import ReportMode
+from stattest.report.power.power import PowerReportBuilder
 
 
 class TestPowerReportBuilder:
@@ -68,7 +69,8 @@ class TestPowerReportBuilder:
     @patch("stattest.report.power.power.plt.savefig")
     @patch("stattest.report.power.power.plt.close")
     def test_generate_chart_data_creates_file_and_returns_path(
-            self, mock_close, mock_savefig, mock_criterion_config, mock_alternative, power_data, results_path
+            self, mock_close, mock_savefig, mock_criterion_config,
+            mock_alternative, power_data, results_path
     ):
         builder = PowerReportBuilder(
             criteria_config=[mock_criterion_config],
@@ -86,7 +88,9 @@ class TestPowerReportBuilder:
 
             with patch.object(Path, 'resolve', return_value=chart_path), \
                     patch.object(Path, 'as_posix', return_value=str(chart_path)):
-                result_path = builder._generate_chart_data(mock_alternative, 0.05, charts_dir)
+                result_path = builder._generate_chart_data(mock_alternative,
+                                                           0.05,
+                                                           charts_dir)
 
                 mock_savefig.assert_called_once()
                 assert isinstance(result_path, str)
@@ -95,7 +99,8 @@ class TestPowerReportBuilder:
     @pytest.mark.parametrize("chart_mode", [ReportMode.WITH_CHART, ReportMode.WITHOUT_CHART])
     @patch("stattest.report.power.power.convert_html_to_pdf")
     def test_build_calls_convert_html_to_pdf(
-            self, mock_convert, mock_criterion_config, mock_alternative, power_data, chart_mode, results_path
+            self, mock_convert, mock_criterion_config, mock_alternative,
+            power_data, chart_mode, results_path
     ):
         builder = PowerReportBuilder(
             criteria_config=[mock_criterion_config],
@@ -107,7 +112,8 @@ class TestPowerReportBuilder:
             with_chart=chart_mode,
         )
 
-        with patch.object(builder, '_generate_html', return_value="<html></html>"):
+        with patch.object(builder, '_generate_html',
+                          return_value="<html></html>"):
             builder.build()
 
         mock_convert.assert_called_once()

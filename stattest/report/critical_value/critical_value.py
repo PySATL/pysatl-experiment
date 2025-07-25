@@ -1,10 +1,9 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import List, Dict
 
 import numpy as np
 import pandas as pd
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from matplotlib import pyplot as plt
 
 from stattest.configuration.criteria_config.criteria_config import CriterionConfig
@@ -27,7 +26,7 @@ class CriticalValueReportBuilder:
             with_chart: ReportMode,
     ):
         self.criteria_config = criteria_config
-        self.sizes = sorted(sample_sizes)
+        self.sizes = sample_sizes
         self.significance_levels = significance_levels
         self.cv_values = cv_values
         self.results_path = results_path
@@ -36,7 +35,8 @@ class CriticalValueReportBuilder:
         template_dir = Path(__file__).parents[1] / "report_templates/critical_values"
         self.pdf_path = self.results_path / "critical_values_report.pdf"
 
-        self.template_env = Environment(loader=FileSystemLoader(template_dir))
+        self.template_env = Environment(loader=FileSystemLoader(template_dir),
+                                        autoescape=True)
 
     def build(self) -> None:
         """
@@ -84,19 +84,21 @@ class CriticalValueReportBuilder:
         )
         return html
 
-    def _generate_table_data(self, criterion_code: str) -> Dict[str, object]:
+    def _generate_table_data(self, criterion_code: str) -> dict[str, object]:
         """
         Generate table data.
 
         :param criterion_code: the code of the criterion for which to generate the table data.
 
-        :return: a dictionary containing a list of rows, where each row is a dict with 'size' (sample size)
-                 and 'values' (list of critical values for each significance level).
+        :return: a dictionary containing a list of rows, where each row is a dict with
+        'size' and 'values'.
         """
+
         values = next(
             values for cfg, values in zip(
                 self.criteria_config,
-                self._chunk_cv_values()
+                self._chunk_cv_values(),
+                strict=True
             ) if cfg.criterion_code == criterion_code
         )
 
@@ -127,7 +129,9 @@ class CriticalValueReportBuilder:
         plt.figure(figsize=(8, 5), dpi=100)
 
         chunked_values = self._chunk_cv_values()
-        idx = next(i for i, cfg in enumerate(self.criteria_config) if cfg.criterion_code == criterion_code)
+
+        idx = next(i for i, cfg in enumerate(self.criteria_config)
+                   if cfg.criterion_code == criterion_code)
         values = chunked_values[idx]
         values_2d = np.array(values).reshape(len(self.sizes), len(self.significance_levels))
 
@@ -155,7 +159,7 @@ class CriticalValueReportBuilder:
 
         return str(chart_path.resolve().as_posix())
 
-    def _chunk_cv_values(self) -> List[List[float]]:
+    def _chunk_cv_values(self) -> list[list[float]]:
         """
         Splits a flat cv_values list into parts according to the criteria.
 

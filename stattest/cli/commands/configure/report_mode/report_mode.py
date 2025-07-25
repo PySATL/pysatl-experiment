@@ -1,4 +1,4 @@
-﻿from click import ClickException, Context, echo, option, pass_context, argument
+﻿from click import Context, argument, echo, pass_context
 
 from stattest.cli.commands.common.common import (
     get_experiment_name_and_config,

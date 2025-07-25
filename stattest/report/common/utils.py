@@ -1,5 +1,4 @@
 ﻿from pathlib import Path
-from typing import List
 
 from xhtml2pdf import pisa
 
@@ -14,7 +13,7 @@ def convert_html_to_pdf(html: str, output_path: Path) -> None:
     :param output_path: path to output PDF.
     """
 
-    with open(output_path, "w+b") as pdf_file:
+    with output_path.open("w+b") as pdf_file:
         pisa_status = pisa.CreatePDF(
             src=html,
             dest=pdf_file,
@@ -24,7 +23,7 @@ def convert_html_to_pdf(html: str, output_path: Path) -> None:
         raise RuntimeError(f"PDF generation failed: {pisa_status.err}")
 
 
-def get_criterion_names(criteria_config: list[CriterionConfig]) -> List[str]:
+def get_criterion_names(criteria_config: list[CriterionConfig]) -> list[str]:
     """
     Extract simplified criterion names.
 

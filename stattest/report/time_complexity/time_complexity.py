@@ -1,7 +1,6 @@
 import base64
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -22,7 +21,7 @@ class TimeComplexityReportBuilder:
             self,
             criteria_config: list[CriterionConfig],
             sample_sizes: list[int],
-            times: Dict[str, List[Tuple[int, float]]],
+            times: dict[str, list[tuple[int, float]]],
             results_path: Path,
             with_chart: ReportMode,
 
@@ -34,7 +33,8 @@ class TimeComplexityReportBuilder:
         self.with_chart = with_chart
 
         template_dir = Path(__file__).parents[1] / "report_templates/time_complexity"
-        self.template_env = Environment(loader=FileSystemLoader(template_dir))
+        self.template_env = Environment(loader=FileSystemLoader(template_dir),
+                                        autoescape=True)
 
     def build(self) -> None:
         """
@@ -60,7 +60,7 @@ class TimeComplexityReportBuilder:
             data = self.times[criterion]
             if not data:
                 continue
-            sizes, times_list = zip(*data)
+            sizes, times_list = zip(*data, strict=True)
             sizes = np.array(sizes)
             times_ms = np.array(times_list) * 1000
 

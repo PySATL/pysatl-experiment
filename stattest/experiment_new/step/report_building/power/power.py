@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Dict, Tuple, List
 
 from stattest.configuration.criteria_config.criteria_config import CriterionConfig
 from stattest.configuration.model.alternative.alternative import Alternative
@@ -51,7 +50,7 @@ class PowerReportBuildingStep:
         )
         builder.build()
 
-    def _collect_statistics(self) -> Dict[str, Dict[Tuple[str, float], Dict[int, List[bool]]]]:
+    def _collect_statistics(self) -> dict[str, dict[tuple[str, float], dict[int, list[bool]]]]:
         """
         Collect power results.
 

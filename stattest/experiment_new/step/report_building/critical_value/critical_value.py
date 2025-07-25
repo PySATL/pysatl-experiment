@@ -2,7 +2,8 @@ from pathlib import Path
 
 from pysatl_criterion.cv_calculator.cv_calculator.cv_calculator import CVCalculator
 from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import (
-    ILimitDistributionStorage, LimitDistributionQuery,
+    ILimitDistributionStorage,
+    LimitDistributionQuery,
 )
 
 from stattest.configuration.criteria_config.criteria_config import CriterionConfig
@@ -43,8 +44,10 @@ class CriticalValueReportBuildingStep:
             for sample_size in self.sizes:
                 cv_calculator = CVCalculator(self.result_storage)
                 for significance_level in self.significance_levels:
-                    cv_value = cv_calculator.calculate_critical_value(criterion_config.criterion_code, sample_size,
-                                                                      significance_level)
+                    cv_value = (cv_calculator.calculate_critical_value
+                                (criterion_config.criterion_code,
+                                 sample_size,
+                                 significance_level))
 
                     cv_values.append(cv_value)
 

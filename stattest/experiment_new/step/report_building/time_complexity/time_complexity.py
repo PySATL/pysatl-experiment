@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 import numpy as np
 
@@ -50,7 +49,7 @@ class TimeComplexityReportBuildingStep:
         )
         report_builder.build()
 
-    def _collect_statistics(self) -> Dict[str, List[Tuple[int, float]]]:
+    def _collect_statistics(self) -> dict[str, list[tuple[int, float]]]:
         """
         Collect and pre-calculate statistics for each criterion and sample size.
 

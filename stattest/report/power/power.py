@@ -1,6 +1,5 @@
 import tempfile
 from pathlib import Path
-from typing import Dict, Tuple, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,7 +23,7 @@ class PowerReportBuilder:
             sample_sizes: list[int],
             alternatives: list[Alternative],
             significance_levels: list[float],
-            power_result: Dict[str, Dict[Tuple[str, float], Dict[int, List[bool]]]],
+            power_result: dict[str, dict[tuple[str, float], dict[int, list[bool]]]],
             results_path: Path,
             with_chart: ReportMode,
     ):
@@ -39,7 +38,8 @@ class PowerReportBuilder:
         template_dir = Path(__file__).parents[1] / "report_templates/power"
         self.pdf_path = self.results_path / "power_report.pdf"
 
-        self.template_env = Environment(loader=FileSystemLoader(template_dir))
+        self.template_env = Environment(loader=FileSystemLoader(template_dir),
+                                        autoescape=True)
 
     def build(self) -> None:
         """
@@ -70,9 +70,12 @@ class PowerReportBuilder:
                 chart_data = None
                 if self.with_chart == ReportMode.WITH_CHART:
                     try:
-                        chart_data = self._generate_chart_data(alternative, significance_level, charts_dir)
+                        chart_data = self._generate_chart_data(alternative,
+                                                               significance_level,
+                                                               charts_dir)
                     except Exception as e:
-                        print(f"Failed to generate chart for {alternative.generator_name}, α={significance_level}: {e}")
+                        print(f"Failed to generate chart for {alternative.generator_name}, "
+                              f"α={significance_level}: {e}")
                         chart_data = None
                 tables.append({
                     "alternative": alternative,
@@ -93,7 +96,7 @@ class PowerReportBuilder:
             self,
             alternative: Alternative,
             significance_level: float,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Generate table for one (alternative, alpha) pair.
 
