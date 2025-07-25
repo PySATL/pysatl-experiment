@@ -14,6 +14,7 @@ from stattest.cli.commands.configure.monte_carlo_count.monte_carlo_count import 
 from stattest.cli.commands.configure.report_builder_type.report_builder_type import (
     report_builder_type,
 )
+from stattest.cli.commands.configure.report_mode.report_mode import report_mode
 from stattest.cli.commands.configure.run_mode.run_mode import run_mode
 from stattest.cli.commands.configure.sample_sizes.sample_sizes import sample_sizes
 from stattest.cli.commands.configure.show.show import show
@@ -58,4 +59,5 @@ cli.add_command(monte_carlo_count)
 cli.add_command(significance_levels)
 cli.add_command(criteria)
 cli.add_command(alternatives)
+cli.add_command(report_mode)
 cli.add_command(build_and_run)

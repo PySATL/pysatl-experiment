@@ -2,6 +2,7 @@ from pathlib import Path
 
 from stattest.configuration.criteria_config.criteria_config import CriterionConfig
 from stattest.configuration.model.alternative.alternative import Alternative
+from stattest.configuration.model.report_mode.report_mode import ReportMode
 from stattest.persistence.model.power.power import IPowerStorage, PowerQuery
 from stattest.report.power.power import PowerReportBuilder
 
@@ -20,40 +21,57 @@ class PowerReportBuildingStep:
         monte_carlo_count: int,
         result_storage: IPowerStorage,
         results_path: Path,
+        with_chart: ReportMode,
     ):
         self.criteria_config = criteria_config
         self.significance_levels = significance_levels
         self.alternatives = alternatives
-        self.sizes = sample_sizes
+        self.sizes = sorted(sample_sizes)
         self.monte_carlo_count = monte_carlo_count
         self.result_storage = result_storage
         self.results_path = results_path
+        self.with_chart = with_chart
 
     def run(self) -> None:
         """
         Run standard power report building step.
         """
 
+        power_data = self._collect_statistics()
+
+        builder = PowerReportBuilder(
+            criteria_config=self.criteria_config,
+            sample_sizes=self.sizes,
+            alternatives=self.alternatives,
+            significance_levels=self.significance_levels,
+            power_result=power_data,
+            results_path=self.results_path,
+            with_chart=self.with_chart,
+        )
+        builder.build()
+
+    def _collect_statistics(self) -> dict[str, dict[tuple[str, float], dict[int, list[bool]]]]:
+        """
+        Collect power results.
+
+        :return: {criterion_code -> (alt_name, alpha) -> {size: [bool]}}
+        """
+
+        power_data: dict[str, dict[tuple[str, float], dict[int, list[bool]]]] = {}
+
         for criterion_config in self.criteria_config:
             for alternative in self.alternatives:
-                for sample_size in self.sizes:
-                    for significance_level in self.significance_levels:
-                        results_criteria = self._get_power_result_from_storage(
+                for significance_level in self.significance_levels:
+                    for sample_size in self.sizes:
+                        result = self._get_power_result_from_storage(
                             criterion_config=criterion_config,
                             sample_size=sample_size,
                             alternative=alternative,
                             significance_level=significance_level,
                         )
-
-                        report_builder = PowerReportBuilder(
-                            criterion_config=criterion_config,
-                            sample_size=sample_size,
-                            alternative=alternative,
-                            significance_level=significance_level,
-                            power_result=results_criteria,
-                            results_path=self.results_path,
-                        )
-                        report_builder.build()
+                        key = (alternative.generator_name, significance_level)
+                        power_data[criterion_config.criterion_code][key][sample_size] = result
+        return power_data
 
     def _get_power_result_from_storage(
         self,

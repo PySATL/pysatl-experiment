@@ -37,6 +37,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
                 experiment_type TEXT NOT NULL,
                 storage_connection TEXT NOT NULL,
                 run_mode TEXT NOT NULL,
+                report_mode TEXT NOT NULL,
                 hypothesis TEXT NOT NULL,
                 generator_type TEXT NOT NULL,
                 executor_type TEXT NOT NULL,
@@ -50,7 +51,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
                 is_execution_done INTEGER NOT NULL DEFAULT 0,
                 is_report_building_done INTEGER NOT NULL DEFAULT 0,
                 UNIQUE(
-                    experiment_type, storage_connection, run_mode, hypothesis,
+                    experiment_type, storage_connection, run_mode, report_mode, hypothesis,
                     generator_type, executor_type, report_builder_type,
                     sample_sizes, monte_carlo_count, criteria,
                     alternatives, significance_levels
@@ -70,6 +71,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
             "experiment_type": model.experiment_type,
             "storage_connection": model.storage_connection,
             "run_mode": model.run_mode,
+            "report_mode": model.report_mode,
             "hypothesis": model.hypothesis,
             "generator_type": model.generator_type,
             "executor_type": model.executor_type,
@@ -90,6 +92,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
             experiment_type=row["experiment_type"],
             storage_connection=row["storage_connection"],
             run_mode=row["run_mode"],
+            report_mode=row["report_mode"],
             hypothesis=row["hypothesis"],
             generator_type=row["generator_type"],
             executor_type=row["executor_type"],
@@ -135,7 +138,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
                     {int(data.is_report_building_done)}
                 )
                 ON CONFLICT (
-                    experiment_type, storage_connection, run_mode, hypothesis,
+                    experiment_type, storage_connection, run_mode, report_mode, hypothesis,
                     generator_type, executor_type, report_builder_type,
                     sample_sizes, monte_carlo_count, criteria,
                     alternatives, significance_levels
@@ -157,6 +160,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
             "experiment_type": query.experiment_type,
             "storage_connection": query.storage_connection,
             "run_mode": query.run_mode,
+            "report_mode": query.report_mode,
             "hypothesis": query.hypothesis,
             "generator_type": query.generator_type,
             "executor_type": query.executor_type,
@@ -200,6 +204,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
             "experiment_type": query.experiment_type,
             "storage_connection": query.storage_connection,
             "run_mode": query.run_mode,
+            "report_mode": query.report_mode,
             "hypothesis": query.hypothesis,
             "generator_type": query.generator_type,
             "executor_type": query.executor_type,
@@ -234,6 +239,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
             "experiment_type": query.experiment_type,
             "storage_connection": query.storage_connection,
             "run_mode": query.run_mode,
+            "report_mode": query.report_mode,
             "hypothesis": query.hypothesis,
             "generator_type": query.generator_type,
             "executor_type": query.executor_type,

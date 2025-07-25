@@ -140,7 +140,9 @@ class CriticalValueExperimentFactory(
         return execution_step
 
     def _create_report_building_step(
-        self, result_storage: ILimitDistributionStorage
+        self,
+        result_storage: ILimitDistributionStorage,
+        experiment_storage: IExperimentStorage,
     ) -> CriticalValueReportBuildingStep:
         """
         Create critical value report building step.
@@ -155,6 +157,7 @@ class CriticalValueExperimentFactory(
         sample_sizes = self.experiment_data.config.sample_sizes
         monte_carlo_count = self.experiment_data.config.monte_carlo_count
         results_path = self.experiment_data.results_path
+        with_chart = self.experiment_data.config.report_mode
 
         report_building_step = CriticalValueReportBuildingStep(
             criteria_config=criteria_config,
@@ -163,6 +166,7 @@ class CriticalValueExperimentFactory(
             monte_carlo_count=monte_carlo_count,
             result_storage=result_storage,
             results_path=results_path,
+            with_chart=with_chart,
         )
 
         return report_building_step
