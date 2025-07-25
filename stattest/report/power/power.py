@@ -111,7 +111,7 @@ class PowerReportBuilder:
 
         table_data = []
         for size in self.sample_sizes:
-            data = {"size": size}
+            data: dict[str, object] = {"size": size}
             for config in self.criteria_config:
                 key = (alternative.generator_name, significance_level)
                 results = self.power_result[config.criterion_code].get(key, {}).get(size, [])

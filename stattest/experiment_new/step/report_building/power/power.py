@@ -30,7 +30,7 @@ class PowerReportBuildingStep:
         self.monte_carlo_count = monte_carlo_count
         self.result_storage = result_storage
         self.results_path = results_path
-        self.with_chart = (with_chart,)
+        self.with_chart = with_chart
 
     def run(self) -> None:
         """
@@ -57,7 +57,7 @@ class PowerReportBuildingStep:
         :return: {criterion_code -> (alt_name, alpha) -> {size: [bool]}}
         """
 
-        power_data = {}
+        power_data: dict[str, dict[tuple[str, float], dict[int, list[bool]]]] = {}
 
         for criterion_config in self.criteria_config:
             for alternative in self.alternatives:

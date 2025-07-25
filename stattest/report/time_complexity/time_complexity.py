@@ -59,7 +59,7 @@ class TimeComplexityReportBuilder:
             if not data:
                 continue
             sizes, times_list = zip(*data, strict=True)
-            sizes = np.array(sizes)
+            sizes = tuple(np.array(sizes))
             times_ms = np.array(times_list) * 1000
 
             plt.plot(sizes, times_ms, marker="o", linestyle="-", label=criterion)
