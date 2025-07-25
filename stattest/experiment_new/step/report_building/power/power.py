@@ -13,15 +13,15 @@ class PowerReportBuildingStep:
     """
 
     def __init__(
-            self,
-            criteria_config: list[CriterionConfig],
-            significance_levels: list[float],
-            alternatives: list[Alternative],
-            sample_sizes: list[int],
-            monte_carlo_count: int,
-            result_storage: IPowerStorage,
-            results_path: Path,
-            with_chart: ReportMode,
+        self,
+        criteria_config: list[CriterionConfig],
+        significance_levels: list[float],
+        alternatives: list[Alternative],
+        sample_sizes: list[int],
+        monte_carlo_count: int,
+        result_storage: IPowerStorage,
+        results_path: Path,
+        with_chart: ReportMode,
     ):
         self.criteria_config = criteria_config
         self.significance_levels = significance_levels
@@ -30,7 +30,7 @@ class PowerReportBuildingStep:
         self.monte_carlo_count = monte_carlo_count
         self.result_storage = result_storage
         self.results_path = results_path
-        self.with_chart = with_chart,
+        self.with_chart = (with_chart,)
 
     def run(self) -> None:
         """
@@ -74,11 +74,11 @@ class PowerReportBuildingStep:
         return power_data
 
     def _get_power_result_from_storage(
-            self,
-            criterion_config: CriterionConfig,
-            sample_size: int,
-            alternative: Alternative,
-            significance_level: float,
+        self,
+        criterion_config: CriterionConfig,
+        sample_size: int,
+        alternative: Alternative,
+        significance_level: float,
     ) -> list[bool]:
         """
         Get limit distribution from storage.

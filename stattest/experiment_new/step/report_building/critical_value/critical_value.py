@@ -16,14 +16,14 @@ class CriticalValueReportBuildingStep:
     """
 
     def __init__(
-            self,
-            criteria_config: list[CriterionConfig],
-            significance_levels: list[float],
-            sample_sizes: list[int],
-            monte_carlo_count: int,
-            result_storage: ILimitDistributionStorage,
-            results_path: Path,
-            with_chart: ReportMode,
+        self,
+        criteria_config: list[CriterionConfig],
+        significance_levels: list[float],
+        sample_sizes: list[int],
+        monte_carlo_count: int,
+        result_storage: ILimitDistributionStorage,
+        results_path: Path,
+        with_chart: ReportMode,
     ):
         self.criteria_config = criteria_config
         self.significance_levels = significance_levels
@@ -43,10 +43,9 @@ class CriticalValueReportBuildingStep:
             for sample_size in self.sizes:
                 cv_calculator = CVCalculator(self.result_storage)
                 for significance_level in self.significance_levels:
-                    cv_value = (cv_calculator.calculate_critical_value
-                                (criterion_config.criterion_code,
-                                 sample_size,
-                                 significance_level))
+                    cv_value = cv_calculator.calculate_critical_value(
+                        criterion_config.criterion_code, sample_size, significance_level
+                    )
 
                     cv_values.append(cv_value)
 
@@ -61,13 +60,12 @@ class CriticalValueReportBuildingStep:
         report_builder.build()
 
     def _get_limit_distribution_from_storage(
-            self,
-            storage: ILimitDistributionStorage,
-            criterion_config: CriterionConfig,
-            sample_size: int,
-            monte_carlo_count: int,
+        self,
+        storage: ILimitDistributionStorage,
+        criterion_config: CriterionConfig,
+        sample_size: int,
+        monte_carlo_count: int,
     ) -> list[float]:
-
         """Get limit distribution from storage.
 
         :param storage: storage.

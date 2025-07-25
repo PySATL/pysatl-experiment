@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 
 from xhtml2pdf import pisa
 
@@ -32,4 +32,4 @@ def get_criterion_names(criteria_config: list[CriterionConfig]) -> list[str]:
     :return: list of criterion names.
     """
 
-    return [c.criterion_code.partition('_')[0] for c in criteria_config]
+    return [c.criterion_code.partition("_")[0] for c in criteria_config]

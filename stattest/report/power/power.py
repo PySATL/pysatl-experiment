@@ -18,14 +18,14 @@ class PowerReportBuilder:
     """
 
     def __init__(
-            self,
-            criteria_config: list[CriterionConfig],
-            sample_sizes: list[int],
-            alternatives: list[Alternative],
-            significance_levels: list[float],
-            power_result: dict[str, dict[tuple[str, float], dict[int, list[bool]]]],
-            results_path: Path,
-            with_chart: ReportMode,
+        self,
+        criteria_config: list[CriterionConfig],
+        sample_sizes: list[int],
+        alternatives: list[Alternative],
+        significance_levels: list[float],
+        power_result: dict[str, dict[tuple[str, float], dict[int, list[bool]]]],
+        results_path: Path,
+        with_chart: ReportMode,
     ):
         self.criteria_config = criteria_config
         self.sample_sizes = sample_sizes
@@ -38,8 +38,7 @@ class PowerReportBuilder:
         template_dir = Path(__file__).parents[1] / "report_templates/power"
         self.pdf_path = self.results_path / "power_report.pdf"
 
-        self.template_env = Environment(loader=FileSystemLoader(template_dir),
-                                        autoescape=True)
+        self.template_env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
 
     def build(self) -> None:
         """
@@ -70,19 +69,23 @@ class PowerReportBuilder:
                 chart_data = None
                 if self.with_chart == ReportMode.WITH_CHART:
                     try:
-                        chart_data = self._generate_chart_data(alternative,
-                                                               significance_level,
-                                                               charts_dir)
+                        chart_data = self._generate_chart_data(
+                            alternative, significance_level, charts_dir
+                        )
                     except Exception as e:
-                        print(f"Failed to generate chart for {alternative.generator_name}, "
-                              f"α={significance_level}: {e}")
+                        print(
+                            f"Failed to generate chart for {alternative.generator_name}, "
+                            f"α={significance_level}: {e}"
+                        )
                         chart_data = None
-                tables.append({
-                    "alternative": alternative,
-                    "significance_level": significance_level,
-                    "table": table_data,
-                    "chart": chart_data
-                })
+                tables.append(
+                    {
+                        "alternative": alternative,
+                        "significance_level": significance_level,
+                        "table": table_data,
+                        "chart": chart_data,
+                    }
+                )
 
         html = self.template_env.get_template("power_report.html").render(
             tables=tables,
@@ -93,9 +96,9 @@ class PowerReportBuilder:
         return html
 
     def _generate_table_data(
-            self,
-            alternative: Alternative,
-            significance_level: float,
+        self,
+        alternative: Alternative,
+        significance_level: float,
     ) -> list[dict]:
         """
         Generate table for one (alternative, alpha) pair.
@@ -113,15 +116,15 @@ class PowerReportBuilder:
                 key = (alternative.generator_name, significance_level)
                 results = self.power_result[config.criterion_code].get(key, {}).get(size, [])
                 power = np.mean(results) if results else 0.0
-                data[config.criterion_code.partition('_')[0]] = round(power, 3)
+                data[config.criterion_code.partition("_")[0]] = round(power, 3)
             table_data.append(data)
         return table_data
 
     def _generate_chart_data(
-            self,
-            alternative: Alternative,
-            significance_level: float,
-            charts_dir: Path,
+        self,
+        alternative: Alternative,
+        significance_level: float,
+        charts_dir: Path,
     ) -> str:
         """
         Generate a line chart: power vs sample size for each criterion.
@@ -147,22 +150,16 @@ class PowerReportBuilder:
                     sizes.append(size)
                     powers.append(np.mean(results))
             if sizes:
-                plt.plot(
-                    sizes,
-                    powers,
-                    marker='o',
-                    linestyle='-',
-                    label=config.criterion_code
-                )
+                plt.plot(sizes, powers, marker="o", linestyle="-", label=config.criterion_code)
 
         plt.xlabel("Sample size")
         plt.ylabel("Power")
         plt.title(f"Power vs Sample Size — {alternative.generator_name}, α={significance_level}")
-        plt.grid(True, linestyle='--', alpha=0.5)
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='small')
+        plt.grid(True, linestyle="--", alpha=0.5)
+        plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize="small")
         plt.tight_layout(rect=(0, 0, 0.85, 1))
 
-        plt.savefig(chart_path, format="png", dpi=100, bbox_inches='tight')
+        plt.savefig(chart_path, format="png", dpi=100, bbox_inches="tight")
         plt.close()
 
         return str(chart_path.resolve().as_posix())

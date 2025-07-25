@@ -110,10 +110,10 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     @abstractmethod
     def _create_execution_step(
-            self,
-            data_storage: IRandomValuesStorage,
-            result_storage: RS,
-            experiment_storage: IExperimentStorage,
+        self,
+        data_storage: IRandomValuesStorage,
+        result_storage: RS,
+        experiment_storage: IExperimentStorage,
     ) -> E:
         """
         Create execution step.
@@ -128,9 +128,8 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     @abstractmethod
     def _create_report_building_step(
-            self,
-            result_storage: RS,
-            experiment_storage: IExperimentStorage) -> R:
+        self, result_storage: RS, experiment_storage: IExperimentStorage
+    ) -> R:
         """
         Create report building step.
 
@@ -302,10 +301,10 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             result_storage.delete_data(query)
 
     def _create_critical_value_queries(
-            self,
-            statistics_codes: list[str],
-            sample_sizes: list[int],
-            monte_carlo_count: int,
+        self,
+        statistics_codes: list[str],
+        sample_sizes: list[int],
+        monte_carlo_count: int,
     ) -> list[LimitDistributionQuery]:
         """
         Create critical values queries.
@@ -331,10 +330,10 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         return queries
 
     def _create_time_complexity_queries(
-            self,
-            statistics_codes: list[str],
-            sample_sizes: list[int],
-            monte_carlo_count: int,
+        self,
+        statistics_codes: list[str],
+        sample_sizes: list[int],
+        monte_carlo_count: int,
     ) -> list[TimeComplexityQuery]:
         """
         Create time complexity queries.
@@ -360,10 +359,10 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         return queries
 
     def _create_power_queries(
-            self,
-            statistics_codes: list[str],
-            sample_sizes: list[int],
-            monte_carlo_count: int,
+        self,
+        statistics_codes: list[str],
+        sample_sizes: list[int],
+        monte_carlo_count: int,
     ) -> list[PowerQuery]:
         """
         Create power queries.
@@ -496,7 +495,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             raise ValueError(f"Unsupported experiment type: {experiment_type}")
 
     def _get_generator_class_object(
-            self, generator_name: str, generator_parameters: list[float]
+        self, generator_name: str, generator_parameters: list[float]
     ) -> AbstractRVSGenerator:
         """
         Get generator class object by name and parameters.

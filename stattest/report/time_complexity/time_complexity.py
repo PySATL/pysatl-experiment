@@ -18,13 +18,12 @@ class TimeComplexityReportBuilder:
     """
 
     def __init__(
-            self,
-            criteria_config: list[CriterionConfig],
-            sample_sizes: list[int],
-            times: dict[str, list[tuple[int, float]]],
-            results_path: Path,
-            with_chart: ReportMode,
-
+        self,
+        criteria_config: list[CriterionConfig],
+        sample_sizes: list[int],
+        times: dict[str, list[tuple[int, float]]],
+        results_path: Path,
+        with_chart: ReportMode,
     ):
         self.criteria_config = criteria_config
         self.sample_sizes = sample_sizes
@@ -33,8 +32,7 @@ class TimeComplexityReportBuilder:
         self.with_chart = with_chart
 
         template_dir = Path(__file__).parents[1] / "report_templates/time_complexity"
-        self.template_env = Environment(loader=FileSystemLoader(template_dir),
-                                        autoescape=True)
+        self.template_env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
 
     def build(self) -> None:
         """
@@ -64,35 +62,35 @@ class TimeComplexityReportBuilder:
             sizes = np.array(sizes)
             times_ms = np.array(times_list) * 1000
 
-            plt.plot(sizes, times_ms, marker='o', linestyle='-', label=criterion)
+            plt.plot(sizes, times_ms, marker="o", linestyle="-", label=criterion)
 
-        plt.xlabel('Sample Size')
-        plt.ylabel('Time (ms)')
-        plt.title('Time Complexity of Criteria')
-        plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+        plt.xlabel("Sample Size")
+        plt.ylabel("Time (ms)")
+        plt.title("Time Complexity of Criteria")
+        plt.grid(True, which="both", linestyle="--", linewidth=0.5)
         plt.legend(
             bbox_to_anchor=(1.02, 1),
-            loc='upper left',
-            fontsize='medium',
+            loc="upper left",
+            fontsize="medium",
             frameon=True,
             fancybox=False,
             shadow=False,
             borderaxespad=0.0,
             handlelength=1.5,
-            columnspacing=1.0
+            columnspacing=1.0,
         )
 
         plt.minorticks_on()
-        plt.tick_params(which='minor', width=0.5, length=2, color='gray')
-        plt.tick_params(which='major', length=6, width=1)
+        plt.tick_params(which="minor", width=0.5, length=2, color="gray")
+        plt.tick_params(which="major", length=6, width=1)
         plt.tight_layout(rect=(0, 0, 0.85, 1))
 
-        plt.savefig(buf, format='png', dpi=150)
+        plt.savefig(buf, format="png", dpi=150)
         plt.close()
 
         buf.seek(0)
         image_data = buf.read()
-        image_base64 = base64.b64encode(image_data).decode('utf-8')
+        image_base64 = base64.b64encode(image_data).decode("utf-8")
         buf.close()
 
         return f"data:image/png;base64,{image_base64}"

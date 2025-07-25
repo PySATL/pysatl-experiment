@@ -56,7 +56,7 @@ def mock_criterion_config(mock_criterion, mock_statistics_class):
     return CriterionConfig(
         criterion=mock_criterion,
         criterion_code="KS_",
-        statistics_class_object=mock_statistics_class
+        statistics_class_object=mock_statistics_class,
     )
 
 
@@ -92,19 +92,12 @@ def cv_values():
 
 @pytest.fixture
 def time_data():
-    return {
-        "KS_": [(10, 0.001), (20, 0.002)],
-        "AD_": [(10, 0.0015), (20, 0.0025)]
-    }
+    return {"KS_": [(10, 0.001), (20, 0.002)], "AD_": [(10, 0.0015), (20, 0.0025)]}
 
 
 @pytest.fixture
 def power_data():
     return {
-        "KS_": {
-            ("Normal", 0.05): {10: [True, False, True], 20: [True, True, False]}
-        },
-        "AD_": {
-            ("Normal", 0.05): {10: [False, False, False], 20: [True, False, False]}
-        }
+        "KS_": {("Normal", 0.05): {10: [True, False, True], 20: [True, True, False]}},
+        "AD_": {("Normal", 0.05): {10: [False, False, False], 20: [True, False, False]}},
     }

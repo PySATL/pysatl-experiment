@@ -1,4 +1,4 @@
-﻿from io import BytesIO
+from io import BytesIO
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -9,7 +9,7 @@ from stattest.report.time_complexity.time_complexity import TimeComplexityReport
 
 class TestTimeComplexityReportBuilder:
     def test_init_stores_attributes_correctly(
-            self, mock_criterion_config, time_data, results_path, with_chart
+        self, mock_criterion_config, time_data, results_path, with_chart
     ):
         criteria = [mock_criterion_config]
         sample_sizes = [10, 20, 30]
@@ -32,7 +32,7 @@ class TestTimeComplexityReportBuilder:
     @patch("stattest.report.time_complexity.time_complexity.plt.savefig")
     @patch("stattest.report.time_complexity.time_complexity.plt.close")
     def test_generate_chart_creates_and_encodes_image(
-            self, mock_plt_close, mock_plt_savefig, mock_criterion_config, time_data, results_path
+        self, mock_plt_close, mock_plt_savefig, mock_criterion_config, time_data, results_path
     ):
         builder = TimeComplexityReportBuilder(
             criteria_config=[mock_criterion_config],
@@ -54,18 +54,18 @@ class TestTimeComplexityReportBuilder:
 
                 result = builder._generate_chart()
 
-                mock_plt_savefig.assert_called_once_with(mock_buf_instance, format='png', dpi=150)
+                mock_plt_savefig.assert_called_once_with(mock_buf_instance, format="png", dpi=150)
                 mock_plt_close.assert_called_once()
                 mock_buf_instance.seek.assert_called_once_with(0)
                 mock_buf_instance.read.assert_called_once()
 
                 mock_base64.b64encode.assert_called_once_with(mock_buf_instance.read.return_value)
-                mock_base64.b64encode.return_value.decode.assert_called_once_with('utf-8')
+                mock_base64.b64encode.return_value.decode.assert_called_once_with("utf-8")
 
                 assert result == "data:image/png;base64,encoded_fake_data"
 
     def test_generate_html_includes_chart_when_with_chart(
-            self, mock_criterion_config, time_data, results_path
+        self, mock_criterion_config, time_data, results_path
     ):
         builder = TimeComplexityReportBuilder(
             criteria_config=[mock_criterion_config],
@@ -77,9 +77,12 @@ class TestTimeComplexityReportBuilder:
 
         mock_template = MagicMock()
         mock_template.render.return_value = "<html>With Chart</html>"
-        with (patch.object(builder.template_env, 'get_template', return_value=mock_template),
-              patch.object(builder, '_generate_chart', return_value="fake_data_url")
-              as mock_gen_chart):
+        with (
+            patch.object(builder.template_env, "get_template", return_value=mock_template),
+            patch.object(
+                builder, "_generate_chart", return_value="fake_data_url"
+            ) as mock_gen_chart,
+        ):
             html_content = builder._generate_html()
 
             mock_gen_chart.assert_called_once()
@@ -90,7 +93,7 @@ class TestTimeComplexityReportBuilder:
             assert html_content == "<html>With Chart</html>"
 
     def test_generate_html_excludes_chart_when_without_chart(
-            self, mock_criterion_config, time_data, results_path
+        self, mock_criterion_config, time_data, results_path
     ):
         builder = TimeComplexityReportBuilder(
             criteria_config=[mock_criterion_config],
@@ -102,9 +105,10 @@ class TestTimeComplexityReportBuilder:
 
         mock_template = MagicMock()
         mock_template.render.return_value = "<html>Without Chart</html>"
-        with patch.object(builder.template_env, 'get_template', return_value=mock_template), \
-                patch.object(builder, '_generate_chart') as mock_gen_chart:
-
+        with (
+            patch.object(builder.template_env, "get_template", return_value=mock_template),
+            patch.object(builder, "_generate_chart") as mock_gen_chart,
+        ):
             html_content = builder._generate_html()
 
             mock_gen_chart.assert_not_called()
@@ -115,7 +119,7 @@ class TestTimeComplexityReportBuilder:
             assert html_content == "<html>Without Chart</html>"
 
     def test_generate_html_handles_chart_generation_failure(
-            self, mock_criterion_config, time_data, results_path, capsys
+        self, mock_criterion_config, time_data, results_path, capsys
     ):
         builder = TimeComplexityReportBuilder(
             criteria_config=[mock_criterion_config],
@@ -127,8 +131,10 @@ class TestTimeComplexityReportBuilder:
 
         mock_template = MagicMock()
         mock_template.render.return_value = "<html>Chart Failed</html>"
-        with patch.object(builder.template_env, 'get_template', return_value=mock_template), \
-                patch.object(builder, '_generate_chart', side_effect=Exception("Chart gen failed")):
+        with (
+            patch.object(builder.template_env, "get_template", return_value=mock_template),
+            patch.object(builder, "_generate_chart", side_effect=Exception("Chart gen failed")),
+        ):
             html_content = builder._generate_html()
 
             mock_template.render.assert_called_once()
@@ -140,7 +146,7 @@ class TestTimeComplexityReportBuilder:
     @pytest.mark.parametrize("chart_mode", [ReportMode.WITH_CHART, ReportMode.WITHOUT_CHART])
     @patch("stattest.report.time_complexity.time_complexity.convert_html_to_pdf")
     def test_build_creates_pdf_file(
-            self, mock_convert, chart_mode, mock_criterion_config, time_data, results_path
+        self, mock_convert, chart_mode, mock_criterion_config, time_data, results_path
     ):
         builder = TimeComplexityReportBuilder(
             criteria_config=[mock_criterion_config],
@@ -150,11 +156,13 @@ class TestTimeComplexityReportBuilder:
             with_chart=chart_mode,
         )
 
-        with (patch.object(builder, '_generate_html', return_value="<html>Content</html>")
-              as mock_gen_html):
+        with patch.object(
+            builder, "_generate_html", return_value="<html>Content</html>"
+        ) as mock_gen_html:
             builder.build()
 
             mock_gen_html.assert_called_once()
-            mock_convert.assert_called_once_with("<html>Content</html>",
-                                                 results_path / "time_complexity_report.pdf")
+            mock_convert.assert_called_once_with(
+                "<html>Content</html>", results_path / "time_complexity_report.pdf"
+            )
             assert (results_path / "time_complexity_report.pdf").parent.exists()

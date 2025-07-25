@@ -139,8 +139,8 @@ class TimeComplexityExperimentFactory(
 
     def _create_report_building_step(
         self,
-            result_storage: ITimeComplexityStorage,
-            experiment_storage: IExperimentStorage,
+        result_storage: ITimeComplexityStorage,
+        experiment_storage: IExperimentStorage,
     ) -> TimeComplexityReportBuildingStep:
         """
         Create time complexity report building step.

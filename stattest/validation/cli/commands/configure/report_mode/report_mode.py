@@ -1,4 +1,4 @@
-﻿from click import BadParameter
+from click import BadParameter
 
 from stattest.cli.commands.common.common import list_possible_parameter_values
 from stattest.configuration.model.report_mode.report_mode import ReportMode

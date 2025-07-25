@@ -17,13 +17,13 @@ class CriticalValueReportBuilder:
     """
 
     def __init__(
-            self,
-            criteria_config: list[CriterionConfig],
-            sample_sizes: list[int],
-            significance_levels: list[float],
-            cv_values: list[float],
-            results_path: Path,
-            with_chart: ReportMode,
+        self,
+        criteria_config: list[CriterionConfig],
+        sample_sizes: list[int],
+        significance_levels: list[float],
+        cv_values: list[float],
+        results_path: Path,
+        with_chart: ReportMode,
     ):
         self.criteria_config = criteria_config
         self.sizes = sample_sizes
@@ -35,8 +35,7 @@ class CriticalValueReportBuilder:
         template_dir = Path(__file__).parents[1] / "report_templates/critical_values"
         self.pdf_path = self.results_path / "critical_values_report.pdf"
 
-        self.template_env = Environment(loader=FileSystemLoader(template_dir),
-                                        autoescape=True)
+        self.template_env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
 
     def build(self) -> None:
         """
@@ -71,12 +70,14 @@ class CriticalValueReportBuilder:
                     print(f"Failed to generate chart for {config.criterion_code}: {e}")
                     chart_data = None
 
-            tables.append({
-                'title': f"Criterion: {config.criterion_code}",
-                'levels': [f"α = {alpha}" for alpha in self.significance_levels],
-                'rows': table_data['rows'],
-                'chart': chart_data
-            })
+            tables.append(
+                {
+                    "title": f"Criterion: {config.criterion_code}",
+                    "levels": [f"α = {alpha}" for alpha in self.significance_levels],
+                    "rows": table_data["rows"],
+                    "chart": chart_data,
+                }
+            )
 
         html = self.template_env.get_template("cv_template.html").render(
             tables=tables,
@@ -95,24 +96,19 @@ class CriticalValueReportBuilder:
         """
 
         values = next(
-            values for cfg, values in zip(
-                self.criteria_config,
-                self._chunk_cv_values(),
-                strict=True
-            ) if cfg.criterion_code == criterion_code
+            values
+            for cfg, values in zip(self.criteria_config, self._chunk_cv_values(), strict=True)
+            if cfg.criterion_code == criterion_code
         )
 
         values_2d = np.array(values).reshape(len(self.sizes), len(self.significance_levels))
 
         rows = []
         for i, size in enumerate(self.sizes):
-            row = {
-                'size': size,
-                'values': [float(val) for val in values_2d[i]]
-            }
+            row = {"size": size, "values": [float(val) for val in values_2d[i]]}
             rows.append(row)
 
-        return {'rows': rows}
+        return {"rows": rows}
 
     def _generate_chart_data(self, criterion_code: str, charts_dir: Path) -> str:
         """
@@ -130,31 +126,26 @@ class CriticalValueReportBuilder:
 
         chunked_values = self._chunk_cv_values()
 
-        idx = next(i for i, cfg in enumerate(self.criteria_config)
-                   if cfg.criterion_code == criterion_code)
+        idx = next(
+            i for i, cfg in enumerate(self.criteria_config) if cfg.criterion_code == criterion_code
+        )
         values = chunked_values[idx]
         values_2d = np.array(values).reshape(len(self.sizes), len(self.significance_levels))
 
         for j, alpha in enumerate(self.significance_levels):
             cv_values = values_2d[:, j]
-            plt.plot(
-                self.sizes,
-                cv_values,
-                marker='o',
-                linestyle='-',
-                label=f"α = {alpha}"
-            )
+            plt.plot(self.sizes, cv_values, marker="o", linestyle="-", label=f"α = {alpha}")
 
         plt.xlabel("Sample Size")
         plt.ylabel("Critical Value")
         plt.title(f"Critical Value vs Sample Size — {criterion_code}")
-        plt.grid(True, linestyle='--', alpha=0.5)
+        plt.grid(True, linestyle="--", alpha=0.5)
 
-        plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', fontsize='small')
+        plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", fontsize="small")
 
         plt.tight_layout(rect=(0, 0, 0.85, 1))
 
-        plt.savefig(chart_path, format='png', dpi=150, bbox_inches='tight')
+        plt.savefig(chart_path, format="png", dpi=150, bbox_inches="tight")
         plt.close()
 
         return str(chart_path.resolve().as_posix())
@@ -168,6 +159,5 @@ class CriticalValueReportBuilder:
 
         chunk_size = len(self.sizes) * len(self.significance_levels)
         return [
-            self.cv_values[i:i + chunk_size]
-            for i in range(0, len(self.cv_values), chunk_size)
+            self.cv_values[i : i + chunk_size] for i in range(0, len(self.cv_values), chunk_size)
         ]
