@@ -140,9 +140,7 @@ class CriticalValueExperimentFactory(
         return execution_step
 
     def _create_report_building_step(
-        self,
-        result_storage: ILimitDistributionStorage,
-        experiment_storage: IExperimentStorage,
+        self, result_storage: ILimitDistributionStorage
     ) -> CriticalValueReportBuildingStep:
         """
         Create critical value report building step.

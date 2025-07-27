@@ -134,7 +134,6 @@ class PowerExperimentFactory(
     def _create_report_building_step(
         self,
         result_storage: IPowerStorage,
-        experiment_storage: IExperimentStorage,
     ) -> PowerReportBuildingStep:
         """
         Create power report building step.
