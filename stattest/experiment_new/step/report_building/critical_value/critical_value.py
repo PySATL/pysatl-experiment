@@ -1,10 +1,12 @@
 from pathlib import Path
 
+from pysatl_criterion.cv_calculator.cv_calculator.cv_calculator import CVCalculator
 from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import (
     ILimitDistributionStorage,
     LimitDistributionQuery,
 )
 from stattest.configuration.criteria_config.criteria_config import CriterionConfig
+from stattest.configuration.model.report_mode.report_mode import ReportMode
 from stattest.report.critical_value.critical_value import CriticalValueReportBuilder
 
 
@@ -21,36 +23,41 @@ class CriticalValueReportBuildingStep:
         monte_carlo_count: int,
         result_storage: ILimitDistributionStorage,
         results_path: Path,
+        with_chart: ReportMode,
     ):
         self.criteria_config = criteria_config
         self.significance_levels = significance_levels
-        self.sizes = sample_sizes
+        self.sizes = sorted(sample_sizes)
         self.monte_carlo_count = monte_carlo_count
         self.result_storage = result_storage
         self.results_path = results_path
+        self.with_chart = with_chart
 
     def run(self) -> None:
         """
         Run standard critical value report building step.
         """
 
+        cv_values = []
         for criterion_config in self.criteria_config:
             for sample_size in self.sizes:
-                limit_distribution = self._get_limit_distribution_from_storage(
-                    storage=self.result_storage,
-                    criterion_config=criterion_config,
-                    sample_size=sample_size,
-                    monte_carlo_count=self.monte_carlo_count,
-                )
+                cv_calculator = CVCalculator(self.result_storage)
                 for significance_level in self.significance_levels:
-                    report_builder = CriticalValueReportBuilder(
-                        criterion_config=criterion_config,
-                        sample_size=sample_size,
-                        significance_level=significance_level,
-                        limit_distribution=limit_distribution,
-                        results_path=self.results_path,
+                    cv_value = cv_calculator.calculate_critical_value(
+                        criterion_config.criterion_code, sample_size, significance_level
                     )
-                    report_builder.build()
+
+                    cv_values.append(cv_value)
+
+        report_builder = CriticalValueReportBuilder(
+            criteria_config=self.criteria_config,
+            sample_sizes=self.sizes,
+            significance_levels=self.significance_levels,
+            cv_values=cv_values,
+            results_path=self.results_path,
+            with_chart=self.with_chart,
+        )
+        report_builder.build()
 
     def _get_limit_distribution_from_storage(
         self,
@@ -59,16 +66,14 @@ class CriticalValueReportBuildingStep:
         sample_size: int,
         monte_carlo_count: int,
     ) -> list[float]:
-        """
-        Get limit distribution from storage.
+        """Get limit distribution from storage.
 
         :param storage: storage.
         :param criterion_config: criterion configuration.
         :param sample_size: sample size.
         :param monte_carlo_count: monte carlo count.
 
-        :return: limit distribution.
-        """
+        :return: limit distribution."""
 
         query = LimitDistributionQuery(
             criterion_code=criterion_config.criterion_code,

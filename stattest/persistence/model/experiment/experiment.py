@@ -13,6 +13,7 @@ class ExperimentModel(DataModel):
     experiment_type: str
     storage_connection: str
     run_mode: str
+    report_mode: str
     hypothesis: str
     generator_type: str
     executor_type: str
@@ -41,6 +42,7 @@ class ExperimentQuery(DataQuery):
     criteria: dict[str, list[float]]
     alternatives: dict[str, list[float]]
     significance_levels: list[float]
+    report_mode: str
 
 
 class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], Protocol):

@@ -424,6 +424,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             experiment_type=experiment_type.value,
             storage_connection=config.storage_connection,
             run_mode=config.run_mode.value,
+            report_mode=config.report_mode.value,
             hypothesis=config.hypothesis.value,
             generator_type=config.generator_type.value,
             executor_type=config.executor_type.value,

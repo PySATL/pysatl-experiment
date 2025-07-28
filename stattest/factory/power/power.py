@@ -132,7 +132,8 @@ class PowerExperimentFactory(
         return execution_step
 
     def _create_report_building_step(
-        self, result_storage: IPowerStorage
+        self,
+        result_storage: IPowerStorage,
     ) -> PowerReportBuildingStep:
         """
         Create power report building step.
@@ -148,6 +149,7 @@ class PowerExperimentFactory(
         monte_carlo_count = self.experiment_data.config.monte_carlo_count
         results_path = self.experiment_data.results_path
         alternatives = self.experiment_data.config.alternatives
+        with_chart = self.experiment_data.config.report_mode
 
         report_building_step = PowerReportBuildingStep(
             criteria_config=criteria_config,
@@ -157,6 +159,7 @@ class PowerExperimentFactory(
             monte_carlo_count=monte_carlo_count,
             result_storage=result_storage,
             results_path=results_path,
+            with_chart=with_chart,
         )
 
         return report_building_step
