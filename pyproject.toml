@@ -32,7 +32,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 package-mode = true
-packages = [{include = "stattest"}]
+packages = [{include = "pysatl_experiment"}]
 
 [tool.poetry.group.dev.dependencies]
 markdown = "3.8"
@@ -91,4 +91,4 @@ exclude = [".git", "__pycache__", ".eggs", "user_data", ".venv", ".env"]
 ]
 
 [tool.poetry.scripts]
-experiment = "stattest.cli.cli.cli:cli"
+experiment = "pysatl_experiment.cli.cli.cli:cli"
