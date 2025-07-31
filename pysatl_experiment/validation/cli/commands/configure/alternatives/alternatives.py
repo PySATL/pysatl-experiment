@@ -26,9 +26,7 @@ def validate_alternatives(alternatives: tuple[str], experiment_type: str) -> lis
         param_names, param_count = _get_generator_parameter_names_and_count(generator_name, generator_by_name)
 
         if len(parameters) != param_count:
-            raise BadParameter(
-                f"Generator '{generator_name}' needs {param_count} parameters, " f"got {len(parameters)}."
-            )
+            raise BadParameter(f"Generator '{generator_name}' needs {param_count} parameters, got {len(parameters)}.")
 
         alternative_data = {"generator_name": generator_name_upper, "parameters": parameters}
 

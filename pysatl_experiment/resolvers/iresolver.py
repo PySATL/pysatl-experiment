@@ -177,8 +177,7 @@ class IResolver:
                 )
                 if module:
                     logger.info(
-                        f"Using resolved {cls.object_type.__name__.lower()[1:]} "
-                        f"{object_name} from '{module_path}'..."
+                        f"Using resolved {cls.object_type.__name__.lower()[1:]} {object_name} from '{module_path}'..."
                     )
                     return module(**kwargs)
             except FileNotFoundError:
@@ -210,7 +209,7 @@ class IResolver:
             module = getattr(importlib.import_module(module_name), object_name)
             if module:
                 logger.info(
-                    f"Using resolved {cls.object_type.__name__.lower()[1:]} " f"{object_name} from '{module_name}'..."
+                    f"Using resolved {cls.object_type.__name__.lower()[1:]} {object_name} from '{module_name}'..."
                 )
                 return module(**kwargs)
         except FileNotFoundError:

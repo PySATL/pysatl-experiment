@@ -71,10 +71,7 @@ class PowerReportBuilder:
                     try:
                         chart_data = self._generate_chart_data(alternative, significance_level, charts_dir)
                     except Exception as e:
-                        print(
-                            f"Failed to generate chart for {alternative.generator_name}, "
-                            f"α={significance_level}: {e}"
-                        )
+                        print(f"Failed to generate chart for {alternative.generator_name}, α={significance_level}: {e}")
                         chart_data = None
                 tables.append(
                     {
