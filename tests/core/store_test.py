@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from stattest.persistence.file_store.store import JsonStoreService
+from pysatl_experiment.persistence.file_store.store import JsonStoreService
 
 
 filename = "cache.json"

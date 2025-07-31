@@ -3,24 +3,24 @@ import math
 import numpy as np
 import pytest
 
-from stattest.core.distribution.beta import generate_beta
-from stattest.core.distribution.cauchy import generate_cauchy
-from stattest.core.distribution.chi2 import generate_chi2
-from stattest.core.distribution.expon import generate_expon
-from stattest.core.distribution.gamma import generate_gamma
-from stattest.core.distribution.gumbel import generate_gumbel
-from stattest.core.distribution.laplace import generate_laplace
-from stattest.core.distribution.lo_con_norm import generate_lo_con_norm
-from stattest.core.distribution.logistic import generate_logistic
-from stattest.core.distribution.lognormal import generate_lognorm
-from stattest.core.distribution.mix_con_norm import generate_mix_con_norm
-from stattest.core.distribution.norm import generate_norm
-from stattest.core.distribution.scale_con_norm import generate_scale_con_norm
-from stattest.core.distribution.student import generate_t
-from stattest.core.distribution.truncnormal import generate_truncnorm
-from stattest.core.distribution.tukey import generate_tukey
-from stattest.core.distribution.uniform import generate_uniform
-from stattest.core.distribution.weibull import generate_weibull
+from pysatl_experiment.core.distribution.beta import generate_beta
+from pysatl_experiment.core.distribution.cauchy import generate_cauchy
+from pysatl_experiment.core.distribution.chi2 import generate_chi2
+from pysatl_experiment.core.distribution.expon import generate_expon
+from pysatl_experiment.core.distribution.gamma import generate_gamma
+from pysatl_experiment.core.distribution.gumbel import generate_gumbel
+from pysatl_experiment.core.distribution.laplace import generate_laplace
+from pysatl_experiment.core.distribution.lo_con_norm import generate_lo_con_norm
+from pysatl_experiment.core.distribution.logistic import generate_logistic
+from pysatl_experiment.core.distribution.lognormal import generate_lognorm
+from pysatl_experiment.core.distribution.mix_con_norm import generate_mix_con_norm
+from pysatl_experiment.core.distribution.norm import generate_norm
+from pysatl_experiment.core.distribution.scale_con_norm import generate_scale_con_norm
+from pysatl_experiment.core.distribution.student import generate_t
+from pysatl_experiment.core.distribution.truncnormal import generate_truncnorm
+from pysatl_experiment.core.distribution.tukey import generate_tukey
+from pysatl_experiment.core.distribution.uniform import generate_uniform
+from pysatl_experiment.core.distribution.weibull import generate_weibull
 
 
 @pytest.mark.skip(reason="no way of currently testing this")

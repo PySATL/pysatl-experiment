@@ -24,15 +24,15 @@ from pysatl_criterion.statistics.weibull import (
     TikuSinghWeibullGofStatistic,
     WatsonWeibullGofStatistic,
 )
-from stattest.experiment import Experiment
-from stattest.experiment.configuration.configuration import (
+from pysatl_experiment.experiment import Experiment
+from pysatl_experiment.experiment.configuration.configuration import (
     AlternativeConfiguration,
     ExperimentConfiguration,
     ReportConfiguration,
     TestConfiguration,
 )
-from stattest.experiment.generator import WeibullGenerator
-from stattest.experiment.generator.generators import (
+from pysatl_experiment.experiment.generator import WeibullGenerator
+from pysatl_experiment.experiment.generator.generators import (
     ExponentialGenerator,
     GammaGenerator,
     GompertzGenerator,
@@ -40,12 +40,12 @@ from stattest.experiment.generator.generators import (
     LognormGenerator,
     RiceGenerator,
 )
-from stattest.experiment.hypothesis import WeibullHypothesis
-from stattest.experiment.listener.listeners import TimeEstimationListener
-from stattest.experiment.report.model import PdfPowerReportBuilder
-from stattest.experiment.test.worker import PowerCalculationWorker
-from stattest.persistence.db_store import CriticalValueDbStore, RvsDbStore
-from stattest.persistence.db_store.result_store import ResultDbStore
+from pysatl_experiment.experiment.hypothesis import WeibullHypothesis
+from pysatl_experiment.experiment.listener.listeners import TimeEstimationListener
+from pysatl_experiment.experiment.report.model import PdfPowerReportBuilder
+from pysatl_experiment.experiment.test.worker import PowerCalculationWorker
+from pysatl_experiment.persistence.db_store import CriticalValueDbStore, RvsDbStore
+from pysatl_experiment.persistence.db_store.result_store import ResultDbStore
 
 
 if __name__ == "__main__":
@@ -132,9 +132,7 @@ if __name__ == "__main__":
         skip_step=True,
     )
 
-    power_calculation_worker = PowerCalculationWorker(
-        0.05, 100_000, critical_value_store, hypothesis=hypothesis
-    )
+    power_calculation_worker = PowerCalculationWorker(0.05, 100_000, critical_value_store, hypothesis=hypothesis)
     test_configuration = TestConfiguration(
         tests,
         threads=test_threads,

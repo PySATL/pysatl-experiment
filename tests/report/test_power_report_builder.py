@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from stattest.configuration.model.report_mode.report_mode import ReportMode
-from stattest.report.power.power import PowerReportBuilder
+from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
+from pysatl_experiment.report.power.power import PowerReportBuilder
 
 
 class TestPowerReportBuilder:
@@ -66,8 +66,8 @@ class TestPowerReportBuilder:
         assert row_size_20["KS"] == pytest.approx(2 / 3, 0.01)
         assert row_size_20["AD"] == pytest.approx(1 / 3, 0.01)
 
-    @patch("stattest.report.power.power.plt.savefig")
-    @patch("stattest.report.power.power.plt.close")
+    @patch("pysatl_experiment.report.power.power.plt.savefig")
+    @patch("pysatl_experiment.report.power.power.plt.close")
     def test_generate_chart_data_creates_file_and_returns_path(
         self,
         mock_close,
@@ -102,7 +102,7 @@ class TestPowerReportBuilder:
                 assert result_path == str(chart_path)
 
     @pytest.mark.parametrize("chart_mode", [ReportMode.WITH_CHART, ReportMode.WITHOUT_CHART])
-    @patch("stattest.report.power.power.convert_html_to_pdf")
+    @patch("pysatl_experiment.report.power.power.convert_html_to_pdf")
     def test_build_calls_convert_html_to_pdf(
         self,
         mock_convert,
