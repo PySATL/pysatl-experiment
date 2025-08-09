@@ -1,4 +1,4 @@
-from stattest.experiment.listener.listeners import TimeEstimationListener
+from pysatl_experiment.experiment.listener.listeners import TimeEstimationListener
 
 
 def test_time_estimation_before():

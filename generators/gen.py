@@ -1,5 +1,5 @@
-from stattest.core.distribution.beta import generate_beta
-from stattest.experiment.generator import AbstractRVSGenerator
+from pysatl_experiment.core.distribution.beta import generate_beta
+from pysatl_experiment.experiment.generator import AbstractRVSGenerator
 
 
 class BBBRVSGenerator(AbstractRVSGenerator):

@@ -7,25 +7,25 @@ from pysatl_criterion.statistics.normal import (
     GraphMaxDegreeNormalityGofStatistic,
     KolmogorovSmirnovNormalityGofStatistic,
 )
-from stattest.experiment import Experiment
-from stattest.experiment.configuration.configuration import (
+from pysatl_experiment.experiment import Experiment
+from pysatl_experiment.experiment.configuration.configuration import (
     AlternativeConfiguration,
     ExperimentConfiguration,
     ReportConfiguration,
     TestConfiguration,
 )
-from stattest.experiment.generator.generators import (
+from pysatl_experiment.experiment.generator.generators import (
     Chi2Generator,
     ExponentialGenerator,
     GammaGenerator,
     LaplaceRVSGenerator,
     WeibullGenerator,
 )
-from stattest.experiment.hypothesis import NormalHypothesis
-from stattest.experiment.listener.listeners import TimeEstimationListener
-from stattest.experiment.report.model import PdfPowerReportBuilder
-from stattest.experiment.test.worker import PowerCalculationWorker
-from stattest.persistence.db_store import CriticalValueDbStore, ResultDbStore, RvsDbStore
+from pysatl_experiment.experiment.hypothesis import NormalHypothesis
+from pysatl_experiment.experiment.listener.listeners import TimeEstimationListener
+from pysatl_experiment.experiment.report.model import PdfPowerReportBuilder
+from pysatl_experiment.experiment.test.worker import PowerCalculationWorker
+from pysatl_experiment.persistence.db_store import CriticalValueDbStore, ResultDbStore, RvsDbStore
 
 
 if __name__ == "__main__":
@@ -71,9 +71,7 @@ if __name__ == "__main__":
         alternatives, sizes, count=1_000, threads=generation_threads, listeners=listeners
     )
 
-    power_calculation_worker = PowerCalculationWorker(
-        0.05, 1_000_000, critical_value_store, hypothesis=hypothesis
-    )
+    power_calculation_worker = PowerCalculationWorker(0.05, 1_000_000, critical_value_store, hypothesis=hypothesis)
     test_configuration = TestConfiguration(
         tests,
         threads=test_threads,

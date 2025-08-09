@@ -4,9 +4,9 @@ from unittest.mock import MagicMock
 import pytest
 
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
-from stattest.configuration.criteria_config.criteria_config import CriterionConfig
-from stattest.configuration.model.criterion.criterion import Criterion
-from stattest.configuration.model.report_mode.report_mode import ReportMode
+from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
+from pysatl_experiment.configuration.model.criterion.criterion import Criterion
+from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
 
 
 @pytest.fixture()
