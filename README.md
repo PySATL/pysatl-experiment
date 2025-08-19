@@ -1,4 +1,4 @@
-# statistic-test
+﻿# statistic-test
 
 [![Freqtrade CI](https://github.com/PySATL/pysatl-experiment/workflows/PySATL%20CI/badge.svg)](https://github.com/PySATL/pysatl-experiment/actions)
 [![Coverage Status](https://coveralls.io/repos/github/PySATL/pysatl-experiment/badge.svg?branch=main)](https://coveralls.io/github/PySATL/pysatl-experiment?branch=main)
@@ -116,3 +116,13 @@ Starting manually:
 ```shell
 poetry run pre-commit run --all-files --color always --verbose --show-diff-on-failure
 ```
+
+### Quick Start example
+
+1.cli create my_experiment
+2.cli experiment_type set my_experiment --type=AB
+3.cli hypothesis set my_experiment --hypothesis="Group A will perform better than Group B"
+4.cli sample_sizes set my_experiment --size=100
+5.cli build_and_run my_experiment
+6.cli show my_experiment
+
