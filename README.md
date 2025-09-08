@@ -119,10 +119,52 @@ poetry run pre-commit run --all-files --color always --verbose --show-diff-on-fa
 
 ### Quick Start example
 
-1.cli create my_experiment
-2.cli experiment_type set my_experiment --type=AB
-3.cli hypothesis set my_experiment --hypothesis="Group A will perform better than Group B"
-4.cli sample_sizes set my_experiment --size=100
-5.cli build_and_run my_experiment
-6.cli show my_experiment
+1. Creating of experiment.
 
+```shell
+poetry run experiment create NAME
+```
+
+2. Set the experiment type value. Experiment types: critical_value, power, time_complexity.
+
+```shell
+poetry run experiment configure NAME experiment-type critical_value 
+```
+
+3. Setting the hypothesis value. Experiment types: normal, exponential, weibull.
+
+```shell
+poetry run experiment configure NAME hypothesis normal
+```
+
+4. Set the sample size value. (min = 10)
+
+```shell
+run experiment configure NAME sample-sizes 23
+```
+
+5. Setting the value of the Monte Carlo number. (min = 100)
+
+```shell
+poetry run experiment configure NAME monte-carlo-count 154
+```
+
+6. Setting the significance levels.
+
+```shell
+poetry run experiment configure NAME significance-levels 
+```
+
+7. Setting the file name for connecting the storage.
+
+```shell
+experiment configure NAME storage-connection FILENAME 
+```
+
+8. Running the experiment.
+
+```shell
+poetry run experiment build-and-run NAME 
+```
+
+Parameters experiment-type, hypothesis, sample-sizes, monte-carlo-count, significance-levels, storage-connection required to set values.
