@@ -1,7 +1,3 @@
-from pathlib import Path
-
-from click import group, version_option
-
 from pysatl_experiment.cli.commands.build_and_run.build_and_run import build_and_run
 from pysatl_experiment.cli.commands.configure.alternatives.alternatives import alternatives
 from pysatl_experiment.cli.commands.configure.configure import configure
@@ -19,25 +15,7 @@ from pysatl_experiment.cli.commands.configure.show.show import show
 from pysatl_experiment.cli.commands.configure.significance_levels.significance_levels import significance_levels
 from pysatl_experiment.cli.commands.configure.storage_connection.storage_connection import storage_connection
 from pysatl_experiment.cli.commands.create.create import create
-
-
-@group()
-@version_option()
-def cli() -> None:
-    """
-    PySATL-Experiment CLI.
-    """
-
-    _create_experiments_dir()
-
-
-def _create_experiments_dir() -> None:
-    """
-    Create experiments directory.
-    """
-    # pysatl-experiment/.experiments
-    folder_path = Path(__file__).resolve().parents[3] / ".experiments"
-    folder_path.mkdir(parents=False, exist_ok=True)
+from pysatl_experiment.cli.shared import cli
 
 
 cli.add_command(create)
