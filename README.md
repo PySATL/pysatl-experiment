@@ -152,7 +152,7 @@ poetry run experiment configure NAME monte-carlo-count 154
 6. Setting the significance levels.
 
 ```shell
-poetry run experiment configure NAME significance-levels 
+poetry run experiment configure NAME significance-levels 0.05 0.01
 ```
 
 7. Setting the file name for connecting the storage.
