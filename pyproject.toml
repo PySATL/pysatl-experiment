@@ -24,6 +24,7 @@ jsonschema = "==4.23.0"
 rich = "==13.9.4"
 click = ">=8.2.1"
 dacite = "==1.9.2"
+line_profiler = "5.0.0"
 pysatl-criterion = {path = "./pysatl_criterion"}
 
 [tool.poetry.group.dev.dependencies]

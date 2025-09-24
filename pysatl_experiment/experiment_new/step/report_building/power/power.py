@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from line_profiler import profile
+
 from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.model.alternative.alternative import Alternative
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
@@ -32,6 +34,7 @@ class PowerReportBuildingStep:
         self.results_path = results_path
         self.with_chart = with_chart
 
+    @profile
     def run(self) -> None:
         """
         Run standard power report building step.

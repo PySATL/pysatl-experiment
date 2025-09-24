@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from line_profiler import profile
+
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 from pysatl_experiment.configuration.model.alternative.alternative import Alternative
 from pysatl_experiment.experiment_new.step.execution.common.execution_step_data.execution_step_data import (
@@ -42,6 +44,7 @@ class PowerExecutionStep:
         self.result_storage = result_storage
         self.storage_connection = storage_connection
 
+    @profile
     def run(self) -> None:
         """
         Run standard power execution step.
