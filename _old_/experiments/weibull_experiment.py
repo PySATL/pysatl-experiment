@@ -1,6 +1,6 @@
 import multiprocessing
 
-from pysatl_criterion.statistics.weibull import (
+from pysatl_criterion.pysatl_criterion.statistics.weibull import (
     AndersonDarlingWeibullGofStatistic,
     Chi2PearsonWeibullGofStatistic,
     CrammerVonMisesWeibullGofStatistic,
