@@ -140,7 +140,7 @@ poetry run experiment configure NAME hypothesis normal
 4. Set the sample size value. (min = 10)
 
 ```shell
-run experiment configure NAME sample-sizes 23
+poetry run experiment configure NAME sample-sizes 23
 ```
 
 5. Setting the value of the Monte Carlo number. (min = 100)
@@ -155,13 +155,19 @@ poetry run experiment configure NAME monte-carlo-count 154
 poetry run experiment configure NAME significance-levels 0.05 0.01
 ```
 
-7. Setting the file name for connecting the storage.
+7. Setting the criteria.
 
 ```shell
-experiment configure NAME storage-connection FILENAME 
+poetry run experiment configure NAME criteria KS
 ```
 
-8. Running the experiment.
+8. Setting the file name for connecting the storage.
+
+```shell
+poetry run experiment configure NAME storage-connection FILENAME 
+```
+
+9. Running the experiment.
 
 ```shell
 poetry run experiment build-and-run NAME 
