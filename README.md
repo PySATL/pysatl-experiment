@@ -167,7 +167,7 @@ poetry run experiment configure NAME criteria KS
 poetry run experiment configure NAME storage-connection FILENAME 
 ```
 
-9Running the experiment.
+9. Running the experiment.
 
 ```shell
 poetry run experiment build-and-run NAME 
