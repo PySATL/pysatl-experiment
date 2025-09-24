@@ -1,7 +1,7 @@
 from click import ClickException, Context, argument, pass_context
 
-from pysatl_experiment.cli.cli import cli
 from pysatl_experiment.cli.commands.common.common import read_experiment_data
+from pysatl_experiment.cli.shared import cli
 from pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
 
 
