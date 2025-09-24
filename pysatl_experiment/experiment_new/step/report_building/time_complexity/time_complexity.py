@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+from line_profiler import profile
 
 from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
@@ -32,6 +33,7 @@ class TimeComplexityReportBuildingStep:
         self.results_path = results_path
         self.with_chart = with_chart
 
+    @profile
     def run(self) -> None:
         """
         Run standard time complexity report building step.

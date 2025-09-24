@@ -1,6 +1,9 @@
+from line_profiler import profile
+
 from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesCountQuery
 
 
+@profile
 def get_sample_data_from_storage(
     generator_name: str,
     generator_parameters: list[float],

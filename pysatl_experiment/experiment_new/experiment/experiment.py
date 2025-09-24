@@ -1,3 +1,5 @@
+from line_profiler import profile
+
 from pysatl_experiment.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
 from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
 
@@ -10,6 +12,7 @@ class Experiment:
     def __init__(self, experiment_steps: ExperimentSteps):
         self.experiment_steps = experiment_steps
 
+    @profile
     def run_experiment(self) -> None:
         """
         Run experiment.
