@@ -2,7 +2,7 @@ import multiprocessing
 
 from numpy import random as rd
 
-from pysatl_criterion.pysatl_criterion.statistics.normal import (
+from pysatl_criterion.statistics.normal import (
     GraphEdgesNumberNormalityGofStatistic,
     GraphMaxDegreeNormalityGofStatistic,
     KolmogorovSmirnovNormalityGofStatistic,
