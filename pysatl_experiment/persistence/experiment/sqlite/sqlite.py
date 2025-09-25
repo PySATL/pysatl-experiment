@@ -65,7 +65,8 @@ class SQLiteExperimentStorage(IExperimentStorage):
             raise RuntimeError("Storage not initialized. Call init() first.")
         return self.conn
 
-    def _model_to_row(self, model: ExperimentModel) -> dict:
+    @staticmethod
+    def _model_to_row(model: ExperimentModel) -> dict:
         """Convert ExperimentModel to database row format."""
         return {
             "experiment_type": model.experiment_type,
@@ -86,7 +87,8 @@ class SQLiteExperimentStorage(IExperimentStorage):
             "is_report_building_done": int(model.is_report_building_done),
         }
 
-    def _row_to_model(self, row: dict) -> ExperimentModel:
+    @staticmethod
+    def _row_to_model(row: dict) -> ExperimentModel:
         """Convert database row to ExperimentModel."""
         return ExperimentModel(
             experiment_type=row["experiment_type"],
