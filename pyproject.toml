@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "package for PySATL math statistics experiments"
 authors = [
     {name = "Ivan Pokhabov", email = "vanek3372@gmail.com"},
+    {name = "Dmitrii Kuznetsov", email = "dmitrvlkuznetsov@gmail.com"}
 ]
 license = {text = "MIT"}
 readme = "README.md"
