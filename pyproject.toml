@@ -43,7 +43,6 @@ ruff = "0.11.12"
 pytest-mock = "3.14.1"
 pre-commit = "4.2.0"
 mypy = "^1.15.0"
-pycairo = "1.28.0"
 
 [tool.poetry.scripts]
 experiment = "pysatl_experiment.cli.cli.cli:cli"
