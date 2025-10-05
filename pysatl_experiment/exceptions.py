@@ -16,3 +16,9 @@ class ConfigurationError(OperationalException):
     """
     Configuration error. Usually caused by invalid configuration.
     """
+
+
+class StorageError(OperationalException):  # TODO: description!!!
+    """
+    Storage error. Used in storage creation.
+    """
