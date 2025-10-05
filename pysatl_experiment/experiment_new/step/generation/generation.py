@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from line_profiler import profile
+
 from pysatl_experiment.experiment.generator import AbstractRVSGenerator
 from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesModel
 
@@ -30,6 +32,7 @@ class GenerationStep:
         self.step_config = step_config
         self.data_storage = data_storage
 
+    @profile
     def run(self) -> None:
         """
         Run standard generation step.
@@ -39,6 +42,7 @@ class GenerationStep:
             samples = self._generate_samples(step_data)
             self._save_samples_to_storage(samples, step_data.sample_size, step_data)
 
+    @profile
     def _generate_samples(self, step_data: GenerationStepData) -> list[list[float]]:
         """
         Generate samples.

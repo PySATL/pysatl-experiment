@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from line_profiler import profile
+
 from pysatl_criterion.cv_calculator.cv_calculator.cv_calculator import CVCalculator
 from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import (
     ILimitDistributionStorage,
@@ -33,6 +35,7 @@ class CriticalValueReportBuildingStep:
         self.results_path = results_path
         self.with_chart = with_chart
 
+    @profile
     def run(self) -> None:
         """
         Run standard critical value report building step.

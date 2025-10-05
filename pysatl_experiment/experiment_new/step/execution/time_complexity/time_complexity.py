@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from line_profiler import profile
+
 from pysatl_experiment.experiment_new.step.execution.common.execution_step_data.execution_step_data import (  # noqa: E501
     ExecutionStepData,
 )
@@ -43,6 +45,7 @@ class TimeComplexityExecutionStep:
         self.data_storage = data_storage
         self.result_storage = result_storage
 
+    @profile
     def run(self) -> None:
         """
         Run standard time complexity execution step.

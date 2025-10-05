@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from line_profiler import profile
+
 from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import (
     ILimitDistributionStorage,
     LimitDistributionModel,
@@ -43,6 +45,7 @@ class CriticalValueExecutionStep:
         self.data_storage = data_storage
         self.result_storage = result_storage
 
+    @profile
     def run(self) -> None:
         """
         Run standard critical value execution step.
@@ -72,6 +75,7 @@ class CriticalValueExecutionStep:
                 results_statistics=results_statistics,
             )
 
+    @profile
     def _save_result_to_storage(
         self,
         experiment_id: int,

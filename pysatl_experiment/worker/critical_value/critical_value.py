@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from line_profiler import profile
+
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 from pysatl_experiment.worker.model.abstract_worker.abstract_worker import IWorker, WorkerResult
 
@@ -22,6 +24,7 @@ class CriticalValueWorker(IWorker[CriticalValueWorkerResult]):
         self.statistics = statistics
         self.sample_data = sample_data
 
+    @profile
     def execute(self) -> CriticalValueWorkerResult:
         """
         Execute critical value worker.
