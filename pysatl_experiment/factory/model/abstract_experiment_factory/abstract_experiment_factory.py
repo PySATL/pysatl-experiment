@@ -18,14 +18,14 @@ from pysatl_experiment.experiment.generator import AbstractRVSGenerator
 from pysatl_experiment.experiment.generator.generators import ExponentialGenerator, NormalGenerator, WeibullGenerator
 from pysatl_experiment.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
 from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
-from pysatl_experiment.persistence.experiment.sqlite.sqlite import SQLiteExperimentStorage
 from pysatl_experiment.persistence.model.experiment.experiment import ExperimentQuery, IExperimentStorage
 from pysatl_experiment.persistence.model.power.power import PowerQuery
 from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesAllQuery
 from pysatl_experiment.persistence.model.time_complexity.time_complexity import TimeComplexityQuery
-from pysatl_experiment.persistence.power.sqlite.sqlite import SQLitePowerStorage
-from pysatl_experiment.persistence.random_values.sqlite.sqlite import SQLiteRandomValuesStorage
-from pysatl_experiment.persistence.time_complexity.sqlite.sqlite import SQLiteTimeComplexityStorage
+from pysatl_experiment.persistence.storage.experiment.sqlite.sqlite import SQLiteExperimentStorage
+from pysatl_experiment.persistence.storage.power.sqlite.sqlite import SQLitePowerStorage
+from pysatl_experiment.persistence.storage.random_values.sqlite.sqlite import SQLiteRandomValuesStorage
+from pysatl_experiment.persistence.storage.time_complexity.sqlite.sqlite import SQLiteTimeComplexityStorage
 
 
 D = TypeVar("D", contravariant=True, bound=ExperimentData)
