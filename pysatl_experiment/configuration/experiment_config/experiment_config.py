@@ -6,6 +6,7 @@ from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothes
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
 from pysatl_experiment.configuration.model.step_type.step_type import StepType
+from pysatl_experiment.configuration.model.storage_type.storage_type import StorageType
 
 
 @dataclass
@@ -16,6 +17,7 @@ class ExperimentConfig:
 
     experiment_type: ExperimentType
     storage_connection: str
+    storage_type: StorageType
     run_mode: RunMode
     hypothesis: Hypothesis
     generator_type: StepType

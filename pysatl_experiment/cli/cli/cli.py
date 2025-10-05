@@ -18,6 +18,7 @@ from pysatl_experiment.cli.commands.configure.sample_sizes.sample_sizes import s
 from pysatl_experiment.cli.commands.configure.show.show import show
 from pysatl_experiment.cli.commands.configure.significance_levels.significance_levels import significance_levels
 from pysatl_experiment.cli.commands.configure.storage_connection.storage_connection import storage_connection
+from pysatl_experiment.cli.commands.configure.storage_type.storage_type import storage_type
 from pysatl_experiment.cli.commands.create.create import create
 
 
@@ -50,6 +51,7 @@ cli.add_command(hypothesis)
 cli.add_command(generator_type)
 cli.add_command(executor_type)
 cli.add_command(report_builder_type)
+cli.add_command(storage_type)
 cli.add_command(sample_sizes)
 cli.add_command(monte_carlo_count)
 cli.add_command(significance_levels)

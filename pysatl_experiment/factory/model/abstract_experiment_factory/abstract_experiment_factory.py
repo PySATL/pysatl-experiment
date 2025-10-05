@@ -434,7 +434,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         """
 
         storage_connection = self.experiment_data.config.storage_connection
-        data_storage = SQLiteRandomValuesStorage(storage_connection)
+        data_storage = SQLiteRandomValuesStorage(storage_connection)  # TODO: improve smh
         data_storage.init()
 
         return data_storage
@@ -447,7 +447,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         """
 
         storage_connection = self.experiment_data.config.storage_connection
-        data_storage = SQLiteExperimentStorage(storage_connection)
+        data_storage = SQLiteExperimentStorage(storage_connection)  # TODO: improve smh
         data_storage.init()
 
         return data_storage
@@ -459,7 +459,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         :return: result storage.
         """
 
-        experiment_type = self.experiment_data.config.experiment_type
+        experiment_type = self.experiment_data.config.experiment_type  # TODO: improve smh
         storage_connection = self.experiment_data.config.storage_connection
         if experiment_type == ExperimentType.CRITICAL_VALUE:
             limit_distribution_storage = SQLiteLimitDistributionStorage(storage_connection)
