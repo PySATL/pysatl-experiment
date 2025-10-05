@@ -4,8 +4,11 @@ from unittest.mock import MagicMock, patch
 import psycopg2
 import pytest
 
-from pysatl_experiment.persistence.experiment.postgresql.postgresql import PostgreSQLExperimentStorage
 from pysatl_experiment.persistence.model.experiment.experiment import ExperimentModel, ExperimentQuery
+from pysatl_experiment.persistence.storage.experiment.postgresql.postgresql import PostgreSQLExperimentStorage
+
+
+TABLE_NAME = "experiments"
 
 
 class TestPostgreSQLExperimentStorage:
@@ -54,7 +57,7 @@ class TestPostgreSQLExperimentStorage:
 
     def test_initialization(self, storage):
         assert storage.connection_string == "postgresql://test:test@localhost/test"
-        assert storage.table_name == "experiments"
+        assert storage.table_name == TABLE_NAME
         assert not storage._initialized
 
     @patch("psycopg2.connect")
@@ -240,7 +243,7 @@ class TestPostgreSQLExperimentStorage:
         with pytest.raises(psycopg2.Error, match="Database error"):
             storage.insert_data(sample_experiment_model)
 
-    # TODO: test below are optional, could be removed
+    # TODO: logger tests
 
 
 # Integration tests
@@ -291,3 +294,6 @@ class TestPostgreSQLExperimentStorageIntegration:
         # Verify deletion
         result_after_delete = integration_storage.get_data(sample_experiment_query)
         assert result_after_delete is None
+
+
+# TODO: big integration tests with CLI in different file
