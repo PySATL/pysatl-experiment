@@ -2,6 +2,7 @@ import os
 import sys
 import types
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -16,13 +17,14 @@ from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothes
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
 from pysatl_experiment.configuration.model.step_type.step_type import StepType
+from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.factory.model.abstract_experiment_factory.abstract_experiment_factory import (
     AbstractExperimentFactory,
 )
 
 
 # Stub line_profiler to avoid optional dependency issues in imports
-_lp = types.ModuleType("line_profiler")
+_lp: Any = types.ModuleType("line_profiler")
 
 
 def _profile(func):
@@ -57,6 +59,12 @@ class FakeResultStorage:
     def delete_data(self, query):
         self.deleted_queries.append(query)
 
+    def get_data(self, query):  # pragma: no cover
+        return None
+
+    def insert_data(self, data):  # pragma: no cover
+        pass
+
 
 class FakeExperimentStorage:
     def __init__(self, experiment_id: int = 123):
@@ -75,7 +83,7 @@ class FakeStatistics:
         return "FAKE_CODE"
 
 
-class DummyStep:
+class DummyStep(IExperimentStep):
     def __init__(self, name: str):
         self.name = name
 

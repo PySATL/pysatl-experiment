@@ -2,6 +2,7 @@ import os
 import sys
 import types
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -22,7 +23,7 @@ from pysatl_experiment.factory.power.power import PowerExperimentFactory
 
 
 # Provide a stub for line_profiler to avoid optional dependency during imports
-_lp = types.ModuleType("line_profiler")
+_lp: Any = types.ModuleType("line_profiler")
 
 
 def _profile(func):
@@ -59,6 +60,9 @@ class FakeRandomValuesStorage:
     def init(self):  # pragma: no cover
         pass
 
+    def get_data(self, query):  # pragma: no cover
+        return None
+
     def get_rvs_count(self, query):
         key = (
             query.generator_name,
@@ -69,6 +73,21 @@ class FakeRandomValuesStorage:
 
     def insert_data(self, model):  # pragma: no cover
         pass
+
+    def delete_data(self, query):  # pragma: no cover
+        pass
+
+    def insert_all_data(self, query):  # pragma: no cover
+        pass
+
+    def get_all_data(self, query):  # pragma: no cover
+        return None
+
+    def delete_all_data(self, query):  # pragma: no cover
+        pass
+
+    def get_count_data(self, query):  # pragma: no cover
+        return None
 
 
 class FakePowerStorage:
@@ -94,6 +113,9 @@ class FakePowerStorage:
     def insert_data(self, model):  # pragma: no cover
         pass
 
+    def delete_data(self, query):  # pragma: no cover
+        pass
+
 
 class FakeExperimentStorage:
     def __init__(self, experiment_id: int):
@@ -102,8 +124,26 @@ class FakeExperimentStorage:
     def init(self):  # pragma: no cover
         pass
 
+    def get_data(self, query):  # pragma: no cover
+        return None
+
+    def insert_data(self, data):  # pragma: no cover
+        pass
+
+    def delete_data(self, query):  # pragma: no cover
+        pass
+
     def get_experiment_id(self, query):
         return self._id
+
+    def set_generation_done(self, experiment_id: int):  # pragma: no cover
+        pass
+
+    def set_execution_done(self, experiment_id: int):  # pragma: no cover
+        pass
+
+    def set_report_building_done(self, experiment_id: int):  # pragma: no cover
+        pass
 
 
 class DeterministicPowerFactory(PowerExperimentFactory):
@@ -170,7 +210,7 @@ def test_generation_step_builds_needed_by_alternative(tmp_results_path: Path):
     factory = DeterministicPowerFactory(data, fake_gen)
 
     # Counts per (alt_name, params, size). For ALT_A we have 5 already, ALT_B only 2 → need 3
-    counts = {
+    counts: dict[tuple[str, tuple[float, ...], int], int] = {
         ("ALT_A", (0.1,), 10): 5,
         ("ALT_B", (0.2,), 10): 2,
     }
@@ -196,7 +236,9 @@ def test_execution_step_includes_missing_results_combinations(tmp_results_path: 
     rvs_storage = FakeRandomValuesStorage(counts_by_key={})
 
     # build present results for one combination only: (FAKE_CODE, 10, 5, ALT_A, [0.1], 0.05)
-    present = {(FakeStatistics.code(), 10, 5, "ALT_A", (0.1,), 0.05)}
+    present: set[tuple[str, int, int, str, tuple[float, ...], float]] = {
+        (FakeStatistics.code(), 10, 5, "ALT_A", (0.1,), 0.05)
+    }
     power_storage = FakePowerStorage(has_result=present)
     exp_storage = FakeExperimentStorage(experiment_id=7)
 

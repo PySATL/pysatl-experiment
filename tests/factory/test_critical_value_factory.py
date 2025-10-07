@@ -2,6 +2,7 @@ import os
 import sys
 import types
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -25,7 +26,7 @@ from pysatl_experiment.factory.critical_value.critical_value import CriticalValu
 
 
 # Provide a stub for line_profiler to avoid optional dependency during imports
-_lp = types.ModuleType("line_profiler")
+_lp: Any = types.ModuleType("line_profiler")
 
 
 def _profile(func):
@@ -61,11 +62,29 @@ class FakeRandomValuesStorage:
     def init(self):  # pragma: no cover
         pass
 
+    def get_data(self, query):  # pragma: no cover
+        return None
+
     def get_rvs_count(self, query):
         return self.counts_by_size.get(query.sample_size, 0)
 
     def insert_data(self, model):  # pragma: no cover
         pass
+
+    def delete_data(self, query):  # pragma: no cover
+        pass
+
+    def insert_all_data(self, query):  # pragma: no cover
+        pass
+
+    def get_all_data(self, query):  # pragma: no cover
+        return None
+
+    def delete_all_data(self, query):  # pragma: no cover
+        pass
+
+    def get_count_data(self, query):  # pragma: no cover
+        return None
 
 
 class FakeLimitDistributionStorage:
@@ -83,6 +102,16 @@ class FakeLimitDistributionStorage:
     def insert_data(self, model):  # pragma: no cover
         pass
 
+    def delete_data(self, query):  # pragma: no cover
+        pass
+
+    def get_data_for_cv(self, query):
+        # Accepts a query with fields: criterion_code, sample_size
+        for crit_code, size, _mc in self.has_result:
+            if crit_code == query.criterion_code and size == query.sample_size:
+                return object()
+        return None
+
 
 class FakeExperimentStorage:
     def __init__(self, experiment_id: int):
@@ -91,8 +120,26 @@ class FakeExperimentStorage:
     def init(self):  # pragma: no cover
         pass
 
+    def get_data(self, query):  # pragma: no cover
+        return None
+
+    def insert_data(self, data):  # pragma: no cover
+        pass
+
+    def delete_data(self, query):  # pragma: no cover
+        pass
+
     def get_experiment_id(self, query):
         return self._id
+
+    def set_generation_done(self, experiment_id: int):  # pragma: no cover
+        pass
+
+    def set_execution_done(self, experiment_id: int):  # pragma: no cover
+        pass
+
+    def set_report_building_done(self, experiment_id: int):  # pragma: no cover
+        pass
 
 
 class DeterministicCVFactory(CriticalValueExperimentFactory):

@@ -2,6 +2,7 @@ import os
 import sys
 import types
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
@@ -22,10 +23,11 @@ from pysatl_experiment.experiment_new.step.report_building.time_complexity.time_
     TimeComplexityReportBuildingStep,
 )
 from pysatl_experiment.factory.time_complexity.time_complexity import TimeComplexityExperimentFactory
+from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage
 
 
 # Provide a stub for line_profiler to avoid optional dependency during imports
-_lp = types.ModuleType("line_profiler")
+_lp: Any = types.ModuleType("line_profiler")
 
 
 def _profile(func):
@@ -58,14 +60,23 @@ class FakeStatistics:
 class FakeRandomValuesStorage:
     def __init__(self, counts_by_size: dict[int, int]):
         self.counts_by_size = counts_by_size
-        self.deleted_queries = []
+        self.deleted_queries: list[Any] = []
 
     def init(self):  # pragma: no cover - not used in these tests
         pass
 
+    def get_data(self, query):  # pragma: no cover
+        return None
+
     def get_rvs_count(self, query):
         # Query has attribute sample_size per factory implementation
         return self.counts_by_size.get(query.sample_size, 0)
+
+    def insert_all_data(self, query):  # pragma: no cover
+        pass
+
+    def get_all_data(self, query):  # pragma: no cover
+        return None
 
     def delete_all_data(self, query):  # pragma: no cover - not used here
         self.deleted_queries.append(query)
@@ -73,12 +84,15 @@ class FakeRandomValuesStorage:
     def insert_data(self, model):  # pragma: no cover - steps aren't run
         pass
 
+    def delete_data(self, query):  # pragma: no cover
+        pass
+
 
 class FakeTimeComplexityStorage:
     def __init__(self, has_result: set[tuple[str, int, int]]):
         # key: (criterion_code, sample_size, monte_carlo_count)
         self.has_result = has_result
-        self.deleted_queries = []
+        self.deleted_queries: list[Any] = []
 
     def init(self):  # pragma: no cover - not used in these tests
         pass
@@ -105,8 +119,26 @@ class FakeExperimentStorage:
     def init(self):  # pragma: no cover - not used in these tests
         pass
 
+    def get_data(self, query):  # pragma: no cover
+        return None
+
+    def insert_data(self, data):  # pragma: no cover
+        pass
+
+    def delete_data(self, query):  # pragma: no cover
+        pass
+
     def get_experiment_id(self, query):
         return self._id
+
+    def set_generation_done(self, experiment_id: int):  # pragma: no cover
+        pass
+
+    def set_execution_done(self, experiment_id: int):  # pragma: no cover
+        pass
+
+    def set_report_building_done(self, experiment_id: int):  # pragma: no cover
+        pass
 
 
 class DeterministicTCFactory(TimeComplexityExperimentFactory):
@@ -167,7 +199,7 @@ def test_create_generation_step_builds_needed_entries(tmp_results_path: Path):
     factory = DeterministicTCFactory(data, fake_generator)
 
     # Pretend we already have counts for size 10 but not enough for 20
-    rvs_storage = FakeRandomValuesStorage(counts_by_size={10: 5, 20: 2})
+    rvs_storage = cast(IRandomValuesStorage, FakeRandomValuesStorage(counts_by_size={10: 5, 20: 2}))
 
     gen_step = factory._create_generation_step(rvs_storage)
     assert isinstance(gen_step, GenerationStep)
@@ -186,7 +218,7 @@ def test_create_execution_step_includes_missing_results(tmp_results_path: Path):
     fake_generator = FakeGenerator()
     factory = DeterministicTCFactory(data, fake_generator)
 
-    rvs_storage = FakeRandomValuesStorage(counts_by_size={10: 5, 20: 5})
+    rvs_storage = cast(IRandomValuesStorage, FakeRandomValuesStorage(counts_by_size={10: 5, 20: 5}))
 
     # Only (code, 10, 5) exists; (code, 20, 5) is missing -> expect one step
     tc_storage = FakeTimeComplexityStorage(has_result={(FakeStatistics.code(), 10, 5)})
