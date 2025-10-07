@@ -30,7 +30,10 @@ class CriticalValueWorker(IWorker[CriticalValueWorkerResult]):
         Execute critical value worker.
         """
 
-        results_statistics = [self.statistics.execute_statistic(rvs=data) for data in self.sample_data]
+        results_statistics = []
+        for data in self.sample_data:
+            statistics_value = self.statistics.execute_statistic(rvs=data)
+            results_statistics.append(statistics_value)
 
         result = CriticalValueWorkerResult(results_statistics=results_statistics)
 

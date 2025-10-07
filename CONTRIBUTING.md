@@ -103,7 +103,7 @@ Exceptions:
 
 - Minor corrections and fixes to pull requests submitted by others.
 - While making a formal release, the release manager can make necessary, appropriate changes.
-- Small documentation changes that reinforce existing subject matter. Most commonly being, but not limited to spelling and grammar corrections.
+- Small documentation changes that reinforce existing subject. Most commonly being, but not limited to spelling and grammar corrections.
 
 ### Responsibilities
 

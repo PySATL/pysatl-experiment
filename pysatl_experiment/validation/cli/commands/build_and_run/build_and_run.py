@@ -19,12 +19,12 @@ from pysatl_experiment.configuration.model.experiment_type.experiment_type impor
 from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothesis
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
 from pysatl_experiment.configuration.model.step_type.step_type import StepType
-from pysatl_experiment.persistence.experiment.sqlite.sqlite import SQLiteExperimentStorage
 from pysatl_experiment.persistence.model.experiment.experiment import (
     ExperimentModel,
     ExperimentQuery,
     IExperimentStorage,
 )
+from pysatl_experiment.persistence.storage.experiment.sqlite.sqlite import SQLiteExperimentStorage
 
 
 def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:

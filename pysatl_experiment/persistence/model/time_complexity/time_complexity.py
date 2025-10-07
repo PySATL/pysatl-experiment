@@ -27,4 +27,22 @@ class ITimeComplexityStorage(IDataStorage[TimeComplexityModel, TimeComplexityQue
     Time complexity storage interface.
     """
 
-    pass
+    def init(self) -> None:
+        """
+        Initialize SQLite time complexity storage and create tables.
+        """
+
+    def insert_data(self, data: TimeComplexityModel) -> None:
+        """
+        Insert or replace time complexity data.
+        """
+
+    def get_data(self, query: TimeComplexityQuery) -> TimeComplexityModel | None:
+        """
+        Get time complexity data matching the query.
+        """
+
+    def delete_data(self, query: TimeComplexityQuery) -> None:
+        """
+        Delete time complexity data matching the query.
+        """

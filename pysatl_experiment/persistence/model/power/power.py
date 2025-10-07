@@ -33,4 +33,22 @@ class IPowerStorage(IDataStorage[PowerModel, PowerQuery], Protocol):
     Power storage interface.
     """
 
-    pass
+    def init(self) -> None:
+        """
+        Initialize SQLite power storage and create tables.
+        """
+
+    def insert_data(self, data: PowerModel) -> None:
+        """
+        Insert or replace a power entry.
+        """
+
+    def get_data(self, query: PowerQuery) -> PowerModel | None:
+        """
+        Retrieve power data matching the query.
+        """
+
+    def delete_data(self, query: PowerQuery) -> None:
+        """
+        Delete power data matching the query.
+        """

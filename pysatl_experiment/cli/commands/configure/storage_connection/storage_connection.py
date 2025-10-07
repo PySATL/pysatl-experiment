@@ -19,6 +19,8 @@ def storage_connection(ctx: Context, connection: str) -> None:
     :param connection: storage connection.
     """
 
+    # TODO: add support for different remote storages
+
     experiment_name, experiment_config = get_experiment_name_and_config(ctx)
 
     storage_path = create_storage_path(connection)
