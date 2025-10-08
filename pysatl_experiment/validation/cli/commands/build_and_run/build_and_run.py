@@ -3,15 +3,18 @@ from typing import cast
 
 from click import ClickException
 from dacite import Config, from_dict
+from pydantic import ValidationError
 
 from pysatl_experiment.cli.commands.common.common import create_result_path
 from pysatl_experiment.configuration.experiment_config.critical_value.critical_value import (
-    CriticalValueExperimentConfig,
+    CriticalValueExperimentConfig as LegacyCriticalValueExperimentConfig,
 )
 from pysatl_experiment.configuration.experiment_config.experiment_config import ExperimentConfig
-from pysatl_experiment.configuration.experiment_config.power.power import PowerExperimentConfig
+from pysatl_experiment.configuration.experiment_config.power.power import (
+    PowerExperimentConfig as LegacyPowerExperimentConfig,
+)
 from pysatl_experiment.configuration.experiment_config.time_complexity.time_complexity import (
-    TimeComplexityExperimentConfig,
+    TimeComplexityExperimentConfig as LegacyTimeComplexityExperimentConfig,
 )
 from pysatl_experiment.configuration.experiment_data.common.steps_done.steps_done import StepsDone
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
@@ -25,63 +28,63 @@ from pysatl_experiment.persistence.model.experiment.experiment import (
     ExperimentQuery,
     IExperimentStorage,
 )
+from pysatl_experiment.validation.cli.schemas.experiment import BaseExperimentConfig as PydanticBaseExperiment
+from pysatl_experiment.validation.cli.schemas.experiment import CriticalValueConfig as PydanticCriticalValueConfig
+from pysatl_experiment.validation.cli.schemas.experiment import ExperimentConfig as ExperimentInputSchema
+from pysatl_experiment.validation.cli.schemas.experiment import PowerConfig as PydanticPowerConfig
+from pysatl_experiment.validation.cli.schemas.experiment import TimeComplexityConfig as PydanticTimeComplexityConfig
 
 
 def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
     """
-    Validate build and run command.
+    Validates input, initializes, and builds the experiment data object.
 
-    :param experiment_data_dict: experiment data dictionary.
+    This function performs the following steps:
+    1. Validates the raw input dictionary against Pydantic schemas.
+    2. Adapts the modern Pydantic models to legacy dataclass configurations.
+    3. Initializes the SQLite storage backend.
+    4. Checks if an identical experiment already exists in storage to resume it.
+    5. If not, it saves the new experiment configuration.
+    6. Creates a results path for experiment artifacts.
+    7. Returns a complete `ExperimentData` object to be used by the runner.
+
+    Args:
+        experiment_data_dict: A dictionary containing the raw experiment configuration.
+
+    Raises:
+        ClickException: If validation fails or if the experiment has already
+            been completed.
+
+    Returns:
+        An `ExperimentData` object ready for the experiment execution pipeline.
     """
+    try:
+        validated_data = ExperimentInputSchema.model_validate(experiment_data_dict)
+    except ValidationError as e:
+        raise ClickException(str(e))
 
-    experiment_name = experiment_data_dict.get("name")
-    if experiment_name is None:
-        raise ClickException("Missing experiment_name")
+    experiment_name = validated_data.name
+    pydantic_config = validated_data.config
 
-    experiment_config = experiment_data_dict.get("config")
-    if experiment_config is None:
-        raise ClickException("Missing config")
-
-    base_required_parameters = [
-        "experiment_type",
-        "storage_connection",
-        "hypothesis",
-        "sample_sizes",
-        "monte_carlo_count",
-    ]
-    _check_required_parameters(experiment_config, base_required_parameters)
-
-    experiment_type = experiment_config.get("experiment_type")
-    if experiment_type == "power":
-        power_required_parameters = ["significance_levels", "alternatives"]
-        _check_required_parameters(experiment_config, power_required_parameters)
-    elif experiment_type == "critical_value":
-        critical_value_required_parameters = ["significance_levels"]
-        _check_required_parameters(experiment_config, critical_value_required_parameters)
-
-    experiment_config_dataclass = _create_experiment_config_from_dict(
-        experiment_config_dict=experiment_config,
-        experiment_type=experiment_type,
-    )
-
+    legacy_dataclass_config = _adapt_pydantic_to_dataclass(pydantic_config)
     steps_done = StepsDone(
         is_generation_step_done=False,
         is_execution_step_done=False,
         is_report_building_step_done=False,
     )
 
-    experiment_storage = SQLiteExperimentStorage(experiment_config_dataclass.storage_connection)
+    experiment_storage = SQLiteExperimentStorage(legacy_dataclass_config.storage_connection)
     experiment_storage.init()
 
     experiment_config_from_storage = _get_experiment_config_from_storage(
-        config=experiment_config_dataclass,
+        config=legacy_dataclass_config,
         storage=experiment_storage,
     )
     if experiment_config_from_storage is not None:
         steps_done = _check_if_experiment_finished(experiment_config_from_storage)
     else:
         _save_experiment_config_to_storage(
-            config=experiment_config_dataclass,
+            config=legacy_dataclass_config,
             storage=experiment_storage,
         )
 
@@ -89,77 +92,12 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
 
     experiment_data = ExperimentData(
         name=experiment_name,
-        config=experiment_config_dataclass,
+        config=legacy_dataclass_config,
         steps_done=steps_done,
         results_path=result_path,
     )
 
     return experiment_data
-
-
-def _check_required_parameters(experiment_config: dict, required_parameters: list[str]) -> None:
-    """
-    Check if experiment configuration contains all required parameters.
-
-    :param experiment_config: experiment configuration.
-    :param required_parameters: required parameters.
-    """
-
-    missing_parameters = []
-
-    for parameter in required_parameters:
-        if parameter not in experiment_config:
-            missing_parameters.append(parameter)
-
-    is_need_to_configure = len(missing_parameters) > 0
-    if is_need_to_configure:
-        _raise_missing_parameters_exception(missing_parameters)
-
-
-def _raise_missing_parameters_exception(missing_parameters: list[str]) -> None:
-    """
-    Raise exception with missing parameters.
-
-    :param missing_parameters: missing parameters.
-    """
-    raise ClickException(f"Experiment configuration is missing required parameters: {missing_parameters}.")
-
-
-def _create_experiment_config_from_dict(
-    experiment_config_dict: dict,
-    experiment_type: str,
-) -> ExperimentConfig:
-    """
-    Create experiment data from dictionary.
-
-    :param experiment_config_dict: experiment configuration dictionary.
-    :param experiment_type: experiment type.
-
-    :return: experiment config.
-    """
-
-    experiment_type_str_to_class = {
-        "power": PowerExperimentConfig,
-        "critical_value": CriticalValueExperimentConfig,
-        "time_complexity": TimeComplexityExperimentConfig,
-    }
-
-    enum_mapping = {
-        ExperimentType: lambda x: ExperimentType(x),
-        RunMode: lambda x: RunMode(x),
-        Hypothesis: lambda x: Hypothesis(x),
-        StepType: lambda x: StepType(x),
-    }
-
-    experiment_config_type = experiment_type_str_to_class[experiment_type]
-
-    experiment_config: ExperimentConfig = from_dict(
-        data_class=experiment_config_type,
-        data=experiment_config_dict,
-        config=Config(type_hooks=enum_mapping, cast=[Enum]),
-    )
-
-    return experiment_config
 
 
 def _get_experiment_config_from_storage(
@@ -179,10 +117,10 @@ def _get_experiment_config_from_storage(
     significance_levels = []
     alternatives = {}
     if experiment_type == ExperimentType.CRITICAL_VALUE:
-        critical_value_config = cast(PowerExperimentConfig, config)
+        critical_value_config = cast(LegacyCriticalValueExperimentConfig, config)
         significance_levels = critical_value_config.significance_levels
     elif experiment_type == ExperimentType.POWER:
-        power_config = cast(PowerExperimentConfig, config)
+        power_config = cast(LegacyPowerExperimentConfig, config)
         significance_levels = power_config.significance_levels
         alternatives = {alternative.generator_name: alternative.parameters for alternative in power_config.alternatives}
 
@@ -221,10 +159,10 @@ def _save_experiment_config_to_storage(config: ExperimentConfig, storage: IExper
     significance_levels = []
     alternatives = {}
     if experiment_type == ExperimentType.CRITICAL_VALUE:
-        critical_value_config = cast(PowerExperimentConfig, config)
+        critical_value_config = cast(LegacyCriticalValueExperimentConfig, config)
         significance_levels = critical_value_config.significance_levels
     elif experiment_type == ExperimentType.POWER:
-        power_config = cast(PowerExperimentConfig, config)
+        power_config = cast(LegacyPowerExperimentConfig, config)
         significance_levels = power_config.significance_levels
         alternatives = {alternative.generator_name: alternative.parameters for alternative in power_config.alternatives}
 
@@ -271,3 +209,51 @@ def _check_if_experiment_finished(experiment_config_from_db: ExperimentModel) ->
     )
 
     return steps_done
+
+
+# Maps modern Pydantic config classes to their legacy dataclass counterparts.
+PYDANTIC_TO_LEGACY_MAP = {
+    PydanticPowerConfig: LegacyPowerExperimentConfig,
+    PydanticCriticalValueConfig: LegacyCriticalValueExperimentConfig,
+    PydanticTimeComplexityConfig: LegacyTimeComplexityExperimentConfig,
+}
+
+
+def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> ExperimentConfig:
+    """
+    Converts a Pydantic configuration model to a legacy dataclass model.
+
+    This adapter function is necessary for compatibility between the new
+    Pydantic-based validation layer and the older, dataclass-based core
+    logic. It uses `dacite` for flexible conversion.
+
+    Args:
+        pydantic_config: The validated Pydantic configuration object.
+
+    Raises:
+        TypeError: If the Pydantic config type has no corresponding legacy class
+            in the `PYDANTIC_TO_LEGACY_MAP`.
+
+    Returns:
+        The equivalent legacy `ExperimentConfig` dataclass instance.
+    """
+    legacy_dataclass_type = PYDANTIC_TO_LEGACY_MAP.get(type(pydantic_config))
+    if legacy_dataclass_type is None:
+        raise TypeError(f"No match for Pydantic type: {type(pydantic_config)}")
+
+    config_dict = pydantic_config.model_dump(mode="json")
+
+    enum_mapping = {
+        ExperimentType: lambda x: ExperimentType(x),
+        RunMode: lambda x: RunMode(x),
+        Hypothesis: lambda x: Hypothesis(x),
+        StepType: lambda x: StepType(x),
+    }
+
+    legacy_config = from_dict(
+        data_class=legacy_dataclass_type,
+        data=config_dict,
+        config=Config(type_hooks=enum_mapping, cast=[Enum]),
+    )
+
+    return legacy_config

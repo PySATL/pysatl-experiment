@@ -7,7 +7,7 @@ from pysatl_experiment.experiment_new.experiment_steps.experiment_steps import E
 from pysatl_experiment.factory.critical_value.critical_value import CriticalValueExperimentFactory
 from pysatl_experiment.factory.power.power import PowerExperimentFactory
 from pysatl_experiment.factory.time_complexity.time_complexity import TimeComplexityExperimentFactory
-from pysatl_experiment.validation.cli.commands.build_and_run.build_and_run_new import validate_build_and_run
+from pysatl_experiment.validation.cli.commands.build_and_run.build_and_run import validate_build_and_run
 from pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
 
 

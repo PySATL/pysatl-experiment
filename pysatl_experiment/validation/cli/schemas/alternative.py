@@ -1,8 +1,7 @@
-# TODO
 import inspect
 from typing import Any
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.experiment.generator import AbstractRVSGenerator
@@ -28,6 +27,30 @@ class Alternative(BaseModel):
 
     generator_name: str
     parameters: list[float]
+
+    @field_validator("generator_name")
+    @classmethod
+    def normalize_and_resolve_generator_name(cls, value):
+        available_generators: list[str] = [
+            gen_cls.__name__.upper() for gen_cls in AbstractRVSGenerator.__subclasses__()
+        ]
+
+        user_prefix = value.upper()
+
+        matches = [full_name for full_name in available_generators if full_name.startswith(user_prefix)]
+
+        if len(matches) == 1:
+            return matches[0]
+
+        if not matches:
+            raise ValueError(
+                f"Generator prefix '{value}' did not match any available generators. "
+                f"Available are: [{', '.join(available_generators)}]"
+            )
+        else:
+            raise ValueError(
+                f"Generator prefix '{value}' is ambiguous. It matches: [{', '.join(matches)}]. Please be more specific."
+            )
 
     @model_validator(mode="before")
     @classmethod
