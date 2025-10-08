@@ -44,7 +44,7 @@ class Alternative(BaseModel):
 
         if not matches:
             raise ValueError(
-                f"Generator prefix '{value}' did not match any available generators. "
+                f"Generator prefix '{value}' did not match any available generators.\n"
                 f"Available are: [{', '.join(available_generators)}]"
             )
         else:
@@ -80,7 +80,7 @@ class Alternative(BaseModel):
         if not generator_cls:
             available_generators = ", ".join(generator_by_name.keys())
             raise ValueError(
-                f"Generator '{self.generator_name}' is not found. Available generators are: [{available_generators}]"
+                f"Generator '{self.generator_name}' is not found.\n Available generators are: [{available_generators}]"
             )
 
         base_params = set(inspect.signature(AbstractRVSGenerator.__init__).parameters.keys())

@@ -61,8 +61,17 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
     try:
         validated_data = ExperimentInputSchema.model_validate(experiment_data_dict)
     except ValidationError as e:
-        raise ClickException(str(e))
+        error_messages = []
+        for error in e.errors():
+            if error["type"] == "missing":
+                field_path = ".".join(map(str, error["loc"]))
+                error_messages.append(f"A required parameter is missing: '{field_path}'")
+            else:
+                field_path = ".".join(map(str, error["loc"]))
+                error_messages.append(f"Error in the field '{field_path}': {error['msg']}")
 
+        final_error_message = "\n".join(error_messages)
+        raise ClickException(final_error_message)
     experiment_name = validated_data.name
     pydantic_config = validated_data.config
 
