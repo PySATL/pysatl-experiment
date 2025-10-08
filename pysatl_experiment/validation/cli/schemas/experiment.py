@@ -1,13 +1,13 @@
 from typing import Literal, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
-from pysatl_experiment.configuration.model.criterion.criterion import Criterion
 from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothesis
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
 from pysatl_experiment.configuration.model.step_type.step_type import StepType
 from pysatl_experiment.validation.cli.schemas.alternative import Alternative
+from pysatl_experiment.validation.cli.schemas.criteria import CriteriaConfig, Criterion
 
 
 class BaseExperimentConfig(BaseModel):
@@ -57,9 +57,24 @@ class BaseExperimentConfig(BaseModel):
     @field_validator("monte_carlo_count")
     @classmethod
     def check_monte_carlo(cls, value):
-        if value <= 100:
+        if value < 100:
             raise ValueError("Monte Carlo count must be greater than 100.")
         return value
+
+    @model_validator(mode="after")
+    def validate_using_criteria_config(self) -> "BaseExperimentConfig":
+        try:
+            data_to_validate = {
+                "hypothesis": self.hypothesis,
+                "criteria": self.criteria,
+            }
+            CriteriaConfig.model_validate(data_to_validate)
+
+        except ValidationError as e:
+            error_message = e.errors()[0]["msg"]
+            raise ValueError(error_message)
+
+        return self
 
 
 class PowerConfig(BaseExperimentConfig):
