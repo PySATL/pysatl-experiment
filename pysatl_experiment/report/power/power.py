@@ -111,8 +111,7 @@ class PowerReportBuilder:
             for config in self.criteria_config:
                 key = (alternative.generator_name, significance_level)
                 results = self.power_result[config.criterion_code].get(key, {}).get(size, [])
-                power = np.mean(results) if results else 0.0
-
+                power = float(np.mean(results)) if results else 0.0
                 short_criterion_name = config.criterion_code.partition("_")[0]
                 row_data[short_criterion_name] = round(power, 3)
 

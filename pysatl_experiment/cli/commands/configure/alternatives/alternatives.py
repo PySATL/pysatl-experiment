@@ -39,7 +39,7 @@ def alternatives(ctx: Context, alt: tuple[str]) -> None:
         )
 
     try:
-        validated_config = AlternativesConfig(experiment_type=experiment_type, alternatives=list(alt))
+        validated_config = AlternativesConfig(experiment_type=experiment_type, alternatives=list(alt))  # type: ignore[arg-type]
 
         alternatives_data = validated_config.model_dump().get("alternatives", [])
     except ValidationError as e:
@@ -49,9 +49,10 @@ def alternatives(ctx: Context, alt: tuple[str]) -> None:
             if error["loc"] and error["loc"][0] == "alternatives":
                 if len(error["loc"]) > 1:
                     index = error["loc"][1]
-                    user_input = alt[index]
-                    msg = f"For alternative #{index + 1} ('{user_input}'): {error['msg']}"
-                    error_messages.append(msg)
+                    if isinstance(index, int):
+                        user_input = alt[index]
+                        msg = f"For alternative #{index + 1} ('{user_input}'): {error['msg']}"
+                        error_messages.append(msg)
                 else:
                     error_messages.append(f"- {error['msg']}")
             else:

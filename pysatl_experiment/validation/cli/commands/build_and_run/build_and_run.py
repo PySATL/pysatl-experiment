@@ -281,7 +281,7 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
         StepType: lambda x: StepType(x),
     }
 
-    legacy_config = from_dict(
+    legacy_config: ExperimentConfig = from_dict(
         data_class=legacy_dataclass_type,
         data=config_dict,
         config=Config(type_hooks=enum_mapping, cast=[Enum]),
