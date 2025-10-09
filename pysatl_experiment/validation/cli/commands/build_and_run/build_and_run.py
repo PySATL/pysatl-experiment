@@ -28,6 +28,7 @@ from pysatl_experiment.persistence.model.experiment.experiment import (
     ExperimentQuery,
     IExperimentStorage,
 )
+from pysatl_experiment.validation.cli.commands.common.checker import SQLiteCriticalValueChecker
 from pysatl_experiment.validation.cli.schemas.experiment import BaseExperimentConfig as PydanticBaseExperiment
 from pysatl_experiment.validation.cli.schemas.experiment import CriticalValueConfig as PydanticCriticalValueConfig
 from pysatl_experiment.validation.cli.schemas.experiment import ExperimentConfig as ExperimentInputSchema
@@ -40,30 +41,50 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
     Validates input, initializes, and builds the experiment data object.
 
     This function performs the following steps:
-    1. Validates the raw input dictionary against Pydantic schemas.
-    2. Adapts the modern Pydantic models to legacy dataclass configurations.
-    3. Initializes the SQLite storage backend.
-    4. Checks if an identical experiment already exists in storage to resume it.
-    5. If not, it saves the new experiment configuration.
-    6. Creates a results path for experiment artifacts.
-    7. Returns a complete `ExperimentData` object to be used by the runner.
+    1.  Conditionally creates a database checker if the experiment is a 'power'
+        analysis.
+    2.  Validates the raw input dictionary against Pydantic schemas, passing the
+        database checker in the context to allow for stateful validation (e.g.,
+        ensuring required critical values exist).
+    3.  Adapts the validated Pydantic models to legacy dataclass configurations.
+    4.  Initializes the SQLite storage backend.
+    5.  Checks if an identical experiment already exists in storage to resume it.
+    6.  If not, it saves the new experiment configuration to the database.
+    7.  Creates a results path for experiment artifacts.
+    8.  Returns a complete `ExperimentData` object to be used by the runner.
 
     Args:
         experiment_data_dict: A dictionary containing the raw experiment configuration.
 
     Raises:
-        ClickException: If validation fails or if the experiment has already
+        ClickException: If validation fails (with detailed, user-friendly error
+            messages for each invalid field) or if the experiment has already
             been completed.
 
     Returns:
         An `ExperimentData` object ready for the experiment execution pipeline.
     """
     try:
-        validated_data = ExperimentInputSchema.model_validate(experiment_data_dict)
+        checker = None
+        config_dict = experiment_data_dict.get("config", {})
+
+        if config_dict.get("experiment_type") == "power":
+            connection_str = config_dict.get("storage_connection")
+            if not connection_str:
+                pass
+            else:
+                checker = SQLiteCriticalValueChecker(connection_string=connection_str)
+
+        validation_context = {"critical_value_checker": checker} if checker else {}
+
+        validated_data = ExperimentInputSchema.model_validate(experiment_data_dict, context=validation_context)
+
     except ValidationError as e:
         error_messages = []
         for error in e.errors():
-            if error["type"] == "missing":
+            if error["type"] == "value_error":
+                error_messages.append(error["msg"])
+            elif error["type"] == "missing":
                 field_path = ".".join(map(str, error["loc"]))
                 error_messages.append(f"A required parameter is missing: '{field_path}'")
             else:
@@ -72,6 +93,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
 
         final_error_message = "\n".join(error_messages)
         raise ClickException(final_error_message)
+
     experiment_name = validated_data.name
     pydantic_config = validated_data.config
 

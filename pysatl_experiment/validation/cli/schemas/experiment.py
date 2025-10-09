@@ -1,11 +1,12 @@
 from typing import Literal, Union
 
-from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, Field, ValidationError, ValidationInfo, field_validator, model_validator
 
 from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothesis
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
 from pysatl_experiment.configuration.model.step_type.step_type import StepType
+from pysatl_experiment.validation.cli.commands.common.checker import SQLiteCriticalValueChecker
 from pysatl_experiment.validation.cli.schemas.alternative import Alternative
 from pysatl_experiment.validation.cli.schemas.criteria import CriteriaConfig, Criterion
 
@@ -93,6 +94,49 @@ class PowerConfig(BaseExperimentConfig):
     experiment_type: Literal["power"]
     alternatives: list[Alternative]
     significance_levels: list[float]
+
+    @model_validator(mode="after")
+    def validate_dependencies_on_critical_values(self, info: ValidationInfo) -> "PowerConfig":
+        if not info.context or "critical_value_checker" not in info.context:
+            raise ValueError("CriticalValueChecker must be provided in the validation context.")
+
+        checker: SQLiteCriticalValueChecker = info.context["critical_value_checker"]
+        missing_combinations = []
+
+        hypothesis_name_map = {
+            "NORMAL": "NORMALITY",
+            "EXPONENTIAL": "EXPONENTIALITY",
+            "WEIBULL": "WEIBULL",
+        }
+        family_part = "GOODNESS_OF_FIT"
+        hypothesis_part = hypothesis_name_map.get(self.hypothesis.name)
+
+        if not hypothesis_part:
+            raise ValueError(f"Unknown hypothesis '{self.hypothesis.name}' for constructing criterion name.")
+
+        for criterion in self.criteria:
+            for size in self.sample_sizes:
+                full_name_to_check = f"{criterion.criterion_code.upper()}_{hypothesis_part}_{family_part}"
+
+                if not checker.check_exists(self.hypothesis.name, full_name_to_check, size):
+                    for alpha in self.significance_levels:
+                        missing_combinations.append(
+                            f"  - Hypothesis: {self.hypothesis.name}, "
+                            f"Criterion: {criterion.criterion_code}, "
+                            f"Sample Size: {size}, "
+                            f"Significance: {alpha}"
+                        )
+
+        if missing_combinations:
+            unique_missing = sorted(list(set(missing_combinations)))
+            error_message = (
+                "Power experiment cannot be run because the following critical values are missing.\n"
+                "Please run a 'critical_value' experiment for them first:\n"
+            )
+            error_message += "\n".join(unique_missing)
+            raise ValueError(error_message)
+
+        return self
 
 
 class CriticalValueConfig(BaseExperimentConfig):
