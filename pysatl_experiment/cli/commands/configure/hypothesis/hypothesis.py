@@ -28,7 +28,7 @@ def hypothesis(ctx: Context, hyp: str) -> None:
 
     Args:
         ctx: The Click context object, passed automatically.
-     hyp: The desired hypothesis (e.g., 'normal'). The value must
+        hyp: The desired hypothesis (e.g., 'normal'). The value must
             match one of the predefined types in `Hypothesis` and is
             case-insensitive.
     """
@@ -49,6 +49,6 @@ def hypothesis(ctx: Context, hyp: str) -> None:
     save_experiment_config(ctx, experiment_name, experiment_config)
 
     echo(
-        f"Hypothesis of the experiment '{experiment_name}' is set to '{validated_hypothesis}'.\n"
+        f"Hypothesis of the experiment '{experiment_name}' is set to '{validated_hypothesis.value}'.\n"
         f"Likewise, all criteria for the hypothesis '{validated_hypothesis.value}' are set."
     )
