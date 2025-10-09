@@ -73,7 +73,11 @@ class PowerReportBuildingStep:
                             significance_level=significance_level,
                         )
                         key = (alternative.generator_name, significance_level)
-                        power_data[criterion_config.criterion_code][key][sample_size] = result
+
+                        level1_dict = power_data.setdefault(criterion_config.criterion_code, {})
+                        level2_dict = level1_dict.setdefault(key, {})
+                        level2_dict[sample_size] = result
+
         return power_data
 
     def _get_power_result_from_storage(

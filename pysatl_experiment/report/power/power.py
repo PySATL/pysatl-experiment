@@ -82,7 +82,7 @@ class PowerReportBuilder:
                     }
                 )
 
-        html = self.template_env.get_template("power_report.html").render(
+        html = self.template_env.get_template("power_template.html").render(
             tables=tables,
             criteria=get_criterion_names(self.criteria_config),
             sample_sizes=self.sample_sizes,
@@ -94,25 +94,29 @@ class PowerReportBuilder:
         self,
         alternative: Alternative,
         significance_level: float,
-    ) -> list[dict]:
+    ) -> dict[int, dict[str, float]]:
         """
-        Generate table for one (alternative, alpha) pair.
+        Generate data for the power table.
 
-        :param alternative: alternative to generate tables for.
-        :param significance_level: significance level.
-
-        :return: list of dictionaries.
+        :param alternative: The alternative for which to generate the table.
+        :param significance_level: The significance level for which to generate the table.
+        :return: A dictionary with table data, where keys are sample sizes
+                 and values are dictionaries of power for each criterion.
         """
 
-        table_data = []
+        table_data = {}
         for size in self.sample_sizes:
-            data: dict[str, object] = {"size": size}
+            row_data: dict[str, float] = {}
+
             for config in self.criteria_config:
                 key = (alternative.generator_name, significance_level)
                 results = self.power_result[config.criterion_code].get(key, {}).get(size, [])
-                power = np.mean(results) if results else 0.0
-                data[config.criterion_code.partition("_")[0]] = round(power, 3)
-            table_data.append(data)
+                power = float(np.mean(results)) if results else 0.0
+                short_criterion_name = config.criterion_code.partition("_")[0]
+                row_data[short_criterion_name] = round(power, 3)
+
+            table_data[size] = row_data
+
         return table_data
 
     def _generate_chart_data(
@@ -130,6 +134,7 @@ class PowerReportBuilder:
 
         :return: path to chart file.
         """
+        charts_dir.mkdir(parents=True, exist_ok=True)
 
         chart_path = charts_dir / f"{alternative.generator_name}_{significance_level}.png"
 
