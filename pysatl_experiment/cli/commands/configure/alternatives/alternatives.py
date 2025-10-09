@@ -62,6 +62,8 @@ def alternatives(ctx: Context, alt: tuple[str]) -> None:
 
         raise ClickException(final_message)
 
+    experiment_config["alternatives"] = alternatives_data
+
     save_experiment_config(ctx, experiment_name, experiment_config)
 
     echo(f"Alternatives of the experiment '{experiment_name}' are successfully set.")
