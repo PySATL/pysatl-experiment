@@ -5,7 +5,7 @@ from pysatl_experiment.cli.commands.configure.configure import configure
 
 
 @configure.command()
-@argument("storage_type")
+@argument("store_type")
 @pass_context
 def storage_type(ctx: Context, store_type: str) -> None:
     """

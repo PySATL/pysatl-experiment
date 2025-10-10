@@ -28,7 +28,7 @@ class TestSQLiteTimeComplexityStorage:
     @pytest.fixture
     def storage(self):
         """Create storage instance for testing"""
-        return SQLiteTimeComplexityStorage(connection_string="postgresql://test:test@localhost/test_db")
+        return SQLiteTimeComplexityStorage(connection_string="test.db")
 
     @pytest.fixture
     def sample_data(self):

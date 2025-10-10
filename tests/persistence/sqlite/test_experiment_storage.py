@@ -20,7 +20,7 @@ class TestSQLiteExperimentStorage:
     def sample_experiment_model(self):  # TODO: check for format
         return ExperimentModel(
             experiment_type="statistical_test",
-            storage_connection="postgresql://storage",
+            storage_connection="test.db",
             run_mode="sequential",
             report_mode="detailed",
             hypothesis="Test hypothesis",
@@ -41,7 +41,7 @@ class TestSQLiteExperimentStorage:
     def sample_experiment_query(self):  # TODO: check for format
         return ExperimentQuery(
             experiment_type="statistical_test",
-            storage_connection="postgresql://storage",
+            storage_connection="test.db",
             run_mode="sequential",
             hypothesis="Test hypothesis",
             generator_type="monte_carlo",
@@ -56,7 +56,7 @@ class TestSQLiteExperimentStorage:
         )
 
     def test_initialization(self, storage):
-        assert storage.connection_string == "postgresql://test:test@localhost/test"
+        assert storage.connection_string == "test.db"
         assert storage.table_name == TABLE_NAME
         assert not storage._initialized
 

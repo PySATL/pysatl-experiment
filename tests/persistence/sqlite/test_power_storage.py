@@ -15,7 +15,7 @@ from pysatl_experiment.persistence.storage.power.sqlite.sqlite import SQLitePowe
 @pytest.fixture(scope="function")
 def temp_postgres_db():
     test_db_name = "test_power_db"
-    original_connection_string = "postgresql://user:password@localhost:5432/postgres"
+    original_connection_string = "test.db"
 
     # Creating test BD
     conn = psycopg2.connect(original_connection_string)
