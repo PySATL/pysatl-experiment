@@ -1,0 +1,36 @@
+{
+  "config": {
+    "name": "1_calculate_critical_values",
+    "experiment_type": "critical_value",
+    "hypothesis": "normal",
+    "criteria": [
+      {
+        "criterion_code": "KS",
+        "parameters": []
+      },
+      {
+        "criterion_code": "AD",
+        "parameters": []
+      }
+    ],
+    "executor_type": "standard",
+    "generator_type": "standard",
+    "report_builder_type": "standard",
+    "report_mode": "with-chart",
+    "run_mode": "reuse",
+    "monte_carlo_count": 1000,
+    "sample_sizes": [
+      200,
+      400,
+      600,
+      800,
+      1000
+    ],
+    "significance_levels": [
+      0.01,
+      0.05,
+      0.1
+    ],
+    "storage_connection": "/home/moveton/projects/prog/pysatl-experiment/.storage/result.sqlite"
+  }
+}

@@ -30,4 +30,4 @@ def create(name: str) -> None:
 
     save_experiment_data(name, experiment_data)
 
-    echo(f"Experiment with name {name} was created successfully.")
+    echo(f"Experiment with name '{name}' was created successfully.")
