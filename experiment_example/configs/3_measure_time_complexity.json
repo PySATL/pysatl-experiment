@@ -31,6 +31,6 @@
       0.05,
       0.1
     ],
-    "storage_connection": "/home/moveton/projects/prog/pysatl-experiment/.storage/result.sqlite"
+    "storage_connection": "Here must be your path. Please, configure it in CLI"
   }
 }
