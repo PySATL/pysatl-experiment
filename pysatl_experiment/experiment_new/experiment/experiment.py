@@ -1,3 +1,5 @@
+import time
+
 from line_profiler import profile
 
 from pysatl_experiment.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
@@ -17,6 +19,9 @@ class Experiment:
         """
         Run experiment.
         """
+
+        start = time.time()
+        print("\n[START] Running experiment...")
 
         generation_step: IExperimentStep | None = self.experiment_steps.generation_step
         execution_step: IExperimentStep | None = self.experiment_steps.execution_step
@@ -41,3 +46,8 @@ class Experiment:
             report_building_step.run()
             experiment_storage.set_report_building_done(experiment_id)
             print("Report building step finished")
+
+        end = time.time()
+        print(f"\n[TIME] Total sequential time: {end - start:.4f} seconds\n")
+
+

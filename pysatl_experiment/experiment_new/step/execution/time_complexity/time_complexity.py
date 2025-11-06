@@ -1,3 +1,5 @@
+import functools
+import time
 from dataclasses import dataclass
 
 from line_profiler import profile
@@ -9,6 +11,9 @@ from pysatl_experiment.experiment_new.step.execution.common.hypothesis_generator
     HypothesisGeneratorData,
 )
 from pysatl_experiment.experiment_new.step.execution.common.utils.utils import get_sample_data_from_storage
+from pysatl_experiment.parallel.scheduler import AdaptiveScheduler
+from pysatl_experiment.parallel.task_spec import TaskSpec
+from pysatl_experiment.parallel.universal_worker import universal_execute_task
 from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage
 from pysatl_experiment.persistence.model.time_complexity.time_complexity import (
     ITimeComplexityStorage,
@@ -37,6 +42,7 @@ class TimeComplexityExecutionStep:
         monte_carlo_count: int,
         data_storage: IRandomValuesStorage,
         result_storage: ITimeComplexityStorage,
+        storage_connection: str,
     ):
         self.experiment_id = experiment_id
         self.hypothesis_generator_data = hypothesis_generator_data
@@ -44,36 +50,59 @@ class TimeComplexityExecutionStep:
         self.monte_carlo_count = monte_carlo_count
         self.data_storage = data_storage
         self.result_storage = result_storage
+        self.storage_connection = storage_connection
 
     @profile
     def run(self) -> None:
         """
-        Run standard time complexity execution step.
+        Run time complexity experiment in parallel with buffering.
         """
-
+        # Build task specs
+        task_specs = []
         for step_data in self.step_config:
-            statistics = step_data.statistics
-            sample_size = step_data.sample_size
-
-            data = get_sample_data_from_storage(
-                generator_name=self.hypothesis_generator_data.generator_name,
-                generator_parameters=self.hypothesis_generator_data.parameters,
-                sample_size=sample_size,
-                count=self.monte_carlo_count,
-                data_storage=self.data_storage,
-            )
-
-            worker = TimeComplexityWorker(statistics=statistics, sample_data=data)
-            result = worker.execute()
-            results_times = result.results_times
-
-            self._save_result_to_storage(
-                experiment_id=self.experiment_id,
-                criterion_code=statistics.code(),
-                sample_size=sample_size,
+            spec = TaskSpec(
+                experiment_type="time_complexity",
+                statistic_class_name=step_data.statistics.__class__.__name__,
+                statistic_module=step_data.statistics.__class__.__module__,
+                sample_size=step_data.sample_size,
                 monte_carlo_count=self.monte_carlo_count,
-                results_times=results_times,
+                db_path= self.storage_connection,
+                hypothesis_generator=self.hypothesis_generator_data.generator_name,
+                hypothesis_parameters=self.hypothesis_generator_data.parameters,
             )
+            task_specs.append(spec)
+
+        # Convert to zero-arg callables
+        tasks = [functools.partial(universal_execute_task, spec) for spec in task_specs]
+
+        # Buffering config
+        total_tasks = len(tasks)
+        BUFFER_SIZE = max(1, min(20, total_tasks // 2))
+        result_buffer = []
+
+        def flush_buffer():
+            for res in result_buffer:
+                exp_type, criterion_code, sample_size, results_times = res
+                self._save_result_to_storage(
+                    experiment_id=self.experiment_id,
+                    criterion_code=criterion_code,
+                    sample_size=sample_size,
+                    monte_carlo_count=self.monte_carlo_count,
+                    results_times=results_times,
+                )
+            result_buffer.clear()
+
+        # Run with streaming and buffering
+        with AdaptiveScheduler(max_workers=4) as scheduler:
+            for result in scheduler.iterate_results(tasks):
+                result_buffer.append(result)
+                if len(result_buffer) >= BUFFER_SIZE:
+                    flush_buffer()
+
+        # Flush remaining
+        if result_buffer:
+            flush_buffer()
+
 
     def _save_result_to_storage(
         self,

@@ -125,6 +125,7 @@ class TimeComplexityExperimentFactory(
             monte_carlo_count=monte_carlo_count,
             data_storage=data_storage,
             result_storage=result_storage,
+            storage_connection=config.storage_connection,
         )
 
         return execution_step
