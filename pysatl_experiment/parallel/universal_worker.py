@@ -7,6 +7,7 @@ def universal_execute_task(spec: TaskSpec):
     Universal task function that runs in a subprocess.
     Returns: (experiment_type, criterion_code, sample_size, result_data)
     """
+
     # 1. Storage
     from pysatl_experiment.persistence.random_values.sqlite.sqlite import SQLiteRandomValuesStorage
     storage = SQLiteRandomValuesStorage(spec.db_path)
@@ -44,13 +45,19 @@ def universal_execute_task(spec: TaskSpec):
         from pysatl_experiment.worker.time_complexity.time_complexity import TimeComplexityWorker
         worker = TimeComplexityWorker(statistics=statistics, sample_data=data)
         result = worker.execute()
-        return ("time_complexity", statistics.code(), spec.sample_size, result.results_times)
+        return ("time_complexity",
+                statistics.code(),
+                spec.sample_size,
+                result.results_times)
 
     elif spec.experiment_type == "critical_value":
         from pysatl_experiment.worker.critical_value.critical_value import CriticalValueWorker
         worker = CriticalValueWorker(statistics=statistics, sample_data=data)
         result = worker.execute()
-        return ("critical_value", statistics.code(), spec.sample_size, result.results_statistics)
+        return ("critical_value",
+                statistics.code(),
+                spec.sample_size,
+                result.results_statistics)
 
     elif spec.experiment_type == "power":
         from pysatl_experiment.worker.power.power import PowerWorker
@@ -61,7 +68,14 @@ def universal_execute_task(spec: TaskSpec):
             storage_connection=spec.db_path,
         )
         result = worker.execute()
-        return ("power", statistics.code(), spec.sample_size, result.results_criteria)
-
+        return (
+            "power",
+            statistics.code(),
+            spec.sample_size,
+            result.results_criteria,
+            spec.alternative_generator,
+            spec.alternative_parameters,
+            spec.significance_level,
+        )
     else:
         raise ValueError(f"Unsupported experiment type: {spec.experiment_type}")

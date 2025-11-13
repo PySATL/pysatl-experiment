@@ -1,16 +1,18 @@
+import functools
 from dataclasses import dataclass
 
 from line_profiler import profile
 
-from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 from pysatl_experiment.configuration.model.alternative.alternative import Alternative
 from pysatl_experiment.experiment_new.step.execution.common.execution_step_data.execution_step_data import (
     ExecutionStepData,
 )
-from pysatl_experiment.experiment_new.step.execution.common.utils.utils import get_sample_data_from_storage
+from pysatl_experiment.parallel.buffered_saver import BufferedSaver
+from pysatl_experiment.parallel.scheduler import AdaptiveScheduler
+from pysatl_experiment.parallel.task_spec import TaskSpec
+from pysatl_experiment.parallel.universal_worker import universal_execute_task
 from pysatl_experiment.persistence.model.power.power import IPowerStorage, PowerModel
 from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage
-from pysatl_experiment.worker.power.power import PowerWorker
 
 
 @dataclass
@@ -47,43 +49,60 @@ class PowerExecutionStep:
     @profile
     def run(self) -> None:
         """
-        Run standard power execution step.
+        Run power experiment in parallel with buffering.
         """
 
+        task_specs = []
         for step_data in self.step_config:
-            statistics = step_data.statistics
-            sample_size = step_data.sample_size
-            alternative = step_data.alternative
-            significance_level = step_data.significance_level
-
-            samples = get_sample_data_from_storage(
-                generator_name=alternative.generator_name,
-                generator_parameters=alternative.parameters,
-                sample_size=sample_size,
-                count=self.monte_carlo_count,
-                data_storage=self.data_storage,
+            spec = TaskSpec(
+                experiment_type="power",
+                statistic_class_name=step_data.statistics.__class__.__name__,
+                statistic_module=step_data.statistics.__class__.__module__,
+                sample_size=step_data.sample_size,
+                monte_carlo_count=self.monte_carlo_count,
+                db_path=self.storage_connection,
+                alternative_generator=step_data.alternative.generator_name,
+                alternative_parameters=step_data.alternative.parameters,
+                significance_level=step_data.significance_level,
             )
+            task_specs.append(spec)
 
-            worker = PowerWorker(
-                statistics=statistics,
-                sample_data=samples,
-                significance_level=significance_level,
-                storage_connection=self.storage_connection,
-            )
+        tasks = [functools.partial(universal_execute_task, spec) for spec in task_specs]
 
-            result = worker.execute()
-            results_criteria = result.results_criteria
-            self._save_result_to_storage(
-                statistics=statistics,
-                sample_size=sample_size,
-                alternative=alternative,
-                significance_level=significance_level,
-                results_criteria=results_criteria,
-            )
+        def save_batch(results_batch: list):
+            from pysatl_experiment.configuration.model.alternative.alternative import Alternative
+            for res in results_batch:
+                (
+                    exp_type,
+                    criterion_code,
+                    sample_size,
+                    results_criteria,
+                    alt_generator,
+                    alt_parameters,
+                    sig_level,
+                ) = res
+                alternative = Alternative(generator_name=alt_generator, parameters=alt_parameters)
+                self._save_result_to_storage(
+                    criterion_code=criterion_code,
+                    sample_size=sample_size,
+                    alternative=alternative,
+                    significance_level=sig_level,
+                    results_criteria=results_criteria,
+                )
+
+        total_tasks = len(tasks)
+        buffer_size = max(1, min(20, total_tasks // 2))
+        saver = BufferedSaver(save_func=save_batch, buffer_size=buffer_size)
+
+        with AdaptiveScheduler() as scheduler:
+            for result in scheduler.iterate_results(tasks):
+                saver.add(result)
+
+        saver.flush()
 
     def _save_result_to_storage(
         self,
-        statistics: AbstractGoodnessOfFitStatistic,
+        criterion_code: str,
         sample_size: int,
         alternative: Alternative,
         significance_level: float,
@@ -95,7 +114,7 @@ class PowerExecutionStep:
 
         query = PowerModel(
             experiment_id=self.experiment_id,
-            criterion_code=statistics.code(),
+            criterion_code=criterion_code,
             criterion_parameters=[],
             sample_size=sample_size,
             alternative_code=alternative.generator_name,

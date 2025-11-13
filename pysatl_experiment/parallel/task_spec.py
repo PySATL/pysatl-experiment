@@ -6,9 +6,10 @@ from typing import List, Optional
 class TaskSpec:
     """
     Universal, pickle-serializable task specification.
-    Contains ONLY primitive types (str, int, float, list).
+    Contains ONLY primitive types.
     """
-    experiment_type: str  # "time_complexity", "critical_value", "power"
+
+    experiment_type: str
     statistic_class_name: str
     statistic_module: str
     sample_size: int
