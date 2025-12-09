@@ -26,6 +26,7 @@ click = ">=8.2.1"
 dacite = "==1.9.2"
 line_profiler = "5.0.0"
 pydantic = "^2.11.9"
+psycopg2 = "2.9.11"
 pysatl-criterion = {path = "./pysatl_criterion"}
 
 [tool.poetry.group.dev.dependencies]
