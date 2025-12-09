@@ -20,7 +20,6 @@ def storage_connection(ctx: Context, connection: str) -> None:
 
     experiment_name, experiment_config = get_experiment_name_and_config(ctx)
 
-    #storage_path = create_storage_path(connection)
     experiment_config["storage_connection"] = connection
 
     save_experiment_config(ctx, experiment_name, experiment_config)
