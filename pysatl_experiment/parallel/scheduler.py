@@ -10,11 +10,11 @@ class AdaptiveScheduler:
     """
 
     def __init__(
-        self,
-        max_workers: Optional[int] = None,
-        cpu_target: float = 0.7,
-        scale_up_threshold: float = 0.8,
-        scale_down_threshold: float = 0.3,
+            self,
+            max_workers: Optional[int] = None,
+            cpu_target: float = 0.7,
+            scale_up_threshold: float = 0.8,
+            scale_down_threshold: float = 0.3,
     ):
         self.max_workers = max_workers or min(16, mp.cpu_count())
         self.cpu_target = cpu_target
@@ -24,18 +24,11 @@ class AdaptiveScheduler:
         self._active = False
         self._current_workers = min(2, self.max_workers)
 
-    def _should_scale_up(self) -> bool:
-        cpu = psutil.cpu_percent(interval=0.1)
-        return cpu > self.scale_up_threshold and self._current_workers < self.max_workers
-
-    def _should_scale_down(self) -> bool:
-        cpu = psutil.cpu_percent(interval=0.1)
-        return cpu < self.scale_down_threshold and self._current_workers > 1
-
     def _adjust_workers(self):
-        if self._should_scale_up():
+        cpu = psutil.cpu_percent(interval=0.1)
+        if cpu > self.scale_up_threshold and self._current_workers < self.max_workers:
             self._current_workers = min(self._current_workers + 1, self.max_workers)
-        elif self._should_scale_down():
+        elif cpu < self.scale_down_threshold and self._current_workers > 1:
             self._current_workers = max(self._current_workers - 1, 1)
 
     def __enter__(self):
@@ -87,17 +80,26 @@ class AdaptiveScheduler:
                         completed += 1
                         yield result
 
+                        # === МОНИТОРИНГ CPU ===
+                        if completed % 5 == 0 or completed == total:
+                            cpu_percent = psutil.cpu_percent(interval=0.1)
+                            print(f"[MONITOR] {completed}/{total} tasks | CPU: {cpu_percent:.1f}%")
+                        # ======================
+
                         try:
                             next_task = next(task_iter)
                             futures[self.submit(next_task)] = next_task
                         except StopIteration:
                             pass
 
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        raise e
 
                     finally:
                         del futures[future]
 
             except TimeoutError:
                 continue
+
+    def run(self, tasks: list[Callable[[], any]]) -> list[any]:
+        return list(self.iterate_results(tasks))
