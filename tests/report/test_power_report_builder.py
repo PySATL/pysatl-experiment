@@ -55,14 +55,22 @@ class TestPowerReportBuilder:
         table_data = builder._generate_table_data(mock_alternative, 0.05)
 
         assert len(table_data) == 2
+        assert 10 in table_data
+        assert 20 in table_data
 
-        row_size_10 = table_data[0]
-        assert row_size_10["size"] == 10
+        row_size_10 = table_data[10]
+
+        assert "KS" in row_size_10
+        assert "AD" in row_size_10
+
         assert row_size_10["KS"] == pytest.approx(2 / 3, 0.01)
         assert row_size_10["AD"] == pytest.approx(0.0, 0.01)
 
-        row_size_20 = table_data[1]
-        assert row_size_20["size"] == 20
+        row_size_20 = table_data[20]
+
+        assert "KS" in row_size_20
+        assert "AD" in row_size_20
+
         assert row_size_20["KS"] == pytest.approx(2 / 3, 0.01)
         assert row_size_20["AD"] == pytest.approx(1 / 3, 0.01)
 
