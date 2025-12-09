@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from line_profiler import profile
 
+from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.experiment_new.step.execution.common.execution_step_data.execution_step_data import (  # noqa: E501
     ExecutionStepData,
 )
@@ -24,7 +25,7 @@ class TimeComplexityStepData(ExecutionStepData):
     """
 
 
-class TimeComplexityExecutionStep:
+class TimeComplexityExecutionStep(IExperimentStep):
     """
     Standard time complexity experiment execution step.
     """

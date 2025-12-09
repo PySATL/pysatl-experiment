@@ -6,6 +6,7 @@ from pysatl_criterion.persistence.model.limit_distribution.limit_distribution im
     ILimitDistributionStorage,
     LimitDistributionModel,
 )
+from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.experiment_new.step.execution.common.execution_step_data.execution_step_data import (
     ExecutionStepData,
 )
@@ -24,7 +25,7 @@ class CriticalValueStepData(ExecutionStepData):
     """
 
 
-class CriticalValueExecutionStep:
+class CriticalValueExecutionStep(IExperimentStep):
     """
     Standard critical value experiment execution step.
     """

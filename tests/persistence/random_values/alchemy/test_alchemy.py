@@ -11,7 +11,7 @@ from pysatl_experiment.persistence.model.random_values.random_values import (
     RandomValuesModel,
     RandomValuesQuery,
 )
-from pysatl_experiment.persistence.random_values.sqlite.sqlite import SQLiteRandomValuesStorage
+from pysatl_experiment.persistence.random_values.alchemy.alchemy import AlchemyRandomValuesStorage
 
 
 @pytest.fixture()
@@ -20,14 +20,14 @@ def db_path(tmp_path: Path) -> Path:
 
 
 @pytest.fixture()
-def storage(db_path: Path) -> SQLiteRandomValuesStorage:
-    store = SQLiteRandomValuesStorage(str(db_path))
+def storage(db_path: Path) -> AlchemyRandomValuesStorage:
+    store = AlchemyRandomValuesStorage(db_url="sqlite:///:memory:")
     store.init()
     return store
 
 
 def test_guard_requires_init(db_path: Path) -> None:
-    store = SQLiteRandomValuesStorage(str(db_path))
+    store = AlchemyRandomValuesStorage(str(db_path))
     with pytest.raises(RuntimeError):
         _ = store.get_data(
             RandomValuesQuery(
@@ -39,7 +39,7 @@ def test_guard_requires_init(db_path: Path) -> None:
         )
 
 
-def test_get_data_empty_returns_none(storage: SQLiteRandomValuesStorage) -> None:
+def test_get_data_empty_returns_none(storage: AlchemyRandomValuesStorage) -> None:
     query = RandomValuesQuery(
         generator_name="gen_A",
         generator_parameters=[0.1, 0.2],
@@ -49,7 +49,7 @@ def test_get_data_empty_returns_none(storage: SQLiteRandomValuesStorage) -> None
     assert storage.get_data(query) is None
 
 
-def test_insert_and_get_single_sample(storage: SQLiteRandomValuesStorage) -> None:
+def test_insert_and_get_single_sample(storage: AlchemyRandomValuesStorage) -> None:
     model = RandomValuesModel(
         generator_name="gen_A",
         generator_parameters=[0.1, 0.2],
@@ -76,7 +76,7 @@ def test_insert_and_get_single_sample(storage: SQLiteRandomValuesStorage) -> Non
     assert got.data == model.data
 
 
-def test_delete_single_sample(storage: SQLiteRandomValuesStorage) -> None:
+def test_delete_single_sample(storage: AlchemyRandomValuesStorage) -> None:
     model = RandomValuesModel(
         generator_name="gen_B",
         generator_parameters=[0.3],
@@ -108,7 +108,7 @@ def test_delete_single_sample(storage: SQLiteRandomValuesStorage) -> None:
     )
 
 
-def test_insert_all_and_get_all_and_count(storage: SQLiteRandomValuesStorage) -> None:
+def test_insert_all_and_get_all_and_count(storage: AlchemyRandomValuesStorage) -> None:
     all_model = RandomValuesAllModel(
         generator_name="gen_C",
         generator_parameters=[0.7, 0.9],
@@ -139,7 +139,7 @@ def test_insert_all_and_get_all_and_count(storage: SQLiteRandomValuesStorage) ->
     assert [m.data for m in all_data] == [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
 
 
-def test_get_count_data_limits(storage: SQLiteRandomValuesStorage) -> None:
+def test_get_count_data_limits(storage: AlchemyRandomValuesStorage) -> None:
     all_model = RandomValuesAllModel(
         generator_name="gen_D",
         generator_parameters=[1.1],
@@ -157,11 +157,12 @@ def test_get_count_data_limits(storage: SQLiteRandomValuesStorage) -> None:
         )
     )
 
+    assert limited is not None
     assert [m.sample_num for m in limited] == [1, 2]
     assert [m.data for m in limited] == [[1], [2]]
 
 
-def test_delete_all_data(storage: SQLiteRandomValuesStorage) -> None:
+def test_delete_all_data(storage: AlchemyRandomValuesStorage) -> None:
     all_model = RandomValuesAllModel(
         generator_name="gen_E",
         generator_parameters=[2.2],

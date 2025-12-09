@@ -9,7 +9,7 @@ package-mode = true
 packages = [{include = "pysatl_experiment"}]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
+python = ">=3.11,<3.13"
 numpy = ">=1.25.1"
 scipy = ">=1.11.2"
 matplotlib = ">=3.8.0"

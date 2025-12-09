@@ -57,14 +57,6 @@ def get_or_calculate_critical_value(
     store: ICriticalValueStore,
     count: int,
 ) -> float | tuple[float, float]:
-    critical_values_from_common_criterion = test.calculate_two_tailed_critical_values(size, alpha)
-    if critical_values_from_common_criterion is not None:
-        return critical_values_from_common_criterion
-
-    critical_value_from_common_criterion = test.calculate_critical_value(size, alpha)
-    if critical_value_from_common_criterion is not None:
-        return critical_value_from_common_criterion
-
     critical_value = store.get_critical_value(test.code(), size, alpha)
     if critical_value is not None:
         return critical_value
@@ -72,20 +64,12 @@ def get_or_calculate_critical_value(
     distribution = store.get_distribution(test.code(), size)
     if distribution is not None:
         ecdf = scipy_stats.ecdf(distribution)
-        if test.two_tailed:
-            lower_critical = float(np.quantile(ecdf.cdf.quantiles, q=alpha / 2))
-            upper_critical = float(np.quantile(ecdf.cdf.quantiles, q=1 - alpha / 2))
-            critical_value = (lower_critical, upper_critical)
-        else:
-            critical_value = float(np.quantile(ecdf.cdf.quantiles, q=1 - alpha))
+        critical_value = float(np.quantile(ecdf.cdf.quantiles, q=1 - alpha))
 
         store.insert_critical_value(test.code(), size, alpha, critical_value)
         return critical_value
 
-    if test.two_tailed:
-        critical_value, distribution = calculate_two_tailed_critical_value(test, hypothesis, size, alpha, count)
-    else:
-        critical_value, distribution = calculate_critical_value(test, hypothesis, size, alpha, count)
+    critical_value, distribution = calculate_critical_value(test, hypothesis, size, alpha, count)
 
     store.insert_critical_value(test.code(), size, alpha, critical_value)
     store.insert_distribution(test.code(), size, distribution)
