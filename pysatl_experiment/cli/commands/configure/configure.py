@@ -1,14 +1,15 @@
 import json
 
-from click import ClickException, option, command, FloatRange, IntRange, argument, Choice, BadParameter, echo
+from click import BadParameter, Choice, ClickException, FloatRange, IntRange, argument, command, echo, option
+from pydantic import ValidationError
 
 from pysatl_experiment.cli.commands.common.common import (
-    read_experiment_data,
-    get_experiment_config,
     create_storage_path,
-    save_experiment_config,
-    get_statistics_short_codes_for_hypothesis,
     criteria_from_codes,
+    get_experiment_config,
+    get_statistics_short_codes_for_hypothesis,
+    read_experiment_data,
+    save_experiment_config,
 )
 from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothesis
@@ -16,8 +17,6 @@ from pysatl_experiment.configuration.model.report_mode.report_mode import Report
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
 from pysatl_experiment.configuration.model.step_type.step_type import StepType
 from pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
-from pydantic import ValidationError
-
 from pysatl_experiment.validation.cli.schemas.alternative import AlternativesConfig
 from pysatl_experiment.validation.cli.schemas.criteria import CriteriaConfig
 
@@ -125,7 +124,7 @@ def __configure_monte_carlo_count(experiment_config: dict, count: int | None):
     experiment_config["monte_carlo_count"] = count
 
 
-def __configure_storage_connection(experiment_config: dict, connection: str | None):
+def __configure_storage_connection(experiment_config: dict, connection: str):
     storage_path = create_storage_path(connection)
     experiment_config["storage_connection"] = storage_path
 

@@ -1,3 +1,4 @@
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -20,6 +21,7 @@ class CauchyGenerator:
         self.x0 = x0
         self.gamma = gamma
 
+
 @pytest.fixture
 def runner() -> CliRunner:
     """Fixture to create a CliRunner instance."""
@@ -27,16 +29,34 @@ def runner() -> CliRunner:
 
 
 @patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
-def test_alternatives_fails_if_experiment_type_not_set(
-    get_experiment_config: MagicMock, runner: CliRunner
-) -> None:
+def test_alternatives_fails_if_experiment_type_not_set(get_experiment_config: MagicMock, runner: CliRunner) -> None:
     experiment_name = "my-exp"
     get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
 
-    result = runner.invoke(configure, [experiment_name, "-alt", "Normal 1 1",
-                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
-                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite",
-                                         "-rm", "reuse"])
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-alt",
+            "Normal 1 1",
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
+        ],
+    )
 
     assert result.exit_code != 0
     assert isinstance(result.exception, SystemExit)
@@ -52,10 +72,30 @@ def test_alternatives_fails_for_unsupported_experiment_type(
     experiment_name = "my-exp"
     get_experiment_config.return_value = ("my-exp", {"experiment_type": ExperimentType.CRITICAL_VALUE.value})
 
-    result = runner.invoke(configure, [experiment_name, "-alt", "Normal 1 1",
-                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
-                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite",
-                                         "-rm", "reuse"])
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-alt",
+            "Normal 1 1",
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
+        ],
+    )
 
     assert result.exit_code != 0
 
@@ -64,18 +104,38 @@ def test_alternatives_fails_for_unsupported_experiment_type(
 @patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 def test_alternatives_fails_with_wrong_parameter_count(
-        if_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner
+    if_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
 ) -> None:
     experiment_name = "my-exp"
     initial_config = {"experiment_type": "power"}
-    read_experiment_data.return_value = {'name': experiment_name, 'config': initial_config}
-    result = runner.invoke(configure, [experiment_name, "-alt", "Normal 1.0",
-                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
-                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite",
-                                         "-rm", "reuse"])
+    read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-alt",
+            "Normal 1.0",
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
+        ],
+    )
 
     assert result.exit_code != 0
 
@@ -84,18 +144,38 @@ def test_alternatives_fails_with_wrong_parameter_count(
 @patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 def test_alternatives_fails_with_non_numeric_parameters(
-        if_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner
+    if_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
 ) -> None:
     experiment_name = "my-exp"
     initial_config = {"experiment_type": "power"}
-    read_experiment_data.return_value = {'name': experiment_name, 'config': initial_config}
-    result = runner.invoke(configure, [experiment_name, "-alt", "Normal 1.0 abc",
-                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
-                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite",
-                                         "-rm", "reuse"])
+    read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-alt",
+            "Normal 1.0 abc",
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
+        ],
+    )
 
     assert result.exit_code != 0
 
@@ -108,22 +188,42 @@ def test_alternatives_fails_with_non_numeric_parameters(
 @patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 def test_alternatives_fails_with_ambiguous_generator_name(
-        if_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        subclasses: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner
+    if_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    subclasses: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
 ) -> None:
     """
     Tests failure when a generator prefix matches multiple available generators.
     """
     experiment_name = "my-exp"
     initial_config = {"experiment_type": "power"}
-    read_experiment_data.return_value = {'name': experiment_name, 'config': initial_config}
-    result = runner.invoke(configure, [experiment_name, "-alt", "Normal 1 2",
-                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
-                                       "-expt", "power", "-con", "sqlite:///pysatl.sqlite",
-                                         "-rm", "reuse"])
+    read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-alt",
+            "Normal 1 2",
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "power",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
+        ],
+    )
 
     assert result.exit_code != 0
 
@@ -139,18 +239,40 @@ def test_alternatives_fails_with_ambiguous_generator_name(
 @patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 def test_alternatives_success_with_valid_inputs(
-        if_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner
+    if_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
 ) -> None:
     experiment_name = "my-exp"
-    initial_config = {"experiment_type": "power"}
-    read_experiment_data.return_value = {'name': experiment_name, 'config': initial_config}
-    result = runner.invoke(configure, [experiment_name, "-alt", "NormalG 1.0 0.5", "-alt", "cauchy 0 2",
-                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
-                                       "-expt", "power", "-con", "sqlite:///pysatl.sqlite",
-                                       "-rm", "reuse"])
+    initial_config: dict[str, Any] = {"experiment_type": "power"}
+    read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-alt",
+            "NormalG 1.0 0.5",
+            "-alt",
+            "cauchy 0 2",
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "power",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
+        ],
+    )
 
     assert result.exit_code == 0
     assert result.exception is None

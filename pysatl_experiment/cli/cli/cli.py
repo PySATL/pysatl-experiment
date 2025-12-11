@@ -5,6 +5,7 @@ from pysatl_experiment.cli.commands.criteria.criteria import available_criteria
 from pysatl_experiment.cli.commands.show.show import show
 from pysatl_experiment.cli.shared import cli
 
+
 cli.add_command(available_criteria)
 cli.add_command(create)
 cli.add_command(configure)

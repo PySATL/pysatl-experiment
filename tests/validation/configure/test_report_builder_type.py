@@ -29,10 +29,28 @@ def test_report_builder_type_with_invalid_type(runner: CliRunner) -> None:
     invalid_type = "this-is-not-a-valid-type"
     experiment_name = "my-test-experiment"
 
-    result = runner.invoke(configure, [experiment_name, "-rbt", invalid_type,
-                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
-                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite"
-                                       ])
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-rbt",
+            invalid_type,
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+        ],
+    )
 
     assert result.exit_code != 0
     assert isinstance(result.exception, SystemExit)
@@ -42,10 +60,10 @@ def test_report_builder_type_with_invalid_type(runner: CliRunner) -> None:
 @patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 def test_report_builder_type_with_unsupported_custom_type(
-        if_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner
+    if_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
 ) -> None:
     """
     Tests the `report_builder_type` command with the 'custom' type, which is unsupported.
@@ -59,12 +77,30 @@ def test_report_builder_type_with_unsupported_custom_type(
     custom_type = StepType.CUSTOM
     experiment_name = "my-test-experiment"
     initial_config = {"hypothesis": "normal"}
-    read_experiment_data.return_value = {'name': experiment_name, 'config': initial_config}
+    read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}
 
-    result = runner.invoke(configure, [experiment_name, "-rbt", custom_type.value,
-                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
-                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite"
-                                       ])
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-rbt",
+            custom_type.value,
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+        ],
+    )
 
     assert result.exit_code != 0
     assert isinstance(result.exception, SystemExit)
@@ -77,11 +113,11 @@ def test_report_builder_type_with_unsupported_custom_type(
 @patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_type", [e for e in StepType if e != StepType.CUSTOM])
 def test_report_builder_type_with_valid_supported_type(
-        if_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner,
-        valid_type: StepType
+    if_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
+    valid_type: StepType,
 ) -> None:
     """
     Tests the `report_builder_type` command logic with all valid and supported arguments.
@@ -95,12 +131,30 @@ def test_report_builder_type_with_valid_supported_type(
     """
     experiment_name = "my-test-experiment"
     initial_config = {"hypothesis": "normal"}
-    read_experiment_data.return_value = {'name': experiment_name, 'config': initial_config}
+    read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}
 
-    result = runner.invoke(configure, [experiment_name, "-rbt", valid_type.value,
-                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
-                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite"
-                                       ])
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-rbt",
+            valid_type.value,
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+        ],
+    )
 
     assert result.exit_code == 0
     assert result.exception is None

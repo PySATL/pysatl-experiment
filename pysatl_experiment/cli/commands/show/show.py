@@ -1,6 +1,6 @@
 import json
 
-from click import echo, command, argument
+from click import argument, command, echo
 
 from pysatl_experiment.cli.commands.common.common import read_experiment_data
 

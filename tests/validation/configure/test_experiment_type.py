@@ -14,9 +14,7 @@ def runner() -> CliRunner:
 
 
 @patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
-def test_experiment_type_with_invalid_type(
-        get_experiment_config: MagicMock, runner: CliRunner
-) -> None:
+def test_experiment_type_with_invalid_type(get_experiment_config: MagicMock, runner: CliRunner) -> None:
     """
     Tests the `experiment_type` command with an invalid type string.
 
@@ -32,9 +30,28 @@ def test_experiment_type_with_invalid_type(
     experiment_name = "my-test-experiment"
     get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
 
-    result = runner.invoke(configure, [experiment_name, "-expt", invalid_type,
-                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
-                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite"])
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-expt",
+            invalid_type,
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+        ],
+    )
 
     assert result.exit_code != 0
     assert isinstance(result.exception, SystemExit)
@@ -45,11 +62,11 @@ def test_experiment_type_with_invalid_type(
 @patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_type", [e for e in ExperimentType])
 def test_experiment_type_with_valid_type(
-        if_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner,
-        valid_type: ExperimentType
+    if_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
+    valid_type: ExperimentType,
 ) -> None:
     """
     Tests the `experiment_type` command logic with all valid arguments.
@@ -63,11 +80,30 @@ def test_experiment_type_with_valid_type(
     """
     experiment_name = "my-test-experiment"
     initial_config = {"hypothesis": "normal"}
-    read_experiment_data.return_value = {'name': experiment_name, 'config': initial_config}
+    read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}
 
-    result = runner.invoke(configure, [experiment_name, "-expt", valid_type.value,
-                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
-                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite"])
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-expt",
+            valid_type.value,
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+        ],
+    )
 
     assert result.exit_code == 0
     assert result.exception is None

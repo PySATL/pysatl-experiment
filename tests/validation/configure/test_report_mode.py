@@ -14,9 +14,7 @@ def runner() -> CliRunner:
 
 
 @patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
-def test_report_mode_with_invalid_mode(
-    get_experiment_config: MagicMock, runner: CliRunner
-) -> None:
+def test_report_mode_with_invalid_mode(get_experiment_config: MagicMock, runner: CliRunner) -> None:
     """
     Tests the `report_mode` command logic in isolation with an invalid argument.
 
@@ -33,10 +31,30 @@ def test_report_mode_with_invalid_mode(
     experiment_name = "my-test-experiment"
     get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
 
-    result = runner.invoke(configure, [experiment_name, "-rp", invalid_mode,
-                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
-                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite",
-                                         "-rm", "reuse"])
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-rp",
+            invalid_mode,
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
+        ],
+    )
 
     assert result.exit_code != 0
     assert isinstance(result.exception, SystemExit)
@@ -47,10 +65,11 @@ def test_report_mode_with_invalid_mode(
 @patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_mode", [e for e in ReportMode])
 def test_report_mode_with_valid_mode(
-        if_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner, valid_mode: ReportMode
+    if_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
+    valid_mode: ReportMode,
 ) -> None:
     """
     Tests the `report_mode` command logic in isolation with valid arguments.
@@ -64,13 +83,32 @@ def test_report_mode_with_valid_mode(
     """
     experiment_name = "my-test-experiment"
     initial_config = {"hypothesis": "normal"}
-    read_experiment_data.return_value = {'name': experiment_name, 'config': initial_config}
+    read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}
 
-    result = runner.invoke(configure, [experiment_name, "-rp", valid_mode.value,
-                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
-                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite",
-                                         "-rm", "reuse"
-                                       ])
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-rp",
+            valid_mode.value,
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
+        ],
+    )
 
     assert result.exit_code == 0
     assert result.exception is None
