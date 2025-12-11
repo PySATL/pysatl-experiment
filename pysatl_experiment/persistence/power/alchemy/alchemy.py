@@ -14,40 +14,41 @@ from pysatl_experiment.persistence.model.power.power import IPowerStorage, Power
 
 class AlchemyPower(ModelBase):
     """
-        SQLAlchemy ORM model representing precomputed statistical power results
-        for a specific experiment, criterion, alternative hypothesis, and
-        Monte-Carlo simulation setup.
+    SQLAlchemy ORM model representing precomputed statistical power results
+    for a specific experiment, criterion, alternative hypothesis, and
+    Monte-Carlo simulation setup.
 
-        Each row contains a unique combination of:
-            - criterion type and its parameters,
-            - sample size,
-            - alternative hypothesis and its parameters,
-            - Monte-Carlo simulation count,
-            - significance level.
+    Each row contains a unique combination of:
+        - criterion type and its parameters,
+        - sample size,
+        - alternative hypothesis and its parameters,
+        - Monte-Carlo simulation count,
+        - significance level.
 
-        The uniqueness of these combinations is enforced by
-        the ``uq_power_unique`` constraint.
+    The uniqueness of these combinations is enforced by
+    the ``uq_power_unique`` constraint.
 
-        Attributes:
-            id (int): Primary key of the record.
-            experiment_id (int): Identifier of the experiment this power result
-                belongs to.
-            criterion_code (str): Code of the statistical criterion used
-                (e.g., test type).
-            criterion_parameters (str): JSON-encoded or serialized parameters
-                of the criterion.
-            sample_size (int): Sample size for which the power value was
-                computed.
-            alternative_code (str): Code of the alternative hypothesis used
-                in the simulation.
-            alternative_parameters (str): JSON-encoded or serialized parameters
-                of the alternative hypothesis.
-            monte_carlo_count (int): Number of Monte-Carlo simulations performed.
-            significance_level (float): Significance level (alpha) used
-                for the test.
-            results_criteria (str): Serialized result of the power computation,
-                typically containing power values or related statistics.
-        """
+    Attributes:
+        id (int): Primary key of the record.
+        experiment_id (int): Identifier of the experiment this power result
+            belongs to.
+        criterion_code (str): Code of the statistical criterion used
+            (e.g., test type).
+        criterion_parameters (str): JSON-encoded or serialized parameters
+            of the criterion.
+        sample_size (int): Sample size for which the power value was
+            computed.
+        alternative_code (str): Code of the alternative hypothesis used
+            in the simulation.
+        alternative_parameters (str): JSON-encoded or serialized parameters
+            of the alternative hypothesis.
+        monte_carlo_count (int): Number of Monte-Carlo simulations performed.
+        significance_level (float): Significance level (alpha) used
+            for the test.
+        results_criteria (str): Serialized result of the power computation,
+            typically containing power values or related statistics.
+    """
+
     __tablename__ = "power"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)  # type: ignore
@@ -77,23 +78,24 @@ class AlchemyPower(ModelBase):
 
 class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
     """
-        SQLAlchemy-backed storage implementation for persisting and retrieving
-        statistical power calculation results.
+    SQLAlchemy-backed storage implementation for persisting and retrieving
+    statistical power calculation results.
 
-        This class manages CRUD operations for :class:`AlchemyPower` entities,
-        providing a database-backed implementation of the ``IPowerStorage`` interface.
-        It stores and queries power computation results based on combinations of
-        criterion settings, sample size, alternative hypothesis parameters,
-        Monte-Carlo configuration, and significance level.
+    This class manages CRUD operations for :class:`AlchemyPower` entities,
+    providing a database-backed implementation of the ``IPowerStorage`` interface.
+    It stores and queries power computation results based on combinations of
+    criterion settings, sample size, alternative hypothesis parameters,
+    Monte-Carlo configuration, and significance level.
 
-        The storage must be explicitly initialized by calling :meth:`init` before any
-        database operations can be performed.
+    The storage must be explicitly initialized by calling :meth:`init` before any
+    database operations can be performed.
 
-        Attributes:
-            session (SessionType): A SQLAlchemy session shared across all instances.
-            _initialized (bool): Internal flag indicating whether the storage
-                was properly initialized via :meth:`init`.
-        """
+    Attributes:
+        session (SessionType): A SQLAlchemy session shared across all instances.
+        _initialized (bool): Internal flag indicating whether the storage
+            was properly initialized via :meth:`init`.
+    """
+
     session: ClassVar[SessionType]
 
     def __init__(self, db_url: str):

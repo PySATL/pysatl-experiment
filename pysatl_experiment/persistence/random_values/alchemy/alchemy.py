@@ -45,6 +45,7 @@ class AlchemyRandomValues(ModelBase):
         data (str): Serialized representation of the generated random values
             (e.g., JSON array).
     """
+
     __tablename__ = "random_values"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)  # type: ignore
@@ -93,6 +94,7 @@ class AlchemyRandomValuesStorage(AbstractDbStore, IRandomValuesStorage):
             ``AbstractDbStore`` class.
         _initialized (bool): Indicates whether the storage is ready for use.
     """
+
     session: ClassVar[SessionType]
 
     def __init__(self, db_url: str):

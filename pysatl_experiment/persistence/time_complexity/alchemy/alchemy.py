@@ -55,6 +55,7 @@ class AlchemyTimeComplexity(ModelBase):
     - sample_size
     - monte_carlo_count
     """
+
     __tablename__ = "time_complexity"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)  # type: ignore
@@ -125,6 +126,7 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
     The storage transparently serializes and deserializes complex objects
     (criterion parameters and timing results) using JSON.
     """
+
     session: ClassVar[SessionType]
 
     def __init__(self, db_url: str):
