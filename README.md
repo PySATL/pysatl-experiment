@@ -125,49 +125,20 @@ poetry run pre-commit run --all-files --color always --verbose --show-diff-on-fa
 poetry run experiment create NAME
 ```
 
-2. Set the experiment type value. Experiment types: critical_value, power, time_complexity.
+2. Configure experiment.
 
 ```shell
-poetry run experiment configure NAME experiment-type critical_value 
+poetry run experiment configure NAME \
+-cr KS \
+-l 0.05 0.01 \
+-s 23 \
+-c 154 \
+-h normal \
+-expt critical_value \
+-con sqlite:///pysatl.sqlite
 ```
 
-3. Setting the hypothesis value. Experiment types: normal, exponential, weibull.
-
-```shell
-poetry run experiment configure NAME hypothesis normal
-```
-
-4. Set the sample size value. (min = 10)
-
-```shell
-poetry run experiment configure NAME sample-sizes 23
-```
-
-5. Setting the value of the Monte Carlo number. (min = 100)
-
-```shell
-poetry run experiment configure NAME monte-carlo-count 154
-```
-
-6. Setting the significance levels.
-
-```shell
-poetry run experiment configure NAME significance-levels 0.05 0.01
-```
-
-7. Setting the criteria.
-
-```shell
-poetry run experiment configure NAME criteria KS
-```
-
-8. Setting the file name for connecting the storage.
-
-```shell
-poetry run experiment configure NAME storage-connection FILENAME 
-```
-
-9. Running the experiment.
+3. Running the experiment.
 
 ```shell
 poetry run experiment build-and-run NAME 

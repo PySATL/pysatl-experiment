@@ -196,18 +196,17 @@ def get_experiment_name_and_config(ctx: Context) -> tuple[str, dict]:
     return experiment_name, experiment_config
 
 
-def save_experiment_config(ctx: Context, experiment_name: str, experiment_config: dict) -> None:
+def save_experiment_config(experiment_name: str, experiment_config: dict) -> None:
     """
     Save experiment config.
 
-    :param ctx: context.
     :param experiment_name: experiment name.
     :param experiment_config: experiment config.
 
     :return: experiment config.
     """
 
-    experiment_data = get_experiment_data(ctx)
+    experiment_data = read_experiment_data(experiment_name)
     experiment_data["config"] = experiment_config
     save_experiment_data(experiment_name, experiment_data)
 

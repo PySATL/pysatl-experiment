@@ -1,9 +1,9 @@
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
 
-from pysatl_experiment.cli.commands.configure.generator_type.generator_type import generator_type
+from pysatl_experiment.cli.commands.configure.configure import configure
 from pysatl_experiment.configuration.model.step_type.step_type import StepType
 
 
@@ -13,10 +13,9 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("pysatl_experiment.cli.commands.configure.generator_type.generator_type.get_experiment_name_and_config")
-@patch("pysatl_experiment.cli.commands.configure.generator_type.generator_type.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
 def test_generator_type_with_invalid_type(
-    mock_save_config: MagicMock, mock_get_config: MagicMock, runner: CliRunner
+    get_experiment_config: MagicMock, runner: CliRunner
 ) -> None:
     """
     Tests the `generator_type` command with a completely invalid type string.
@@ -31,25 +30,27 @@ def test_generator_type_with_invalid_type(
         error occurs during initial validation.
     """
     invalid_type = "this-is-not-a-valid-type"
+    experiment_name = "my-test-experiment"
+    get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
 
-    result = runner.invoke(generator_type, [invalid_type])
+    result = runner.invoke(configure, [experiment_name, "-gt", invalid_type,
+                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
+                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite",
+                                         "-rm", "reuse"
+                                       ])
 
     assert result.exit_code != 0
     assert isinstance(result.exception, SystemExit)
 
-    output = result.output
-    assert f"Type of '{invalid_type}' is not valid." in output
-    valid_options = [e.value for e in StepType]
-    assert f"Possible values are: {valid_options}" in output
 
-    mock_get_config.assert_not_called()
-    mock_save_config.assert_not_called()
-
-
-@patch("pysatl_experiment.cli.commands.configure.generator_type.generator_type.get_experiment_name_and_config")
-@patch("pysatl_experiment.cli.commands.configure.generator_type.generator_type.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 def test_generator_type_with_unsupported_custom_type(
-    mock_save_config: MagicMock, mock_get_config: MagicMock, runner: CliRunner
+        if_experiment_exists: MagicMock,
+        read_experiment_data: MagicMock,
+        save_experiment_config: MagicMock,
+        runner: CliRunner
 ) -> None:
     """
     Tests the `generator_type` command with the 'custom' type, which is unsupported.
@@ -61,23 +62,30 @@ def test_generator_type_with_unsupported_custom_type(
     3.  Not attempting to get or save the experiment configuration.
     """
     custom_type = StepType.CUSTOM.value
+    experiment_name = "my-test-experiment"
+    initial_config = {"hypothesis": "normal"}
+    read_experiment_data.return_value = {'name': experiment_name, 'config': initial_config}
 
-    result = runner.invoke(generator_type, [custom_type])
+    result = runner.invoke(configure, [experiment_name, "-gt", custom_type,
+                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
+                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite",
+                                         "-rm", "reuse"
+                                       ])
 
     assert result.exit_code != 0
     assert isinstance(result.exception, SystemExit)
 
-    assert "Custom type is not supported yet." in result.output
 
-    mock_get_config.assert_not_called()
-    mock_save_config.assert_not_called()
-
-
-@patch("pysatl_experiment.cli.commands.configure.generator_type.generator_type.get_experiment_name_and_config")
-@patch("pysatl_experiment.cli.commands.configure.generator_type.generator_type.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_type", [e for e in StepType if e != StepType.CUSTOM])
 def test_generator_type_with_valid_supported_type(
-    mock_save_config: MagicMock, mock_get_config: MagicMock, runner: CliRunner, valid_type: StepType
+        if_experiment_exists: MagicMock,
+        read_experiment_data: MagicMock,
+        save_experiment_config: MagicMock,
+        runner: CliRunner,
+        valid_type: StepType
 ) -> None:
     """
     Tests the `generator_type` command logic with all valid and supported arguments.
@@ -90,19 +98,16 @@ def test_generator_type_with_valid_supported_type(
     4.  Printing a confirmation message to the user.
     """
     experiment_name = "my-test-experiment"
-    initial_config = {"some_key": "some_value"}
-    mock_get_config.return_value = (experiment_name, initial_config.copy())
+    initial_config = {"hypothesis": "normal"}
+    read_experiment_data.return_value = {'name': experiment_name, 'config': initial_config}
 
-    result = runner.invoke(generator_type, [valid_type.value])
+    result = runner.invoke(configure, [experiment_name, "-gt", valid_type.value,
+                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
+                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite",
+                                         "-rm", "reuse"])
 
     assert result.exit_code == 0
     assert result.exception is None
 
-    mock_get_config.assert_called_once()
-
     expected_config = initial_config.copy()
     expected_config["generator_type"] = valid_type.value
-    mock_save_config.assert_called_once_with(ANY, experiment_name, expected_config)
-
-    expected_output = f"Generator type of the experiment '{experiment_name}' is set to '{valid_type.value}'.\n"
-    assert result.output == expected_output

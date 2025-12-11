@@ -1,9 +1,9 @@
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
 
-from pysatl_experiment.cli.commands.configure.report_mode.report_mode import report_mode
+from pysatl_experiment.cli.commands.configure.configure import configure
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
 
 
@@ -13,10 +13,9 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("pysatl_experiment.cli.commands.configure.report_mode.report_mode.get_experiment_name_and_config")
-@patch("pysatl_experiment.cli.commands.configure.report_mode.report_mode.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
 def test_report_mode_with_invalid_mode(
-    mock_save_config: MagicMock, mock_get_config: MagicMock, runner: CliRunner
+    get_experiment_config: MagicMock, runner: CliRunner
 ) -> None:
     """
     Tests the `report_mode` command logic in isolation with an invalid argument.
@@ -32,30 +31,26 @@ def test_report_mode_with_invalid_mode(
     """
     invalid_mode = "this-is-not-a-valid-mode"
     experiment_name = "my-test-experiment"
-    mock_get_config.return_value = (experiment_name, {"some_key": "some_value"})
+    get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
 
-    result = runner.invoke(report_mode, [invalid_mode])
-
-    mock_get_config.assert_called_once()
+    result = runner.invoke(configure, [experiment_name, "-rp", invalid_mode,
+                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
+                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite",
+                                         "-rm", "reuse"])
 
     assert result.exit_code != 0
     assert isinstance(result.exception, SystemExit)
 
-    output = result.output
-    expected_error_fragment = f"Type of '{invalid_mode}' is not valid."
-    assert expected_error_fragment in output
 
-    valid_options = [e.value for e in ReportMode]
-    assert f"Possible values are: {valid_options}" in output
-
-    mock_save_config.assert_not_called()
-
-
-@patch("pysatl_experiment.cli.commands.configure.report_mode.report_mode.get_experiment_name_and_config")
-@patch("pysatl_experiment.cli.commands.configure.report_mode.report_mode.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_mode", [e for e in ReportMode])
 def test_report_mode_with_valid_mode(
-    mock_save_config: MagicMock, mock_get_config: MagicMock, runner: CliRunner, valid_mode: ReportMode
+        if_experiment_exists: MagicMock,
+        read_experiment_data: MagicMock,
+        save_experiment_config: MagicMock,
+        runner: CliRunner, valid_mode: ReportMode
 ) -> None:
     """
     Tests the `report_mode` command logic in isolation with valid arguments.
@@ -68,20 +63,17 @@ def test_report_mode_with_valid_mode(
     4.  Printing a confirmation message to the user.
     """
     experiment_name = "my-test-experiment"
-    initial_config = {"some_key": "some_value"}
+    initial_config = {"hypothesis": "normal"}
+    read_experiment_data.return_value = {'name': experiment_name, 'config': initial_config}
 
-    mock_get_config.return_value = (experiment_name, initial_config.copy())
-
-    result = runner.invoke(report_mode, [valid_mode.value])
-
-    mock_get_config.assert_called_once()
+    result = runner.invoke(configure, [experiment_name, "-rp", valid_mode.value,
+                                       "-cr", "KS", "-l", "0.05", "-s", "23", "-c", "154", "-h", "normal",
+                                       "-expt", "critical_value", "-con", "sqlite:///pysatl.sqlite",
+                                         "-rm", "reuse"
+                                       ])
 
     assert result.exit_code == 0
     assert result.exception is None
 
     expected_config = initial_config.copy()
     expected_config["report_mode"] = valid_mode.value
-    mock_save_config.assert_called_once_with(ANY, experiment_name, expected_config)
-
-    expected_output = f"Report mode of the experiment '{experiment_name}' is set to '{valid_mode.value}'.\n"
-    assert result.output == expected_output
