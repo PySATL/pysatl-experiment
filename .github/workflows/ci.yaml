@@ -49,7 +49,7 @@ jobs:
 
       - name: Check types
         run: |
-          poetry run mypy .
+          poetry run mypy pysatl_experiment tests
 
       - name: Tests with Coveralls
         if: matrix.python-version == '3.12'

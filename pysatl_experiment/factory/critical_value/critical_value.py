@@ -34,8 +34,6 @@ class CriticalValueExperimentFactory(
     Critical value experiment factory.
     """
 
-    pass
-
     def __init__(self, experiment_data: CriticalValueExperimentData):
         super().__init__(experiment_data)
 
