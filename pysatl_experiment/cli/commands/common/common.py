@@ -44,24 +44,6 @@ def create_result_path() -> Path:
     return results_dir
 
 
-def create_storage_path(storage_name: str) -> str:
-    """
-    Create storage path.
-
-    :param storage_name: name of the storage.
-
-    :return: path to the storage.
-    """
-
-    # pysatl-experiment/.storage
-    storage_dir = Path(__file__).resolve().parents[4] / ".storage"
-    storage_file_name = f"{storage_name}.sqlite"
-
-    storage_path = storage_dir / storage_file_name
-
-    return str(storage_path)
-
-
 def save_experiment_data(experiment_name: str, experiment_data: dict) -> None:
     """
     Save experiment data.
