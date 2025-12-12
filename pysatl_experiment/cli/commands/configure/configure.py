@@ -4,7 +4,6 @@ from click import BadParameter, Choice, ClickException, FloatRange, IntRange, ar
 from pydantic import ValidationError
 
 from pysatl_experiment.cli.commands.common.common import (
-    create_storage_path,
     criteria_from_codes,
     get_experiment_config,
     get_statistics_short_codes_for_hypothesis,
@@ -125,8 +124,7 @@ def __configure_monte_carlo_count(experiment_config: dict, count: int | None):
 
 
 def __configure_storage_connection(experiment_config: dict, connection: str):
-    storage_path = create_storage_path(connection)
-    experiment_config["storage_connection"] = storage_path
+    experiment_config["storage_connection"] = connection
 
 
 def __configure_experiment_type(experiment_config: dict, experiment_type: str | None):

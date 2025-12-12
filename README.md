@@ -130,7 +130,7 @@ poetry run experiment create NAME
 ```shell
 poetry run experiment configure NAME \
 -cr KS \
--l 0.05 0.01 \
+-l 0.05 -l 0.01 \
 -s 23 \
 -c 154 \
 -h normal \
