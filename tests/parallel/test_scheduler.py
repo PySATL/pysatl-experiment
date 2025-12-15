@@ -1,5 +1,6 @@
-﻿import functools
+import functools
 import time
+
 import pytest
 
 from pysatl_experiment.parallel.scheduler import Scheduler
@@ -40,7 +41,6 @@ def _test_simple_task(i):
 
 
 class TestAdaptiveScheduler:
-
     def test_successful_task_execution(self):
         with Scheduler(max_workers=2) as scheduler:
             results = scheduler.run([_test_task_simple, _test_task_simple])
@@ -58,10 +58,7 @@ class TestAdaptiveScheduler:
         assert results == []
 
     def test_task_with_arguments(self):
-        tasks = [
-            functools.partial(_test_task_with_args, 1, y=2),
-            functools.partial(_test_task_with_args, 3)
-        ]
+        tasks = [functools.partial(_test_task_with_args, 1, y=2), functools.partial(_test_task_with_args, 3)]
         with Scheduler(max_workers=2) as scheduler:
             results = scheduler.run(tasks)
         assert set(results) == {3, 13}

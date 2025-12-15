@@ -1,5 +1,6 @@
-﻿from concurrent.futures import ProcessPoolExecutor, as_completed, Future
-from typing import Callable, Iterator, Optional
+from collections.abc import Iterator
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from typing import Any, Callable, Optional
 
 
 class Scheduler:
@@ -30,12 +31,12 @@ class Scheduler:
             self._executor.shutdown(wait=wait)
             self._active = False
 
-    def submit(self, fn: Callable, *args, **kwargs) -> Future:
-        if not self._active:
-            raise RuntimeError("Scheduler not running. Use 'with' or call start().")
+    def submit(self, fn: Callable, *args, **kwargs) -> Any:
+        if self._executor is None:
+            raise RuntimeError("Scheduler is not started. Use 'with Scheduler() as scheduler:'")
         return self._executor.submit(fn, *args, **kwargs)
 
-    def iterate_results(self, tasks: list[Callable[[], any]]) -> Iterator[any]:
+    def iterate_results(self, tasks: list[Callable[[], Any]]) -> Iterator[Any]:
         if not self._active:
             raise RuntimeError("Use inside 'with' block")
 
@@ -74,5 +75,5 @@ class Scheduler:
             except TimeoutError:
                 continue
 
-    def run(self, tasks: list[Callable[[], any]]) -> list[any]:
+    def run(self, tasks: list[Callable[[], Any]]) -> list[Any]:
         return list(self.iterate_results(tasks))

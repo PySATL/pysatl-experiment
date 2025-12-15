@@ -181,6 +181,7 @@ def build_time_complexity_data(results_path: Path) -> TimeComplexityExperimentDa
         monte_carlo_count=5,
         criteria=[Criterion(criterion_code="FAKE", parameters=[0.0])],
         report_mode=ReportMode.WITH_CHART,
+        parallel_workers=1,
     )
     return TimeComplexityExperimentData(
         name="tc_test",

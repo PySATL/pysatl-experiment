@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Protocol, Optional
+from typing import Protocol
 
 from pysatl_criterion.persistence.model.common.data_storage.data_storage import DataModel, DataQuery, IDataStorage
 

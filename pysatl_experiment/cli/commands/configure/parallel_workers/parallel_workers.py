@@ -1,5 +1,6 @@
-﻿from click import ClickException, Context, IntRange, argument, echo, pass_context
 import multiprocessing as mp
+
+from click import ClickException, Context, IntRange, argument, echo, pass_context
 
 from pysatl_experiment.cli.commands.common.common import get_experiment_name_and_config, save_experiment_config
 from pysatl_experiment.cli.commands.configure.configure import configure

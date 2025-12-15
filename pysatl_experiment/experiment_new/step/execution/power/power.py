@@ -31,15 +31,14 @@ class PowerExecutionStep:
     """
 
     def __init__(
-            self,
-            experiment_id: int,
-            step_config: list[PowerStepData],
-            monte_carlo_count: int,
-            data_storage: IRandomValuesStorage,
-            result_storage: IPowerStorage,
-            storage_connection: str,
-            parallel_workers: int,
-
+        self,
+        experiment_id: int,
+        step_config: list[PowerStepData],
+        monte_carlo_count: int,
+        data_storage: IRandomValuesStorage,
+        result_storage: IPowerStorage,
+        storage_connection: str,
+        parallel_workers: int,
     ):
         self.experiment_id = experiment_id
         self.step_config = step_config
@@ -73,7 +72,6 @@ class PowerExecutionStep:
         tasks = [functools.partial(universal_execute_task, spec) for spec in task_specs]
 
         def save_batch(results_batch: list):
-            from pysatl_experiment.configuration.model.alternative.alternative import Alternative
             for res in results_batch:
                 (
                     exp_type,
@@ -98,7 +96,6 @@ class PowerExecutionStep:
         saver = BufferedSaver(save_func=save_batch, buffer_size=buffer_size)
 
         try:
-
             with Scheduler(max_workers=self.parallel_workers) as scheduler:
                 for result in scheduler.iterate_results(tasks):
                     saver.add(result)
@@ -106,12 +103,12 @@ class PowerExecutionStep:
             saver.flush()
 
     def _save_result_to_storage(
-            self,
-            criterion_code: str,
-            sample_size: int,
-            alternative: Alternative,
-            significance_level: float,
-            results_criteria: list[bool],
+        self,
+        criterion_code: str,
+        sample_size: int,
+        alternative: Alternative,
+        significance_level: float,
+        results_criteria: list[bool],
     ) -> None:
         """
         Save result to power storage.

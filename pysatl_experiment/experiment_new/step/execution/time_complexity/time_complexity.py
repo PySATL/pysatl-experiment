@@ -34,15 +34,15 @@ class TimeComplexityExecutionStep(IExperimentStep):
     """
 
     def __init__(
-            self,
-            experiment_id: int,
-            hypothesis_generator_data: HypothesisGeneratorData,
-            step_config: list[TimeComplexityStepData],
-            monte_carlo_count: int,
-            data_storage: IRandomValuesStorage,
-            result_storage: ITimeComplexityStorage,
-            storage_connection: str,
-            parallel_workers: int,
+        self,
+        experiment_id: int,
+        hypothesis_generator_data: HypothesisGeneratorData,
+        step_config: list[TimeComplexityStepData],
+        monte_carlo_count: int,
+        data_storage: IRandomValuesStorage,
+        result_storage: ITimeComplexityStorage,
+        storage_connection: str,
+        parallel_workers: int,
     ):
         self.experiment_id = experiment_id
         self.hypothesis_generator_data = hypothesis_generator_data
@@ -98,12 +98,12 @@ class TimeComplexityExecutionStep(IExperimentStep):
             saver.flush()
 
     def _save_result_to_storage(
-            self,
-            experiment_id: int,
-            criterion_code: str,
-            sample_size: int,
-            monte_carlo_count: int,
-            results_times: list[float],
+        self,
+        experiment_id: int,
+        criterion_code: str,
+        sample_size: int,
+        monte_carlo_count: int,
+        results_times: list[float],
     ) -> None:
         """
         Save results times to storage.

@@ -34,15 +34,15 @@ class CriticalValueExecutionStep(IExperimentStep):
     """
 
     def __init__(
-            self,
-            experiment_id: int,
-            hypothesis_generator_data: HypothesisGeneratorData,
-            step_config: list[CriticalValueStepData],
-            monte_carlo_count: int,
-            data_storage: IRandomValuesStorage,
-            result_storage: ILimitDistributionStorage,
-            storage_connection: str,
-            parallel_workers: int,
+        self,
+        experiment_id: int,
+        hypothesis_generator_data: HypothesisGeneratorData,
+        step_config: list[CriticalValueStepData],
+        monte_carlo_count: int,
+        data_storage: IRandomValuesStorage,
+        result_storage: ILimitDistributionStorage,
+        storage_connection: str,
+        parallel_workers: int,
     ):
         self.experiment_id = experiment_id
         self.hypothesis_generator_data = hypothesis_generator_data
@@ -90,7 +90,6 @@ class CriticalValueExecutionStep(IExperimentStep):
         saver = BufferedSaver(save_func=save_batch, buffer_size=buffer_size)
 
         try:
-
             with Scheduler(max_workers=self.parallel_workers) as scheduler:
                 for result in scheduler.iterate_results(tasks):
                     saver.add(result)
@@ -99,12 +98,12 @@ class CriticalValueExecutionStep(IExperimentStep):
 
     @profile
     def _save_result_to_storage(
-            self,
-            experiment_id: int,
-            criterion_code: str,
-            sample_size: int,
-            monte_carlo_count: int,
-            results_statistics: list[float],
+        self,
+        experiment_id: int,
+        criterion_code: str,
+        sample_size: int,
+        monte_carlo_count: int,
+        results_statistics: list[float],
     ) -> None:
         """
         Save results statistics to storage.

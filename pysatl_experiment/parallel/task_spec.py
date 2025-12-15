@@ -1,5 +1,5 @@
-﻿from dataclasses import dataclass, field
-from typing import List, Optional
+from dataclasses import dataclass, field
+from typing import Optional
 
 
 @dataclass
@@ -18,9 +18,9 @@ class TaskSpec:
 
     # For Critical Value & Time Complexity
     hypothesis_generator: str = ""
-    hypothesis_parameters: List[float] = field(default_factory=list)
+    hypothesis_parameters: list[float] = field(default_factory=list)
 
     # For Power
     alternative_generator: str = ""
-    alternative_parameters: List[float] = field(default_factory=list)
+    alternative_parameters: list[float] = field(default_factory=list)
     significance_level: Optional[float] = None

@@ -151,6 +151,7 @@ def build_tc_data(
         monte_carlo_count=5,
         criteria=[Criterion(criterion_code="FAKE", parameters=[])],
         report_mode=ReportMode.WITH_CHART,
+        parallel_workers=1,
     )
     steps_done = type(
         "StepsDone", (), {"is_generation_step_done": is_gen_done, "is_execution_step_done": is_exec_done}

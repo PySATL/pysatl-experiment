@@ -1,6 +1,7 @@
-﻿from typing import Generic, TypeVar
-from collections.abc import Callable
 import time
+from collections.abc import Callable
+from typing import Generic, TypeVar
+
 
 T = TypeVar("T")
 
@@ -11,9 +12,9 @@ class BufferedSaver(Generic[T]):
     """
 
     def __init__(
-            self,
-            save_func: Callable[[list[T]], None],
-            buffer_size: int = 10,
+        self,
+        save_func: Callable[[list[T]], None],
+        buffer_size: int = 10,
     ):
         if buffer_size < 1:
             raise ValueError("buffer_size must be at least 1")

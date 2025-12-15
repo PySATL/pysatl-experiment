@@ -1,5 +1,3 @@
-import os
-import tempfile
 from collections.abc import Generator
 from unittest.mock import MagicMock
 
@@ -103,12 +101,3 @@ def power_data():
         "KS_": {("Normal", 0.05): {10: [True, False, True], 20: [True, True, False]}},
         "AD_": {("Normal", 0.05): {10: [False, False, False], 20: [True, False, False]}},
     }
-
-
-@pytest.fixture
-def temp_db_path():
-    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
-        path = f.name
-    yield path
-    if os.path.exists(path):
-        os.unlink(path)

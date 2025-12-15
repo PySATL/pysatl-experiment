@@ -1,5 +1,3 @@
-import time
-
 from line_profiler import profile
 
 from pysatl_experiment.experiment_new.experiment_steps.experiment_steps import ExperimentSteps

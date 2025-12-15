@@ -1,10 +1,11 @@
-﻿import importlib
-from pysatl_experiment.parallel.task_spec import TaskSpec
-from pysatl_experiment.persistence.random_values.sqlite.sqlite import SQLiteRandomValuesStorage
+import importlib
+
 from pysatl_experiment.experiment_new.step.execution.common.utils.utils import get_sample_data_from_storage
-from pysatl_experiment.worker.power.power import PowerWorker
-from pysatl_experiment.worker.critical_value.critical_value import CriticalValueWorker
-from pysatl_experiment.worker.time_complexity.time_complexity import TimeComplexityWorker
+from pysatl_experiment.parallel.task_spec import TaskSpec
+from pysatl_experiment.persistence.random_values.alchemy import AlchemyRandomValuesStorage
+from pysatl_experiment.worker.critical_value.critical_value import CriticalValueWorker, CriticalValueWorkerResult
+from pysatl_experiment.worker.power.power import PowerWorker, PowerWorkerResult
+from pysatl_experiment.worker.time_complexity.time_complexity import TimeComplexityWorker, TimeComplexityWorkerResult
 
 
 def universal_execute_task(spec: TaskSpec):
@@ -13,7 +14,7 @@ def universal_execute_task(spec: TaskSpec):
     Returns: (experiment_type, criterion_code, sample_size, result_data)
     """
 
-    storage = SQLiteRandomValuesStorage(spec.db_path)
+    storage = AlchemyRandomValuesStorage(spec.db_path)
     storage.init()
 
     if spec.experiment_type in ("critical_value", "time_complexity"):
@@ -40,34 +41,31 @@ def universal_execute_task(spec: TaskSpec):
     statistics = stat_class()
 
     if spec.experiment_type == "time_complexity":
-        worker = TimeComplexityWorker(statistics=statistics, sample_data=data)
-        result = worker.execute()
-        return ("time_complexity",
-                statistics.code(),
-                spec.sample_size,
-                result.results_times)
+        time_worker = TimeComplexityWorker(statistics=statistics, sample_data=data)
+        time_result: TimeComplexityWorkerResult = time_worker.execute()
+        return ("time_complexity", statistics.code(), spec.sample_size, time_result.results_times)
 
     elif spec.experiment_type == "critical_value":
-        worker = CriticalValueWorker(statistics=statistics, sample_data=data)
-        result = worker.execute()
-        return ("critical_value",
-                statistics.code(),
-                spec.sample_size,
-                result.results_statistics)
+        crit_worker = CriticalValueWorker(statistics=statistics, sample_data=data)
+        crit_result: CriticalValueWorkerResult = crit_worker.execute()
+        return ("critical_value", statistics.code(), spec.sample_size, crit_result.results_statistics)
 
     elif spec.experiment_type == "power":
-        worker = PowerWorker(
+        if spec.significance_level is None:
+            raise ValueError("significance_level is required for power experiment")
+
+        power_worker = PowerWorker(
             statistics=statistics,
             sample_data=data,
             significance_level=spec.significance_level,
             storage_connection=spec.db_path,
         )
-        result = worker.execute()
+        power_result: PowerWorkerResult = power_worker.execute()
         return (
             "power",
             statistics.code(),
             spec.sample_size,
-            result.results_criteria,
+            power_result.results_criteria,
             spec.alternative_generator,
             spec.alternative_parameters,
             spec.significance_level,

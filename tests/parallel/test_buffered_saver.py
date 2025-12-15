@@ -1,11 +1,11 @@
-﻿import pytest
 from unittest.mock import Mock
+
+import pytest
 
 from pysatl_experiment.parallel.buffered_saver import BufferedSaver
 
 
 class TestBufferedSaver:
-
     def test_exact_buffer_size_flush(self):
         mock_save = Mock()
         saver = BufferedSaver(save_func=mock_save, buffer_size=3)
