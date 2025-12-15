@@ -1,5 +1,10 @@
 ﻿import importlib
 from pysatl_experiment.parallel.task_spec import TaskSpec
+from pysatl_experiment.persistence.random_values.sqlite.sqlite import SQLiteRandomValuesStorage
+from pysatl_experiment.experiment_new.step.execution.common.utils.utils import get_sample_data_from_storage
+from pysatl_experiment.worker.power.power import PowerWorker
+from pysatl_experiment.worker.critical_value.critical_value import CriticalValueWorker
+from pysatl_experiment.worker.time_complexity.time_complexity import TimeComplexityWorker
 
 
 def universal_execute_task(spec: TaskSpec):
@@ -8,13 +13,8 @@ def universal_execute_task(spec: TaskSpec):
     Returns: (experiment_type, criterion_code, sample_size, result_data)
     """
 
-    # 1. Storage
-    from pysatl_experiment.persistence.random_values.sqlite.sqlite import SQLiteRandomValuesStorage
     storage = SQLiteRandomValuesStorage(spec.db_path)
     storage.init()
-
-    # 2. Load data
-    from pysatl_experiment.experiment_new.step.execution.common.utils.utils import get_sample_data_from_storage
 
     if spec.experiment_type in ("critical_value", "time_complexity"):
         data = get_sample_data_from_storage(
@@ -35,14 +35,11 @@ def universal_execute_task(spec: TaskSpec):
     else:
         raise ValueError(f"Unknown experiment type: {spec.experiment_type}")
 
-    # 3. Reconstruct statistic
     stat_module = importlib.import_module(spec.statistic_module)
     stat_class = getattr(stat_module, spec.statistic_class_name)
     statistics = stat_class()
 
-    # 4. Execute
     if spec.experiment_type == "time_complexity":
-        from pysatl_experiment.worker.time_complexity.time_complexity import TimeComplexityWorker
         worker = TimeComplexityWorker(statistics=statistics, sample_data=data)
         result = worker.execute()
         return ("time_complexity",
@@ -51,7 +48,6 @@ def universal_execute_task(spec: TaskSpec):
                 result.results_times)
 
     elif spec.experiment_type == "critical_value":
-        from pysatl_experiment.worker.critical_value.critical_value import CriticalValueWorker
         worker = CriticalValueWorker(statistics=statistics, sample_data=data)
         result = worker.execute()
         return ("critical_value",
@@ -60,7 +56,6 @@ def universal_execute_task(spec: TaskSpec):
                 result.results_statistics)
 
     elif spec.experiment_type == "power":
-        from pysatl_experiment.worker.power.power import PowerWorker
         worker = PowerWorker(
             statistics=statistics,
             sample_data=data,

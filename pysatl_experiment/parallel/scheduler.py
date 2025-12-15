@@ -1,5 +1,4 @@
-﻿import psutil
-from concurrent.futures import ProcessPoolExecutor, as_completed, Future
+﻿from concurrent.futures import ProcessPoolExecutor, as_completed, Future
 from typing import Callable, Iterator, Optional
 
 
@@ -59,12 +58,6 @@ class Scheduler:
                         result = future.result()
                         completed += 1
                         yield result
-
-                        # === МОНИТОРИНГ CPU ===
-                        if completed % 5 == 0 or completed == total:
-                            cpu_percent = psutil.cpu_percent(interval=0.1)
-                            print(f"[MONITOR] {completed}/{total} tasks | CPU: {cpu_percent:.1f}%")
-                        # ======================
 
                         try:
                             next_task = next(task_iter)
