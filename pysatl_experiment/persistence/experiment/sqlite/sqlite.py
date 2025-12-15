@@ -47,6 +47,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
                 criteria TEXT NOT NULL,
                 alternatives TEXT NOT NULL,
                 significance_levels TEXT NOT NULL,
+                parallel_workers INTEGER NOT NULL,
                 is_generation_done INTEGER NOT NULL DEFAULT 0,
                 is_execution_done INTEGER NOT NULL DEFAULT 0,
                 is_report_building_done INTEGER NOT NULL DEFAULT 0,
@@ -81,6 +82,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
             "criteria": json.dumps(model.criteria),
             "alternatives": json.dumps(model.alternatives),
             "significance_levels": json.dumps(model.significance_levels),
+            "parallel_workers": model.parallel_workers,
             "is_generation_done": int(model.is_generation_done),
             "is_execution_done": int(model.is_execution_done),
             "is_report_building_done": int(model.is_report_building_done),
@@ -105,6 +107,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
             is_generation_done=bool(row["is_generation_done"]),
             is_execution_done=bool(row["is_execution_done"]),
             is_report_building_done=bool(row["is_report_building_done"]),
+            parallel_workers=int(row["parallel_workers"]),
         )
 
     def insert_data(self, data: ExperimentModel) -> None:
@@ -146,7 +149,8 @@ class SQLiteExperimentStorage(IExperimentStorage):
                 DO UPDATE SET
                     is_generation_done = excluded.is_generation_done,
                     is_execution_done = excluded.is_execution_done,
-                    is_report_building_done = excluded.is_report_building_done
+                    is_report_building_done = excluded.is_report_building_done,
+                    parallel_workers = excluded.parallel_workers
             """,
                 values,
             )
@@ -170,6 +174,7 @@ class SQLiteExperimentStorage(IExperimentStorage):
             "criteria": json.dumps(query.criteria),
             "alternatives": json.dumps(query.alternatives),
             "significance_levels": json.dumps(query.significance_levels),
+            "parallel_workers": query.parallel_workers,
         }
 
         conditions = []

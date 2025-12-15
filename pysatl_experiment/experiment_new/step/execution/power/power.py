@@ -8,7 +8,7 @@ from pysatl_experiment.experiment_new.step.execution.common.execution_step_data.
     ExecutionStepData,
 )
 from pysatl_experiment.parallel.buffered_saver import BufferedSaver
-from pysatl_experiment.parallel.scheduler import AdaptiveScheduler
+from pysatl_experiment.parallel.scheduler import Scheduler
 from pysatl_experiment.parallel.task_spec import TaskSpec
 from pysatl_experiment.parallel.universal_worker import universal_execute_task
 from pysatl_experiment.persistence.model.power.power import IPowerStorage, PowerModel
@@ -31,13 +31,15 @@ class PowerExecutionStep:
     """
 
     def __init__(
-        self,
-        experiment_id: int,
-        step_config: list[PowerStepData],
-        monte_carlo_count: int,
-        data_storage: IRandomValuesStorage,
-        result_storage: IPowerStorage,
-        storage_connection: str,
+            self,
+            experiment_id: int,
+            step_config: list[PowerStepData],
+            monte_carlo_count: int,
+            data_storage: IRandomValuesStorage,
+            result_storage: IPowerStorage,
+            storage_connection: str,
+            parallel_workers: int,
+
     ):
         self.experiment_id = experiment_id
         self.step_config = step_config
@@ -45,6 +47,7 @@ class PowerExecutionStep:
         self.data_storage = data_storage
         self.result_storage = result_storage
         self.storage_connection = storage_connection
+        self.parallel_workers = parallel_workers
 
     @profile
     def run(self) -> None:
@@ -94,19 +97,21 @@ class PowerExecutionStep:
         buffer_size = max(1, min(20, total_tasks // 2))
         saver = BufferedSaver(save_func=save_batch, buffer_size=buffer_size)
 
-        with AdaptiveScheduler() as scheduler:
-            for result in scheduler.iterate_results(tasks):
-                saver.add(result)
+        try:
 
-        saver.flush()
+            with Scheduler(max_workers=self.parallel_workers) as scheduler:
+                for result in scheduler.iterate_results(tasks):
+                    saver.add(result)
+        finally:
+            saver.flush()
 
     def _save_result_to_storage(
-        self,
-        criterion_code: str,
-        sample_size: int,
-        alternative: Alternative,
-        significance_level: float,
-        results_criteria: list[bool],
+            self,
+            criterion_code: str,
+            sample_size: int,
+            alternative: Alternative,
+            significance_level: float,
+            results_criteria: list[bool],
     ) -> None:
         """
         Save result to power storage.

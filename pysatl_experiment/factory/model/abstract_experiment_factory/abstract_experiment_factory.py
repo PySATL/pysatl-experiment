@@ -418,6 +418,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             criteria=criteria,
             significance_levels=significance_levels,
             alternatives=alternatives,
+            parallel_workers=config.parallel_workers,
         )
 
         experiment_id = storage.get_experiment_id(query)

@@ -169,6 +169,7 @@ def _get_experiment_config_from_storage(
         criteria=criteria,
         significance_levels=significance_levels,
         alternatives=alternatives,
+        parallel_workers=config.parallel_workers,
     )
 
     experiment_config_from_db = storage.get_data(query)
@@ -202,6 +203,7 @@ def _save_experiment_config_to_storage(config: ExperimentConfig, storage: IExper
         storage_connection=config.storage_connection,
         run_mode=config.run_mode.value,
         report_mode=config.report_mode.value,
+        parallel_workers=config.parallel_workers,
         hypothesis=config.hypothesis.value,
         generator_type=config.generator_type.value,
         executor_type=config.executor_type.value,

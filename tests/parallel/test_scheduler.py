@@ -2,7 +2,7 @@
 import time
 import pytest
 
-from pysatl_experiment.parallel.scheduler import AdaptiveScheduler
+from pysatl_experiment.parallel.scheduler import Scheduler
 
 
 def _test_task_simple():
@@ -42,18 +42,18 @@ def _test_simple_task(i):
 class TestAdaptiveScheduler:
 
     def test_successful_task_execution(self):
-        with AdaptiveScheduler(max_workers=2) as scheduler:
+        with Scheduler(max_workers=2) as scheduler:
             results = scheduler.run([_test_task_simple, _test_task_simple])
         assert results == [42, 42]
 
     def test_exception_in_task(self):
         tasks = [_test_success_task, _test_failing_task]
         with pytest.raises(ValueError, match="Task failed"):
-            with AdaptiveScheduler(max_workers=2) as scheduler:
+            with Scheduler(max_workers=2) as scheduler:
                 scheduler.run(tasks)
 
     def test_empty_task_list(self):
-        with AdaptiveScheduler() as scheduler:
+        with Scheduler() as scheduler:
             results = scheduler.run([])
         assert results == []
 
@@ -62,13 +62,13 @@ class TestAdaptiveScheduler:
             functools.partial(_test_task_with_args, 1, y=2),
             functools.partial(_test_task_with_args, 3)
         ]
-        with AdaptiveScheduler(max_workers=2) as scheduler:
+        with Scheduler(max_workers=2) as scheduler:
             results = scheduler.run(tasks)
         assert set(results) == {3, 13}
 
     def test_large_number_of_tasks(self):
         tasks = [functools.partial(_test_quick_task, i) for i in range(50)]
-        with AdaptiveScheduler(max_workers=4) as scheduler:
+        with Scheduler(max_workers=4) as scheduler:
             results = scheduler.run(tasks)
         assert len(results) == 50
         assert set(results) == {i * 2 for i in range(50)}
@@ -80,14 +80,14 @@ class TestAdaptiveScheduler:
             functools.partial(_test_variable_task, 0.05),
         ]
         results = []
-        with AdaptiveScheduler(max_workers=3) as scheduler:
+        with Scheduler(max_workers=3) as scheduler:
             for result in scheduler.iterate_results(tasks):
                 results.append(result)
         assert len(results) == 3
         assert set(results) == {0.1, 0.3, 0.05}
 
     def test_context_manager_safety(self):
-        scheduler = AdaptiveScheduler(max_workers=2)
+        scheduler = Scheduler(max_workers=2)
         assert not scheduler._active
         with scheduler:
             assert scheduler._active
@@ -95,23 +95,10 @@ class TestAdaptiveScheduler:
         assert not scheduler._active
         assert results == [42, 42]
 
-    def test_worker_adjustment(self, monkeypatch):
-        cpu_values = iter([0.9, 0.2])
-        monkeypatch.setattr("psutil.cpu_percent", lambda **kw: next(cpu_values))
-
-        scheduler = AdaptiveScheduler(max_workers=4)
-        scheduler._current_workers = 2
-
-        scheduler._adjust_workers()
-        assert scheduler._current_workers == 3
-
-        scheduler._adjust_workers()
-        assert scheduler._current_workers == 2
-
     def test_work_stealing_basic(self):
         tasks = [functools.partial(_test_simple_task, i) for i in range(5)]
 
-        with AdaptiveScheduler(max_workers=2) as scheduler:
+        with Scheduler(max_workers=2) as scheduler:
             results = list(scheduler.iterate_results(tasks))
 
         assert len(results) == 5

@@ -1,35 +1,17 @@
 ﻿import psutil
 from concurrent.futures import ProcessPoolExecutor, as_completed, Future
 from typing import Callable, Iterator, Optional
-import multiprocessing as mp
 
 
-class AdaptiveScheduler:
+class Scheduler:
     """
-    Adaptive task scheduler.
+    Runtime task scheduler based on ProcessPoolExecutor.
     """
 
-    def __init__(
-            self,
-            max_workers: Optional[int] = None,
-            cpu_target: float = 0.7,
-            scale_up_threshold: float = 0.8,
-            scale_down_threshold: float = 0.3,
-    ):
-        self.max_workers = max_workers or min(16, mp.cpu_count())
-        self.cpu_target = cpu_target
-        self.scale_up_threshold = scale_up_threshold
-        self.scale_down_threshold = scale_down_threshold
+    def __init__(self, max_workers: int):
+        self.max_workers = max_workers
         self._executor: Optional[ProcessPoolExecutor] = None
         self._active = False
-        self._current_workers = min(2, self.max_workers)
-
-    def _adjust_workers(self):
-        cpu = psutil.cpu_percent(interval=0.1)
-        if cpu > self.scale_up_threshold and self._current_workers < self.max_workers:
-            self._current_workers = min(self._current_workers + 1, self.max_workers)
-        elif cpu < self.scale_down_threshold and self._current_workers > 1:
-            self._current_workers = max(self._current_workers - 1, 1)
 
     def __enter__(self):
         self.start()
@@ -63,7 +45,7 @@ class AdaptiveScheduler:
         total = len(tasks)
         completed = 0
 
-        for _ in range(min(self._current_workers, total)):
+        for _ in range(min(self.max_workers, total)):
             try:
                 task = next(task_iter)
                 futures[self.submit(task)] = task
@@ -71,8 +53,6 @@ class AdaptiveScheduler:
                 break
 
         while futures:
-            self._adjust_workers()
-
             try:
                 for future in as_completed(futures):
                     try:
