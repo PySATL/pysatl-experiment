@@ -2,6 +2,7 @@ import time
 from dataclasses import dataclass
 
 from line_profiler import profile
+from numpy import float64
 
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 from pysatl_experiment.worker.model.abstract_worker.abstract_worker import IWorker, WorkerResult
@@ -13,7 +14,7 @@ class CriticalValueWorkerResult(WorkerResult):
     Critical value worker result container.
     """
 
-    results_statistics: list[float]
+    results_statistics: list[float | float64]
 
 
 class CriticalValueWorker(IWorker[CriticalValueWorkerResult]):
