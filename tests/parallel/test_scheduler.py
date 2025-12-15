@@ -1,4 +1,4 @@
-import functools
+﻿import functools
 import time
 
 import pytest
@@ -53,7 +53,7 @@ class TestAdaptiveScheduler:
                 scheduler.run(tasks)
 
     def test_empty_task_list(self):
-        with Scheduler() as scheduler:
+        with Scheduler(max_workers=1) as scheduler:
             results = scheduler.run([])
         assert results == []
 
