@@ -1,4 +1,3 @@
-import time
 from collections.abc import Callable
 from typing import Generic, TypeVar
 
@@ -21,7 +20,6 @@ class BufferedSaver(Generic[T]):
         self.save_func = save_func
         self.buffer_size = buffer_size
         self.buffer: list[T] = []
-        self.last_flush = time.time()
 
     def add(self, item: T) -> None:
         """
@@ -41,4 +39,3 @@ class BufferedSaver(Generic[T]):
         if self.buffer:
             self.save_func(self.buffer[:])
             self.buffer.clear()
-            self.last_flush = time.time()

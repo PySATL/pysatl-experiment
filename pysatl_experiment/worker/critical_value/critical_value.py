@@ -31,13 +31,9 @@ class CriticalValueWorker(IWorker[CriticalValueWorkerResult]):
         """
         Execute critical value worker.
         """
-        starting = time.perf_counter()
 
         results_statistics = [self.statistics.execute_statistic(rvs=data) for data in self.sample_data]
 
         result = CriticalValueWorkerResult(results_statistics=results_statistics)
-
-        duration = time.perf_counter() - starting
-        print(f"[WORKER TIME] CriticalValueWorker | samples={len(self.sample_data)} | time={duration:.2f}s")
 
         return result
