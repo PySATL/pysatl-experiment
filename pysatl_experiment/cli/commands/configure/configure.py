@@ -1,4 +1,5 @@
 import json
+import multiprocessing as mp
 
 from click import BadParameter, Choice, ClickException, FloatRange, IntRange, argument, command, echo, option
 from pydantic import ValidationError
@@ -135,6 +136,21 @@ def __configure_experiment_type(experiment_config: dict, experiment_type: str | 
     experiment_config["experiment_type"] = validated_experiment_type.value
 
 
+def __configure_workers(experiment_config: dict, workers: int | None):
+    if workers is None:
+        return
+
+    max_possible = mp.cpu_count()
+    if workers > max_possible:
+        raise ClickException(
+            f"Cannot set parallel workers to {workers}. "
+            f"Your machine has only {max_possible} CPU cores. "
+            f"Please specify a value between 1 and {max_possible}."
+        )
+
+    experiment_config["parallel_workers"] = workers
+
+
 def __configure_alternatives(experiment_config: dict, alternative: tuple[str] | None):
     if alternative is None:
         return
@@ -215,6 +231,7 @@ def __configure_significance_levels(experiment_config: dict, levels: tuple[float
 )
 @option("-et", "--executor-type", type=Choice(StepType.list()), help="Executor type. Example: standard")
 @option("-cr", "--criteria", multiple=True, help="Criterion codes. Example: KS")
+@option("-w", "--workers", type=IntRange(min=1), help="Criterion codes. Example: KS")
 def configure(
     name: str,
     alternative: tuple[str],
@@ -230,11 +247,13 @@ def configure(
     experiment_type: str,
     executor_type: str,
     criteria: tuple[str, ...],
+    workers: int,
 ) -> None:
     """
     Configure experiment parameters.
 
     :param name: name of the experiment.
+    :param workers: Number of parallel workers (1 <= workers).
     """
 
     experiment_exists = if_experiment_exists(name)
@@ -256,6 +275,7 @@ def configure(
     __configure_executor_type(experiment_config, executor_type)
     __configure_criteria(experiment_config, criteria)
     __configure_alternatives(experiment_config, alternative)
+    __configure_workers(experiment_config, workers)
 
     save_experiment_config(name, experiment_config)
 
