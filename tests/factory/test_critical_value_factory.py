@@ -181,6 +181,7 @@ def build_cv_data(results_path: Path) -> CriticalValueExperimentData:
         criteria=[Criterion(criterion_code="FAKE", parameters=[0.0])],
         report_mode=ReportMode.WITH_CHART,
         significance_levels=[0.05, 0.1],
+        parallel_workers=1,
     )
     return CriticalValueExperimentData(
         name="cv_test",

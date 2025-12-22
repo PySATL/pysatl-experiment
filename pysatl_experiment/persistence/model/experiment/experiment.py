@@ -19,6 +19,7 @@ class ExperimentModel(DataModel):
     criteria: dict[str, list[float]]
     alternatives: dict[str, list[float]]
     significance_levels: list[float]
+    parallel_workers: int
     is_generation_done: bool
     is_execution_done: bool
     is_report_building_done: bool
@@ -39,6 +40,7 @@ class ExperimentQuery(DataQuery):
     alternatives: dict[str, list[float]]
     significance_levels: list[float]
     report_mode: str
+    parallel_workers: int
 
 
 class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], Protocol):
