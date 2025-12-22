@@ -3,7 +3,7 @@ from pathlib import Path
 from line_profiler import profile
 from typing_extensions import override
 
-from pysatl_criterion.cv_calculator.cv_calculator.cv_calculator import CVCalculator
+from pysatl_criterion.critical_value.cv_calculator.cv_calculator import CVCalculator
 from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import (
     ILimitDistributionStorage,
     LimitDistributionQuery,

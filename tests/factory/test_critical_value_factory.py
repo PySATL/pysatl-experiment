@@ -54,6 +54,10 @@ class FakeGenerator:
 
 
 class FakeStatistics(AbstractGoodnessOfFitStatistic):
+    @staticmethod
+    def short_code():
+        return "FAKE_CODE"
+
     def execute_statistic(self, rvs, **kwargs) -> float | float64:
         return 0
 
