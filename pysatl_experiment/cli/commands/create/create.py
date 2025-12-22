@@ -25,6 +25,7 @@ def create(name: str) -> None:
             "report_builder_type": "standard",
             "run_mode": "reuse",
             "report_mode": "with-chart",
+            "parallel_workers": 1,
         },
     }
 

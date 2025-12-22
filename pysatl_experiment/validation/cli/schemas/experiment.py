@@ -40,6 +40,7 @@ class BaseExperimentConfig(BaseModel):
     storage_connection: str
     sample_sizes: list[int]
     monte_carlo_count: int
+    parallel_workers: int
 
     @field_validator("generator_type", "executor_type", "report_builder_type")
     @classmethod

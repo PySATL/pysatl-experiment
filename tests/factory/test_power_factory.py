@@ -192,6 +192,7 @@ def build_power_data(results_path: Path) -> PowerExperimentData:
             Alternative(generator_name="ALT_B", parameters=[0.2]),
         ],
         significance_levels=[0.05, 0.1],
+        parallel_workers=1,
     )
     return PowerExperimentData(
         name="power_test",
