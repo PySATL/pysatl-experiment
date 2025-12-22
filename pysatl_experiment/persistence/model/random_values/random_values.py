@@ -1,5 +1,5 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Protocol
 
 from pysatl_criterion.persistence.model.common.data_storage.data_storage import DataModel, DataQuery, IDataStorage
 
@@ -44,35 +44,40 @@ class RandomValuesAllModel(DataModel):
     data: list[list[float]]
 
 
-class IRandomValuesStorage(IDataStorage[RandomValuesModel, RandomValuesQuery], Protocol):
+class IRandomValuesStorage(IDataStorage[RandomValuesModel, RandomValuesQuery], ABC):
     """
     Random values storage interface.
     """
 
+    @abstractmethod
     def get_rvs_count(self, query: RandomValuesAllQuery) -> int:
         """
         Get count of samples.
         """
         pass
 
+    @abstractmethod
     def insert_all_data(self, query: RandomValuesAllModel) -> None:
         """
         Insert all data based on hypothesis and sample size.
         """
         pass
 
+    @abstractmethod
     def get_all_data(self, query: RandomValuesAllQuery) -> list[RandomValuesModel] | None:
         """
         Get all data based on hypothesis and sample size.
         """
         pass
 
+    @abstractmethod
     def delete_all_data(self, query: RandomValuesAllQuery) -> None:
         """
         Delete all data based on hypothesis and sample size.
         """
         pass
 
+    @abstractmethod
     def get_count_data(self, query: RandomValuesCountQuery) -> list[RandomValuesModel] | None:
         """
         Get count data based on hypothesis and sample size.

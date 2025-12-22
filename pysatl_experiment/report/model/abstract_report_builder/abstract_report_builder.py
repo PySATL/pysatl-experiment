@@ -1,11 +1,12 @@
-from typing import Protocol
+from abc import ABC, abstractmethod
 
 
-class IReportBuilder(Protocol):
+class IReportBuilder(ABC):
     """
     Report builder interface.
     """
 
+    @abstractmethod
     def build(self) -> None:
         """
         Build file.

@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 
 from line_profiler import profile
+from typing_extensions import override
 
 from pysatl_experiment.experiment.generator import AbstractRVSGenerator
+from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesModel
 
 
@@ -19,7 +21,7 @@ class GenerationStepData:
     count: int
 
 
-class GenerationStep:
+class GenerationStep(IExperimentStep):
     """
     Standard experiment generation step.
     """
@@ -33,6 +35,7 @@ class GenerationStep:
         self.data_storage = data_storage
 
     @profile
+    @override
     def run(self) -> None:
         """
         Run standard generation step.

@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from numpy import float64
 
+from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.experiment_config.time_complexity.time_complexity import (
     TimeComplexityExperimentConfig,
@@ -23,7 +25,9 @@ from pysatl_experiment.experiment_new.step.report_building.time_complexity.time_
     TimeComplexityReportBuildingStep,
 )
 from pysatl_experiment.factory.time_complexity.time_complexity import TimeComplexityExperimentFactory
+from pysatl_experiment.persistence.model.experiment.experiment import IExperimentStorage
 from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.model.time_complexity.time_complexity import ITimeComplexityStorage
 
 
 # Provide a stub for line_profiler to avoid optional dependency during imports
@@ -51,7 +55,10 @@ class FakeGenerator:
         return [0.0 for _ in range(n)]
 
 
-class FakeStatistics:
+class FakeStatistics(AbstractGoodnessOfFitStatistic):
+    def execute_statistic(self, rvs, **kwargs) -> float | float64:
+        return 0
+
     @staticmethod
     def code() -> str:
         return "FAKE_CODE"
@@ -88,7 +95,7 @@ class FakeRandomValuesStorage:
         pass
 
 
-class FakeTimeComplexityStorage:
+class FakeTimeComplexityStorage(ITimeComplexityStorage):
     def __init__(self, has_result: set[tuple[str, int, int]]):
         # key: (criterion_code, sample_size, monte_carlo_count)
         self.has_result = has_result
@@ -112,7 +119,7 @@ class FakeTimeComplexityStorage:
         pass
 
 
-class FakeExperimentStorage:
+class FakeExperimentStorage(IExperimentStorage):
     def __init__(self, experiment_id: int):
         self._id = experiment_id
 

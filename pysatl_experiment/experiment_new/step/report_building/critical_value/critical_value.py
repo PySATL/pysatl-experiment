@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from line_profiler import profile
+from typing_extensions import override
 
 from pysatl_criterion.cv_calculator.cv_calculator.cv_calculator import CVCalculator
 from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import (
@@ -9,10 +10,11 @@ from pysatl_criterion.persistence.model.limit_distribution.limit_distribution im
 )
 from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
+from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.report.critical_value.critical_value import CriticalValueReportBuilder
 
 
-class CriticalValueReportBuildingStep:
+class CriticalValueReportBuildingStep(IExperimentStep):
     """
     Standard critical value experiment report building step.
     """
@@ -36,6 +38,7 @@ class CriticalValueReportBuildingStep:
         self.with_chart = with_chart
 
     @profile
+    @override
     def run(self) -> None:
         """
         Run standard critical value report building step.

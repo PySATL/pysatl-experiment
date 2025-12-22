@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from numpy import float64
 
+from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.experiment_config.critical_value.critical_value import (
     CriticalValueExperimentConfig,
@@ -23,6 +25,8 @@ from pysatl_experiment.experiment_new.step.report_building.critical_value.critic
     CriticalValueReportBuildingStep,
 )
 from pysatl_experiment.factory.critical_value.critical_value import CriticalValueExperimentFactory
+from pysatl_experiment.persistence.model.experiment.experiment import IExperimentStorage
+from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage
 
 
 # Provide a stub for line_profiler to avoid optional dependency during imports
@@ -49,13 +53,16 @@ class FakeGenerator:
         return [0.0 for _ in range(n)]
 
 
-class FakeStatistics:
+class FakeStatistics(AbstractGoodnessOfFitStatistic):
+    def execute_statistic(self, rvs, **kwargs) -> float | float64:
+        return 0
+
     @staticmethod
     def code() -> str:
         return "FAKE_CODE"
 
 
-class FakeRandomValuesStorage:
+class FakeRandomValuesStorage(IRandomValuesStorage):
     def __init__(self, counts_by_size: dict[int, int]):
         self.counts_by_size = counts_by_size
 
@@ -113,7 +120,7 @@ class FakeLimitDistributionStorage:
         return None
 
 
-class FakeExperimentStorage:
+class FakeExperimentStorage(IExperimentStorage):
     def __init__(self, experiment_id: int):
         self._id = experiment_id
 
