@@ -1,20 +1,24 @@
+import functools
 from dataclasses import dataclass
 
 from line_profiler import profile
 
+from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.experiment_new.step.execution.common.execution_step_data.execution_step_data import (  # noqa: E501
     ExecutionStepData,
 )
 from pysatl_experiment.experiment_new.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (  # noqa: E501
     HypothesisGeneratorData,
 )
-from pysatl_experiment.experiment_new.step.execution.common.utils.utils import get_sample_data_from_storage
+from pysatl_experiment.parallel.buffered_saver import BufferedSaver
+from pysatl_experiment.parallel.scheduler import Scheduler
+from pysatl_experiment.parallel.task_spec import TaskSpec
+from pysatl_experiment.parallel.universal_worker import universal_execute_task
 from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage
 from pysatl_experiment.persistence.model.time_complexity.time_complexity import (
     ITimeComplexityStorage,
     TimeComplexityModel,
 )
-from pysatl_experiment.worker.time_complexity.time_complexity import TimeComplexityWorker
 
 
 @dataclass
@@ -24,7 +28,7 @@ class TimeComplexityStepData(ExecutionStepData):
     """
 
 
-class TimeComplexityExecutionStep:
+class TimeComplexityExecutionStep(IExperimentStep):
     """
     Standard time complexity experiment execution step.
     """
@@ -37,6 +41,8 @@ class TimeComplexityExecutionStep:
         monte_carlo_count: int,
         data_storage: IRandomValuesStorage,
         result_storage: ITimeComplexityStorage,
+        storage_connection: str,
+        parallel_workers: int,
     ):
         self.experiment_id = experiment_id
         self.hypothesis_generator_data = hypothesis_generator_data
@@ -44,36 +50,52 @@ class TimeComplexityExecutionStep:
         self.monte_carlo_count = monte_carlo_count
         self.data_storage = data_storage
         self.result_storage = result_storage
+        self.storage_connection = storage_connection
+        self.parallel_workers = parallel_workers
 
     @profile
     def run(self) -> None:
         """
-        Run standard time complexity execution step.
+        Run time complexity experiment in parallel with buffering.
         """
 
+        task_specs = []
         for step_data in self.step_config:
-            statistics = step_data.statistics
-            sample_size = step_data.sample_size
-
-            data = get_sample_data_from_storage(
-                generator_name=self.hypothesis_generator_data.generator_name,
-                generator_parameters=self.hypothesis_generator_data.parameters,
-                sample_size=sample_size,
-                count=self.monte_carlo_count,
-                data_storage=self.data_storage,
-            )
-
-            worker = TimeComplexityWorker(statistics=statistics, sample_data=data)
-            result = worker.execute()
-            results_times = result.results_times
-
-            self._save_result_to_storage(
-                experiment_id=self.experiment_id,
-                criterion_code=statistics.code(),
-                sample_size=sample_size,
+            spec = TaskSpec(
+                experiment_type="time_complexity",
+                statistic_class_name=step_data.statistics.__class__.__name__,
+                statistic_module=step_data.statistics.__class__.__module__,
+                sample_size=step_data.sample_size,
                 monte_carlo_count=self.monte_carlo_count,
-                results_times=results_times,
+                db_path=self.storage_connection,
+                hypothesis_generator=self.hypothesis_generator_data.generator_name,
+                hypothesis_parameters=self.hypothesis_generator_data.parameters,
             )
+            task_specs.append(spec)
+
+        tasks = [functools.partial(universal_execute_task, spec) for spec in task_specs]
+
+        def save_batch(results_batch: list):
+            for res in results_batch:
+                exp_type, criterion_code, sample_size, results_times = res
+                self._save_result_to_storage(
+                    experiment_id=self.experiment_id,
+                    criterion_code=criterion_code,
+                    sample_size=sample_size,
+                    monte_carlo_count=self.monte_carlo_count,
+                    results_times=results_times,
+                )
+
+        total_tasks = len(tasks)
+        buffer_size = max(1, min(20, total_tasks // 2))
+        saver = BufferedSaver(save_func=save_batch, buffer_size=buffer_size)
+
+        try:
+            with Scheduler(max_workers=self.parallel_workers) as scheduler:
+                for result in scheduler.iterate_results(tasks):
+                    saver.add(result)
+        finally:
+            saver.flush()
 
     def _save_result_to_storage(
         self,

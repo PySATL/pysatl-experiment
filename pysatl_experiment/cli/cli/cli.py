@@ -7,6 +7,7 @@ from pysatl_experiment.cli.commands.configure.experiment_type.experiment_type im
 from pysatl_experiment.cli.commands.configure.generator_type.generator_type import generator_type
 from pysatl_experiment.cli.commands.configure.hypothesis.hypothesis import hypothesis
 from pysatl_experiment.cli.commands.configure.monte_carlo_count.monte_carlo_count import monte_carlo_count
+from pysatl_experiment.cli.commands.configure.parallel_workers.parallel_workers import parallel_workers
 from pysatl_experiment.cli.commands.configure.report_builder_type.report_builder_type import report_builder_type
 from pysatl_experiment.cli.commands.configure.report_mode.report_mode import report_mode
 from pysatl_experiment.cli.commands.configure.run_mode.run_mode import run_mode
@@ -34,4 +35,5 @@ cli.add_command(significance_levels)
 cli.add_command(criteria)
 cli.add_command(alternatives)
 cli.add_command(report_mode)
+cli.add_command(parallel_workers)
 cli.add_command(build_and_run)

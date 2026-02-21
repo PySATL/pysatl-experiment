@@ -34,8 +34,6 @@ class CriticalValueExperimentFactory(
     Critical value experiment factory.
     """
 
-    pass
-
     def __init__(self, experiment_data: CriticalValueExperimentData):
         super().__init__(experiment_data)
 
@@ -127,6 +125,8 @@ class CriticalValueExperimentFactory(
             monte_carlo_count=monte_carlo_count,
             data_storage=data_storage,
             result_storage=result_storage,
+            storage_connection=config.storage_connection,
+            parallel_workers=config.parallel_workers,
         )
 
         return execution_step

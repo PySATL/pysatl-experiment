@@ -1,8 +1,8 @@
-from click import Context, argument, echo, pass_context
+from click import BadParameter, Context, argument, echo, pass_context
 
 from pysatl_experiment.cli.commands.common.common import get_experiment_name_and_config, save_experiment_config
 from pysatl_experiment.cli.commands.configure.configure import configure
-from pysatl_experiment.validation.cli.commands.configure.experiment_type.experiment_type import validate_experiment_type
+from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 
 
 @configure.command()
@@ -10,19 +10,32 @@ from pysatl_experiment.validation.cli.commands.configure.experiment_type.experim
 @pass_context
 def experiment_type(ctx: Context, exp_type: str) -> None:
     """
-    Configure experiment type.
+    Set the type for the current experiment.
 
-    :param ctx: context.
-    :param exp_type: experiment type.
+    This command configures the main objective of the experiment, such as
+    'power' for power analysis or 'critical_value' for calculating critical
+    values. The chosen type affects which other configuration parameters are
+    valid and required.
+
+    Example:
+        experiment configure MyPowerAnalysis experiment-type power
+
+    Args:
+        ctx: The Click context object, passed automatically.
+        exp_type: The desired experiment type (e.g., 'power', 'time_complexity').
+            The value must match one of the predefined types in `ExperimentType`
+            and is case-insensitive.
     """
-
-    validate_experiment_type(exp_type)
-
     experiment_name, experiment_config = get_experiment_name_and_config(ctx)
 
-    exp_type_lower = exp_type.lower()
-    experiment_config["experiment_type"] = exp_type_lower
+    try:
+        validated_experiment_type = ExperimentType(exp_type.lower())
+    except ValueError:
+        valid_options = [e.value for e in ExperimentType]
+        raise BadParameter(f"Type of '{exp_type}' is not valid.\nPossible values are: {valid_options}.")
+
+    experiment_config["experiment_type"] = validated_experiment_type.value
 
     save_experiment_config(ctx, experiment_name, experiment_config)
 
-    echo(f"Type of the experiment '{experiment_name}' is set to '{exp_type_lower}'.")
+    echo(f"Type of the experiment '{experiment_name}' is set to '{validated_experiment_type.value}'.")

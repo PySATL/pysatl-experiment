@@ -21,7 +21,7 @@ class CriticalValueReportBuilder:
         criteria_config: list[CriterionConfig],
         sample_sizes: list[int],
         significance_levels: list[float],
-        cv_values: list[float],
+        cv_values: list[float | tuple[float, float]],
         results_path: Path,
         with_chart: ReportMode,
     ):
@@ -148,7 +148,7 @@ class CriticalValueReportBuilder:
 
         return str(chart_path.resolve().as_posix())
 
-    def _chunk_cv_values(self) -> list[list[float]]:
+    def _chunk_cv_values(self) -> list[list[float | tuple[float, float]]]:
         """
         Splits a flat cv_values list into parts according to the criteria.
 

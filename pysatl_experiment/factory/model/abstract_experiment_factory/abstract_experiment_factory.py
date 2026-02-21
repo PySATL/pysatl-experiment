@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar, cast
 
-from pysatl_criterion.persistence.limit_distribution.sqlite.sqlite import SQLiteLimitDistributionStorage
+from pysatl_criterion.persistence.limit_distribution.datastorage.datastorage import SQLAlchemyLimitDistributionStorage
 from pysatl_criterion.persistence.model.common.data_storage.data_storage import IDataStorage
 from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import LimitDistributionQuery
 from pysatl_criterion.statistics import (
@@ -23,9 +23,9 @@ from pysatl_experiment.persistence.model.experiment.experiment import Experiment
 from pysatl_experiment.persistence.model.power.power import PowerQuery
 from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesAllQuery
 from pysatl_experiment.persistence.model.time_complexity.time_complexity import TimeComplexityQuery
-from pysatl_experiment.persistence.power.sqlite.sqlite import SQLitePowerStorage
-from pysatl_experiment.persistence.random_values.sqlite.sqlite import SQLiteRandomValuesStorage
-from pysatl_experiment.persistence.time_complexity.sqlite.sqlite import SQLiteTimeComplexityStorage
+from pysatl_experiment.persistence.power.alchemy.alchemy import AlchemyPowerStorage
+from pysatl_experiment.persistence.random_values.alchemy import AlchemyRandomValuesStorage
+from pysatl_experiment.persistence.time_complexity.alchemy.alchemy import AlchemyTimeComplexityStorage
 
 
 D = TypeVar("D", contravariant=True, bound=ExperimentData)
@@ -418,6 +418,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             criteria=criteria,
             significance_levels=significance_levels,
             alternatives=alternatives,
+            parallel_workers=config.parallel_workers,
         )
 
         experiment_id = storage.get_experiment_id(query)
@@ -434,7 +435,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         """
 
         storage_connection = self.experiment_data.config.storage_connection
-        data_storage = SQLiteRandomValuesStorage(storage_connection)
+        data_storage = AlchemyRandomValuesStorage(storage_connection)
         data_storage.init()
 
         return data_storage
@@ -462,15 +463,15 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         experiment_type = self.experiment_data.config.experiment_type
         storage_connection = self.experiment_data.config.storage_connection
         if experiment_type == ExperimentType.CRITICAL_VALUE:
-            limit_distribution_storage = SQLiteLimitDistributionStorage(storage_connection)
+            limit_distribution_storage = SQLAlchemyLimitDistributionStorage(storage_connection)
             limit_distribution_storage.init()
             return cast(RS, limit_distribution_storage)
         elif experiment_type == ExperimentType.POWER:
-            power_storage = SQLitePowerStorage(storage_connection)
+            power_storage = AlchemyPowerStorage(storage_connection)
             power_storage.init()
             return cast(RS, power_storage)
         elif experiment_type == ExperimentType.TIME_COMPLEXITY:
-            time_complexity_storage = SQLiteTimeComplexityStorage(storage_connection)
+            time_complexity_storage = AlchemyTimeComplexityStorage(storage_connection)
             time_complexity_storage.init()
             return cast(RS, time_complexity_storage)
         else:

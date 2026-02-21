@@ -122,6 +122,7 @@ class PowerExperimentFactory(
             data_storage=data_storage,
             result_storage=result_storage,
             storage_connection=storage_connection,
+            parallel_workers=config.parallel_workers,
         )
 
         return execution_step

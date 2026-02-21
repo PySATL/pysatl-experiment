@@ -25,3 +25,4 @@ class ExperimentConfig:
     monte_carlo_count: int
     criteria: list[Criterion]
     report_mode: ReportMode
+    parallel_workers: int

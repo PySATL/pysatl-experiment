@@ -25,9 +25,10 @@ def create(name: str) -> None:
             "report_builder_type": "standard",
             "run_mode": "reuse",
             "report_mode": "with-chart",
+            "parallel_workers": 1,
         },
     }
 
     save_experiment_data(name, experiment_data)
 
-    echo(f"Experiment with name {name} was created successfully.")
+    echo(f"Experiment with name '{name}' was created successfully.")
