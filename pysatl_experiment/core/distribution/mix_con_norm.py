@@ -24,4 +24,4 @@ def generate_mix_con_norm(size, p=0.5, a=0, b=1) -> list[float]:
             item = norm.rvs(size=1)
         result.append(item)
 
-    return np.concatenate(result, axis=0)
+    return np.concatenate(result, axis=0).tolist()
