@@ -8,3 +8,12 @@ class StepType(Enum):
 
     STANDARD = "standard"
     CUSTOM = "custom"
+
+    @classmethod
+    def list(cls):
+        """
+        Collect all enum values.
+
+        @return: enum values
+        """
+        return [member.value for member in cls]

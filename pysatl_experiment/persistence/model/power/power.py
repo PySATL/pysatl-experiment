@@ -1,5 +1,5 @@
+from abc import ABC
 from dataclasses import dataclass
-from typing import Protocol
 
 from pysatl_criterion.persistence.model.common.data_storage.data_storage import DataModel, DataQuery, IDataStorage
 
@@ -28,7 +28,7 @@ class PowerQuery(DataQuery):
     significance_level: float
 
 
-class IPowerStorage(IDataStorage[PowerModel, PowerQuery], Protocol):
+class IPowerStorage(IDataStorage[PowerModel, PowerQuery], ABC):
     """
     Power storage interface.
     """

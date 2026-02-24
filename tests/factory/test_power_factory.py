@@ -20,6 +20,9 @@ from pysatl_experiment.experiment_new.step.execution.power.power import PowerExe
 from pysatl_experiment.experiment_new.step.generation.generation import GenerationStep
 from pysatl_experiment.experiment_new.step.report_building.power.power import PowerReportBuildingStep
 from pysatl_experiment.factory.power.power import PowerExperimentFactory
+from pysatl_experiment.persistence.model.experiment.experiment import IExperimentStorage
+from pysatl_experiment.persistence.model.power.power import IPowerStorage
+from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage
 
 
 # Provide a stub for line_profiler to avoid optional dependency during imports
@@ -52,7 +55,7 @@ class FakeStatistics:
         return "FAKE_CODE"
 
 
-class FakeRandomValuesStorage:
+class FakeRandomValuesStorage(IRandomValuesStorage):
     def __init__(self, counts_by_key: dict[tuple[str, tuple[float, ...], int], int]):
         # key: (generator_name, parameters_tuple, sample_size)
         self.counts_by_key = counts_by_key
@@ -90,7 +93,7 @@ class FakeRandomValuesStorage:
         return None
 
 
-class FakePowerStorage:
+class FakePowerStorage(IPowerStorage):
     def __init__(self, has_result: set[tuple[str, int, int, str, tuple[float, ...], float]]):
         # key: (criterion_code, sample_size, monte_carlo_count, alternative_code, alternative_parameters,
         # significance_level)
@@ -117,7 +120,7 @@ class FakePowerStorage:
         pass
 
 
-class FakeExperimentStorage:
+class FakeExperimentStorage(IExperimentStorage):
     def __init__(self, experiment_id: int):
         self._id = experiment_id
 

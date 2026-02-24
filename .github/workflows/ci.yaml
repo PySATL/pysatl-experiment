@@ -42,13 +42,13 @@ jobs:
         run: poetry install --with dev
 
       - name: Run Ruff lint
-        run: poetry run ruff check --output-format=github
+        run: poetry run ruff check pysatl_experiment tests --output-format=github
 
       - name: Check formatting with Ruff
-        run: poetry run ruff format --check
+        run: poetry run ruff format pysatl_experiment tests --check
 
       - name: Run tests
-        run: poetry run pytest --random-order
+        run: poetry run pytest --random-order tests
 
       - name: Check types
         run: |
