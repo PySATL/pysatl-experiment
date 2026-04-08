@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar, cast
 
-from pysatl_criterion.persistence.limit_distribution.datastorage.datastorage import SQLAlchemyLimitDistributionStorage
+from pysatl_criterion.persistence.limit_distribution.datastorage.datastorage import AlchemyLimitDistributionStorage
 from pysatl_criterion.persistence.model.common.data_storage.data_storage import IDataStorage
 from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import LimitDistributionQuery
 from pysatl_criterion.statistics import (
@@ -463,7 +463,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         experiment_type = self.experiment_data.config.experiment_type
         storage_connection = self.experiment_data.config.storage_connection
         if experiment_type == ExperimentType.CRITICAL_VALUE:
-            limit_distribution_storage = SQLAlchemyLimitDistributionStorage(storage_connection)
+            limit_distribution_storage = AlchemyLimitDistributionStorage(storage_connection)
             limit_distribution_storage.init()
             return cast(RS, limit_distribution_storage)
         elif experiment_type == ExperimentType.POWER:

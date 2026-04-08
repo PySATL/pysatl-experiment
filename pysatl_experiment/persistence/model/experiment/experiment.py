@@ -1,5 +1,5 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Protocol
 
 from pysatl_criterion.persistence.model.common.data_storage.data_storage import DataModel, DataQuery, IDataStorage
 
@@ -43,11 +43,12 @@ class ExperimentQuery(DataQuery):
     parallel_workers: int
 
 
-class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], Protocol):
+class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], ABC):
     """
     Experiment configuration storage interface.
     """
 
+    @abstractmethod
     def get_experiment_id(self, query: ExperimentQuery) -> int | None:
         """
         Get experiment id.
@@ -56,6 +57,7 @@ class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], Protoco
         """
         pass
 
+    @abstractmethod
     def set_generation_done(self, experiment_id: int) -> None:
         """
         Set generation step as done.
@@ -64,6 +66,7 @@ class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], Protoco
         """
         pass
 
+    @abstractmethod
     def set_execution_done(self, experiment_id: int) -> None:
         """
         Set execution step as done.
@@ -72,6 +75,7 @@ class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], Protoco
         """
         pass
 
+    @abstractmethod
     def set_report_building_done(self, experiment_id: int) -> None:
         """
         Set report building step as done.

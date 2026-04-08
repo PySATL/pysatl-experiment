@@ -9,3 +9,12 @@ class Hypothesis(Enum):
     NORMAL = "normal"
     EXPONENTIAL = "exponential"
     WEIBULL = "weibull"
+
+    @classmethod
+    def list(cls):
+        """
+        Collect all enum values.
+
+        @return: enum values
+        """
+        return [member.value for member in cls]

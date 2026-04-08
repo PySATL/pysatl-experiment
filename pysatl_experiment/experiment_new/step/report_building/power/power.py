@@ -1,15 +1,17 @@
 from pathlib import Path
 
 from line_profiler import profile
+from typing_extensions import override
 
 from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.model.alternative.alternative import Alternative
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
+from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.persistence.model.power.power import IPowerStorage, PowerQuery
 from pysatl_experiment.report.power.power import PowerReportBuilder
 
 
-class PowerReportBuildingStep:
+class PowerReportBuildingStep(IExperimentStep):
     """
     Standard power experiment report building step.
     """
@@ -35,6 +37,7 @@ class PowerReportBuildingStep:
         self.with_chart = with_chart
 
     @profile
+    @override
     def run(self) -> None:
         """
         Run standard power report building step.

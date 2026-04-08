@@ -84,6 +84,9 @@ class FakeStatistics:
 
 
 class DummyStep(IExperimentStep):
+    def run(self) -> None:
+        pass
+
     def __init__(self, name: str):
         self.name = name
 

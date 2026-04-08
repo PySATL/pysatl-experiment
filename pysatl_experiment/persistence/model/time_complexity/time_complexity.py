@@ -1,5 +1,5 @@
+from abc import ABC
 from dataclasses import dataclass
-from typing import Protocol
 
 from pysatl_criterion.persistence.model.common.data_storage.data_storage import DataModel, DataQuery, IDataStorage
 
@@ -22,7 +22,7 @@ class TimeComplexityQuery(DataQuery):
     monte_carlo_count: int
 
 
-class ITimeComplexityStorage(IDataStorage[TimeComplexityModel, TimeComplexityQuery], Protocol):
+class ITimeComplexityStorage(IDataStorage[TimeComplexityModel, TimeComplexityQuery], ABC):
     """
     Time complexity storage interface.
     """

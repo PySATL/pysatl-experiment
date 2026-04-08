@@ -2,8 +2,10 @@ import functools
 from dataclasses import dataclass
 
 from line_profiler import profile
+from typing_extensions import override
 
 from pysatl_experiment.configuration.model.alternative.alternative import Alternative
+from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.experiment_new.step.execution.common.execution_step_data.execution_step_data import (
     ExecutionStepData,
 )
@@ -25,7 +27,7 @@ class PowerStepData(ExecutionStepData):
     significance_level: float
 
 
-class PowerExecutionStep:
+class PowerExecutionStep(IExperimentStep):
     """
     Standard power experiment execution step.
     """
@@ -49,6 +51,7 @@ class PowerExecutionStep:
         self.parallel_workers = parallel_workers
 
     @profile
+    @override
     def run(self) -> None:
         """
         Run power experiment in parallel with buffering.

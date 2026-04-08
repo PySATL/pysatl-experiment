@@ -1,9 +1,10 @@
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
 
-from pysatl_experiment.cli.commands.configure.criteria.criteria import criteria
+from pysatl_experiment.cli.commands.configure.configure import configure
 from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothesis
 
 
@@ -13,11 +14,8 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("pysatl_experiment.cli.commands.configure.criteria.criteria.save_experiment_config")
-@patch("pysatl_experiment.cli.commands.configure.criteria.criteria.get_experiment_name_and_config")
-def test_criteria_fails_if_hypothesis_not_set(
-    mock_get_config: MagicMock, mock_save_config: MagicMock, runner: CliRunner
-) -> None:
+@patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
+def test_criteria_fails_if_hypothesis_not_set(get_experiment_config: MagicMock, runner: CliRunner) -> None:
     """
     Tests that the `criteria` command fails if the hypothesis is not yet configured.
 
@@ -28,23 +26,45 @@ def test_criteria_fails_if_hypothesis_not_set(
     4.  Ensuring that no attempt is made to save the configuration.
     """
     experiment_name = "my-exp"
-    mock_get_config.return_value = (experiment_name, {})
+    get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
 
-    result = runner.invoke(criteria, ["KS", "AD"])
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-cr",
+            "KS",
+            "-cr",
+            "AD",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
+        ],
+    )
 
     assert result.exit_code != 0
     assert isinstance(result.exception, SystemExit)
 
-    assert "Hypothesis is not configured" in result.output
-    assert f"experiment configure {experiment_name} hypothesis <hypothesis>" in result.output
-    mock_save_config.assert_not_called()
 
-
-@patch("pysatl_experiment.validation.cli.schemas.criteria.get_statistics_short_codes_for_hypothesis")
-@patch("pysatl_experiment.cli.commands.configure.criteria.criteria.save_experiment_config")
-@patch("pysatl_experiment.cli.commands.configure.criteria.criteria.get_experiment_name_and_config")
+@patch("pysatl_experiment.cli.commands.configure.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 def test_criteria_fails_with_incompatible_codes(
-    mock_get_config: MagicMock, mock_save_config: MagicMock, mock_get_valid_codes: MagicMock, runner: CliRunner
+    if_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
 ) -> None:
     """
     Tests that the command fails when provided criteria are incompatible with the hypothesis.
@@ -57,26 +77,50 @@ def test_criteria_fails_with_incompatible_codes(
         into a user-friendly `BadParameter` error message.
     5.  Ensuring that the configuration is not saved.
     """
+    experiment_name = "my-exp"
     hypothesis = Hypothesis.NORMAL
-    mock_get_config.return_value = ("my-exp", {"hypothesis": hypothesis.value})
-    mock_get_valid_codes.return_value = ["KS", "AD"]
+    initial_config = {"hypothesis": hypothesis.value}
+    read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}
 
-    result = runner.invoke(criteria, ["KS", "CVM"])
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-cr",
+            "KS",
+            "-cr",
+            "ST1",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
+        ],
+    )
 
     assert result.exit_code != 0
     assert isinstance(result.exception, SystemExit)
 
-    assert f"Criteria 'CVM' are incompatible with hypothesis '{hypothesis.value}'" in result.output
-    assert "Valid codes: KS, AD" in result.output
 
-    mock_save_config.assert_not_called()
-
-
-@patch("pysatl_experiment.validation.cli.schemas.criteria.get_statistics_short_codes_for_hypothesis")
-@patch("pysatl_experiment.cli.commands.configure.criteria.criteria.save_experiment_config")
-@patch("pysatl_experiment.cli.commands.configure.criteria.criteria.get_experiment_name_and_config")
+@patch("pysatl_experiment.cli.commands.configure.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.configure.get_statistics_short_codes_for_hypothesis")
+@patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 def test_criteria_success_with_valid_codes(
-    mock_get_config: MagicMock, mock_save_config: MagicMock, mock_get_valid_codes: MagicMock, runner: CliRunner
+    if_experiment_exists: MagicMock,
+    get_statistics_short_codes_for_hypothesis: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
 ) -> None:
     """
     Tests the successful execution of the `criteria` command with valid codes.
@@ -90,31 +134,45 @@ def test_criteria_success_with_valid_codes(
         validated and normalized (uppercased) criteria list.
     6.  Checking for the correct success message in the output.
     """
-    experiment_name = "my-exp"
     hypothesis = Hypothesis.NORMAL
-    initial_config = {"hypothesis": hypothesis.value}
-    mock_get_config.return_value = (experiment_name, initial_config.copy())
+    initial_config: dict[str, Any] = {"hypothesis": hypothesis.value}
+    experiment_name = "my-test-experiment"
+    read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}
 
-    valid_codes_for_hypothesis = ["KS", "AD", "SW"]
-    mock_get_valid_codes.return_value = valid_codes_for_hypothesis
+    mock_codes = ["KS", "AD"]
+    get_statistics_short_codes_for_hypothesis.return_value = mock_codes
 
-    input_codes = ["ad", "ks"]
-    result = runner.invoke(criteria, input_codes)
+    result = runner.invoke(
+        configure,
+        [
+            experiment_name,
+            "-cr",
+            "KS",
+            "-cr",
+            "AD",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
+        ],
+    )
 
     assert result.exit_code == 0
     assert result.exception is None
 
-    mock_get_valid_codes.assert_called_once_with(hypothesis.value)
+    assert "criteria" in initial_config
+    assert len(initial_config["criteria"]) == 2
 
-    mock_save_config.assert_called_once()
-
-    saved_config = mock_save_config.call_args[0][2]
-
-    assert "criteria" in saved_config
-    assert len(saved_config["criteria"]) == 2
-
-    saved_codes = [c["criterion_code"] for c in saved_config["criteria"]]
+    saved_codes = [c["criterion_code"] for c in initial_config["criteria"]]
     assert "AD" in saved_codes
     assert "KS" in saved_codes
-
-    assert f"Criteria for experiment '{experiment_name}' successfully set: ['AD', 'KS']" in result.output

@@ -1,5 +1,6 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Protocol, TypeVar
+from typing import Generic, TypeVar
 
 
 @dataclass
@@ -12,11 +13,12 @@ class WorkerResult:
 R = TypeVar("R", covariant=True, bound=WorkerResult)
 
 
-class IWorker(Protocol[R]):
+class IWorker(Generic[R], ABC):
     """
     Worker interface.
     """
 
+    @abstractmethod
     def execute(self) -> R:
         """
         Execute worker.
