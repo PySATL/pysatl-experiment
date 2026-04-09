@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 from line_profiler import profile
 from numpy import float64
-
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
+
 from pysatl_experiment.worker.model.abstract_worker.abstract_worker import IWorker, WorkerResult
 
 

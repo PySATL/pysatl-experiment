@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 from pysatl_criterion.test.goodness_of_fit_test.goodness_of_fit_test import GoodnessOfFitTest
+
 from pysatl_experiment.worker.model.abstract_worker.abstract_worker import IWorker, WorkerResult
 
 

@@ -24,6 +24,7 @@ from pysatl_criterion.statistics.weibull import (
     TikuSinghWeibullGofStatistic,
     WatsonWeibullGofStatistic,
 )
+
 from pysatl_experiment.experiment import Experiment
 from pysatl_experiment.experiment.configuration.configuration import (
     AlternativeConfiguration,

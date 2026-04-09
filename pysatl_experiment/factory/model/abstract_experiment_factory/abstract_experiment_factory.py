@@ -9,6 +9,7 @@ from pysatl_criterion.statistics import (
     AbstractNormalityGofStatistic,
     AbstractWeibullGofStatistic,
 )
+
 from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
 from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType

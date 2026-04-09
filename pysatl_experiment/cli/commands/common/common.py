@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import cast
 
 from click import ClickException, Context
-
 from pysatl_criterion.statistics import (
     AbstractExponentialityGofStatistic,
     AbstractNormalityGofStatistic,

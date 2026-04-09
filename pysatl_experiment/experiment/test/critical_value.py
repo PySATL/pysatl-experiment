@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats as scipy_stats
-
 from pysatl_criterion.statistics import AbstractStatistic
+
 from pysatl_experiment.experiment.hypothesis import AbstractHypothesis
 from pysatl_experiment.persistence.models import ICriticalValueStore
 

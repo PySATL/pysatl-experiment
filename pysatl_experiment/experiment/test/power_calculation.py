@@ -1,4 +1,5 @@
 from pysatl_criterion.statistics import AbstractStatistic
+
 from pysatl_experiment.experiment.hypothesis import AbstractHypothesis
 from pysatl_experiment.experiment.test.critical_value import get_or_calculate_critical_value
 from pysatl_experiment.persistence.models import ICriticalValueStore

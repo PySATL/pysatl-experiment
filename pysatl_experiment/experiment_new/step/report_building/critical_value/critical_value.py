@@ -1,13 +1,13 @@
 from pathlib import Path
 
 from line_profiler import profile
-from typing_extensions import override
-
 from pysatl_criterion.critical_value.cv_calculator.cv_calculator import CVCalculator
 from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import (
     ILimitDistributionStorage,
     LimitDistributionQuery,
 )
+from typing_extensions import override
+
 from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
 from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep

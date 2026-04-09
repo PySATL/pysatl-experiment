@@ -6,8 +6,8 @@ from typing import Any, cast
 
 import pytest
 from numpy import float64
-
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
+
 from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.experiment_config.time_complexity.time_complexity import (
     TimeComplexityExperimentConfig,

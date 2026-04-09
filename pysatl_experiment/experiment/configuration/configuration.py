@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 
 from pysatl_criterion.statistics import AbstractStatistic
+
 from pysatl_experiment.experiment.generator import AbstractRVSGenerator
 from pysatl_experiment.persistence import IRvsStore
 from pysatl_experiment.persistence.models import IResultStore
