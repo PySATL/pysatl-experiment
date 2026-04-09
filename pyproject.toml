@@ -2,11 +2,16 @@
 name = "pysatl-experiment"
 version = "0.1.0"
 description = "package for PySATL math statistics experiments"
-authors = ["Ivan Pokhabov <vanek3372@gmail.com>"]
+authors = ["PYSATL Team <pysatl@yahoo.com>"]
 license = "MIT"
 readme = "README.md"
 package-mode = true
 packages = [{include = "pysatl_experiment"}]
+
+[[tool.poetry.source]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+priority = "explicit"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
@@ -27,7 +32,7 @@ dacite = "==1.9.2"
 line_profiler = "5.0.0"
 pydantic = "^2.11.9"
 psycopg2 = "2.9.11"
-pysatl-criterion = {path = "./pysatl_criterion"}
+pysatl-criterion = { version = "*", source = "testpypi" }
 psutil = "^7.1.1"
 
 [tool.poetry.group.dev.dependencies]
