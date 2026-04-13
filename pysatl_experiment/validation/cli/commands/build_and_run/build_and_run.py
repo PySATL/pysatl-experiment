@@ -68,7 +68,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
         checker = None
         config_dict = experiment_data_dict.get("config", {})
 
-        if config_dict.get("experiment_type") == "power":
+        if config_dict.get("experiment_type") == ExperimentType.POWER:
             connection_str = config_dict.get("storage_connection")
             if not connection_str:
                 pass

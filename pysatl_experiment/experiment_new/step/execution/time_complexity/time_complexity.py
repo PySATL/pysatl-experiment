@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from line_profiler import profile
 
+from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.experiment_new.step.execution.common.execution_step_data.execution_step_data import (  # noqa: E501
     ExecutionStepData,
@@ -62,7 +63,7 @@ class TimeComplexityExecutionStep(IExperimentStep):
         task_specs = []
         for step_data in self.step_config:
             spec = TaskSpec(
-                experiment_type="time_complexity",
+                experiment_type=ExperimentType.TIME_COMPLEXITY,
                 statistic_class_name=step_data.statistics.__class__.__name__,
                 statistic_module=step_data.statistics.__class__.__module__,
                 sample_size=step_data.sample_size,

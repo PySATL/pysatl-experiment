@@ -2,6 +2,7 @@ from typing import Literal, Union
 
 from pydantic import BaseModel, Field, ValidationError, ValidationInfo, field_validator, model_validator
 
+from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothesis
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
@@ -152,7 +153,7 @@ class CriticalValueConfig(BaseExperimentConfig):
         significance_levels (list[float]): A list of significance levels (alpha).
     """
 
-    experiment_type: Literal["critical_value"]
+    experiment_type: Literal[ExperimentType.CRITICAL_VALUE]
     significance_levels: list[float]
 
 
@@ -167,7 +168,7 @@ class TimeComplexityConfig(BaseExperimentConfig):
         experiment_type (Literal["time_complexity"]): The type of the experiment.
     """
 
-    experiment_type: Literal["time_complexity"]
+    experiment_type: Literal[ExperimentType.TIME_COMPLEXITY]
     pass
 
 

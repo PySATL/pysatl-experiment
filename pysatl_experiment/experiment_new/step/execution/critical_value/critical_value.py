@@ -7,6 +7,7 @@ from pysatl_criterion.persistence.model.limit_distribution.limit_distribution im
     LimitDistributionModel,
 )
 
+from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.experiment_new.step.execution.common.execution_step_data.execution_step_data import (
     ExecutionStepData,
@@ -61,7 +62,7 @@ class CriticalValueExecutionStep(IExperimentStep):
         task_specs = []
         for step_data in self.step_config:
             spec = TaskSpec(
-                experiment_type="critical_value",
+                experiment_type=ExperimentType.CRITICAL_VALUE,
                 statistic_class_name=step_data.statistics.__class__.__name__,
                 statistic_module=step_data.statistics.__class__.__module__,
                 sample_size=step_data.sample_size,

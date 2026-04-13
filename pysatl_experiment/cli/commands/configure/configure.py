@@ -190,7 +190,7 @@ def __configure_significance_levels(experiment_config: dict, levels: tuple[float
         return
 
     experiment_type = experiment_config.get("experiment_type")
-    if experiment_type == "time_complexity":
+    if experiment_type == ExperimentType.TIME_COMPLEXITY:
         raise ClickException("Significance levels are not supported for time complexity experiments.")
 
     levels_list = list(levels)

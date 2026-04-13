@@ -1,5 +1,6 @@
 import importlib
 
+from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.experiment_new.step.execution.common.utils.utils import get_sample_data_from_storage
 from pysatl_experiment.parallel.task_spec import TaskSpec
 from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
@@ -17,7 +18,7 @@ def universal_execute_task(spec: TaskSpec):
     storage = AlchemyRandomValuesStorage(spec.db_path)
     storage.init()
 
-    if spec.experiment_type in ("critical_value", "time_complexity"):
+    if spec.experiment_type in (ExperimentType.CRITICAL_VALUE, ExperimentType.TIME_COMPLEXITY):
         data = get_sample_data_from_storage(
             generator_name=spec.hypothesis_generator,
             generator_parameters=spec.hypothesis_parameters,
@@ -25,7 +26,7 @@ def universal_execute_task(spec: TaskSpec):
             count=spec.monte_carlo_count,
             data_storage=storage,
         )
-    elif spec.experiment_type == "power":
+    elif spec.experiment_type == ExperimentType.POWER:
         data = get_sample_data_from_storage(
             generator_name=spec.alternative_generator,
             generator_parameters=spec.alternative_parameters,
@@ -40,17 +41,17 @@ def universal_execute_task(spec: TaskSpec):
     stat_class = getattr(stat_module, spec.statistic_class_name)
     statistics = stat_class()
 
-    if spec.experiment_type == "time_complexity":
+    if spec.experiment_type == ExperimentType.TIME_COMPLEXITY:
         time_worker = TimeComplexityWorker(statistics=statistics, sample_data=data)
         time_result: TimeComplexityWorkerResult = time_worker.execute()
-        return ("time_complexity", statistics.code(), spec.sample_size, time_result.results_times)
+        return ExperimentType.TIME_COMPLEXITY, statistics.code(), spec.sample_size, time_result.results_times
 
-    elif spec.experiment_type == "critical_value":
+    elif spec.experiment_type == ExperimentType.CRITICAL_VALUE:
         crit_worker = CriticalValueWorker(statistics=statistics, sample_data=data)
         crit_result: CriticalValueWorkerResult = crit_worker.execute()
-        return ("critical_value", statistics.code(), spec.sample_size, crit_result.results_statistics)
+        return ExperimentType.CRITICAL_VALUE, statistics.code(), spec.sample_size, crit_result.results_statistics
 
-    elif spec.experiment_type == "power":
+    elif spec.experiment_type == ExperimentType.POWER:
         if spec.significance_level is None:
             raise ValueError("significance_level is required for power experiment")
 
@@ -62,7 +63,7 @@ def universal_execute_task(spec: TaskSpec):
         )
         power_result: PowerWorkerResult = power_worker.execute()
         return (
-            "power",
+            ExperimentType.POWER,
             statistics.code(),
             spec.sample_size,
             power_result.results_criteria,

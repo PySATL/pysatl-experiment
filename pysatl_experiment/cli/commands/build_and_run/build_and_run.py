@@ -2,6 +2,7 @@ from click import BadParameter, argument, command
 
 from pysatl_experiment.cli.commands.common.common import read_experiment_data
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
+from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.experiment_new.experiment.experiment import Experiment
 from pysatl_experiment.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
 from pysatl_experiment.factory.critical_value.critical_value import CriticalValueExperimentFactory
@@ -39,9 +40,9 @@ def _build_experiment(experiment_data: ExperimentData) -> ExperimentSteps:
     :return: experiment steps.
     """
     experiment_type_to_factory = {
-        "power": PowerExperimentFactory,
-        "critical_value": CriticalValueExperimentFactory,
-        "time_complexity": TimeComplexityExperimentFactory,
+        ExperimentType.POWER: PowerExperimentFactory,
+        ExperimentType.CRITICAL_VALUE: CriticalValueExperimentFactory,
+        ExperimentType.TIME_COMPLEXITY: TimeComplexityExperimentFactory,
     }
 
     experiment_type_str = experiment_data.config.experiment_type.value
