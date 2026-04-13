@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from typing import ClassVar
 
+from pysatl_criterion.persistence.alchemy_decorator import CompressedFloatArray
 from sqlalchemy import Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from typing_extensions import override
@@ -53,7 +54,7 @@ class AlchemyRandomValues(ModelBase):
     generator_parameters: Mapped[str] = mapped_column(String, nullable=False, index=True)  # type: ignore
     sample_size: Mapped[int] = mapped_column(Integer, nullable=False, index=True)  # type: ignore
     sample_num: Mapped[int] = mapped_column(Integer, nullable=False)  # type: ignore
-    data: Mapped[str] = mapped_column(String, nullable=False)  # type: ignore
+    data: Mapped[list[float]] = mapped_column(CompressedFloatArray(use_float32=True), nullable=False)  # type: ignore
 
     __table_args__ = (
         UniqueConstraint(
@@ -167,7 +168,7 @@ class AlchemyRandomValuesStorage(AbstractDbStore, IRandomValuesStorage):
             generator_parameters=query.generator_parameters,
             sample_size=query.sample_size,
             sample_num=query.sample_num,
-            data=json.loads(row.data),
+            data=row.data,
         )
 
     @override
@@ -188,7 +189,7 @@ class AlchemyRandomValuesStorage(AbstractDbStore, IRandomValuesStorage):
             generator_parameters=params_json,
             sample_size=int(data.sample_size),
             sample_num=int(data.sample_num),
-            data=json.dumps(data.data),
+            data=data.data,
         )
         existing: AlchemyRandomValues | None = (
             self._get_session()
@@ -283,7 +284,7 @@ class AlchemyRandomValuesStorage(AbstractDbStore, IRandomValuesStorage):
                     generator_parameters=params_json,
                     sample_size=int(query.sample_size),
                     sample_num=i,
-                    data=json.dumps(sample),
+                    data=sample,
                 )
             )
         self._get_session().commit()
@@ -318,7 +319,7 @@ class AlchemyRandomValuesStorage(AbstractDbStore, IRandomValuesStorage):
                 generator_parameters=query.generator_parameters,
                 sample_size=query.sample_size,
                 sample_num=row.sample_num,
-                data=json.loads(row.data),
+                data=row.data,
             )
             for row in rows
         ]
@@ -376,7 +377,7 @@ class AlchemyRandomValuesStorage(AbstractDbStore, IRandomValuesStorage):
                 generator_parameters=query.generator_parameters,
                 sample_size=query.sample_size,
                 sample_num=row.sample_num,
-                data=json.loads(row.data),
+                data=row.data,
             )
             for row in rows
         ]

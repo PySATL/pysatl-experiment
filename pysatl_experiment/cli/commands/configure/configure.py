@@ -231,7 +231,7 @@ def __configure_significance_levels(experiment_config: dict, levels: tuple[float
 )
 @option("-et", "--executor-type", type=Choice(StepType.list()), help="Executor type. Example: standard")
 @option("-cr", "--criteria", multiple=True, help="Criterion codes. Example: KS")
-@option("-w", "--workers", type=IntRange(min=1), help="Criterion codes. Example: KS")
+@option("-w", "--workers", type=IntRange(min=1), help="Parallel workers. Example: 2")
 def configure(
     name: str,
     alternative: tuple[str],

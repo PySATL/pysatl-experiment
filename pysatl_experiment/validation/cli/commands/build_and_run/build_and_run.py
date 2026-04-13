@@ -22,7 +22,7 @@ from pysatl_experiment.configuration.model.experiment_type.experiment_type impor
 from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothesis
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
 from pysatl_experiment.configuration.model.step_type.step_type import StepType
-from pysatl_experiment.persistence.experiment.sqlite.sqlite import SQLiteExperimentStorage
+from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
 from pysatl_experiment.persistence.model.experiment.experiment import (
     ExperimentModel,
     ExperimentQuery,
@@ -104,7 +104,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
         is_report_building_step_done=False,
     )
 
-    experiment_storage = SQLiteExperimentStorage(legacy_dataclass_config.storage_connection)
+    experiment_storage = AlchemyExperimentStorage(legacy_dataclass_config.storage_connection)
     experiment_storage.init()
 
     experiment_config_from_storage = _get_experiment_config_from_storage(

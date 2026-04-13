@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from pysatl_experiment.persistence.model.random_values.random_values import (
@@ -11,7 +12,7 @@ from pysatl_experiment.persistence.model.random_values.random_values import (
     RandomValuesModel,
     RandomValuesQuery,
 )
-from pysatl_experiment.persistence.random_values.alchemy.alchemy import AlchemyRandomValuesStorage
+from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
 
 
 @pytest.fixture()
@@ -72,8 +73,8 @@ def test_insert_and_get_single_sample(storage: AlchemyRandomValuesStorage) -> No
     assert got.generator_name == model.generator_name
     assert got.generator_parameters == model.generator_parameters
     assert got.sample_size == model.sample_size
-    assert got.sample_num == model.sample_num
-    assert got.data == model.data
+    assert np.allclose(got.sample_num, model.sample_num, atol=1e-5)
+    assert np.allclose(got.data, model.data, atol=1e-5)
 
 
 def test_delete_single_sample(storage: AlchemyRandomValuesStorage) -> None:
@@ -136,7 +137,9 @@ def test_insert_all_and_get_all_and_count(storage: AlchemyRandomValuesStorage) -
 
     assert isinstance(all_data, list)
     assert [m.sample_num for m in all_data] == [1, 2, 3]
-    assert [m.data for m in all_data] == [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+    actual = np.array([m.data for m in all_data])
+    expected = np.array([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
+    assert np.allclose(actual, expected, atol=1e-6)
 
 
 def test_get_count_data_limits(storage: AlchemyRandomValuesStorage) -> None:

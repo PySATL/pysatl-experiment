@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
+from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerStorage
 from pysatl_experiment.persistence.model.power.power import PowerModel, PowerQuery
-from pysatl_experiment.persistence.power.alchemy.alchemy import AlchemyPowerStorage
 
 
 @pytest.fixture()
