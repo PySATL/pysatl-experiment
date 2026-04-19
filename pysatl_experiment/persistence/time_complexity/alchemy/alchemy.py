@@ -5,7 +5,6 @@ from typing import ClassVar
 
 from sqlalchemy import Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
-from typing_extensions import override
 
 from pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
 from pysatl_experiment.persistence.db_store.model import AbstractDbStore
@@ -141,7 +140,6 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
         super().__init__(db_url=db_url)
         self._initialized: bool = False
 
-    @override
     def init(self) -> None:
         """
         Initialize the storage by creating database structures

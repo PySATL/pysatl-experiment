@@ -107,7 +107,6 @@ class AlchemyRandomValuesStorage(AbstractDbStore, IRandomValuesStorage):
         super().__init__(db_url=db_url)
         self._initialized: bool = False
 
-    @override
     def init(self) -> None:
         """
         Initialize the database engine and scoped session.
