@@ -134,7 +134,6 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
             raise RuntimeError("Storage not initialized. Call init() first.")
         return AlchemyPowerStorage.session
 
-    @override
     def get_data(self, query: PowerQuery) -> PowerModel | None:
         """
         Retrieve a power computation result matching the given query parameters.
@@ -181,7 +180,6 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
             results_criteria=json.loads(row.results_criteria),
         )
 
-    @override
     def insert_data(self, data: PowerModel) -> None:
         """
         Insert a new power computation result or update an existing entry.
@@ -227,7 +225,6 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
             existing.results_criteria = json.dumps(data.results_criteria)
         self._get_session().commit()
 
-    @override
     def delete_data(self, query: PowerQuery) -> None:
         """
         Delete a stored power computation result matching the given parameters.
