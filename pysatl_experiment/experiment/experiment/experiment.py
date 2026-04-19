@@ -1,7 +1,7 @@
 from line_profiler import profile
 
-from pysatl_experiment.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
-from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
+from pysatl_experiment.experiment.experiment_steps.experiment_steps import ExperimentSteps
+from pysatl_experiment.experiment.model.experiment_step.experiment_step import IExperimentStep
 
 
 class Experiment:

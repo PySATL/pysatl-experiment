@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
+from pysatl_experiment.experiment.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.persistence.model.experiment.experiment import IExperimentStorage
 
 

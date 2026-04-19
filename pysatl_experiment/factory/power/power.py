@@ -1,7 +1,7 @@
 from pysatl_experiment.configuration.experiment_data.power.power import PowerExperimentData
-from pysatl_experiment.experiment_new.step.execution.power.power import PowerExecutionStep, PowerStepData
-from pysatl_experiment.experiment_new.step.generation.generation import GenerationStep, GenerationStepData
-from pysatl_experiment.experiment_new.step.report_building.power.power import PowerReportBuildingStep
+from pysatl_experiment.experiment.step.execution.power.power import PowerExecutionStep, PowerStepData
+from pysatl_experiment.experiment.step.generation.generation import GenerationStep, GenerationStepData
+from pysatl_experiment.experiment.step.report_building.power.power import PowerReportBuildingStep
 from pysatl_experiment.factory.model.abstract_experiment_factory.abstract_experiment_factory import (
     AbstractExperimentFactory,
 )

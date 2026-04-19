@@ -6,7 +6,7 @@ from typing_extensions import override
 from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.model.alternative.alternative import Alternative
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
-from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
+from pysatl_experiment.experiment.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.persistence.model.power.power import IPowerStorage, PowerQuery
 from pysatl_experiment.report.power.power import PowerReportBuilder
 

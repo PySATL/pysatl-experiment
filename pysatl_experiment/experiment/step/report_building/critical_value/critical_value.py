@@ -10,7 +10,7 @@ from pysatl_criterion.persistence.model.limit_distribution.limit_distribution im
 )
 from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
-from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
+from pysatl_experiment.experiment.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.report.critical_value.critical_value import CriticalValueReportBuilder
 
 
