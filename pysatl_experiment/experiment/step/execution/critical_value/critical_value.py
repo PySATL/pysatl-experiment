@@ -8,11 +8,6 @@ from pysatl_criterion.persistence.model.limit_distribution.limit_distribution im
 )
 
 from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
-from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
-from pysatl_experiment.experiment_new.step.execution.common.execution_step_data.execution_step_data import (
-    ExecutionStepData,
-)
-from pysatl_experiment.experiment_new.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (
 from pysatl_experiment.experiment.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.experiment.step.execution.common.execution_step_data.execution_step_data import ExecutionStepData
 from pysatl_experiment.experiment.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (
