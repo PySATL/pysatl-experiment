@@ -17,4 +17,4 @@ class ExperimentType(str, Enum):
 
         @return: enum values
         """
-        return list(cls)
+        return [member.value for member in cls]

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import cast
+from typing import Any, Callable, cast
 
 from click import ClickException
 from dacite import Config, from_dict
@@ -276,7 +276,7 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
 
     config_dict = pydantic_config.model_dump(mode="json")
 
-    enum_mapping = {
+    enum_mapping: dict[type[Any], Callable[[Any], Any]] = {
         ExperimentType: lambda x: ExperimentType(x),
         RunMode: lambda x: RunMode(x),
         Hypothesis: lambda x: Hypothesis(x),
