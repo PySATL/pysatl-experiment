@@ -1,5 +1,6 @@
 import importlib
 
+from pysatl_experiment.experiment.step.execution.common.utils.utils import get_sample_data_from_storage
 from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.experiment_new.step.execution.common.utils.utils import get_sample_data_from_storage
 from pysatl_experiment.parallel.task_spec import TaskSpec

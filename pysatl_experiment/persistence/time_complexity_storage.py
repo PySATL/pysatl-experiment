@@ -5,7 +5,6 @@ from typing import ClassVar
 
 from sqlalchemy import Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
-from typing_extensions import override
 
 from pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
 from pysatl_experiment.persistence.db_store.model import AbstractDbStore
@@ -141,7 +140,6 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
         super().__init__(db_url=db_url)
         self._initialized: bool = False
 
-    @override
     def init(self) -> None:
         """
         Initialize the storage by creating database structures
@@ -173,7 +171,6 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
             raise RuntimeError("Storage not initialized. Call init() first.")
         return AlchemyTimeComplexityStorage.session
 
-    @override
     def get_data(self, query: TimeComplexityQuery) -> TimeComplexityModel | None:
         """
         Retrieve time complexity data that matches a given query.
@@ -212,7 +209,6 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
             results_times=json.loads(row.results_times),
         )
 
-    @override
     def insert_data(self, data: TimeComplexityModel) -> None:
         """
         Insert a new time complexity record or update an existing one.
@@ -259,7 +255,6 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
             existing.results_times = json.dumps(data.results_times)
         self._get_session().commit()
 
-    @override
     def delete_data(self, query: TimeComplexityQuery) -> None:
         """
         Delete time complexity data matching the given query.

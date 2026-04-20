@@ -1,13 +1,13 @@
 from pysatl_experiment.configuration.experiment_data.time_complexity.time_complexity import TimeComplexityExperimentData
-from pysatl_experiment.experiment_new.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (  # noqa: E501
+from pysatl_experiment.experiment.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (  # noqa: E501
     HypothesisGeneratorData,
 )
-from pysatl_experiment.experiment_new.step.execution.time_complexity.time_complexity import (
+from pysatl_experiment.experiment.step.execution.time_complexity.time_complexity import (
     TimeComplexityExecutionStep,
     TimeComplexityStepData,
 )
-from pysatl_experiment.experiment_new.step.generation.generation import GenerationStep, GenerationStepData
-from pysatl_experiment.experiment_new.step.report_building.time_complexity.time_complexity import (
+from pysatl_experiment.experiment.step.generation.generation import GenerationStep, GenerationStepData
+from pysatl_experiment.experiment.step.report_building.time_complexity.time_complexity import (
     TimeComplexityReportBuildingStep,
 )
 from pysatl_experiment.factory.model.abstract_experiment_factory.abstract_experiment_factory import (

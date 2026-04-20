@@ -15,12 +15,11 @@ from pysatl_experiment.configuration.experiment_data.experiment_data import Expe
 from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothesis
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
+from pysatl_experiment.experiment.experiment_steps.experiment_steps import ExperimentSteps
 from pysatl_experiment.experiment.generator import AbstractRVSGenerator
 from pysatl_experiment.experiment.generator.generators import ExponentialGenerator, NormalGenerator, WeibullGenerator
-from pysatl_experiment.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
-from pysatl_experiment.experiment_new.model.experiment_step.experiment_step import IExperimentStep
-from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerStorage
-from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
+from pysatl_experiment.experiment.model.experiment_step.experiment_step import IExperimentStep
+from pysatl_experiment.persistence.experiment.sqlite.sqlite import SQLiteExperimentStorage
 from pysatl_experiment.persistence.model.experiment.experiment import ExperimentQuery, IExperimentStorage
 from pysatl_experiment.persistence.model.power.power import PowerQuery
 from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesAllQuery

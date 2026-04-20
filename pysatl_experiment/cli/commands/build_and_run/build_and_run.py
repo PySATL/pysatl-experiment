@@ -5,6 +5,8 @@ from pysatl_experiment.configuration.experiment_data.experiment_data import Expe
 from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.experiment_new.experiment.experiment import Experiment
 from pysatl_experiment.experiment_new.experiment_steps.experiment_steps import ExperimentSteps
+from pysatl_experiment.experiment.experiment.experiment import Experiment
+from pysatl_experiment.experiment.experiment_steps.experiment_steps import ExperimentSteps
 from pysatl_experiment.factory.critical_value.critical_value import CriticalValueExperimentFactory
 from pysatl_experiment.factory.power.power import PowerExperimentFactory
 from pysatl_experiment.factory.time_complexity.time_complexity import TimeComplexityExperimentFactory

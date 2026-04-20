@@ -16,9 +16,9 @@ from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothes
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
 from pysatl_experiment.configuration.model.step_type.step_type import StepType
-from pysatl_experiment.experiment_new.step.execution.power.power import PowerExecutionStep
-from pysatl_experiment.experiment_new.step.generation.generation import GenerationStep
-from pysatl_experiment.experiment_new.step.report_building.power.power import PowerReportBuildingStep
+from pysatl_experiment.experiment.step.execution.power.power import PowerExecutionStep
+from pysatl_experiment.experiment.step.generation.generation import GenerationStep
+from pysatl_experiment.experiment.step.report_building.power.power import PowerReportBuildingStep
 from pysatl_experiment.factory.power.power import PowerExperimentFactory
 from pysatl_experiment.persistence.model.experiment.experiment import IExperimentStorage
 from pysatl_experiment.persistence.model.power.power import IPowerStorage

@@ -19,9 +19,9 @@ from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothes
 from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
 from pysatl_experiment.configuration.model.step_type.step_type import StepType
-from pysatl_experiment.experiment_new.step.execution.time_complexity.time_complexity import TimeComplexityExecutionStep
-from pysatl_experiment.experiment_new.step.generation.generation import GenerationStep
-from pysatl_experiment.experiment_new.step.report_building.time_complexity.time_complexity import (
+from pysatl_experiment.experiment.step.execution.time_complexity.time_complexity import TimeComplexityExecutionStep
+from pysatl_experiment.experiment.step.generation.generation import GenerationStep
+from pysatl_experiment.experiment.step.report_building.time_complexity.time_complexity import (
     TimeComplexityReportBuildingStep,
 )
 from pysatl_experiment.factory.time_complexity.time_complexity import TimeComplexityExperimentFactory
