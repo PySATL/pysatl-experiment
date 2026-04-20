@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class ExperimentType(Enum):
+class ExperimentType(str, Enum):
     """
     Experiment type.
     """
@@ -11,10 +11,10 @@ class ExperimentType(Enum):
     TIME_COMPLEXITY = "time_complexity"
 
     @classmethod
-    def list(cls):
+    def list(cls) -> list[str]:
         """
         Collect all enum values.
 
         @return: enum values
         """
-        return [member.value for member in cls]
+        return list(cls)

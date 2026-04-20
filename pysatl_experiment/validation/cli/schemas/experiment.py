@@ -153,7 +153,7 @@ class CriticalValueConfig(BaseExperimentConfig):
         significance_levels (list[float]): A list of significance levels (alpha).
     """
 
-    experiment_type: Literal[ExperimentType.CRITICAL_VALUE]
+    experiment_type: Literal["critical_value"]
     significance_levels: list[float]
 
 
@@ -168,7 +168,7 @@ class TimeComplexityConfig(BaseExperimentConfig):
         experiment_type (Literal["time_complexity"]): The type of the experiment.
     """
 
-    experiment_type: Literal[ExperimentType.TIME_COMPLEXITY]
+    experiment_type: Literal["time_complexity"]
     pass
 
 
