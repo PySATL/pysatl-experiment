@@ -1,6 +1,6 @@
 import importlib
 
-from pysatl_experiment.experiment_new.step.execution.common.utils.utils import get_sample_data_from_storage
+from pysatl_experiment.experiment.step.execution.common.utils.utils import get_sample_data_from_storage
 from pysatl_experiment.parallel.task_spec import TaskSpec
 from pysatl_experiment.persistence.random_values.alchemy import AlchemyRandomValuesStorage
 from pysatl_experiment.worker.critical_value.critical_value import CriticalValueWorker, CriticalValueWorkerResult
