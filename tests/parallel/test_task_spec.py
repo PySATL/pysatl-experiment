@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.parallel.task_spec import TaskSpec
 
 
@@ -14,19 +15,19 @@ class TestTaskSpec:
 
         try:
             spec = TaskSpec(
-                experiment_type="time_complexity",
+                experiment_type=ExperimentType.TIME_COMPLEXITY,
                 statistic_class_name="KS",
                 statistic_module="module.ks",
                 sample_size=100,
                 monte_carlo_count=1000,
                 db_path=db_path,
             )
-            assert spec.experiment_type == "time_complexity"
+            assert spec.experiment_type == ExperimentType.TIME_COMPLEXITY
             assert spec.sample_size == 100
         finally:
             Path(db_path).unlink(missing_ok=True)
 
-    @pytest.mark.parametrize("exp_type", ["time_complexity", "critical_value", "power"])
+    @pytest.mark.parametrize("exp_type", ExperimentType.list())
     def test_all_experiment_types(self, exp_type):
         with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp:
             db_path = tmp.name
@@ -49,7 +50,7 @@ class TestTaskSpec:
             db_path = tmp.name
         try:
             spec = TaskSpec(
-                experiment_type="power",
+                experiment_type=ExperimentType.POWER,
                 statistic_class_name="SW",
                 statistic_module="sw",
                 sample_size=200,
@@ -70,7 +71,7 @@ class TestTaskSpec:
             db_path = tmp.name
         try:
             original = TaskSpec(
-                experiment_type="critical_value",
+                experiment_type=ExperimentType.CRITICAL_VALUE,
                 statistic_class_name="AD",
                 statistic_module="ad",
                 sample_size=150,
@@ -95,7 +96,7 @@ class TestTaskSpec:
 
         try:
             spec1 = TaskSpec(
-                experiment_type="time_complexity",
+                experiment_type=ExperimentType.TIME_COMPLEXITY,
                 statistic_class_name="X",
                 statistic_module="x",
                 sample_size=10,
@@ -103,7 +104,7 @@ class TestTaskSpec:
                 db_path=db_path1,
             )
             spec2 = TaskSpec(
-                experiment_type="time_complexity",
+                experiment_type=ExperimentType.TIME_COMPLEXITY,
                 statistic_class_name="Y",
                 statistic_module="y",
                 sample_size=10,

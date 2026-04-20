@@ -9,6 +9,7 @@ from pysatl_criterion.statistics import (
     AbstractNormalityGofStatistic,
     AbstractWeibullGofStatistic,
 )
+
 from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
 from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
@@ -18,14 +19,14 @@ from pysatl_experiment.experiment.experiment_steps.experiment_steps import Exper
 from pysatl_experiment.experiment.generator import AbstractRVSGenerator
 from pysatl_experiment.experiment.generator.generators import ExponentialGenerator, NormalGenerator, WeibullGenerator
 from pysatl_experiment.experiment.model.experiment_step.experiment_step import IExperimentStep
-from pysatl_experiment.persistence.experiment.sqlite.sqlite import SQLiteExperimentStorage
+from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerStorage
+from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
 from pysatl_experiment.persistence.model.experiment.experiment import ExperimentQuery, IExperimentStorage
 from pysatl_experiment.persistence.model.power.power import PowerQuery
 from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesAllQuery
 from pysatl_experiment.persistence.model.time_complexity.time_complexity import TimeComplexityQuery
-from pysatl_experiment.persistence.power.alchemy.alchemy import AlchemyPowerStorage
-from pysatl_experiment.persistence.random_values.alchemy import AlchemyRandomValuesStorage
-from pysatl_experiment.persistence.time_complexity.alchemy.alchemy import AlchemyTimeComplexityStorage
+from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
+from pysatl_experiment.persistence.time_complexity_storage import AlchemyTimeComplexityStorage
 
 
 D = TypeVar("D", contravariant=True, bound=ExperimentData)
@@ -448,7 +449,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         """
 
         storage_connection = self.experiment_data.config.storage_connection
-        data_storage = SQLiteExperimentStorage(storage_connection)
+        data_storage = AlchemyExperimentStorage(storage_connection)
         data_storage.init()
 
         return data_storage

@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
+from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
+
 
 @dataclass
 class TaskSpec:
@@ -9,7 +11,7 @@ class TaskSpec:
     Contains ONLY primitive types.
     """
 
-    experiment_type: str
+    experiment_type: ExperimentType
     statistic_class_name: str
     statistic_module: str
     sample_size: int

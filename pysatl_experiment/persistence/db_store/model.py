@@ -1,8 +1,6 @@
-import sqlite3
 from abc import ABC
 from typing import ClassVar
 
-import numpy as np
 from sqlalchemy.orm import scoped_session, sessionmaker
 from typing_extensions import override
 
@@ -20,7 +18,6 @@ class AbstractDbStore(IStore, ABC):
 
     @override
     def init(self):
-        sqlite3.register_adapter(np.int64, lambda val: int(val))
         engine = init_db(self.db_url)
         AbstractDbStore.session = scoped_session(
             sessionmaker(bind=engine, autoflush=False), scopefunc=get_request_or_thread_id

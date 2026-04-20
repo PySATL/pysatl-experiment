@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from pysatl_experiment.persistence.model.time_complexity.time_complexity import TimeComplexityModel, TimeComplexityQuery
-from pysatl_experiment.persistence.time_complexity.alchemy.alchemy import AlchemyTimeComplexityStorage
+from pysatl_experiment.persistence.time_complexity_storage import AlchemyTimeComplexityStorage
 
 
 @pytest.fixture()

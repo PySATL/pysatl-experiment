@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import cast
+from typing import Any, Callable, cast
 
 from click import ClickException
 from dacite import Config, from_dict
@@ -22,7 +22,7 @@ from pysatl_experiment.configuration.model.experiment_type.experiment_type impor
 from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothesis
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
 from pysatl_experiment.configuration.model.step_type.step_type import StepType
-from pysatl_experiment.persistence.experiment.sqlite.sqlite import SQLiteExperimentStorage
+from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
 from pysatl_experiment.persistence.model.experiment.experiment import (
     ExperimentModel,
     ExperimentQuery,
@@ -68,7 +68,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
         checker = None
         config_dict = experiment_data_dict.get("config", {})
 
-        if config_dict.get("experiment_type") == "power":
+        if config_dict.get("experiment_type") == ExperimentType.POWER:
             connection_str = config_dict.get("storage_connection")
             if not connection_str:
                 pass
@@ -104,7 +104,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
         is_report_building_step_done=False,
     )
 
-    experiment_storage = SQLiteExperimentStorage(legacy_dataclass_config.storage_connection)
+    experiment_storage = AlchemyExperimentStorage(legacy_dataclass_config.storage_connection)
     experiment_storage.init()
 
     experiment_config_from_storage = _get_experiment_config_from_storage(
@@ -276,7 +276,7 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
 
     config_dict = pydantic_config.model_dump(mode="json")
 
-    enum_mapping = {
+    enum_mapping: dict[type[Any], Callable[[Any], Any]] = {
         ExperimentType: lambda x: ExperimentType(x),
         RunMode: lambda x: RunMode(x),
         Hypothesis: lambda x: Hypothesis(x),

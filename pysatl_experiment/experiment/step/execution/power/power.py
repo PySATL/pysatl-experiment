@@ -5,6 +5,7 @@ from line_profiler import profile
 from typing_extensions import override
 
 from pysatl_experiment.configuration.model.alternative.alternative import Alternative
+from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.experiment.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.experiment.step.execution.common.execution_step_data.execution_step_data import ExecutionStepData
 from pysatl_experiment.parallel.buffered_saver import BufferedSaver
@@ -58,7 +59,7 @@ class PowerExecutionStep(IExperimentStep):
         task_specs = []
         for step_data in self.step_config:
             spec = TaskSpec(
-                experiment_type="power",
+                experiment_type=ExperimentType.POWER,
                 statistic_class_name=step_data.statistics.__class__.__name__,
                 statistic_module=step_data.statistics.__class__.__module__,
                 sample_size=step_data.sample_size,
