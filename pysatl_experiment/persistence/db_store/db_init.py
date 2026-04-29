@@ -8,7 +8,7 @@ from contextvars import ContextVar
 from typing import Any, Final
 
 from sqlalchemy import Engine, create_engine
-from sqlalchemy.exc import NoSuchModuleError
+from sqlalchemy.exc import ArgumentError, NoSuchModuleError
 from sqlalchemy.pool import StaticPool
 
 from pysatl_experiment.exceptions import OperationalException
@@ -63,7 +63,7 @@ def init_db(db_url: str) -> Engine:
 
     try:
         engine = create_engine(db_url, future=True, **kwargs)
-    except NoSuchModuleError:
+    except (ArgumentError, NoSuchModuleError):
         raise OperationalException(
             f"Given value for db_url: '{db_url}' is no valid database URL! (See {_SQL_DOCS_URL})"
         )
