@@ -70,12 +70,10 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
 
         if config_dict.get("experiment_type") == ExperimentType.POWER:
             connection_str = config_dict.get("storage_connection")
-            if not connection_str:
-                pass
-            else:
+            if connection_str:
                 checker = SQLiteCriticalValueChecker(connection_string=connection_str)
 
-        validation_context = {"critical_value_checker": checker} if checker else {}
+        validation_context = {"critical_value_checker": checker}
 
         validated_data = ExperimentInputSchema.model_validate(experiment_data_dict, context=validation_context)
 
