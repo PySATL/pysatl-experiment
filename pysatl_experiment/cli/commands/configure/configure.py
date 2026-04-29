@@ -8,6 +8,7 @@ from pysatl_experiment.cli.commands.common.common import (
     criteria_from_codes,
     get_experiment_config,
     get_statistics_short_codes_for_hypothesis,
+    normalize_experiment_name,
     read_experiment_data,
     save_experiment_config,
 )
@@ -255,6 +256,7 @@ def configure(
     :param name: name of the experiment.
     :param workers: Number of parallel workers (1 <= workers).
     """
+    name = normalize_experiment_name(name)
 
     experiment_exists = if_experiment_exists(name)
     if not experiment_exists:

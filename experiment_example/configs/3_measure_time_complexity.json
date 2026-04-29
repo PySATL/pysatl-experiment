@@ -1,6 +1,6 @@
 {
+  "name": "3_measure_time_complexity",
   "config": {
-    "name": "3_measure_time_complexity",
     "experiment_type": "time_complexity",
     "hypothesis": "normal",
     "criteria": [
@@ -19,6 +19,7 @@
     "report_mode": "with-chart",
     "run_mode": "reuse",
     "monte_carlo_count": 1000,
+    "parallel_workers": 1,
     "sample_sizes": [
       200,
       400,
@@ -31,6 +32,6 @@
       0.05,
       0.1
     ],
-    "storage_connection": "Here must be your path. Please, configure it in CLI"
+    "storage_connection": "sqlite:///pysatl.sqlite"
   }
 }

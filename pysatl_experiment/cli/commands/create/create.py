@@ -1,6 +1,6 @@
 from click import BadParameter, argument, command, echo
 
-from pysatl_experiment.cli.commands.common.common import save_experiment_data
+from pysatl_experiment.cli.commands.common.common import normalize_experiment_name, save_experiment_data
 from pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
 
 
@@ -12,6 +12,7 @@ def create(name: str) -> None:
 
     :param name: name of the experiment.
     """
+    name = normalize_experiment_name(name)
 
     experiment_exists = if_experiment_exists(name)
     if experiment_exists:
