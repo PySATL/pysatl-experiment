@@ -23,9 +23,7 @@ class SQLiteCriticalValueChecker:
             with self.engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
         except Exception as e:
-            raise ConnectionError(
-                f"Failed to connect to the database '{self.connection_string}': {e}"
-            )
+            raise ConnectionError(f"Failed to connect to the database '{self.connection_string}': {e}")
 
     def check_exists(self, criterion_code: str, sample_size: int) -> bool:
         """
@@ -54,8 +52,11 @@ class SQLiteCriticalValueChecker:
         """)
 
         with self.engine.connect() as conn:
-            result = conn.execute(sql, {
-                "criterion_code": criterion_code,
-                "sample_size": sample_size,
-            })
+            result = conn.execute(
+                sql,
+                {
+                    "criterion_code": criterion_code,
+                    "sample_size": sample_size,
+                },
+            )
             return result.scalar() == 1

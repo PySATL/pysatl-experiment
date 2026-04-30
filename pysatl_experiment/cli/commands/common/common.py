@@ -31,7 +31,7 @@ def get_project_root() -> Path:
             return parent
 
     raise RuntimeError(
-        "Cannot determine project root. " "Expected to find pyproject.toml or .experiments in parent directories."
+        "Cannot determine project root. Expected to find pyproject.toml or .experiments in parent directories."
     )
 
 
