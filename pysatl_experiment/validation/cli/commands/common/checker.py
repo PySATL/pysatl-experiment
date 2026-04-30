@@ -1,76 +1,62 @@
-import sqlite3
+from sqlalchemy import create_engine, text
 
 
 class SQLiteCriticalValueChecker:
     """
-    A utility class to check for the existence of pre-calculated
-    critical values in an SQLite database.
-
-    This class connects to a specific SQLite database and provides a method
-    to query if a result for a given hypothesis, criterion, and sample size
-    has already been stored.
+    Checks for the existence of pre-calculated critical values
+    in an SQLite database, using the same query pattern as
+    StorageCriticalValueResolver.
     """
 
     def __init__(self, connection_string: str):
         """
-        Initializes the checker and connects to the SQLite database.
-
         Args:
-            connection_string (str): The file path or connection string for the
-                SQLite database.
+            connection_string: SQLAlchemy URL for the SQLite database.
 
         Raises:
-            ConnectionError: If the connection to the database fails.
+            ConnectionError: If the connection fails.
         """
         self.connection_string = connection_string
-        self.connection = None
+        self.engine = None
         try:
-            self.connection = sqlite3.connect(self.connection_string)
-        except sqlite3.Error as e:
+            self.engine = create_engine(connection_string)
+            with self.engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+        except Exception as e:
             raise ConnectionError(f"Failed to connect to the database '{self.connection_string}': {e}")
 
-    def check_exists(self, hypothesis: str, criterion_code: str, sample_size: int) -> bool:
+    def check_exists(self, criterion_code: str, sample_size: int) -> bool:
         """
-        Checks if a critical value for a specific parameter set exists in the DB.
+        Checks if critical values exist for the given criterion and sample size.
+
+        Mirrors the query used by StorageCriticalValueResolver:
+        selects by criterion_code + sample_size from limit_distributions.
 
         Args:
-            hypothesis (str): The statistical hypothesis (e.g., "NORMAL").
-            criterion_code (str): The short code for the statistical criterion (e.g., "KS").
-            sample_size (int): The sample size used for the calculation.
+            criterion_code: Full criterion name (e.g., "KS_NORMALITY_GOODNESS_OF_FIT").
+            sample_size: Sample size used for the calculation.
 
         Returns:
-            bool: True if a matching record exists, False otherwise.
-
-        Raises:
-            sqlite3.Error: If a critical error occurs during the SQL query execution.
+            True if a matching record exists, False otherwise.
         """
-        if self.connection is None:
+        if self.engine is None:
             return False
 
-        sql_query = """
+        sql = text("""
             SELECT EXISTS (
                 SELECT 1
-                FROM limit_distributions ld
-                JOIN experiments e ON ld.experiment_id = e.id
-                WHERE UPPER(e.hypothesis) = ?
-                  AND ld.criterion_code = ?
-                  AND ld.sample_size = ?
+                FROM limit_distributions
+                WHERE criterion_code = :criterion_code
+                  AND sample_size = :sample_size
             )
-        """
-        params = (hypothesis.upper(), criterion_code, sample_size)
+        """)
 
-        try:
-            cursor = self.connection.cursor()
-            cursor.execute(sql_query, params)
-            row = cursor.fetchone()
-            if row:
-                return row[0] == 1
-            return False
-        except sqlite3.Error as e:
-            print(f"A critical error occurred during SQL execution in check_exists: {e}")
-            raise
-
-    def close(self):
-        """Closes the connection to the database."""
-        if self.connection:
-            self.connection.close()
+        with self.engine.connect() as conn:
+            result = conn.execute(
+                sql,
+                {
+                    "criterion_code": criterion_code,
+                    "sample_size": sample_size,
+                },
+            )
+            return result.scalar() == 1

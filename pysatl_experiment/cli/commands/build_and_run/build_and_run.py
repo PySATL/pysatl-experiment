@@ -1,6 +1,6 @@
 from click import BadParameter, argument, command
 
-from pysatl_experiment.cli.commands.common.common import read_experiment_data
+from pysatl_experiment.cli.commands.common.common import normalize_experiment_name, read_experiment_data
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
 from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.experiment.experiment.experiment import Experiment
@@ -20,9 +20,10 @@ def build_and_run(name: str) -> None:
 
     :param name: name of the experiment.
     """
+    name = normalize_experiment_name(name)
     experiment_exists = if_experiment_exists(name)
     if not experiment_exists:
-        raise BadParameter(f"Experiment with name {name} does not exists.")
+        raise BadParameter(f"Experiment with name {name} does not exist.")
 
     experiment_data_dict = read_experiment_data(name)
     experiment_data = validate_build_and_run(experiment_data_dict)

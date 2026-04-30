@@ -12,6 +12,47 @@ from pysatl_criterion.statistics import (
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 
 
+def get_project_root() -> Path:
+    """
+    Dynamically find the project root directory.
+
+    Searches upward from the .experiments folder location until it finds
+    a directory containing pyproject.toml or the .experiments folder.
+
+    Returns:
+        Path to the project root directory.
+
+    Raises:
+        RuntimeError: If the project root cannot be determined.
+    """
+    experiments_base = Path(__file__).resolve().parents[3]
+    for parent in [experiments_base, *experiments_base.parents]:
+        if (parent / "pyproject.toml").is_file() or (parent / ".experiments").is_dir():
+            return parent
+
+    raise RuntimeError(
+        "Cannot determine project root. Expected to find pyproject.toml or .experiments in parent directories."
+    )
+
+
+def normalize_experiment_name(name: str) -> str:
+    """
+    Normalize an experiment name by stripping .json extension if present.
+
+    This prevents the 'name.json.json' issue when names are passed with
+    or without the extension.
+
+    Args:
+        name: The experiment name, optionally with .json extension.
+
+    Returns:
+        The normalized experiment name without .json extension.
+    """
+    if name.endswith(".json"):
+        return name[:-5]
+    return name
+
+
 def create_experiment_path(name: str) -> Path:
     """
     Create experiment path.
@@ -20,11 +61,12 @@ def create_experiment_path(name: str) -> Path:
 
     :return: path to the experiment.
     """
+    name = normalize_experiment_name(name)
 
-    # pysatl-experiment/.experiments
-    experiments_dir = Path(__file__).resolve().parents[4] / ".experiments"
+    experiments_dir = get_project_root() / ".experiments"
+    experiments_dir.mkdir(parents=True, exist_ok=True)
+
     experiment_file_name = f"{name}.json"
-
     experiment_path = experiments_dir / experiment_file_name
 
     return experiment_path
@@ -36,9 +78,8 @@ def create_result_path() -> Path:
 
     :return: path to the experiment result.
     """
-
-    # pysatl-experiment/.results
-    results_dir = Path(__file__).resolve().parents[4] / ".results"
+    results_dir = get_project_root() / ".results"
+    results_dir.mkdir(parents=True, exist_ok=True)
 
     return results_dir
 
@@ -53,7 +94,7 @@ def save_experiment_data(experiment_name: str, experiment_data: dict) -> None:
 
     experiment_path = create_experiment_path(experiment_name)
     with Path.open(experiment_path, "w") as f:
-        json.dump(experiment_data, f)
+        json.dump(experiment_data, f, indent=4)
 
 
 def read_experiment_data(experiment_name: str) -> dict:

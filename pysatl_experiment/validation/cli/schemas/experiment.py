@@ -1,4 +1,4 @@
-from typing import Literal, Union
+from typing import Any, Literal, Union
 
 from pydantic import BaseModel, Field, ValidationError, ValidationInfo, field_validator, model_validator
 
@@ -73,8 +73,8 @@ class BaseExperimentConfig(BaseModel):
             CriteriaConfig.model_validate(data_to_validate)
 
         except ValidationError as e:
-            error_message = e.errors()[0]["msg"]
-            raise ValueError(error_message)
+            error_messages = [err["msg"] for err in e.errors()]
+            raise ValueError("\n".join(error_messages))
 
         return self
 
@@ -96,13 +96,22 @@ class PowerConfig(BaseExperimentConfig):
     alternatives: list[Alternative]
     significance_levels: list[float]
 
-    @model_validator(mode="after")
-    def validate_dependencies_on_critical_values(self, info: ValidationInfo) -> "PowerConfig":
+    @model_validator(mode="before")
+    @classmethod
+    def validate_dependencies_on_critical_values(cls, value: Any, info: ValidationInfo) -> "PowerConfig":
         if not info.context or "critical_value_checker" not in info.context:
             raise ValueError("CriticalValueChecker must be provided in the validation context.")
 
-        checker: SQLiteCriticalValueChecker = info.context["critical_value_checker"]
+        checker: SQLiteCriticalValueChecker | None = info.context["critical_value_checker"]
+        if checker is None:
+            raise ValueError("storage_connection must be set to check for critical values.")
+
         missing_combinations = []
+
+        criteria = value.get("criteria", [])
+        sample_sizes = value.get("sample_sizes", [])
+        significance_levels = value.get("significance_levels", [])
+        hypothesis_name = str(value.get("hypothesis", "")).upper()
 
         hypothesis_name_map = {
             "NORMAL": "NORMALITY",
@@ -110,20 +119,20 @@ class PowerConfig(BaseExperimentConfig):
             "WEIBULL": "WEIBULL",
         }
         family_part = "GOODNESS_OF_FIT"
-        hypothesis_part = hypothesis_name_map.get(self.hypothesis.name)
+        hypothesis_part = hypothesis_name_map.get(hypothesis_name)
 
         if not hypothesis_part:
-            raise ValueError(f"Unknown hypothesis '{self.hypothesis.name}' for constructing criterion name.")
+            raise ValueError(f"Unknown hypothesis '{hypothesis_name}' for constructing criterion name.")
 
-        for criterion in self.criteria:
-            for size in self.sample_sizes:
-                full_name_to_check = f"{criterion.criterion_code.upper()}_{hypothesis_part}_{family_part}"
-
-                if not checker.check_exists(self.hypothesis.name, full_name_to_check, size):
-                    for alpha in self.significance_levels:
+        for criterion in criteria:
+            code = criterion["criterion_code"] if isinstance(criterion, dict) else criterion.criterion_code
+            full_name = f"{code.upper()}_{hypothesis_part}_{family_part}"
+            for size in sample_sizes:
+                if not checker.check_exists(full_name, size):
+                    for alpha in significance_levels:
                         missing_combinations.append(
-                            f"  - Hypothesis: {self.hypothesis.name}, "
-                            f"Criterion: {criterion.criterion_code}, "
+                            f"  - Hypothesis: {hypothesis_name}, "
+                            f"Criterion: {code}, "
                             f"Sample Size: {size}, "
                             f"Significance: {alpha}"
                         )
@@ -137,7 +146,7 @@ class PowerConfig(BaseExperimentConfig):
             error_message += "\n".join(unique_missing)
             raise ValueError(error_message)
 
-        return self
+        return value
 
 
 class CriticalValueConfig(BaseExperimentConfig):
@@ -177,7 +186,6 @@ Experiment = Union[PowerConfig, CriticalValueConfig, TimeComplexityConfig]
 class ExperimentConfig(BaseModel):
     """
     The main container for an experiment's configuration.
-
     This model holds the name of the experiment and a specific configuration
     object, which can be one of the defined experiment types.
 
@@ -193,6 +201,9 @@ class ExperimentConfig(BaseModel):
     @field_validator("name")
     @classmethod
     def check_experiment_name(cls, value) -> str:
+        if value.endswith(".json"):
+            value = value[:-5]
+
         bad_names = [
             "CON",
             "AUX",
@@ -209,7 +220,7 @@ class ExperimentConfig(BaseModel):
         if value.upper() in bad_names:
             raise ValueError(f"The name mustn't be: {bad_names}")
 
-        bad_chars = ["\\", "/", "\\0", ":", "*", "?", "<", ">", "|", "' '"]
+        bad_chars = ["\\", "/", "\x00", ":", "*", "?", "<", ">", "|", " "]
         if any(char in value for char in bad_chars):
             found_bad_chars = [char for char in bad_chars if char in value]
             raise ValueError(f"Name '{value}' contain invalid characters: {', '.join(found_bad_chars)}")

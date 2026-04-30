@@ -215,12 +215,12 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
                 alternative_parameters=alt_params_json,
                 monte_carlo_count=int(data.monte_carlo_count),
                 significance_level=float(data.significance_level),
-                results_criteria=json.dumps(data.results_criteria),
+                results_criteria=json.dumps([bool(x) for x in data.results_criteria]),
             )
             self._get_session().add(entity)
         else:
             existing.experiment_id = int(data.experiment_id)
-            existing.results_criteria = json.dumps(data.results_criteria)
+            existing.results_criteria = json.dumps([bool(x) for x in data.results_criteria])
         self._get_session().commit()
 
     def delete_data(self, query: PowerQuery) -> None:

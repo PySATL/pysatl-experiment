@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from pysatl_criterion.critical_value.resolver.storage_resolver import StorageCriticalValueResolver
+from pysatl_criterion.persistence.limit_distribution.datastorage.datastorage import AlchemyLimitDistributionStorage
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 from pysatl_criterion.test.goodness_of_fit_test.goodness_of_fit_test import GoodnessOfFitTest
 
@@ -37,13 +39,19 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         Execute power worker.
         """
 
+        storage = AlchemyLimitDistributionStorage(self.storage_connection)
+        storage.init()
+
+        cv_resolver = StorageCriticalValueResolver(storage)
+
+        gof_test = GoodnessOfFitTest(
+            statistics=self.statistics,
+            significance_level=self.significance_level,
+            cv_resolver=cv_resolver,
+        )
+
         results_criteria = []
         for sample in self.sample_data:
-            gof_test = GoodnessOfFitTest(
-                statistics=self.statistics,
-                significance_level=self.significance_level,
-                db_connection_string=self.storage_connection,
-            )
             result = gof_test.test(sample)
             results_criteria.append(result)
 
