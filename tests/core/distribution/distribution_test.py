@@ -2,25 +2,24 @@ import math
 
 import numpy as np
 import pytest
-
-from pysatl_experiment.core.distribution.beta import generate_beta
-from pysatl_experiment.core.distribution.cauchy import generate_cauchy
-from pysatl_experiment.core.distribution.chi2 import generate_chi2
-from pysatl_experiment.core.distribution.expon import generate_expon
-from pysatl_experiment.core.distribution.gamma import generate_gamma
-from pysatl_experiment.core.distribution.gumbel import generate_gumbel
-from pysatl_experiment.core.distribution.laplace import generate_laplace
-from pysatl_experiment.core.distribution.lo_con_norm import generate_lo_con_norm
-from pysatl_experiment.core.distribution.logistic import generate_logistic
-from pysatl_experiment.core.distribution.lognormal import generate_lognorm
-from pysatl_experiment.core.distribution.mix_con_norm import generate_mix_con_norm
-from pysatl_experiment.core.distribution.norm import generate_norm
-from pysatl_experiment.core.distribution.scale_con_norm import generate_scale_con_norm
-from pysatl_experiment.core.distribution.student import generate_t
-from pysatl_experiment.core.distribution.truncnormal import generate_truncnorm
-from pysatl_experiment.core.distribution.tukey import generate_tukey
-from pysatl_experiment.core.distribution.uniform import generate_uniform
-from pysatl_experiment.core.distribution.weibull import generate_weibull
+from pysatl_criterion.core.distribution.beta import generate_beta
+from pysatl_criterion.core.distribution.cauchy import generate_cauchy
+from pysatl_criterion.core.distribution.chi2 import generate_chi2
+from pysatl_criterion.core.distribution.expon import generate_expon
+from pysatl_criterion.core.distribution.gamma import generate_gamma
+from pysatl_criterion.core.distribution.gumbel import generate_gumbel
+from pysatl_criterion.core.distribution.laplace import generate_laplace
+from pysatl_criterion.core.distribution.lo_con_norm import generate_lo_con_norm
+from pysatl_criterion.core.distribution.logistic import generate_logistic
+from pysatl_criterion.core.distribution.lognormal import generate_lognorm
+from pysatl_criterion.core.distribution.mix_con_norm import generate_mix_con_norm
+from pysatl_criterion.core.distribution.norm import generate_norm
+from pysatl_criterion.core.distribution.scale_con_norm import generate_scale_con_norm
+from pysatl_criterion.core.distribution.student import generate_t
+from pysatl_criterion.core.distribution.truncnormal import generate_truncnorm
+from pysatl_criterion.core.distribution.tukey import generate_tukey
+from pysatl_criterion.core.distribution.uniform import generate_uniform
+from pysatl_criterion.core.distribution.weibull import generate_weibull
 
 
 @pytest.mark.skip(reason="no way of currently testing this")
