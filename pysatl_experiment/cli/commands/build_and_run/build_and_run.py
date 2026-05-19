@@ -1,3 +1,7 @@
+"""CLI command for building and executing experiments."""
+
+from typing import Any, cast
+
 from click import BadParameter, argument, command
 
 from pysatl_experiment.cli.commands.common.common import normalize_experiment_name, read_experiment_data
@@ -12,17 +16,28 @@ from pysatl_experiment.validation.cli.commands.build_and_run.build_and_run impor
 from pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
 
 
+# TODO: refactor names!
+
+
 @command()
 @argument("name")
 def build_and_run(name: str) -> None:
     """
-    Build and run an experiment with the given name.
+    Build and execute an experiment.
 
-    :param name: name of the experiment.
+    Parameters
+    ----------
+    name : str
+        Experiment name. The ``.json`` extension is optional.
+
+    Raises
+    ------
+    click.BadParameter
+        If the experiment does not exist.
     """
     name = normalize_experiment_name(name)
-    experiment_exists = if_experiment_exists(name)
-    if not experiment_exists:
+
+    if not if_experiment_exists(name):
         raise BadParameter(f"Experiment with name {name} does not exist.")
 
     experiment_data_dict = read_experiment_data(name)
@@ -35,10 +50,17 @@ def build_and_run(name: str) -> None:
 
 def _build_experiment(experiment_data: ExperimentData) -> ExperimentSteps:
     """
-    Build experiment from validated ExperimentData object.
+    Create experiment steps from validated configuration.
 
-    :param experiment_data: validated experiment data.
-    :return: experiment steps.
+    Parameters
+    ----------
+    experiment_data : ExperimentData
+        Validated experiment configuration.
+
+    Returns
+    -------
+    ExperimentSteps
+        Experiment steps ready for execution.
     """
     experiment_type_to_factory = {
         ExperimentType.POWER: PowerExperimentFactory,
@@ -46,10 +68,17 @@ def _build_experiment(experiment_data: ExperimentData) -> ExperimentSteps:
         ExperimentType.TIME_COMPLEXITY: TimeComplexityExperimentFactory,
     }
 
-    experiment_type_str = experiment_data.config.experiment_type.value
+    experiment_type = experiment_data.config.experiment_type
 
-    experiment_factory = experiment_type_to_factory[experiment_type_str]
+    experiment_factory = experiment_type_to_factory.get(experiment_type)
 
-    experiment_steps = experiment_factory(experiment_data).create_experiment_steps()
+    if experiment_factory is None:
+        raise BadParameter(f"Unsupported experiment type: {experiment_type}.")
 
-    return experiment_steps
+    validated_experiment_data = cast(
+        Any,
+        experiment_data,
+    )
+    return experiment_factory(
+        validated_experiment_data,
+    ).create_experiment_steps()
