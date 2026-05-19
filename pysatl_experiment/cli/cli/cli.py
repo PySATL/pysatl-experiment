@@ -1,3 +1,5 @@
+"""Registration of CLI commands."""
+
 from pysatl_experiment.cli.commands.build_and_run.build_and_run import build_and_run
 from pysatl_experiment.cli.commands.configure.configure import configure
 from pysatl_experiment.cli.commands.create.create import create
