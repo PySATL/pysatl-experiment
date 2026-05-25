@@ -17,6 +17,7 @@ from pysatl_criterion.core.distribution.scale_con_norm import generate_scale_con
 from pysatl_criterion.core.distribution.student import generate_t
 from pysatl_criterion.core.distribution.truncnormal import generate_truncnorm
 from pysatl_criterion.core.distribution.tukey import generate_tukey
+from pysatl_criterion.core.distribution.uniform import generate_uniform
 from pysatl_criterion.core.distribution.weibull import generate_weibull
 from typing_extensions import override
 
