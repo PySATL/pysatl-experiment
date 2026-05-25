@@ -320,3 +320,17 @@ class NormalGenerator(AbstractRVSGenerator):
     @override
     def generate(self, size):
         return generate_norm(size=size, mean=self.mean, var=self.var)
+
+class UniformGenerator(AbstractRVSGenerator):
+    def __init__(self, a=0, b=1, **kwargs):
+        super().__init__(**kwargs)
+        self.a = a
+        self.b = b
+
+    @override
+    def code(self):
+        return super()._convert_to_code(["uniform", self.a, self.b])
+
+    @override
+    def generate(self, size):
+        return generate_uniform(size=size, a=self.a, b=self.b)
