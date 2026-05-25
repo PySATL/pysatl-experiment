@@ -127,7 +127,7 @@ class LognormGenerator(AbstractRVSGenerator):
 
 
 class GammaGenerator(AbstractRVSGenerator):
-    def __init__(self, alfa=1, beta=0, **kwargs):
+    def __init__(self, alfa=1, beta=1, **kwargs):
         super().__init__(**kwargs)
         self.alfa = alfa
         self.beta = beta
