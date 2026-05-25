@@ -159,7 +159,11 @@ def get_statistics_short_codes_for_hypothesis(hypothesis: str) -> list[str]:
         list[type[AbstractGoodnessOfFitStatistic]],
         base_class.__subclasses__(),
     )
-    valid_criteria_codes = [cls.code().split("_")[0] for cls in valid_criteria_types]
+    valid_criteria_codes = [
+        cls.code().split("_")[0]
+        for cls in valid_criteria_types
+        if not getattr(cls, "__abstractmethods__", None)
+    ]
 
     return valid_criteria_codes
 
