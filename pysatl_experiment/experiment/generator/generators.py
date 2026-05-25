@@ -322,6 +322,7 @@ class NormalGenerator(AbstractRVSGenerator):
     def generate(self, size):
         return generate_norm(size=size, mean=self.mean, var=self.var)
 
+
 class UniformGenerator(AbstractRVSGenerator):
     def __init__(self, a=0, b=1, **kwargs):
         super().__init__(**kwargs)

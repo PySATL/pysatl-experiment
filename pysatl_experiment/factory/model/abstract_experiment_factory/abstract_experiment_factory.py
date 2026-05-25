@@ -242,50 +242,41 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         return generator_name, generator_parameters, hypothesis_generator
 
+    _HYPOTHESIS_TO_BASE_CLASS: dict[Hypothesis, type[Any]] = {
+        Hypothesis.NORMAL: AbstractNormalityGofStatistic,
+        Hypothesis.EXPONENTIAL: AbstractExponentialityGofStatistic,
+        Hypothesis.WEIBULL: AbstractWeibullGofStatistic,
+        Hypothesis.GAMMA: AbstractGammaGofStatistic,
+        Hypothesis.BETA: AbstractBetaGofStatistic,
+        Hypothesis.LOGNORMAL: AbstractLogNormalGofStatistic,
+        Hypothesis.STUDENT: AbstractStudentGofStatistic,
+        Hypothesis.UNIFORM: AbstractUniformGofStatistic,
+    }
+
     def _get_criteria_config(self) -> list[CriterionConfig]:
-        """
-        Get criteria config (criterion from user + criterion code + statistics class object).
-        """
-
         config = self.experiment_data.config
-        hypothesis = config.hypothesis
+        base_class = self._HYPOTHESIS_TO_BASE_CLASS.get(config.hypothesis)
+        if base_class is None:
+            raise ValueError(f"Unknown hypothesis: {config.hypothesis}")
 
-        base_class: type[Any]
-        if hypothesis == Hypothesis.NORMAL:
-            base_class = AbstractNormalityGofStatistic
-        elif hypothesis == Hypothesis.EXPONENTIAL:
-            base_class = AbstractExponentialityGofStatistic
-        elif hypothesis == Hypothesis.WEIBULL:
-            base_class = AbstractWeibullGofStatistic
-        elif hypothesis == Hypothesis.GAMMA:
-            base_class = AbstractGammaGofStatistic
-        elif hypothesis == Hypothesis.BETA:
-            base_class = AbstractBetaGofStatistic
-        elif hypothesis == Hypothesis.LOGNORMAL:
-            base_class = AbstractLogNormalGofStatistic
-        elif hypothesis == Hypothesis.STUDENT:
-            base_class = AbstractStudentGofStatistic
-        elif hypothesis == Hypothesis.UNIFORM:
-            base_class = AbstractUniformGofStatistic
-        else:
-            raise ValueError("Unknown hypothesis")
-
-        criteria_config = []
-        subclasses = base_class.__subclasses__()
-        for sub in subclasses:
+        short_code_to_subclass = {}
+        for sub in base_class.__subclasses__():
             if getattr(sub, "__abstractmethods__", None):
                 continue
-            potential_code = sub.code()
-            potential_short_code = sub.code().split("_")[0]
-            for criterion in config.criteria:
-                short_code = criterion.criterion_code
-                if potential_short_code == short_code:
-                    criterion_config = CriterionConfig(
-                        criterion=criterion,
-                        criterion_code=potential_code,
-                        statistics_class_object=sub(),
-                    )
-                    criteria_config.append(criterion_config)
+            short_code_to_subclass[sub.code().split("_")[0]] = sub
+
+        criteria_config = []
+        for criterion in config.criteria:
+            sub = short_code_to_subclass.get(criterion.criterion_code)
+            if sub is None:
+                continue
+            criteria_config.append(
+                CriterionConfig(
+                    criterion=criterion,
+                    criterion_code=sub.code(),
+                    statistics_class_object=sub(),
+                )
+            )
 
         return criteria_config
 
