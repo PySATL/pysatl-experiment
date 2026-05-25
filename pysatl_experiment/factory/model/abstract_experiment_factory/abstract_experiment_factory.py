@@ -5,8 +5,13 @@ from pysatl_criterion.persistence.limit_distribution.datastorage.datastorage imp
 from pysatl_criterion.persistence.model.common.data_storage.data_storage import IDataStorage
 from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import LimitDistributionQuery
 from pysatl_criterion.statistics import (
+    AbstractBetaGofStatistic,
     AbstractExponentialityGofStatistic,
+    AbstractGammaGofStatistic,
+    AbstractLogNormalGofStatistic,
     AbstractNormalityGofStatistic,
+    AbstractStudentGofStatistic,
+    AbstractUniformGofStatistic,
     AbstractWeibullGofStatistic,
 )
 
@@ -17,7 +22,16 @@ from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothes
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
 from pysatl_experiment.experiment.experiment_steps.experiment_steps import ExperimentSteps
 from pysatl_experiment.experiment.generator import AbstractRVSGenerator
-from pysatl_experiment.experiment.generator.generators import ExponentialGenerator, NormalGenerator, WeibullGenerator
+from pysatl_experiment.experiment.generator.generators import (
+    BetaRVSGenerator,
+    ExponentialGenerator,
+    GammaGenerator,
+    LognormGenerator,
+    NormalGenerator,
+    TRVSGenerator,
+    UniformGenerator,
+    WeibullGenerator,
+)
 from pysatl_experiment.experiment.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerStorage
 from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
@@ -203,6 +217,26 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             hypothesis_generator = WeibullGenerator()
             generator_name = "WEIBULLGENERATOR"
             generator_parameters = [hypothesis_generator.a, hypothesis_generator.k]
+        elif hypothesis == Hypothesis.GAMMA:
+            hypothesis_generator = GammaGenerator()
+            generator_name = "GAMMAGENERATOR"
+            generator_parameters = [hypothesis_generator.alfa, hypothesis_generator.beta]
+        elif hypothesis == Hypothesis.BETA:
+            hypothesis_generator = BetaRVSGenerator()
+            generator_name = "BETARVSGENERATOR"
+            generator_parameters = [hypothesis_generator.a, hypothesis_generator.b]
+        elif hypothesis == Hypothesis.LOGNORMAL:
+            hypothesis_generator = LognormGenerator()
+            generator_name = "LOGNORMGENERATOR"
+            generator_parameters = [hypothesis_generator.s, hypothesis_generator.mu]
+        elif hypothesis == Hypothesis.STUDENT:
+            hypothesis_generator = TRVSGenerator(df=1)
+            generator_name = "TRVSGENERATOR"
+            generator_parameters = [hypothesis_generator.df]
+        elif hypothesis == Hypothesis.UNIFORM:
+            hypothesis_generator = UniformGenerator()
+            generator_name = "UNIFORMGENERATOR"
+            generator_parameters = [hypothesis_generator.a, hypothesis_generator.b]
         else:
             raise ValueError(f"Unknown hypothesis: {hypothesis}")
 
@@ -223,6 +257,16 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             base_class = AbstractExponentialityGofStatistic
         elif hypothesis == Hypothesis.WEIBULL:
             base_class = AbstractWeibullGofStatistic
+        elif hypothesis == Hypothesis.GAMMA:
+            base_class = AbstractGammaGofStatistic
+        elif hypothesis == Hypothesis.BETA:
+            base_class = AbstractBetaGofStatistic
+        elif hypothesis == Hypothesis.LOGNORMAL:
+            base_class = AbstractLogNormalGofStatistic
+        elif hypothesis == Hypothesis.STUDENT:
+            base_class = AbstractStudentGofStatistic
+        elif hypothesis == Hypothesis.UNIFORM:
+            base_class = AbstractUniformGofStatistic
         else:
             raise ValueError("Unknown hypothesis")
 

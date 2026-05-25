@@ -5,8 +5,13 @@ from typing import cast
 
 from click import ClickException, Context
 from pysatl_criterion.statistics import (
+    AbstractBetaGofStatistic,
     AbstractExponentialityGofStatistic,
+    AbstractGammaGofStatistic,
+    AbstractLogNormalGofStatistic,
     AbstractNormalityGofStatistic,
+    AbstractStudentGofStatistic,
+    AbstractUniformGofStatistic,
     AbstractWeibullGofStatistic,
 )
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
@@ -141,6 +146,11 @@ def get_statistics_short_codes_for_hypothesis(hypothesis: str) -> list[str]:
         "exponential": AbstractExponentialityGofStatistic,
         "normal": AbstractNormalityGofStatistic,
         "weibull": AbstractWeibullGofStatistic,
+        "gamma": AbstractGammaGofStatistic,
+        "beta": AbstractBetaGofStatistic,
+        "lognormal": AbstractLogNormalGofStatistic,
+        "student": AbstractStudentGofStatistic,
+        "uniform": AbstractUniformGofStatistic,
     }
 
     base_class = hypothesis_to_base_class[hypothesis]

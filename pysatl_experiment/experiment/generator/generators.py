@@ -24,7 +24,7 @@ from pysatl_experiment.experiment.generator.model import AbstractRVSGenerator
 
 
 class BetaRVSGenerator(AbstractRVSGenerator):
-    def __init__(self, a, b, **kwargs):
+    def __init__(self, a=1, b=1, **kwargs):
         super().__init__(**kwargs)
         self.a = a
         self.b = b
