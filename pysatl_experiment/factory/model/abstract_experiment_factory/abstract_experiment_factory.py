@@ -255,10 +255,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     def _get_criteria_config(self) -> list[CriterionConfig]:
         config = self.experiment_data.config
-        base_class = self._HYPOTHESIS_TO_BASE_CLASS.get(config.hypothesis)
-        if base_class is None:
-            raise ValueError(f"Unknown hypothesis: {config.hypothesis}")
-
+        base_class = self._HYPOTHESIS_TO_BASE_CLASS[config.hypothesis]
         short_code_to_subclass = {}
         for sub in base_class.__subclasses__():
             if getattr(sub, "__abstractmethods__", None):
@@ -267,9 +264,9 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         criteria_config = []
         for criterion in config.criteria:
-            sub = short_code_to_subclass.get(criterion.criterion_code)
-            if sub is None:
+            if criterion.criterion_code not in short_code_to_subclass:
                 continue
+            sub = short_code_to_subclass[criterion.criterion_code]
             criteria_config.append(
                 CriterionConfig(
                     criterion=criterion,
