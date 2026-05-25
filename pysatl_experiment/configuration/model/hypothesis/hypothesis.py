@@ -9,6 +9,11 @@ class Hypothesis(Enum):
     NORMAL = "normal"
     EXPONENTIAL = "exponential"
     WEIBULL = "weibull"
+    GAMMA = "gamma"
+    BETA = "beta"
+    LOGNORMAL = "lognormal"
+    STUDENT = "student"
+    UNIFORM = "uniform"
 
     @classmethod
     def list(cls):
