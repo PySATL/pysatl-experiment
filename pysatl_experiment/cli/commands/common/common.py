@@ -1,3 +1,5 @@
+"""Common utilities for CLI commands and experiment management."""
+
 import json
 from enum import Enum
 from pathlib import Path
@@ -12,18 +14,25 @@ from pysatl_criterion.statistics import (
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 
 
+# TODO: Split utilities into dedicated modules?
+
+
 def get_project_root() -> Path:
     """
-    Dynamically find the project root directory.
+    Locate the project root directory.
 
-    Searches upward from the .experiments folder location until it finds
-    a directory containing pyproject.toml or the .experiments folder.
+    Searches upward from the current module location until a directory
+    containing ``pyproject.toml`` or ``.experiments`` is found.
 
-    Returns:
-        Path to the project root directory.
+    Returns
+    -------
+    Path
+        Absolute path to the project root directory.
 
-    Raises:
-        RuntimeError: If the project root cannot be determined.
+    Raises
+    ------
+    RuntimeError
+        If the project root cannot be determined.
     """
     experiments_base = Path(__file__).resolve().parents[3]
     for parent in [experiments_base, *experiments_base.parents]:
@@ -37,16 +46,22 @@ def get_project_root() -> Path:
 
 def normalize_experiment_name(name: str) -> str:
     """
-    Normalize an experiment name by stripping .json extension if present.
+    Strip the ``.json`` extension from an experiment name if present.
 
+    Parameters
+    ----------
+    name : str
+        Experiment name, optionally ending with ``.json``.
+
+    Returns
+    -------
+    str
+        Normalized experiment name without the ``.json`` extension.
+
+    Notes
+    -----
     This prevents the 'name.json.json' issue when names are passed with
     or without the extension.
-
-    Args:
-        name: The experiment name, optionally with .json extension.
-
-    Returns:
-        The normalized experiment name without .json extension.
     """
     if name.endswith(".json"):
         return name[:-5]
@@ -55,11 +70,21 @@ def normalize_experiment_name(name: str) -> str:
 
 def create_experiment_path(name: str) -> Path:
     """
-    Create experiment path.
+    Build the filesystem path for an experiment JSON file.
 
-    :param name: name of the experiment.
+    Ensures the ``.experiments`` directory exists before returning
+    the path.
 
-    :return: path to the experiment.
+    Parameters
+    ----------
+    name : str
+        Experiment name. The ``.json`` extension is appended
+        automatically if missing.
+
+    Returns
+    -------
+    Path
+        Location of the experiment JSON file.
     """
     name = normalize_experiment_name(name)
 
@@ -68,15 +93,20 @@ def create_experiment_path(name: str) -> Path:
 
     experiment_file_name = f"{name}.json"
     experiment_path = experiments_dir / experiment_file_name
-
     return experiment_path
 
 
 def create_result_path() -> Path:
     """
-    Create experiment result path.
+    Build the path to the results' directory.
 
-    :return: path to the experiment result.
+    Ensures the ``.results`` directory exists before returning
+    the path.
+
+    Returns
+    -------
+    Path
+        Location of the ``.results`` directory.
     """
     results_dir = get_project_root() / ".results"
     results_dir.mkdir(parents=True, exist_ok=True)
@@ -86,42 +116,55 @@ def create_result_path() -> Path:
 
 def save_experiment_data(experiment_name: str, experiment_data: dict) -> None:
     """
-    Save experiment data.
+    Serialize experiment data to a JSON file.
 
-    :param experiment_name: path to the experiment.
-    :param experiment_data: experiment data.
+    Parameters
+    ----------
+    experiment_name : str
+        Name of the experiment. Used to determine the output file path.
+    experiment_data : dict
+        Experiment data to serialize as JSON.
     """
-
     experiment_path = create_experiment_path(experiment_name)
-    with Path.open(experiment_path, "w") as f:
-        json.dump(experiment_data, f, indent=4)
+    with Path.open(experiment_path, "w") as file:
+        json.dump(experiment_data, file, indent=4)
 
 
 def read_experiment_data(experiment_name: str) -> dict:
     """
-    Read experiment data.
+    Read experiment data from its JSON file.
 
-    :param experiment_name: path to the experiment.
+    Parameters
+    ----------
+    experiment_name : str
+        Name of the experiment.
 
-    :return: experiment data.
+    Returns
+    -------
+    dict
+        Experiment data deserialized from JSON.
     """
-
     experiment_path = create_experiment_path(experiment_name)
-    with Path.open(experiment_path) as f:
-        data = json.load(f)
+    with Path.open(experiment_path) as file:
+        data = json.load(file)
 
     return dict(data)
 
 
 def list_possible_parameter_values(param_type: type[Enum]) -> str:
     """
-    List possible parameter values.
+    Format the members of an enumeration as a comma-separated string.
 
-    :param param_type: parameter type.
+    Parameters
+    ----------
+    param_type : type[Enum]
+        An enumeration class.
 
-    :return: possible parameter values.
+    Returns
+    -------
+    str
+        Comma-separated string of the enumeration's values.
     """
-
     param_type_values = [item.value for item in param_type]
     param_type_values_str = ", ".join(param_type_values)
 
@@ -130,20 +173,30 @@ def list_possible_parameter_values(param_type: type[Enum]) -> str:
 
 def get_statistics_short_codes_for_hypothesis(hypothesis: str) -> list[str]:
     """
-    Get statistics codes for hypothesis.
+    Get short codes of registered goodness-of-fit statistics.
 
-    :param hypothesis: hypothesis.
+    Parameters
+    ----------
+    hypothesis : str
+        Hypothesis identifier.
 
-    :return: statistics codes for hypothesis.
+    Returns
+    -------
+    list[str]
+        List of short statistic codes (e.g., ``["KS", "AD"]``).
     """
-
     hypothesis_to_base_class = {
         "exponential": AbstractExponentialityGofStatistic,
         "normal": AbstractNormalityGofStatistic,
         "weibull": AbstractWeibullGofStatistic,
-    }
+    }  # TODO: constant (``"exponential"``, ``"normal"``, or ``"weibull"``)??
 
     base_class = hypothesis_to_base_class[hypothesis]
+
+    if base_class is None:
+        raise ClickException(
+            f"Unsupported hypothesis: {hypothesis}. Must be ``exponential``, ``normal``, or ``weibull``."
+        )
 
     valid_criteria_types = cast(
         list[type[AbstractGoodnessOfFitStatistic]],
@@ -156,13 +209,23 @@ def get_statistics_short_codes_for_hypothesis(hypothesis: str) -> list[str]:
 
 def get_experiment_data(ctx: Context) -> dict:
     """
-    Get experiment data.
+    Extract experiment data dictionary from the Click context.
 
-    :param ctx: context.
+    Parameters
+    ----------
+    ctx : click.Context
+        Click context object.
 
-    :return: experiment data.
+    Returns
+    -------
+    dict
+        Experiment data dictionary.
+
+    Raises
+    ------
+    click.ClickException
+        If experiment data is missing in the context.
     """
-
     experiment_data = ctx.obj.get("experiment_data")
     if experiment_data is None:
         raise ClickException("Experiment is not created.")
@@ -172,13 +235,23 @@ def get_experiment_data(ctx: Context) -> dict:
 
 def get_experiment_name(experiment_data: dict) -> str:
     """
-    Get experiment name.
+    Extract the experiment name from experiment data.
 
-    :param experiment_data: experiment data.
+    Parameters
+    ----------
+    experiment_data : dict
+        Experiment data dictionary.
 
-    :return: experiment name.
+    Returns
+    -------
+    str
+        Experiment name.
+
+    Raises
+    ------
+    click.ClickException
+        If the experiment name is missing.
     """
-
     experiment_name = experiment_data.get("name")
     if experiment_name is None:
         raise ClickException("Experiment name is not configured.")
@@ -188,13 +261,23 @@ def get_experiment_name(experiment_data: dict) -> str:
 
 def get_experiment_config(experiment_data: dict) -> dict:
     """
-    Get experiment config.
+    Extract the experiment configuration section from a data dictionary.
 
-    :param experiment_data: experiment data.
+    Parameters
+    ----------
+    experiment_data : dict
+        Experiment data dictionary.
 
-    :return: experiment config.
+    Returns
+    -------
+    dict
+        Experiment configuration dictionary.
+
+    Raises
+    ------
+    click.ClickException
+        If the experiment configuration is missing.
     """
-
     experiment_config = experiment_data.get("config")
     if experiment_config is None:
         raise ClickException("Experiment config is not configured.")
@@ -204,13 +287,23 @@ def get_experiment_config(experiment_data: dict) -> dict:
 
 def get_experiment_name_and_config(ctx: Context) -> tuple[str, dict]:
     """
-    Get experiment name and config from context.
+    Retrieve experiment name and configuration from context.
 
-    :param ctx: context.
+    Parameters
+    ----------
+    ctx : click.Context
+        Click context object.
 
-    :return: experiment name and config.
+    Returns
+    -------
+    tuple[str, dict]
+        Tuple of experiment name and configuration.
+
+    Raises
+    ------
+    click.ClickException
+        If experiment data, name, or config cannot be resolved.
     """
-
     experiment_data = get_experiment_data(ctx)
     experiment_name = get_experiment_name(experiment_data)
     experiment_config = get_experiment_config(experiment_data)
@@ -220,14 +313,20 @@ def get_experiment_name_and_config(ctx: Context) -> tuple[str, dict]:
 
 def save_experiment_config(experiment_name: str, experiment_config: dict) -> None:
     """
-    Save experiment config.
+    Update the configuration section of an existing experiment.
 
-    :param experiment_name: experiment name.
-    :param experiment_config: experiment config.
+    Parameters
+    ----------
+    experiment_name : str
+        Name of the experiment.
+    experiment_config : dict
+        New configuration dictionary to store.
 
-    :return: experiment config.
+    Notes
+    -----
+    Reads the current experiment data, replaces the ``"config"`` section,
+    and writes the result back to disk.
     """
-
     experiment_data = read_experiment_data(experiment_name)
     experiment_data["config"] = experiment_config
     save_experiment_data(experiment_name, experiment_data)
@@ -235,13 +334,19 @@ def save_experiment_config(experiment_name: str, experiment_config: dict) -> Non
 
 def criteria_from_codes(codes: list[str]) -> list[dict]:
     """
-    Convert criteria codes to criteria
+    Convert criterion short codes into criterion data    dictionaries.
 
-    :param codes: criteria codes.
+    Parameters
+    ----------
+    codes : list[str]
+        List of criterion short codes (e.g., ``["KS", "AD"]``).
 
-    :return: criteria.
+    Returns
+    -------
+    list[dict]
+        List of dictionaries, each containing ``"criterion_code"`` and an
+        empty ``"parameters"`` list.
     """
-
     criteria_data = []
     for code in codes:
         criterion = {"criterion_code": code, "parameters": []}
