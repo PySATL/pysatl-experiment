@@ -1,10 +1,19 @@
+"""Alternative distribution model."""
+
 from dataclasses import dataclass
 
 
 @dataclass
-class Alternative:
+class Alternative:  # TODO: check??
     """
-    Alternative configuration (generator code + parameters).
+    Alternative distribution configuration.
+
+    Attributes
+    ----------
+    generator_name : str
+        Alternative distribution generator identifier.
+    parameters : list[float]
+        Generator-specific numeric parameters.
     """
 
     generator_name: str

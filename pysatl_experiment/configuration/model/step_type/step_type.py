@@ -1,10 +1,10 @@
+"""Experiment step type definitions."""
+
 from enum import Enum
 
 
-class StepType(Enum):
-    """
-    Step type (standard or custom).
-    """
+class StepType(Enum):  # TODO: notes here and everywhere in models??
+    """Available implementation types for experiment steps."""
 
     STANDARD = "standard"
     CUSTOM = "custom"
@@ -12,8 +12,11 @@ class StepType(Enum):
     @classmethod
     def list(cls):
         """
-        Collect all enum values.
+        Return all enum values.
 
-        @return: enum values
+        Returns
+        -------
+        list[str]
+            Available enum values.
         """
         return [member.value for member in cls]
