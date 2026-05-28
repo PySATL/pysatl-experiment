@@ -12,9 +12,11 @@ def __show_available_criteria(distribution: str, codes: list[str]):
     else:
         echo("No criteria found")
 
+
 @command()
-@option("--distribution", "-d", required=False, type=Choice(DistributionType.list()),
-        help="Distribution. Empty for all")
+@option(
+    "--distribution", "-d", required=False, type=Choice(DistributionType.list()), help="Distribution. Empty for all"
+)
 @option("--description/--no-description", "-y/-n", default=False, help="Show criteria description")
 def available_criteria(distribution: str | None, description: bool) -> None:
     """

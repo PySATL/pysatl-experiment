@@ -123,14 +123,18 @@ def list_possible_parameter_values(param_type: type[Enum]) -> str:
 
     return param_type_values_str
 
+
 @overload
 def get_statistics_short_codes_for_hypothesis(hypothesis: str) -> list[str]: ...
+
 
 @overload
 def get_statistics_short_codes_for_hypothesis(hypothesis: list[str]) -> dict[str, list[str]]: ...
 
+
 @overload
 def get_statistics_short_codes_for_hypothesis(hypothesis: None) -> dict[str, list[str]]: ...
+
 
 def get_statistics_short_codes_for_hypothesis(hypothesis: str | list[str] | None) -> list[str] | dict[str, list[str]]:
     """
@@ -143,7 +147,6 @@ def get_statistics_short_codes_for_hypothesis(hypothesis: str | list[str] | None
 
     if hypothesis is None or isinstance(hypothesis, list):
         return {member.value: get_statistics_short_codes_for_hypothesis(member.value) for member in DistributionType}
-
 
     base_class = DistributionType(hypothesis).base_class
 
