@@ -1,3 +1,5 @@
+"""Utility functions for loading generated samples from storage."""
+
 from line_profiler import profile
 
 from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage, RandomValuesCountQuery
@@ -12,17 +14,31 @@ def get_sample_data_from_storage(
     data_storage: IRandomValuesStorage,
 ) -> list[list[float]]:
     """
-    Get data from storage based on the hypothesis and sample size.
+    Load generated samples from storage.
 
-    :param generator_name: generator name.
-    :param generator_parameters: generator parameters.
-    :param sample_size: sample_size.
-    :param count: count of samples to get.
-    :param data_storage: data storage.
+    Parameters
+    ----------
+    generator_name : str
+        Name of the random value generator.
+    generator_parameters : list[float]
+        Generator parameters used during sample generation.
+    sample_size : int
+        Size of each generated sample.
+    count : int
+        Number of samples to load.
+    data_storage : IRandomValuesStorage
+        Storage backend containing generated random samples.
 
-    :return: data.
+    Returns
+    -------
+    list[list[float]]
+        Loaded samples.
+
+    Raises
+    ------
+    ValueError
+        If the storage contains fewer samples than requested.
     """
-
     data = []
 
     query = RandomValuesCountQuery(

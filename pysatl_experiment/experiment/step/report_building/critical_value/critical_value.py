@@ -1,3 +1,5 @@
+"""Critical value report building step implementation."""
+
 from pathlib import Path
 
 from line_profiler import profile
@@ -15,9 +17,7 @@ from pysatl_experiment.report.critical_value.critical_value import CriticalValue
 
 
 class CriticalValueReportBuildingStep(IExperimentStep):
-    """
-    Standard critical value experiment report building step.
-    """
+    """Standard critical value experiment report building step."""
 
     def __init__(
         self,
@@ -28,7 +28,27 @@ class CriticalValueReportBuildingStep(IExperimentStep):
         result_storage: ILimitDistributionStorage,
         results_path: Path,
         with_chart: ReportMode,
-    ):
+    ) -> None:
+        """
+        Initialize critical value report builder step.
+
+        Parameters
+        ----------
+        criteria_config : list[CriterionConfig]
+            Statistical criteria configurations.
+        significance_levels : list[float]
+            Significance levels.
+        sample_sizes : list[int]
+            Sample sizes used in experiments.
+        monte_carlo_count : int
+            Number of Monte Carlo iterations.
+        result_storage : ILimitDistributionStorage
+            Storage with limit distributions.
+        results_path : Path
+            Output directory for generated reports.
+        with_chart : ReportMode
+            Report visualization mode.
+        """
         self.criteria_config = criteria_config
         self.significance_levels = significance_levels
         self.sizes = sorted(sample_sizes)
@@ -40,10 +60,7 @@ class CriticalValueReportBuildingStep(IExperimentStep):
     @profile
     @override
     def run(self) -> None:
-        """
-        Run standard critical value report building step.
-        """
-
+        """Calculate critical values and build report."""
         cv_values = []
         for criterion_config in self.criteria_config:
             for sample_size in self.sizes:
@@ -65,22 +82,37 @@ class CriticalValueReportBuildingStep(IExperimentStep):
         )
         report_builder.build()
 
+    @staticmethod
     def _get_limit_distribution_from_storage(
-        self,
         storage: ILimitDistributionStorage,
         criterion_config: CriterionConfig,
         sample_size: int,
         monte_carlo_count: int,
     ) -> list[float]:
-        """Get limit distribution from storage.
+        """
+        Load empirical limit distribution from storage.
 
-        :param storage: storage.
-        :param criterion_config: criterion configuration.
-        :param sample_size: sample size.
-        :param monte_carlo_count: monte carlo count.
+        Parameters
+        ----------
+        storage : ILimitDistributionStorage
+            Limit distribution storage.
+        criterion_config : CriterionConfig
+            Criterion configuration.
+        sample_size : int
+            Sample size.
+        monte_carlo_count : int
+            Number of Monte Carlo iterations.
 
-        :return: limit distribution."""
+        Returns
+        -------
+        list[float]
+            Empirical limit distribution.
 
+        Raises
+        ------
+        ValueError
+            If the distribution is not found.
+        """
         query = LimitDistributionQuery(
             criterion_code=criterion_config.criterion_code,
             criterion_parameters=criterion_config.criterion.parameters,

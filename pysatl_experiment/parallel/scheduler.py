@@ -1,6 +1,6 @@
 """Parallel task scheduling utilities."""
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Any, Callable
 
@@ -88,7 +88,7 @@ class Scheduler:
 
         return self._executor.submit(fn, *args, **kwargs)
 
-    def iterate_results(self, tasks: list[Callable[[], Any]]) -> Iterator[Any]:
+    def iterate_results(self, tasks: Sequence[Callable[[], Any]]) -> Iterator[Any]:
         """
         Execute tasks and yield results as they complete.
 
@@ -137,7 +137,7 @@ class Scheduler:
             except TimeoutError:  # TODO: ??
                 continue
 
-    def run(self, tasks: list[Callable[[], Any]]) -> list[Any]:
+    def run(self, tasks: Sequence[Callable[[], Any]]) -> list[Any]:
         """
         Execute all tasks and collect results.
 

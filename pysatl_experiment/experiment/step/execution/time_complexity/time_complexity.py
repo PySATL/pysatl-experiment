@@ -1,3 +1,5 @@
+"""Time complexity experiment execution step implementation."""
+
 import functools
 from dataclasses import dataclass
 
@@ -22,14 +24,15 @@ from pysatl_experiment.persistence.model.time_complexity.time_complexity import 
 
 @dataclass
 class TimeComplexityStepData(ExecutionStepData):
-    """
-    Data for execution step in time complexity experiment.
-    """
+    """Data for a single execution step in time complexity experiment."""
 
 
 class TimeComplexityExecutionStep(IExperimentStep):
     """
     Standard time complexity experiment execution step.
+
+    The step measures criterion execution time
+    for different sample sizes.
     """
 
     def __init__(
@@ -42,7 +45,29 @@ class TimeComplexityExecutionStep(IExperimentStep):
         result_storage: ITimeComplexityStorage,
         storage_connection: str,
         parallel_workers: int,
-    ):
+    ) -> None:
+        """
+        Initialize time complexity execution step.
+
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        hypothesis_generator_data : HypothesisGeneratorData
+            Hypothesis generator configuration.
+        step_config : list[TimeComplexityStepData]
+            Execution task configurations.
+        monte_carlo_count : int
+            Number of Monte Carlo iterations.
+        data_storage : IRandomValuesStorage
+            Storage with generated random samples.
+        result_storage : ITimeComplexityStorage
+            Storage for execution time measurements.
+        storage_connection : str
+            Database connection string.
+        parallel_workers : int
+            Number of parallel worker processes.
+        """
         self.experiment_id = experiment_id
         self.hypothesis_generator_data = hypothesis_generator_data
         self.step_config = step_config
@@ -54,10 +79,7 @@ class TimeComplexityExecutionStep(IExperimentStep):
 
     @profile
     def run(self) -> None:
-        """
-        Run time complexity experiment in parallel with buffering.
-        """
-
+        """Execute all time complexity tasks in parallel."""
         task_specs = []
         for step_data in self.step_config:
             spec = TaskSpec(
@@ -105,17 +127,21 @@ class TimeComplexityExecutionStep(IExperimentStep):
         results_times: list[float],
     ) -> None:
         """
-        Save results times to storage.
+        Save execution time measurements to storage.
 
-        :param experiment_id: experiment id.
-        :param criterion_code: criterion code.
-        :param sample_size: sample size.
-        :param monte_carlo_count: monte carlo count.
-        :param results_times: results times.
-
-        :return: None.
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        criterion_code : str
+            Statistical criterion identifier.
+        sample_size : int
+            Sample size.
+        monte_carlo_count : int
+            Number of Monte Carlo iterations.
+        results_times : list[float]
+            Measured execution times.
         """
-
         data_to_save = TimeComplexityModel(
             experiment_id=experiment_id,
             criterion_code=criterion_code,
