@@ -1,14 +1,10 @@
 import json
 from enum import Enum
 from pathlib import Path
-from typing import cast
+from typing import cast, overload
 
 from click import ClickException, Context
-from pysatl_criterion.statistics import (
-    AbstractExponentialityGofStatistic,
-    AbstractNormalityGofStatistic,
-    AbstractWeibullGofStatistic,
-)
+from pysatl_criterion import DistributionType
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 
 
@@ -128,7 +124,19 @@ def list_possible_parameter_values(param_type: type[Enum]) -> str:
     return param_type_values_str
 
 
-def get_statistics_short_codes_for_hypothesis(hypothesis: str) -> list[str]:
+@overload
+def get_statistics_short_codes_for_hypothesis(hypothesis: str) -> list[str]: ...
+
+
+@overload
+def get_statistics_short_codes_for_hypothesis(hypothesis: list[str]) -> dict[str, list[str]]: ...
+
+
+@overload
+def get_statistics_short_codes_for_hypothesis(hypothesis: None) -> dict[str, list[str]]: ...
+
+
+def get_statistics_short_codes_for_hypothesis(hypothesis: str | list[str] | None) -> list[str] | dict[str, list[str]]:
     """
     Get statistics codes for hypothesis.
 
@@ -137,13 +145,10 @@ def get_statistics_short_codes_for_hypothesis(hypothesis: str) -> list[str]:
     :return: statistics codes for hypothesis.
     """
 
-    hypothesis_to_base_class = {
-        "exponential": AbstractExponentialityGofStatistic,
-        "normal": AbstractNormalityGofStatistic,
-        "weibull": AbstractWeibullGofStatistic,
-    }
+    if hypothesis is None or isinstance(hypothesis, list):
+        return {member.value: get_statistics_short_codes_for_hypothesis(member.value) for member in DistributionType}
 
-    base_class = hypothesis_to_base_class[hypothesis]
+    base_class = DistributionType(hypothesis).base_class
 
     valid_criteria_types = cast(
         list[type[AbstractGoodnessOfFitStatistic]],
