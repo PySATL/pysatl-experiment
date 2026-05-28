@@ -2,10 +2,7 @@ import functools
 from dataclasses import dataclass
 
 from line_profiler import profile
-from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import (
-    ILimitDistributionStorage,
-    LimitDistributionModel,
-)
+from pysatl_criterion.persistence.models.limit_distribution import ILimitDistributionStorage, LimitDistributionModel
 
 from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.experiment.model.experiment_step.experiment_step import IExperimentStep

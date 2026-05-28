@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar, cast
 
-from pysatl_criterion.persistence.limit_distribution.datastorage.datastorage import AlchemyLimitDistributionStorage
-from pysatl_criterion.persistence.model.common.data_storage.data_storage import IDataStorage
-from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import LimitDistributionQuery
+from pysatl_criterion.persistence.models.base import IDataStorage
+from pysatl_criterion.persistence.models.limit_distribution import LimitDistributionQuery
+from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDistributionStorage
 from pysatl_criterion.statistics import (
     AbstractExponentialityGofStatistic,
     AbstractNormalityGofStatistic,

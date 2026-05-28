@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import cast, overload
 
 from click import ClickException, Context
+from pysatl_criterion import DistributionType
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
-from pysatl_criterion.util.distribution import DistributionType
 
 
 def get_project_root() -> Path:
