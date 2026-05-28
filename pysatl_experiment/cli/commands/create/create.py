@@ -1,3 +1,5 @@
+"""CLI command for creating experiments."""
+
 from click import BadParameter, argument, command, echo
 
 from pysatl_experiment.cli.commands.common.common import normalize_experiment_name, save_experiment_data
@@ -8,9 +10,22 @@ from pysatl_experiment.validation.cli.commands.common.common import if_experimen
 @argument("name")
 def create(name: str) -> None:
     """
-    Create an experiment with the given name.
+    Create a new experiment with the given name.
 
-    :param name: name of the experiment.
+    Parameters
+    ----------
+    name : str
+        Experiment name. The ``.json`` extension is optional.
+
+    Raises
+    ------
+    click.BadParameter
+        If an experiment with the same name already exists.
+
+    Notes
+    -----
+    The command creates an experiment configuration file with
+    default settings.
     """
     name = normalize_experiment_name(name)
 
@@ -28,7 +43,7 @@ def create(name: str) -> None:
             "report_mode": "with-chart",
             "parallel_workers": 1,
         },
-    }
+    }  # TODO: default settings to constant?
 
     save_experiment_data(name, experiment_data)
 

@@ -1,3 +1,5 @@
+"""CLI command for displaying experiment data."""
+
 import json
 
 from click import argument, command, echo
@@ -11,8 +13,12 @@ def show(name: str) -> None:
     """
     Show experiment data.
 
-    :param name: experiment name.
+    Parameters
+    ----------
+    name : str
+        Experiment name.
     """
     name = normalize_experiment_name(name)
     experiment_data = read_experiment_data(name)
+
     echo(json.dumps(experiment_data, indent=4))
