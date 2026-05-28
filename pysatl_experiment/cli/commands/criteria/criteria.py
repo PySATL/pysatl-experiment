@@ -1,5 +1,5 @@
 from click import Choice, command, echo, option
-from pysatl_criterion.util.distribution import DistributionType
+from pysatl_criterion.utils.distribution import DistributionType
 
 from pysatl_experiment.cli.commands.common.common import get_statistics_short_codes_for_hypothesis
 
