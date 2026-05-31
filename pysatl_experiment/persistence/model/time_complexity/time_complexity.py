@@ -1,3 +1,5 @@
+"""Time complexity storage models and interface."""
+
 from abc import ABC
 from dataclasses import dataclass
 
@@ -6,6 +8,25 @@ from pysatl_criterion.persistence.model.common.data_storage.data_storage import 
 
 @dataclass
 class TimeComplexityModel(DataModel):
+    """
+    Time complexity measurement model.
+
+    Parameters
+    ----------
+    experiment_id : int
+        Experiment identifier.
+    criterion_code : str
+        Criterion identifier.
+    criterion_parameters : list[float]
+        Criterion parameters.
+    sample_size : int
+        Sample size.
+    monte_carlo_count : int
+        Number of simulations.
+    results_times : list[float]
+        Execution time measurements.
+    """
+
     experiment_id: int
     criterion_code: str
     criterion_parameters: list[float]
@@ -16,6 +37,17 @@ class TimeComplexityModel(DataModel):
 
 @dataclass
 class TimeComplexityQuery(DataQuery):
+    """
+    Query for time complexity data.
+
+    Parameters
+    ----------
+    criterion_code : str
+    criterion_parameters : list[float]
+    sample_size : int
+    monte_carlo_count : int
+    """
+
     criterion_code: str
     criterion_parameters: list[float]
     sample_size: int
@@ -23,8 +55,6 @@ class TimeComplexityQuery(DataQuery):
 
 
 class ITimeComplexityStorage(IDataStorage[TimeComplexityModel, TimeComplexityQuery], ABC):
-    """
-    Time complexity storage interface.
-    """
+    """Time complexity storage interface."""
 
     pass
