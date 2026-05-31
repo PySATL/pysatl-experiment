@@ -1,6 +1,4 @@
-"""
-This module contains the class to persist trades into SQLite
-"""
+"""Database initialization and session-scoping utilities."""
 
 import logging
 import threading
@@ -22,11 +20,17 @@ _request_id_ctx_var: ContextVar[str | None] = ContextVar(REQUEST_ID_CTX_KEY, def
 
 def get_request_or_thread_id() -> str | None:
     """
-    Helper method to get either async context, or thread id
+    Return current request identifier or thread identifier.
+
+    Returns
+    -------
+    str | None
+        Request identifier from the current context if available.
+        Otherwise, the current thread identifier.
     """
     request_id = _request_id_ctx_var.get()
     if request_id is None:
-        # when not in request context - use thread id
+        # When not in request context - use thread id
         request_id = str(threading.current_thread().ident)
 
     return request_id
@@ -36,12 +40,22 @@ _SQL_DOCS_URL = "http://docs.sqlalchemy.org/en/latest/core/engines.html#database
 
 
 def init_db(db_url: str) -> Engine:
-    """
-    Initializes this module with the given config,
-    registers all known command handlers
-    and starts polling for message updates
-    :param db_url: Database to use
-    :return: None
+    """Create and configure a SQLAlchemy engine.
+
+    Parameters
+    ----------
+    db_url : str
+        Database connection URL.
+
+    Returns
+    -------
+    Engine
+        Configured SQLAlchemy engine.
+
+    Raises
+    ------
+    OperationalException
+        If the database URL is invalid.
     """
     kwargs: dict[str, Any] = {}
 
