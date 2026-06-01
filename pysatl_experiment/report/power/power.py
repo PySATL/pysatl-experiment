@@ -1,3 +1,13 @@
+"""
+Statistical power report generation.
+
+This module provides a report builder capable of generating PDF reports
+containing power estimates for statistical criteria under various
+alternative hypotheses and significance levels.
+
+Charts may optionally be included in the report.
+"""
+
 import tempfile
 from pathlib import Path
 
@@ -14,7 +24,12 @@ from pysatl_experiment.report.common.utils import convert_html_to_pdf, get_crite
 
 class PowerReportBuilder:
     """
-    Standard power report builder.
+    Builder for statistical power reports.
+
+    The report contains power tables and optional charts showing
+    the relationship between statistical power and sample size.
+
+    Reports are rendered from HTML templates and exported as PDF.
     """
 
     def __init__(
@@ -27,6 +42,26 @@ class PowerReportBuilder:
         results_path: Path,
         with_chart: ReportMode,
     ):
+        """
+        Initialize power report builder.
+
+        Parameters
+        ----------
+        criteria_config : list[CriterionConfig]
+            Criteria included in the report.
+        sample_sizes : list[int]
+            Evaluated sample sizes.
+        alternatives : list[Alternative]
+            Alternative hypotheses.
+        significance_levels : list[float]
+            Significance levels.
+        power_result : dict
+            Computed power results.
+        results_path : Path
+            Output directory.
+        with_chart : ReportMode
+            Determines whether charts should be generated.
+        """
         self.criteria_config = criteria_config
         self.sample_sizes = sample_sizes
         self.alternatives = alternatives
@@ -42,9 +77,13 @@ class PowerReportBuilder:
 
     def build(self) -> None:
         """
-        Build PDF file from power report builder.
-        """
+        Generate and save the power report.
 
+        Notes
+        -----
+        Temporary chart files are created during report generation
+        and deleted automatically afterward.
+        """
         with tempfile.TemporaryDirectory(prefix="power_charts_") as temp_dir:
             charts_dir = Path(temp_dir) / "charts"
 
@@ -55,13 +94,18 @@ class PowerReportBuilder:
 
     def _generate_html(self, charts_dir: Path) -> str:
         """
-        Generate HTML with tables and optional charts.
+        Generate HTML report content.
 
-        :param charts_dir: chart image directory.
+        Parameters
+        ----------
+        charts_dir : Path
+            Directory containing generated charts.
 
-        :return: rendered HTML string with embedded chart paths.
+        Returns
+        -------
+        str
+            Rendered HTML document.
         """
-
         tables = []
         for alternative in self.alternatives:
             for significance_level in self.significance_levels:
@@ -96,14 +140,21 @@ class PowerReportBuilder:
         significance_level: float,
     ) -> dict[int, dict[str, float]]:
         """
-        Generate data for the power table.
+        Generate power table data.
 
-        :param alternative: The alternative for which to generate the table.
-        :param significance_level: The significance level for which to generate the table.
-        :return: A dictionary with table data, where keys are sample sizes
-                 and values are dictionaries of power for each criterion.
+        Parameters
+        ----------
+        alternative : Alternative
+            Alternative hypothesis.
+        significance_level : float
+            Significance level.
+
+        Returns
+        -------
+        dict[int, dict[str, float]]
+            Power values grouped by sample size
+            and criterion.
         """
-
         table_data = {}
         for size in self.sample_sizes:
             row_data: dict[str, float] = {}
@@ -126,13 +177,21 @@ class PowerReportBuilder:
         charts_dir: Path,
     ) -> str:
         """
-        Generate a line chart: power vs sample size for each criterion.
+        Generate power chart.
 
-        :param alternative: alternative to generate chart.
-        :param significance_level: significance level to generate chart.
-        :param charts_dir: chart image directory.
+        Parameters
+        ----------
+        alternative : Alternative
+            Alternative hypothesis.
+        significance_level : float
+            Significance level.
+        charts_dir : Path
+            Directory for chart files.
 
-        :return: path to chart file.
+        Returns
+        -------
+        str
+            Absolute path to generated chart image.
         """
         charts_dir.mkdir(parents=True, exist_ok=True)
 
