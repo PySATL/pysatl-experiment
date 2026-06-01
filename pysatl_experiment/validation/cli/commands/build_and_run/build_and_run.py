@@ -1,8 +1,21 @@
+"""
+Experiment configuration validation and initialization.
+
+This module validates raw experiment configuration input, converts
+validated Pydantic models into legacy dataclass configurations,
+initializes storage backends, and prepares experiment data for
+execution.
+
+It serves as the bridge between CLI input validation and the
+experiment execution pipeline.
+"""
+
 from enum import Enum
 from typing import Any, Callable, cast
 
 from click import ClickException
 from dacite import Config, from_dict
+from dacite.data import Data
 from pydantic import ValidationError
 
 from pysatl_experiment.cli.commands.common.common import create_result_path
@@ -38,8 +51,29 @@ from pysatl_experiment.validation.cli.schemas.experiment import TimeComplexityCo
 
 def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
     """
-    Validates input, initializes, and builds the experiment data object.
+    Validate configuration and construct experiment data.
 
+    This function validates user input, initializes storage backends,
+    restores experiment state if available, and prepares the final
+    experiment data structure for execution.
+
+    Parameters
+    ----------
+    experiment_data_dict : dict
+        Raw experiment configuration.
+
+    Returns
+    -------
+    ExperimentData
+        Fully initialized experiment data object.
+
+    Raises
+    ------
+    ClickException
+        If validation fails or the experiment has already completed.
+
+    Notes
+    -----
     This function performs the following steps:
     1.  Conditionally creates a database checker if the experiment is a 'power'
         analysis.
@@ -53,16 +87,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
     7.  Creates a results path for experiment artifacts.
     8.  Returns a complete `ExperimentData` object to be used by the runner.
 
-    Args:
-        experiment_data_dict: A dictionary containing the raw experiment configuration.
-
-    Raises:
-        ClickException: If validation fails (with detailed, user-friendly error
-            messages for each invalid field) or if the experiment has already
-            been completed.
-
-    Returns:
-        An `ExperimentData` object ready for the experiment execution pipeline.
+    Existing experiments are automatically resumed from persisted state when possible.
     """
     try:
         checker = None
@@ -133,13 +158,25 @@ def _get_experiment_config_from_storage(
     config: ExperimentConfig, storage: IExperimentStorage
 ) -> ExperimentModel | None:
     """
-    Get experiment config from database.
+    Retrieve experiment configuration from storage.
 
-    :param config: experiment config dataclass.
+    Parameters
+    ----------
+    config : ExperimentConfig
+        Experiment configuration.
+    storage : IExperimentStorage
+        Storage backend.
 
-    :return: experiment config from db.
+    Returns
+    -------
+    ExperimentModel | None
+        Stored experiment configuration if found, otherwise None.
+
+    Notes
+    -----
+    The query is constructed from configuration fields that uniquely
+    identify an experiment.
     """
-
     experiment_type = config.experiment_type
     criteria = {criterion.criterion_code: criterion.parameters for criterion in config.criteria}
 
@@ -177,12 +214,20 @@ def _get_experiment_config_from_storage(
 
 def _save_experiment_config_to_storage(config: ExperimentConfig, storage: IExperimentStorage) -> None:
     """
-    Save experiment config to database.
+    Persist experiment configuration.
 
-    :param config: experiment config dataclass.
-    :param storage: experiment storage.
+    Parameters
+    ----------
+    config : ExperimentConfig
+        Experiment configuration.
+    storage : IExperimentStorage
+        Storage backend.
+
+    Notes
+    -----
+    A new experiment entry is created with all execution steps marked
+    as incomplete.
     """
-
     experiment_type = config.experiment_type
     criteria = {criterion.criterion_code: criterion.parameters for criterion in config.criteria}
 
@@ -221,11 +266,24 @@ def _save_experiment_config_to_storage(config: ExperimentConfig, storage: IExper
 
 def _check_if_experiment_finished(experiment_config_from_db: ExperimentModel) -> StepsDone:
     """
-    Check if experiment is finished.
+    Check experiment completion status.
 
-    :param experiment_config_from_db: experiment config from db.
+    Parameters
+    ----------
+    experiment_config_from_db : ExperimentModel
+        Experiment configuration retrieved from storage.
+
+    Returns
+    -------
+    StepsDone
+        Object describing which execution stages have already been
+        completed.
+
+    Raises
+    ------
+    ClickException
+        If all experiment stages have already been completed.
     """
-
     is_generation_done = experiment_config_from_db.is_generation_done
     is_execution_done = experiment_config_from_db.is_execution_done
     is_report_building_done = experiment_config_from_db.is_report_building_done
@@ -252,27 +310,36 @@ PYDANTIC_TO_LEGACY_MAP = {
 
 def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> ExperimentConfig:
     """
-    Converts a Pydantic configuration model to a legacy dataclass model.
+    Convert a validated Pydantic configuration to a legacy dataclass.
 
-    This adapter function is necessary for compatibility between the new
-    Pydantic-based validation layer and the older, dataclass-based core
-    logic. It uses `dacite` for flexible conversion.
+    This adapter provides compatibility between the Pydantic validation
+    layer and the legacy dataclass-based experiment implementation.
 
-    Args:
-        pydantic_config: The validated Pydantic configuration object.
+    Parameters
+    ----------
+    pydantic_config : PydanticBaseExperiment
+        Validated Pydantic configuration.
 
-    Raises:
-        TypeError: If the Pydantic config type has no corresponding legacy class
-            in the `PYDANTIC_TO_LEGACY_MAP`.
+    Returns
+    -------
+    ExperimentConfig
+        Equivalent legacy dataclass configuration.
 
-    Returns:
-        The equivalent legacy `ExperimentConfig` dataclass instance.
+    Raises
+    ------
+    TypeError
+        If no matching legacy configuration class exists.
     """
-    legacy_dataclass_type = PYDANTIC_TO_LEGACY_MAP.get(type(pydantic_config))
+    legacy_dataclass_type = PYDANTIC_TO_LEGACY_MAP.get(
+        cast(
+            type[PydanticPowerConfig] | type[PydanticCriticalValueConfig] | type[PydanticTimeComplexityConfig],
+            type(pydantic_config),
+        )
+    )
     if legacy_dataclass_type is None:
         raise TypeError(f"No match for Pydantic type: {type(pydantic_config)}")
 
-    config_dict = pydantic_config.model_dump(mode="json")
+    config_dict = cast(Data, pydantic_config.model_dump(mode="json"))
 
     enum_mapping: dict[type[Any], Callable[[Any], Any]] = {
         ExperimentType: lambda x: ExperimentType(x),

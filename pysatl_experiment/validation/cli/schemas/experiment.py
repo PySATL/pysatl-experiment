@@ -1,3 +1,11 @@
+"""
+Experiment configuration models.
+
+This module defines the full configuration hierarchy for experiments,
+including base configuration and specialized variants for power analysis,
+critical value computation, and time complexity experiments.
+"""
+
 from typing import Any, Literal, Union
 
 from pydantic import BaseModel, Field, ValidationError, ValidationInfo, field_validator, model_validator
@@ -12,22 +20,40 @@ from pysatl_experiment.validation.cli.schemas.criteria import CriteriaConfig, Cr
 
 
 class BaseExperimentConfig(BaseModel):
-    """Base configuration for all experiment types.
+    """
+    Base configuration for all experiments.
 
-    This class defines the common set of parameters that are required for any
-    type of experiment.
+    Defines common parameters shared across all experiment types.
 
-    Attributes:
-        hypothesis (Hypothesis): The statistical hypothesis to be tested.
-        run_mode (RunMode): The mode in which the experiment will be run
-        report_mode (ReportMode): The mode for generating reports.
-        generator_type (StepType): The type of the data generator step.
-        executor_type (StepType): The type of the execution step.
-        report_builder_type (StepType): The type of the report builder step.
-        criteria (list[Criterion]): A list of criteria for the experiment.
-        storage_connection (str): The connection string or path for data storage.
-        sample_sizes (list[int]): A list of sample sizes to be used in the experiment.
-        monte_carlo_count (int): The number of Monte Carlo simulations to run.
+    Attributes
+    ----------
+    hypothesis : Hypothesis
+        Statistical hypothesis being tested.
+    run_mode : RunMode
+        Execution mode of the experiment.
+    report_mode : ReportMode
+        Controls report generation behavior.
+    generator_type : StepType
+        Type of data generator step.
+    executor_type : StepType
+        Type of execution step.
+    report_builder_type : StepType
+        Type of report builder step.
+    criteria : list[Criterion]
+        List of statistical criteria.
+    storage_connection : str
+        Storage backend connection string.
+    sample_sizes : list[int]
+        Sample sizes used in experiment.
+    monte_carlo_count : int
+        Number of Monte Carlo simulations.
+    parallel_workers : int
+        Number of parallel workers.
+
+    Raises
+    ------
+    ValueError
+        If validation of criteria or numeric constraints fails.
     """
 
     hypothesis: Hypothesis
@@ -45,6 +71,24 @@ class BaseExperimentConfig(BaseModel):
     @field_validator("generator_type", "executor_type", "report_builder_type")
     @classmethod
     def check_custom_step(cls, value):
+        """
+        Disallow CUSTOM step type for core pipeline steps.
+
+        Parameters
+        ----------
+        value : StepType
+            Step type value.
+
+        Returns
+        -------
+        StepType
+            Validated step type.
+
+        Raises
+        ------
+        ValueError
+            If StepType.CUSTOM is used.
+        """
         if value == StepType.CUSTOM:
             raise ValueError(f"Type of '{value}' is not valid.\nPossible value are: Standard")
         return value
@@ -52,19 +96,72 @@ class BaseExperimentConfig(BaseModel):
     @field_validator("sample_sizes")
     @classmethod
     def check_sample_sizes(cls, value):
+        """
+        Validate sample sizes.
+
+        Ensures all sample sizes are >= 10.
+
+        Parameters
+        ----------
+        value : list[int]
+            List of sample sizes.
+
+        Returns
+        -------
+        list[int]
+            Validated sample sizes.
+
+        Raises
+        ------
+        ValueError
+            If any sample size is below 10.
+        """
         if any(size < 10 for size in value):
-            raise ValueError("Sample sizes must be greater than 10.")
+            raise ValueError("Sample sizes must be greater than 10.")  # TODO: fix magic constant!
         return value
 
     @field_validator("monte_carlo_count")
     @classmethod
     def check_monte_carlo(cls, value):
+        """
+        Validate Monte Carlo simulation count.
+
+        Parameters
+        ----------
+        value : int
+            Number of simulations.
+
+        Returns
+        -------
+        int
+            Validated value.
+
+        Raises
+        ------
+        ValueError
+            If value is less than 100.
+        """
         if value < 100:
-            raise ValueError("Monte Carlo count must be greater than 100.")
+            raise ValueError("Monte Carlo count must be greater than 100.")  # TODO: fix magic constant!
         return value
 
     @model_validator(mode="after")
     def validate_using_criteria_config(self) -> "BaseExperimentConfig":
+        """
+        Validate criteria compatibility via CriteriaConfig.
+
+        Delegates validation to CriteriaConfig model.
+
+        Returns
+        -------
+        BaseExperimentConfig
+            Validated configuration.
+
+        Raises
+        ------
+        ValueError
+            If criteria are incompatible with hypothesis.
+        """
         try:
             data_to_validate = {
                 "hypothesis": self.hypothesis,
@@ -81,15 +178,24 @@ class BaseExperimentConfig(BaseModel):
 
 class PowerConfig(BaseExperimentConfig):
     """
-    Configuration specific to a power analysis experiment.
+    Configuration for power analysis experiments.
 
-    This extends the base configuration with parameters required for
-    calculating statistical power.
+    Extends base configuration with alternative hypotheses and significance
+    levels, and validates availability of required critical values.
 
-    Attributes:
-        experiment_type (Literal["power"]): The type of the experiment.
-        alternatives (list[Alternative]): A list of alternative hypotheses.
-        significance_levels (list[float]): A list of significance levels (alpha).
+    Attributes
+    ----------
+    experiment_type : Literal["power"]
+        Experiment type discriminator.
+    alternatives : list[Alternative]
+        Alternative hypotheses used in power analysis.
+    significance_levels : list[float]
+        Significance levels (alpha values).
+
+    Raises
+    ------
+    ValueError
+        If required critical values are missing or configuration is invalid.
     """
 
     experiment_type: Literal["power"]
@@ -99,6 +205,29 @@ class PowerConfig(BaseExperimentConfig):
     @model_validator(mode="before")
     @classmethod
     def validate_dependencies_on_critical_values(cls, value: Any, info: ValidationInfo) -> "PowerConfig":
+        """
+        Validate availability of required critical values.
+
+        Ensures that all required (criterion, sample size) combinations
+        exist in storage before running power analysis.
+
+        Parameters
+        ----------
+        value : Any
+            Raw configuration dictionary.
+        info : ValidationInfo
+            Validation context containing SQLiteCriticalValueChecker.
+
+        Returns
+        -------
+        dict
+            Original configuration if validation succeeds.
+
+        Raises
+        ------
+        ValueError
+            If required critical values are missing or checker is absent.
+        """
         if not info.context or "critical_value_checker" not in info.context:
             raise ValueError("CriticalValueChecker must be provided in the validation context.")
 
@@ -151,14 +280,14 @@ class PowerConfig(BaseExperimentConfig):
 
 class CriticalValueConfig(BaseExperimentConfig):
     """
-    Configuration specific to a critical value computation experiment.
+    Configuration for critical value computation experiments.
 
-    This extends the base configuration with parameters needed for
-    determining critical values.
-
-    Attributes:
-        experiment_type (Literal["critical_value"]): The type of the experiment.
-        significance_levels (list[float]): A list of significance levels (alpha).
+    Attributes
+    ----------
+    experiment_type : Literal["critical_value"]
+        Experiment type discriminator.
+    significance_levels : list[float]
+        Significance levels (alpha values).
     """
 
     experiment_type: Literal["critical_value"]
@@ -167,13 +296,12 @@ class CriticalValueConfig(BaseExperimentConfig):
 
 class TimeComplexityConfig(BaseExperimentConfig):
     """
-    Configuration for a time complexity analysis experiment.
+    Configuration for time complexity analysis experiments.
 
-    This extends the base configuration for experiments focused on measuring
-    computational time complexity.
-
-    Attributes:
-        experiment_type (Literal["time_complexity"]): The type of the experiment.
+    Attributes
+    ----------
+    experiment_type : Literal["time_complexity"]
+        Experiment type discriminator.
     """
 
     experiment_type: Literal["time_complexity"]
@@ -185,14 +313,22 @@ Experiment = Union[PowerConfig, CriticalValueConfig, TimeComplexityConfig]
 
 class ExperimentConfig(BaseModel):
     """
-    The main container for an experiment's configuration.
-    This model holds the name of the experiment and a specific configuration
-    object, which can be one of the defined experiment types.
+    Root experiment configuration container.
 
-    Attributes:
-        name (str): The name of the experiment.
-        config (Experiment): The specific configuration for the experiment,
-            discriminated by `experiment_type`.
+    Holds experiment name and strongly typed configuration model selected
+    by discriminator field `experiment_type`.
+
+    Attributes
+    ----------
+    name : str
+        Name of the experiment (validated against OS constraints).
+    config : Experiment
+        Experiment-specific configuration object.
+
+    Raises
+    ------
+    ValueError
+        If name is invalid or configuration is missing.
     """
 
     name: str
@@ -201,6 +337,29 @@ class ExperimentConfig(BaseModel):
     @field_validator("name")
     @classmethod
     def check_experiment_name(cls, value) -> str:
+        """
+        Validate experiment name.
+
+        Ensures name:
+        - is not reserved (Windows-style names)
+        - contains no invalid filesystem characters
+        - is not empty
+
+        Parameters
+        ----------
+        value : str
+            Experiment name.
+
+        Returns
+        -------
+        str
+            Validated experiment name.
+
+        Raises
+        ------
+        ValueError
+            If name is invalid or contains forbidden characters.
+        """
         if value.endswith(".json"):
             value = value[:-5]
 
@@ -218,12 +377,12 @@ class ExperimentConfig(BaseModel):
             "NUL",
         ]
         if value.upper() in bad_names:
-            raise ValueError(f"The name mustn't be: {bad_names}")
+            raise ValueError(f"The name mustn't be: {bad_names}.")
 
         bad_chars = ["\\", "/", "\x00", ":", "*", "?", "<", ">", "|", " "]
         if any(char in value for char in bad_chars):
             found_bad_chars = [char for char in bad_chars if char in value]
-            raise ValueError(f"Name '{value}' contain invalid characters: {', '.join(found_bad_chars)}")
+            raise ValueError(f"Name '{value}' contain invalid characters: {', '.join(found_bad_chars)}.")
 
         if not value.strip():
             raise ValueError("Name cannot be empty or consist only of whitespace.")
@@ -233,6 +392,27 @@ class ExperimentConfig(BaseModel):
     @field_validator("config")
     @classmethod
     def check_config(cls, value):
+        """
+        Validate presence of experiment configuration.
+
+        Parameters
+        ----------
+        value : Experiment
+            Configuration object.
+
+        Returns
+        -------
+        Experiment
+            Validated configuration.
+
+        Raises
+        ------
+        ValueError
+            If configuration is missing.
+        """
         if value is None:
-            raise ValueError("Missing config")
+            raise ValueError("Missing config.")
         return value
+
+
+# TODO: make an issue for dots in messages!!!
