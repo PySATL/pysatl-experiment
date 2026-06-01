@@ -1,3 +1,5 @@
+"""Tests for power experiment factory."""
+
 import os
 import sys
 import types

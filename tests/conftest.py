@@ -1,3 +1,5 @@
+"""Shared pytest fixtures and configuration."""
+
 from collections.abc import Generator
 from unittest.mock import MagicMock
 

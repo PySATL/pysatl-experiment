@@ -1,3 +1,5 @@
+"""Tests for critical value experiment factory."""
+
 import os
 import sys
 import types

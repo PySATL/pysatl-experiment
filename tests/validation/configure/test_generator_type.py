@@ -1,3 +1,5 @@
+"""Tests for generator type validation."""
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -15,8 +17,7 @@ def runner() -> CliRunner:
 
 @patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
 def test_generator_type_with_invalid_type(get_experiment_config: MagicMock, runner: CliRunner) -> None:
-    """
-    Tests the `generator_type` command with a completely invalid type string.
+    """Tests the `generator_type` command with a completely invalid type string.
 
     This test verifies that when the command is invoked with a string
     that does not correspond to any valid `StepType` enum value, it behaves
@@ -69,8 +70,7 @@ def test_generator_type_with_unsupported_custom_type(
     save_experiment_config: MagicMock,
     runner: CliRunner,
 ) -> None:
-    """
-    Tests the `generator_type` command with the 'custom' type, which is unsupported.
+    """Tests the `generator_type` command with the 'custom' type, which is unsupported.
 
     This test verifies that the specific logic check preventing the use of the
     `StepType.CUSTOM` value works correctly by:
@@ -123,8 +123,7 @@ def test_generator_type_with_valid_supported_type(
     runner: CliRunner,
     valid_type: StepType,
 ) -> None:
-    """
-    Tests the `generator_type` command logic with all valid and supported arguments.
+    """Tests the `generator_type` command logic with all valid and supported arguments.
 
     This test verifies that when the command is invoked with any supported `StepType`
     enum value, it behaves correctly by:

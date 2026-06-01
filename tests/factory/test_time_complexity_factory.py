@@ -1,3 +1,5 @@
+"""Tests for time complexity experiment factory."""
+
 import os
 import sys
 import types

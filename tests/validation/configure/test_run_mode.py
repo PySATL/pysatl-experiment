@@ -1,3 +1,5 @@
+"""Tests for run mode validation."""
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -15,8 +17,7 @@ def runner() -> CliRunner:
 
 @patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
 def test_run_mode_with_invalid_mode(get_experiment_config: MagicMock, runner: CliRunner) -> None:
-    """
-    Tests the `run_mode` command logic in isolation with an invalid argument.
+    """Tests the `run_mode` command logic in isolation with an invalid argument.
 
     This test verifies that when the `run_mode` command is invoked with a string
     that does not correspond to any valid `RunMode` enum value, it behaves
@@ -69,8 +70,7 @@ def test_run_mode_with_valid_mode(
     runner: CliRunner,
     valid_mode: RunMode,
 ) -> None:
-    """
-    Tests the `run_mode` command logic in isolation with valid arguments.
+    """Tests the `run_mode` command logic in isolation with valid arguments.
 
     This test verifies that when the command is invoked with any valid `RunMode`
     enum value, it behaves correctly by:

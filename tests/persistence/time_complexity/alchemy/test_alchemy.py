@@ -1,3 +1,5 @@
+"""Tests for SQLAlchemy time complexity storage implementation."""
+
 from __future__ import annotations
 
 from pathlib import Path

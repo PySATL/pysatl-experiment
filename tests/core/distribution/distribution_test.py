@@ -1,3 +1,5 @@
+"""Tests for statistical distributions."""
+
 import math
 
 import numpy as np
