@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 from typing import ClassVar
 
-from pysatl_criterion.persistence.alchemy_decorator import CompressedFloatArray
+from pysatl_criterion.persistence.sqlalchemy.alchemy_decorator import CompressedFloatArray
 from sqlalchemy import Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from typing_extensions import override

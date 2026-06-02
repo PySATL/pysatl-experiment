@@ -73,26 +73,26 @@ NormalGenerator
     Normal distribution generator.
 """
 
-from pysatl_criterion.core.distribution.beta import generate_beta
-from pysatl_criterion.core.distribution.cauchy import generate_cauchy
-from pysatl_criterion.core.distribution.chi2 import generate_chi2
-from pysatl_criterion.core.distribution.expon import generate_expon
-from pysatl_criterion.core.distribution.gamma import generate_gamma
-from pysatl_criterion.core.distribution.gompertz import generate_gompertz
-from pysatl_criterion.core.distribution.gumbel import generate_gumbel
-from pysatl_criterion.core.distribution.invgauss import generate_invgauss
-from pysatl_criterion.core.distribution.laplace import generate_laplace
-from pysatl_criterion.core.distribution.lo_con_norm import generate_lo_con_norm
-from pysatl_criterion.core.distribution.logistic import generate_logistic
-from pysatl_criterion.core.distribution.lognormal import generate_lognorm
-from pysatl_criterion.core.distribution.mix_con_norm import generate_mix_con_norm
-from pysatl_criterion.core.distribution.norm import generate_norm
-from pysatl_criterion.core.distribution.rice import generate_rice
-from pysatl_criterion.core.distribution.scale_con_norm import generate_scale_con_norm
-from pysatl_criterion.core.distribution.student import generate_t
-from pysatl_criterion.core.distribution.truncnormal import generate_truncnorm
-from pysatl_criterion.core.distribution.tukey import generate_tukey
-from pysatl_criterion.core.distribution.weibull import generate_weibull
+from pysatl_criterion.core.distributions.beta import generate_beta
+from pysatl_criterion.core.distributions.cauchy import generate_cauchy
+from pysatl_criterion.core.distributions.chi2 import generate_chi2
+from pysatl_criterion.core.distributions.expon import generate_expon
+from pysatl_criterion.core.distributions.gamma import generate_gamma
+from pysatl_criterion.core.distributions.gompertz import generate_gompertz
+from pysatl_criterion.core.distributions.gumbel import generate_gumbel
+from pysatl_criterion.core.distributions.invgauss import generate_invgauss
+from pysatl_criterion.core.distributions.laplace import generate_laplace
+from pysatl_criterion.core.distributions.lo_con_norm import generate_lo_con_norm
+from pysatl_criterion.core.distributions.logistic import generate_logistic
+from pysatl_criterion.core.distributions.lognormal import generate_lognorm
+from pysatl_criterion.core.distributions.mix_con_norm import generate_mix_con_norm
+from pysatl_criterion.core.distributions.norm import generate_norm
+from pysatl_criterion.core.distributions.rice import generate_rice
+from pysatl_criterion.core.distributions.scale_con_norm import generate_scale_con_norm
+from pysatl_criterion.core.distributions.student import generate_t
+from pysatl_criterion.core.distributions.truncnormal import generate_truncnorm
+from pysatl_criterion.core.distributions.tukey import generate_tukey
+from pysatl_criterion.core.distributions.weibull import generate_weibull
 from typing_extensions import override
 
 from pysatl_experiment.experiment.generator.model import AbstractRVSGenerator

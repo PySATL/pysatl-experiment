@@ -8,10 +8,10 @@ and precomputed critical values stored in a database.
 
 from dataclasses import dataclass
 
-from pysatl_criterion.critical_value.resolver.storage_resolver import StorageCriticalValueResolver
-from pysatl_criterion.persistence.limit_distribution.datastorage.datastorage import AlchemyLimitDistributionStorage
+from pysatl_criterion import GoodnessOfFitTest
+from pysatl_criterion.hypothesis_testing.critical_values.resolver.storage_resolver import StorageCriticalValueResolver
+from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDistributionStorage
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
-from pysatl_criterion.test.goodness_of_fit_test.goodness_of_fit_test import GoodnessOfFitTest
 
 from pysatl_experiment.worker.model.abstract_worker.abstract_worker import IWorker, WorkerResult
 
@@ -103,7 +103,7 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         cv_resolver = StorageCriticalValueResolver(storage)
 
         gof_test = GoodnessOfFitTest(
-            statistics=self.statistics,
+            statistics=[self.statistics],
             significance_level=self.significance_level,
             cv_resolver=cv_resolver,
         )

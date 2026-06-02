@@ -3,7 +3,7 @@
 from abc import ABC
 from dataclasses import dataclass
 
-from pysatl_criterion.persistence.model.common.data_storage.data_storage import DataModel, DataQuery, IDataStorage
+from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
 
 
 @dataclass

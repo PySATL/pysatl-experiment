@@ -6,10 +6,7 @@ constructing all experiment steps required for critical value
 estimation.
 """
 
-from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import (
-    ILimitDistributionStorage,
-    LimitDistributionQuery,
-)
+from pysatl_criterion.persistence.models.limit_distribution import ILimitDistributionStorage, LimitDistributionQuery
 
 from pysatl_experiment.configuration.experiment_data.critical_value.critical_value import CriticalValueExperimentData
 from pysatl_experiment.experiment.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (  # noqa: E501
