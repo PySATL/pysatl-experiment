@@ -13,8 +13,13 @@ from pysatl_criterion.persistence.models.base import IDataStorage
 from pysatl_criterion.persistence.models.limit_distribution import LimitDistributionQuery
 from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDistributionStorage
 from pysatl_criterion.statistics import (
+    AbstractBetaGofStatistic,
     AbstractExponentialityGofStatistic,
+    AbstractGammaGofStatistic,
+    AbstractLogNormalGofStatistic,
     AbstractNormalityGofStatistic,
+    AbstractStudentGofStatistic,
+    AbstractUniformGofStatistic,
     AbstractWeibullGofStatistic,
 )
 
@@ -25,7 +30,16 @@ from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothes
 from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
 from pysatl_experiment.experiment.experiment_steps.experiment_steps import ExperimentSteps
 from pysatl_experiment.experiment.generator import AbstractRVSGenerator
-from pysatl_experiment.experiment.generator.generators import ExponentialGenerator, NormalGenerator, WeibullGenerator
+from pysatl_experiment.experiment.generator.generators import (
+    BetaRVSGenerator,
+    ExponentialGenerator,
+    GammaGenerator,
+    LognormGenerator,
+    NormalGenerator,
+    TRVSGenerator,
+    UniformGenerator,
+    WeibullGenerator,
+)
 from pysatl_experiment.experiment.model.experiment_step.experiment_step import IExperimentStep
 from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerStorage
 from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
@@ -263,12 +277,43 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             hypothesis_generator = WeibullGenerator()
             generator_name = "WEIBULLGENERATOR"
             generator_parameters = [hypothesis_generator.a, hypothesis_generator.k]
+        elif hypothesis == Hypothesis.GAMMA:
+            hypothesis_generator = GammaGenerator()
+            generator_name = "GAMMAGENERATOR"
+            generator_parameters = [hypothesis_generator.alfa, hypothesis_generator.beta]
+        elif hypothesis == Hypothesis.BETA:
+            hypothesis_generator = BetaRVSGenerator()
+            generator_name = "BETARVSGENERATOR"
+            generator_parameters = [hypothesis_generator.a, hypothesis_generator.b]
+        elif hypothesis == Hypothesis.LOGNORMAL:
+            hypothesis_generator = LognormGenerator()
+            generator_name = "LOGNORMGENERATOR"
+            generator_parameters = [hypothesis_generator.s, hypothesis_generator.mu]
+        elif hypothesis == Hypothesis.STUDENT:
+            hypothesis_generator = TRVSGenerator(df=1)
+            generator_name = "TRVSGENERATOR"
+            generator_parameters = [hypothesis_generator.df]
+        elif hypothesis == Hypothesis.UNIFORM:
+            hypothesis_generator = UniformGenerator()
+            generator_name = "UNIFORMGENERATOR"
+            generator_parameters = [hypothesis_generator.a, hypothesis_generator.b]
         else:
             raise ValueError(f"Unknown hypothesis: {hypothesis}")
 
         # TODO: switch!
 
         return generator_name, generator_parameters, hypothesis_generator
+
+    _HYPOTHESIS_TO_BASE_CLASS: dict[Hypothesis, type[Any]] = {
+        Hypothesis.NORMAL: AbstractNormalityGofStatistic,
+        Hypothesis.EXPONENTIAL: AbstractExponentialityGofStatistic,
+        Hypothesis.WEIBULL: AbstractWeibullGofStatistic,
+        Hypothesis.GAMMA: AbstractGammaGofStatistic,
+        Hypothesis.BETA: AbstractBetaGofStatistic,
+        Hypothesis.LOGNORMAL: AbstractLogNormalGofStatistic,
+        Hypothesis.STUDENT: AbstractStudentGofStatistic,
+        Hypothesis.UNIFORM: AbstractUniformGofStatistic,
+    }
 
     def _get_criteria_config(self) -> list[CriterionConfig]:
         """
@@ -287,34 +332,25 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         Criteria config consists of criterion from user, criterion code and statistics class object.
         """
         config = self.experiment_data.config
-        hypothesis = config.hypothesis
-
-        base_class: type[Any]
-        if hypothesis == Hypothesis.NORMAL:
-            base_class = AbstractNormalityGofStatistic
-        elif hypothesis == Hypothesis.EXPONENTIAL:
-            base_class = AbstractExponentialityGofStatistic
-        elif hypothesis == Hypothesis.WEIBULL:
-            base_class = AbstractWeibullGofStatistic
-        else:
-            raise ValueError("Unknown hypothesis")
-
-        criteria_config = []
-        subclasses = base_class.__subclasses__()
-        for sub in subclasses:
+        base_class = self._HYPOTHESIS_TO_BASE_CLASS[config.hypothesis]
+        short_code_to_subclass = {}
+        for sub in base_class.__subclasses__():
             if getattr(sub, "__abstractmethods__", None):
                 continue
-            potential_code = sub.code()
-            potential_short_code = sub.code().split("_")[0]
-            for criterion in config.criteria:
-                short_code = criterion.criterion_code
-                if potential_short_code == short_code:
-                    criterion_config = CriterionConfig(
-                        criterion=criterion,
-                        criterion_code=potential_code,
-                        statistics_class_object=sub(),
-                    )
-                    criteria_config.append(criterion_config)
+            short_code_to_subclass[sub.code().split("_")[0]] = sub
+
+        criteria_config = []
+        for criterion in config.criteria:
+            if criterion.criterion_code not in short_code_to_subclass:
+                continue
+            sub = short_code_to_subclass[criterion.criterion_code]
+            criteria_config.append(
+                CriterionConfig(
+                    criterion=criterion,
+                    criterion_code=sub.code(),
+                    statistics_class_object=sub(),
+                )
+            )
 
         return criteria_config
 

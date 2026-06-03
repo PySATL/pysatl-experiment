@@ -92,6 +92,7 @@ from pysatl_criterion.core.distributions.scale_con_norm import generate_scale_co
 from pysatl_criterion.core.distributions.student import generate_t
 from pysatl_criterion.core.distributions.truncnormal import generate_truncnorm
 from pysatl_criterion.core.distributions.tukey import generate_tukey
+from pysatl_criterion.core.distributions.uniform import generate_uniform
 from pysatl_criterion.core.distributions.weibull import generate_weibull
 from typing_extensions import override
 
@@ -109,7 +110,7 @@ class BetaRVSGenerator(AbstractRVSGenerator):
         Second shape parameter.
     """
 
-    def __init__(self, a, b, **kwargs):
+    def __init__(self, a=1, b=1, **kwargs):
         super().__init__(**kwargs)
         self.a = a
         self.b = b
@@ -292,7 +293,7 @@ class GammaGenerator(AbstractRVSGenerator):
         Scale parameter.
     """
 
-    def __init__(self, alfa=1, beta=0, **kwargs):
+    def __init__(self, alfa=1, beta=1, **kwargs):
         super().__init__(**kwargs)
         self.alfa = alfa
         self.beta = beta
@@ -633,3 +634,30 @@ class NormalGenerator(AbstractRVSGenerator):
     def generate(self, size):
         """Generate normally distributed random sample."""
         return generate_norm(size=size, mean=self.mean, var=self.var)
+
+
+class UniformGenerator(AbstractRVSGenerator):
+    """Uniform distribution random value generator.
+
+    Parameters
+    ----------
+    a : float, default=0
+        Left value.
+    b : float, default=1
+        Right value.
+    """
+
+    def __init__(self, a=0, b=1, **kwargs):
+        super().__init__(**kwargs)
+        self.a = a
+        self.b = b
+
+    @override
+    def code(self):
+        """Return unique generator code."""
+        return super()._convert_to_code(["uniform", self.a, self.b])
+
+    @override
+    def generate(self, size):
+        """Generate uniform distributed random sample."""
+        return generate_uniform(size=size, a=self.a, b=self.b)
