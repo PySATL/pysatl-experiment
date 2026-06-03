@@ -637,6 +637,16 @@ class NormalGenerator(AbstractRVSGenerator):
 
 
 class UniformGenerator(AbstractRVSGenerator):
+    """Uniform distribution random value generator.
+
+    Parameters
+    ----------
+    a : float, default=0
+        Left value.
+    b : float, default=1
+        Right value.
+    """
+
     def __init__(self, a=0, b=1, **kwargs):
         super().__init__(**kwargs)
         self.a = a
@@ -644,8 +654,10 @@ class UniformGenerator(AbstractRVSGenerator):
 
     @override
     def code(self):
+        """Return unique generator code."""
         return super()._convert_to_code(["uniform", self.a, self.b])
 
     @override
     def generate(self, size):
+        """Generate uniform distributed random sample."""
         return generate_uniform(size=size, a=self.a, b=self.b)
