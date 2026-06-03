@@ -1,3 +1,5 @@
+"""Constants for PySatl experiment system."""
+
 from typing import Any
 
 

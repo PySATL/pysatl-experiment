@@ -1,3 +1,10 @@
+"""
+Criterion configuration and validation utilities.
+
+This module defines statistical criteria and validates their compatibility
+with a given hypothesis.
+"""
+
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from pysatl_experiment.cli.commands.common.common import get_statistics_short_codes_for_hypothesis
@@ -6,14 +13,21 @@ from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothes
 
 class Criterion(BaseModel):
     """
-    Represents a single statistical criterion.
+    Single statistical criterion definition.
 
-    A criterion is defined by its unique code (which is automatically
-    converted to uppercase) and an optional list of parameters.
+    A criterion represents a statistical test identified by a unique code
+    and optional parameters.
 
-    Attributes:
-        criterion_code (str): The short code identifying the criterion (e.g., "KS", "AD").
-        parameters (list): An optional list of parameters for the criterion.
+    Attributes
+    ----------
+    criterion_code : str
+        Identifier of the criterion (automatically converted to uppercase).
+    parameters : list
+        Optional parameters for the criterion.
+
+    Notes
+    -----
+    Criterion codes are normalized to uppercase during validation.
     """
 
     criterion_code: str
@@ -22,21 +36,41 @@ class Criterion(BaseModel):
     @field_validator("criterion_code", mode="before")
     @classmethod
     def code_to_upper(cls, v: str) -> str:
+        """
+        Normalize criterion code to uppercase.
+
+        Parameters
+        ----------
+        v : str
+            Input criterion code.
+
+        Returns
+        -------
+        str
+            Uppercased criterion code.
+        """
         return v.upper()
 
 
 class CriteriaConfig(BaseModel):
     """
-    A configuration container for a list of criteria.
+    Container for a set of statistical criteria.
 
-    This model validates that all specified criteria are compatible with the
-    given statistical hypothesis. It dynamically fetches the allowed
-    criterion codes for the hypothesis and raises an error if any of the
-    provided criteria are not in the allowed list.
+    Validates that all criteria are compatible with the selected hypothesis.
+    Compatibility is determined dynamically via supported criterion codes.
 
-    Attributes:
-        hypothesis (Hypothesis): The hypothesis against which the criteria are tested.
-        criteria (list[Criterion]): A list of criteria to be used in the experiment.
+    Attributes
+    ----------
+    hypothesis : Hypothesis
+        Statistical hypothesis defining allowed criteria.
+    criteria : list[Criterion]
+        List of statistical criteria used in the experiment.
+
+    Raises
+    ------
+    ValueError
+        If any criterion is incompatible with the hypothesis or no valid
+        criteria exist for the hypothesis.
     """
 
     hypothesis: Hypothesis
@@ -47,6 +81,29 @@ class CriteriaConfig(BaseModel):
     def criteria_must_be_compatible_with_hypothesis(
         cls, criteria_list: list[Criterion], info: ValidationInfo
     ) -> list[Criterion]:
+        """
+        Validate compatibility between criteria and hypothesis.
+
+        Ensures that all provided criteria are supported by the selected
+        statistical hypothesis.
+
+        Parameters
+        ----------
+        criteria_list : list[Criterion]
+            List of criteria to validate.
+        info : ValidationInfo
+            Pydantic validation context containing hypothesis.
+
+        Returns
+        -------
+        list[Criterion]
+            Validated list of criteria.
+
+        Raises
+        ------
+        ValueError
+            If incompatible criteria are found or hypothesis has no valid codes.
+        """
         if "hypothesis" not in info.data:
             return criteria_list
 

@@ -1,3 +1,5 @@
+"""Tests for buffered saver in parallel execution."""
+
 from unittest.mock import Mock
 
 import pytest

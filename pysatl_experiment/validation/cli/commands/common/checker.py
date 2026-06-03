@@ -1,20 +1,36 @@
+"""
+Database validation helpers.
+
+This module provides utility classes used during configuration validation.
+The main purpose is verifying that required precomputed critical values
+exist in the configured SQLite database before a power experiment starts.
+"""
+
 from sqlalchemy import create_engine, text
 
 
 class SQLiteCriticalValueChecker:
     """
-    Checks for the existence of pre-calculated critical values
-    in an SQLite database, using the same query pattern as
-    StorageCriticalValueResolver.
+    Validator for checking the existence of critical values in SQLite storage.
+
+    The checker establishes a database connection and provides methods
+    for verifying whether critical values for specific criteria and
+    sample sizes are already available.
     """
 
     def __init__(self, connection_string: str):
         """
-        Args:
-            connection_string: SQLAlchemy URL for the SQLite database.
+        Initialize database checker.
 
-        Raises:
-            ConnectionError: If the connection fails.
+        Parameters
+        ----------
+        connection_string : str
+            SQLAlchemy connection URL.
+
+        Raises
+        ------
+        ConnectionError
+            If the database connection cannot be established.
         """
         self.connection_string = connection_string
         self.engine = None
@@ -27,17 +43,23 @@ class SQLiteCriticalValueChecker:
 
     def check_exists(self, criterion_code: str, sample_size: int) -> bool:
         """
-        Checks if critical values exist for the given criterion and sample size.
+        Check whether critical values exist.
 
-        Mirrors the query used by StorageCriticalValueResolver:
-        selects by criterion_code + sample_size from limit_distributions.
+        Parameters
+        ----------
+        criterion_code : str
+            Criterion identifier.
+        sample_size : int
+            Sample size.
 
-        Args:
-            criterion_code: Full criterion name (e.g., "KS_NORMALITY_GOODNESS_OF_FIT").
-            sample_size: Sample size used for the calculation.
+        Returns
+        -------
+        bool
+            True if matching critical values exist, otherwise False.
 
-        Returns:
-            True if a matching record exists, False otherwise.
+        Notes
+        -----
+        The lookup is performed against the ``limit_distributions`` table.
         """
         if self.engine is None:
             return False

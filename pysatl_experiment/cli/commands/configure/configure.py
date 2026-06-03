@@ -1,5 +1,8 @@
+"""CLI command for configuring experiments."""
+
 import json
 import multiprocessing as mp
+from typing import cast
 
 from click import BadParameter, Choice, ClickException, FloatRange, IntRange, argument, command, echo, option
 from pydantic import ValidationError
@@ -19,10 +22,10 @@ from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
 from pysatl_experiment.configuration.model.step_type.step_type import StepType
 from pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
 from pysatl_experiment.validation.cli.schemas.alternative import AlternativesConfig
-from pysatl_experiment.validation.cli.schemas.criteria import CriteriaConfig
+from pysatl_experiment.validation.cli.schemas.criteria import CriteriaConfig, Criterion
 
 
-def __configure_sample_sizes(experiment_config: dict, sizes: tuple[int, ...] | None):
+def _configure_sample_sizes(experiment_config: dict, sizes: tuple[int, ...] | None):
     if sizes is None:
         return
 
@@ -30,7 +33,7 @@ def __configure_sample_sizes(experiment_config: dict, sizes: tuple[int, ...] | N
     experiment_config["sample_sizes"] = sizes_list
 
 
-def __configure_run_mode(experiment_config: dict, mode: str | None):
+def _configure_run_mode(experiment_config: dict, mode: str | None):
     if mode is None:
         return
 
@@ -38,7 +41,7 @@ def __configure_run_mode(experiment_config: dict, mode: str | None):
     experiment_config["run_mode"] = validated_run_mode.value
 
 
-def __configure_report_mode(experiment_config: dict, mode: str | None):
+def _configure_report_mode(experiment_config: dict, mode: str | None):
     if mode is None:
         return
 
@@ -46,7 +49,7 @@ def __configure_report_mode(experiment_config: dict, mode: str | None):
     experiment_config["report_mode"] = validated_report_mode.value
 
 
-def __configure_generator_type(experiment_config: dict, generator_type: str | None):
+def _configure_generator_type(experiment_config: dict, generator_type: str | None):
     if generator_type is None:
         return
 
@@ -58,7 +61,7 @@ def __configure_generator_type(experiment_config: dict, generator_type: str | No
     experiment_config["generator_type"] = gen_type_lower
 
 
-def __configure_criteria(experiment_config: dict, criteria: tuple[str, ...] | None):
+def _configure_criteria(experiment_config: dict, criteria: tuple[str, ...] | None):
     if criteria is None or len(criteria) == 0:
         return
 
@@ -72,17 +75,20 @@ def __configure_criteria(experiment_config: dict, criteria: tuple[str, ...] | No
     try:
         config = CriteriaConfig.model_validate(data_to_validate)
 
-    except ValidationError as e:
-        error_messages = [error["msg"] for error in e.errors()]
+    except ValidationError as error:
+        error_messages = [validation_error["msg"] for validation_error in error.errors()]
+
         combined_message = "\n".join(error_messages)
         raise BadParameter(combined_message)
 
-    print([c for c in config.criteria])
-    validated_criteria_list = [c.model_dump() for c in config.criteria]
+    validated_criteria = cast(list[Criterion], config.criteria)
+    # print(criteria) TODO: not needed?
+
+    validated_criteria_list = [criterion.model_dump() for criterion in validated_criteria]
     experiment_config["criteria"] = validated_criteria_list
 
 
-def __configure_hypothesis(experiment_config: dict, hypothesis: str | None):
+def _configure_hypothesis(experiment_config: dict, hypothesis: str | None):
     if hypothesis is None:
         return
 
@@ -94,7 +100,7 @@ def __configure_hypothesis(experiment_config: dict, hypothesis: str | None):
     experiment_config["criteria"] = criteria_data
 
 
-def __configure_executor_type(experiment_config: dict, executor_type: str | None):
+def _configure_executor_type(experiment_config: dict, executor_type: str | None):
     if executor_type is None:
         return
 
@@ -106,7 +112,7 @@ def __configure_executor_type(experiment_config: dict, executor_type: str | None
     experiment_config["executor_type"] = exec_type_lower
 
 
-def __configure_report_builder_type(experiment_config: dict, report_build_type: str | None):
+def _configure_report_builder_type(experiment_config: dict, report_build_type: str | None):
     if report_build_type is None:
         return
 
@@ -118,18 +124,18 @@ def __configure_report_builder_type(experiment_config: dict, report_build_type: 
     experiment_config["report_builder_type"] = report_build_type_lower
 
 
-def __configure_monte_carlo_count(experiment_config: dict, count: int | None):
+def _configure_monte_carlo_count(experiment_config: dict, count: int | None):
     if count is None:
         return
 
     experiment_config["monte_carlo_count"] = count
 
 
-def __configure_storage_connection(experiment_config: dict, connection: str):
+def _configure_storage_connection(experiment_config: dict, connection: str):
     experiment_config["storage_connection"] = connection
 
 
-def __configure_experiment_type(experiment_config: dict, experiment_type: str | None):
+def _configure_experiment_type(experiment_config: dict, experiment_type: str | None):
     if experiment_type is None:
         return
 
@@ -137,7 +143,7 @@ def __configure_experiment_type(experiment_config: dict, experiment_type: str | 
     experiment_config["experiment_type"] = validated_experiment_type.value
 
 
-def __configure_workers(experiment_config: dict, workers: int | None):
+def _configure_workers(experiment_config: dict, workers: int | None):
     if workers is None:
         return
 
@@ -152,7 +158,7 @@ def __configure_workers(experiment_config: dict, workers: int | None):
     experiment_config["parallel_workers"] = workers
 
 
-def __configure_alternatives(experiment_config: dict, alternative: tuple[str] | None):
+def _configure_alternatives(experiment_config: dict, alternative: tuple[str, ...] | None):
     if alternative is None:
         return
 
@@ -186,12 +192,12 @@ def __configure_alternatives(experiment_config: dict, alternative: tuple[str] | 
     experiment_config["alternatives"] = alternatives_data
 
 
-def __configure_significance_levels(experiment_config: dict, levels: tuple[float, ...] | None):
+def _configure_significance_levels(experiment_config: dict, levels: tuple[float, ...] | None):
     if levels is None:
         return
 
     experiment_type = experiment_config.get("experiment_type")
-    if experiment_type == ExperimentType.TIME_COMPLEXITY:
+    if experiment_type == ExperimentType.TIME_COMPLEXITY.value:  # TODO: check in test
         raise ClickException("Significance levels are not supported for time complexity experiments.")
 
     levels_list = list(levels)
@@ -253,8 +259,38 @@ def configure(
     """
     Configure experiment parameters.
 
-    :param name: name of the experiment.
-    :param workers: Number of parallel workers (1 <= workers).
+    Parameters
+    ----------
+    name : str
+        Experiment name.
+    alternative : tuple[str, ...]
+        Alternative generators configuration strings.
+    connection : str
+        Storage connection string.
+    levels : tuple[float, ...]
+        Significance levels.
+    size : tuple[int, ...]
+        Sample sizes.
+    run_mode : str
+        Experiment run mode.
+    report_mode : str
+        Report generation mode.
+    report_builder_type : str
+        Report builder implementation type.
+    count : int
+        Monte Carlo iterations count.
+    hypothesis : str
+        Hypothesis type.
+    generator_type : str
+        Generator implementation type.
+    experiment_type : str
+        Experiment type.
+    executor_type : str
+        Executor implementation type.
+    criteria : tuple[str, ...]
+        Criterion codes.
+    workers : int
+        Number of parallel workers.
     """
     name = normalize_experiment_name(name)
 
@@ -264,20 +300,20 @@ def configure(
 
     experiment_config = get_experiment_config(read_experiment_data(name))
 
-    __configure_experiment_type(experiment_config, experiment_type)
-    __configure_storage_connection(experiment_config, connection)
-    __configure_significance_levels(experiment_config, levels)
-    __configure_sample_sizes(experiment_config, size)
-    __configure_run_mode(experiment_config, run_mode)
-    __configure_report_mode(experiment_config, report_mode)
-    __configure_report_builder_type(experiment_config, report_builder_type)
-    __configure_monte_carlo_count(experiment_config, count)
-    __configure_hypothesis(experiment_config, hypothesis)
-    __configure_generator_type(experiment_config, generator_type)
-    __configure_executor_type(experiment_config, executor_type)
-    __configure_criteria(experiment_config, criteria)
-    __configure_alternatives(experiment_config, alternative)
-    __configure_workers(experiment_config, workers)
+    _configure_experiment_type(experiment_config, experiment_type)
+    _configure_storage_connection(experiment_config, connection)
+    _configure_significance_levels(experiment_config, levels)
+    _configure_sample_sizes(experiment_config, size)
+    _configure_run_mode(experiment_config, run_mode)
+    _configure_report_mode(experiment_config, report_mode)
+    _configure_report_builder_type(experiment_config, report_builder_type)
+    _configure_monte_carlo_count(experiment_config, count)
+    _configure_hypothesis(experiment_config, hypothesis)
+    _configure_generator_type(experiment_config, generator_type)
+    _configure_executor_type(experiment_config, executor_type)
+    _configure_criteria(experiment_config, criteria)
+    _configure_alternatives(experiment_config, alternative)
+    _configure_workers(experiment_config, workers)
 
     save_experiment_config(name, experiment_config)
 

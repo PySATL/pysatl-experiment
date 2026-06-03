@@ -1,3 +1,11 @@
+"""
+Critical value experiment factory.
+
+This module contains the factory implementation responsible for
+constructing all experiment steps required for critical value
+estimation.
+"""
+
 from pysatl_criterion.persistence.models.limit_distribution import ILimitDistributionStorage, LimitDistributionQuery
 
 from pysatl_experiment.configuration.experiment_data.critical_value.critical_value import CriticalValueExperimentData
@@ -29,21 +37,49 @@ class CriticalValueExperimentFactory(
     ]
 ):
     """
-    Critical value experiment factory.
+    Factory for critical value experiments.
+
+    Creates generation, execution and report-building steps required
+    for Monte Carlo estimation of critical values for statistical
+    criteria.
     """
 
     def __init__(self, experiment_data: CriticalValueExperimentData):
+        """
+        Initialize the factory.
+
+        Parameters
+        ----------
+        experiment_data : CriticalValueExperimentData
+            Critical value experiment configuration and execution
+            metadata.
+        """
         super().__init__(experiment_data)
 
     def _create_generation_step(self, data_storage: IRandomValuesStorage) -> GenerationStep:
         """
-        Create generation step.
+        Create a sample generation step.
 
-        :param data_storage: data storage.
+        Determines which hypothesis samples are missing from storage and
+        creates generation tasks only for the required number of
+        additional samples.
 
-        :return: generation step.
+        Parameters
+        ----------
+        data_storage : IRandomValuesStorage
+            Random values storage.
+
+        Returns
+        -------
+        GenerationStep
+            Configured generation step.
+
+        Notes
+        -----
+        Existing samples are reused whenever possible. Only missing
+        samples required to reach the configured Monte Carlo count are
+        generated.
         """
-
         config = self.experiment_data.config
         monte_carlo_count = config.monte_carlo_count
         generator_name, generator_parameters, generator = self._get_hypothesis_generator_metadata()
@@ -81,15 +117,31 @@ class CriticalValueExperimentFactory(
         experiment_storage: IExperimentStorage,
     ) -> CriticalValueExecutionStep:
         """
-        Create critical value execution step.
+        Create a critical value execution step.
 
-        :param data_storage: data storage.
-        :param result_storage: result limit distribution storage.
-        :param experiment_storage: experiment storage.
+        Determines which criterion and sample-size combinations do not
+        yet have stored critical value results and prepares execution
+        tasks for those combinations.
 
-        :return: execution step.
+        Parameters
+        ----------
+        data_storage : IRandomValuesStorage
+            Random values storage.
+        result_storage : ILimitDistributionStorage
+            Critical value result storage.
+        experiment_storage : IExperimentStorage
+            Experiment metadata storage.
+
+        Returns
+        -------
+        CriticalValueExecutionStep
+            Configured execution step.
+
+        Notes
+        -----
+        Existing critical value distributions are reused and excluded
+        from execution planning.
         """
-
         config = self.experiment_data.config
         experiment_id = self._get_experiment_id(experiment_storage)
         monte_carlo_count = config.monte_carlo_count
@@ -127,19 +179,29 @@ class CriticalValueExperimentFactory(
             parallel_workers=config.parallel_workers,
         )
 
+        # TODO: template method with other factories??
+
         return execution_step
 
     def _create_report_building_step(
         self, result_storage: ILimitDistributionStorage
     ) -> CriticalValueReportBuildingStep:
         """
-        Create critical value report building step.
+        Create a report-building step.
 
-        :param result_storage: result limit distribution storage.
+        Configures report generation using stored critical value
+        distributions, significance levels and sample sizes.
 
-        :return: report building step.
+        Parameters
+        ----------
+        result_storage : ILimitDistributionStorage
+            Critical value result storage.
+
+        Returns
+        -------
+        CriticalValueReportBuildingStep
+            Configured report-building step.
         """
-
         criteria_config = self._get_criteria_config()
         significance_levels = self.experiment_data.config.significance_levels
         sample_sizes = self.experiment_data.config.sample_sizes

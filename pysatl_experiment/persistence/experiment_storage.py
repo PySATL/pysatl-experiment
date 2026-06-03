@@ -1,3 +1,16 @@
+"""
+Experiment persistence layer (SQLAlchemy implementation).
+
+This module provides a database-backed storage implementation for experiments.
+
+Notes
+-----
+- Experiments are identified by a full configuration signature.
+- JSON-serialized fields are used in equality comparisons.
+- Serialization consistency is critical for correct query behavior.
+- Execution state is tracked via boolean status flags.
+"""
+
 from typing import ClassVar
 
 from sqlalchemy import JSON, Integer, String, UniqueConstraint, select
@@ -13,6 +26,76 @@ from pysatl_experiment.persistence.model.experiment.experiment import (
 
 
 class AlchemyExperiment(ModelBase):
+    """
+    SQLAlchemy ORM model for experiment configuration storage.
+
+    Each row represents a fully defined experiment configuration and its state.
+
+    Attributes
+    ----------
+    id : int
+        Primary key of the experiment record.
+
+    experiment_type : str
+        Type of experiment (critical value, power, time complexity).
+
+    storage_connection : str
+        Identifier of storage backend connection.
+
+    run_mode : str
+        Execution mode (e.g., overwrite / append).
+
+    report_mode : str
+        Report generation mode.
+
+    hypothesis : str
+        Hypothesis type used in experiment.
+
+    generator_type : str
+        Random variable generator type.
+
+    executor_type : str
+        Execution engine type.
+
+    report_builder_type : str
+        Report generation backend type.
+
+    sample_sizes : list[int]
+        List of sample sizes used in experiment.
+
+    monte_carlo_count : int
+        Number of Monte-Carlo simulations.
+
+    criteria : dict[str, list[float]]
+        Statistical criteria and their parameters.
+
+    alternatives : dict[str, list[float]]
+        Alternative hypothesis configurations.
+
+    significance_levels : list[float]
+        Significance levels used in testing.
+
+    parallel_workers : int
+        Number of parallel workers used for execution.
+
+    is_generation_done : bool
+        Whether generation step is completed.
+
+    is_execution_done : bool
+        Whether execution step is completed.
+
+    is_report_building_done : bool
+        Whether report building step is completed.
+
+    Notes
+    -----
+    Uniqueness is enforced via a composite key over all configuration fields.
+
+    Warning
+    -------
+    JSON serialization order affects uniqueness and lookup correctness.
+    """
+
     __tablename__ = "experiments"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -61,17 +144,69 @@ class AlchemyExperiment(ModelBase):
 
 
 class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
+    """
+    SQLAlchemy-backed experiment storage implementation.
+
+    Provides persistence and retrieval of experiment configurations and state.
+
+    Attributes
+    ----------
+    session : ClassVar[SessionType]
+        Shared SQLAlchemy session factory used for DB operations.
+
+    _initialized : bool
+        Indicates whether storage has been initialized via `init()`.
+
+    Notes
+    -----
+    This storage relies on strict equality matching for all fields,
+    including JSON-encoded structures.
+    """
+
     session: ClassVar[SessionType]
 
-    def __init__(self, db_url: str):
+    def __init__(self, db_url: str) -> None:
+        """
+        Initialize experiment storage.
+
+        Parameters
+        ----------
+        db_url : str
+            SQLAlchemy database connection string.
+
+        Notes
+        -----
+        The storage is not usable until `init()` is called.
+        """
         super().__init__(db_url=db_url)
         self._initialized: bool = False
 
-    def init(self):
+    def init(self) -> None:
+        """
+        Initialize database engine and session.
+
+        Notes
+        -----
+        Must be called before any database operations.
+        """
         super().init()
         self._initialized = True
 
-    def _to_orm(self, model: ExperimentModel) -> AlchemyExperiment:
+    @staticmethod
+    def _to_orm(model: ExperimentModel) -> AlchemyExperiment:
+        """
+        Convert domain model to ORM entity.
+
+        Parameters
+        ----------
+        model : ExperimentModel
+            Domain experiment model.
+
+        Returns
+        -------
+        AlchemyExperiment
+            ORM representation of the experiment.
+        """
         return AlchemyExperiment(
             experiment_type=model.experiment_type,
             storage_connection=model.storage_connection,
@@ -92,7 +227,21 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
             is_report_building_done=int(model.is_report_building_done),
         )
 
-    def _to_model(self, orm: AlchemyExperiment) -> ExperimentModel:
+    @staticmethod
+    def _to_model(orm: AlchemyExperiment) -> ExperimentModel:
+        """
+        Convert ORM entity to domain model.
+
+        Parameters
+        ----------
+        orm : AlchemyExperiment
+            ORM database entity.
+
+        Returns
+        -------
+        ExperimentModel
+            Domain representation of the experiment.
+        """
         return ExperimentModel(
             experiment_type=orm.experiment_type,
             storage_connection=orm.storage_connection,
@@ -114,6 +263,19 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
         )
 
     def insert_data(self, model: ExperimentModel) -> None:
+        """
+        Insert or update experiment record.
+
+        Parameters
+        ----------
+        model : ExperimentModel
+            Experiment data to persist.
+
+        Notes
+        -----
+        - If record exists, only execution state is updated.
+        - Otherwise a new record is inserted.
+        """
         with self.session() as session:
             stmt = select(AlchemyExperiment).where(
                 AlchemyExperiment.experiment_type == model.experiment_type,
@@ -144,6 +306,23 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
             session.commit()
 
     def get_data(self, query: ExperimentQuery) -> ExperimentModel | None:
+        """
+        Retrieve experiment by full configuration match.
+
+        Parameters
+        ----------
+        query : ExperimentQuery
+            Query defining full experiment signature.
+
+        Returns
+        -------
+        ExperimentModel or None
+            Found experiment or None if not exists.
+
+        Notes
+        -----
+        Matching is strict and includes JSON equality.
+        """
         with self.session() as session:
             stmt = select(AlchemyExperiment).where(
                 AlchemyExperiment.experiment_type == query.experiment_type,
@@ -165,6 +344,15 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
             return self._to_model(result) if result else None
 
     def delete_data(self, query: ExperimentQuery) -> None:
+        """
+        Delete experiment by full configuration match.
+
+        Parameters
+        ----------
+        query : ExperimentQuery
+            Experiment identification query.
+        """
+        # TODO: implement soft delete
         with self.session() as session:
             stmt = select(AlchemyExperiment).where(
                 AlchemyExperiment.experiment_type == query.experiment_type,
@@ -185,6 +373,24 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
                 session.commit()
 
     def get_experiment_id(self, query: ExperimentQuery) -> int:
+        """
+        Retrieve experiment ID by configuration match.
+
+        Parameters
+        ----------
+        query : ExperimentQuery
+            Experiment signature.
+
+        Returns
+        -------
+        int
+            Experiment identifier.
+
+        Raises
+        ------
+        ValueError
+            If experiment is not found.
+        """
         with self.session() as session:
             stmt = select(AlchemyExperiment.id).where(
                 AlchemyExperiment.experiment_type == query.experiment_type,
@@ -207,6 +413,16 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
             return result
 
     def _update_status(self, experiment_id: int, field: str):
+        """
+        Update execution status field for experiment.
+
+        Parameters
+        ----------
+        experiment_id : int
+            Target experiment identifier.
+        field : str
+            Name of boolean status field.
+        """
         with self.session() as session:
             obj = session.get(AlchemyExperiment, experiment_id)
             if not obj:
@@ -216,10 +432,34 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
             session.commit()
 
     def set_generation_done(self, experiment_id: int):
+        """
+        Mark generation step as completed.
+
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        """
         self._update_status(experiment_id, "is_generation_done")
 
     def set_execution_done(self, experiment_id: int):
+        """
+        Mark execution step as completed.
+
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        """
         self._update_status(experiment_id, "is_execution_done")
 
     def set_report_building_done(self, experiment_id: int):
+        """
+        Mark report building step as completed.
+
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        """
         self._update_status(experiment_id, "is_report_building_done")

@@ -71,3 +71,8 @@ plugins:
   - mike:
       deploy_prefix: 'en'
       canonical_version: 'stable'
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy

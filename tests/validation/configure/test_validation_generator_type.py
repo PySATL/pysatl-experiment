@@ -1,3 +1,5 @@
+"""Tests for generator type validation."""
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -14,9 +16,8 @@ def runner() -> CliRunner:
 
 
 @patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
-def test_executor_type_with_invalid_type(get_experiment_config: MagicMock, runner: CliRunner) -> None:
-    """
-    Tests the `executor_type` command with a completely invalid type string.
+def test_generator_type_with_invalid_type(get_experiment_config: MagicMock, runner: CliRunner) -> None:
+    """Tests the `generator_type` command with a completely invalid type string.
 
     This test verifies that when the command is invoked with a string
     that does not correspond to any valid `StepType` enum value, it behaves
@@ -35,7 +36,7 @@ def test_executor_type_with_invalid_type(get_experiment_config: MagicMock, runne
         configure,
         [
             experiment_name,
-            "-et",
+            "-gt",
             invalid_type,
             "-cr",
             "KS",
@@ -63,14 +64,13 @@ def test_executor_type_with_invalid_type(get_experiment_config: MagicMock, runne
 @patch("pysatl_experiment.cli.commands.configure.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
-def test_executor_type_with_unsupported_custom_type(
+def test_generator_type_with_unsupported_custom_type(
     if_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
     save_experiment_config: MagicMock,
     runner: CliRunner,
 ) -> None:
-    """
-    Tests the `executor_type` command with the 'custom' type, which is unsupported.
+    """Tests the `generator_type` command with the 'custom' type, which is unsupported.
 
     This test verifies that the specific logic check preventing the use of the
     `StepType.CUSTOM` value works correctly by:
@@ -87,7 +87,7 @@ def test_executor_type_with_unsupported_custom_type(
         configure,
         [
             experiment_name,
-            "-et",
+            "-gt",
             custom_type,
             "-cr",
             "KS",
@@ -116,15 +116,14 @@ def test_executor_type_with_unsupported_custom_type(
 @patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_type", [e for e in StepType if e != StepType.CUSTOM])
-def test_executor_type_with_valid_supported_type(
+def test_generator_type_with_valid_supported_type(
     if_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
     save_experiment_config: MagicMock,
     runner: CliRunner,
     valid_type: StepType,
 ) -> None:
-    """
-    Tests the `executor_type` command logic with all valid and supported arguments.
+    """Tests the `generator_type` command logic with all valid and supported arguments.
 
     This test verifies that when the command is invoked with any supported `StepType`
     enum value, it behaves correctly by:
@@ -141,7 +140,7 @@ def test_executor_type_with_valid_supported_type(
         configure,
         [
             experiment_name,
-            "-et",
+            "-gt",
             valid_type.value,
             "-cr",
             "KS",
@@ -166,4 +165,4 @@ def test_executor_type_with_valid_supported_type(
     assert result.exception is None
 
     expected_config = initial_config.copy()
-    expected_config["executor_type"] = valid_type.value
+    expected_config["generator_type"] = valid_type.value

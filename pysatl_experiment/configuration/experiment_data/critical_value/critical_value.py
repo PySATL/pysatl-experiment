@@ -1,3 +1,5 @@
+"""Critical value experiment data model."""
+
 from dataclasses import dataclass
 
 from pysatl_experiment.configuration.experiment_config.critical_value.critical_value import (
@@ -8,6 +10,4 @@ from pysatl_experiment.configuration.experiment_data.experiment_data import Expe
 
 @dataclass
 class CriticalValueExperimentData(ExperimentData[CriticalValueExperimentConfig]):
-    """
-    Critical value experiment data.
-    """
+    """Experiment data for critical value estimation."""

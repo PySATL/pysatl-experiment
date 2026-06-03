@@ -1,10 +1,10 @@
+"""Experiment execution mode definitions."""
+
 from enum import Enum
 
 
 class RunMode(Enum):
-    """
-    Run mode (use existing data in DB or overwrite).
-    """
+    """Experiment execution modes."""
 
     REUSE = "reuse"
     OVERWRITE = "overwrite"
@@ -12,8 +12,11 @@ class RunMode(Enum):
     @classmethod
     def list(cls):
         """
-        Collect all enum values.
+        Return all enum values.
 
-        @return: enum values
+        Returns
+        -------
+        list[str]
+            Available enum values.
         """
         return [member.value for member in cls]

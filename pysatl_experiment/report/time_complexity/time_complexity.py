@@ -1,3 +1,13 @@
+"""
+Time complexity report generation.
+
+This module provides functionality for generating PDF reports
+containing execution time measurements of statistical criteria.
+
+Reports may include both tabular data and graphical visualizations
+of execution time versus sample size.
+"""
+
 import base64
 from io import BytesIO
 from pathlib import Path
@@ -14,7 +24,13 @@ from pysatl_experiment.report.common.utils import convert_html_to_pdf, get_crite
 
 class TimeComplexityReportBuilder:
     """
-    Standard time complexity report builder.
+    Builder for time complexity reports.
+
+    The builder produces PDF reports containing execution time
+    measurements for statistical criteria across different
+    sample sizes.
+
+    Charts may optionally be embedded directly into the report.
     """
 
     def __init__(
@@ -25,6 +41,22 @@ class TimeComplexityReportBuilder:
         results_path: Path,
         with_chart: ReportMode,
     ):
+        """
+        Initialize time complexity report builder.
+
+        Parameters
+        ----------
+        criteria_config : list[CriterionConfig]
+            Criteria included in the report.
+        sample_sizes : list[int]
+            Evaluated sample sizes.
+        times : dict[str, list[tuple[int, float]]]
+            Execution time measurements.
+        results_path : Path
+            Output directory.
+        with_chart : ReportMode
+            Determines whether charts should be generated.
+        """
         self.criteria_config = criteria_config
         self.sample_sizes = sample_sizes
         self.times = times
@@ -36,9 +68,12 @@ class TimeComplexityReportBuilder:
 
     def build(self) -> None:
         """
-        Build the time complexity report.
-        """
+        Generate and save the time complexity report.
 
+        Notes
+        -----
+        The report is rendered from a Jinja2 template and exported as PDF.
+        """
         self.results_path.mkdir(parents=True, exist_ok=True)
         html_content = self._generate_html()
         pdf_path = self.results_path / "time_complexity_report.pdf"
@@ -46,11 +81,19 @@ class TimeComplexityReportBuilder:
 
     def _generate_chart(self) -> str | None:
         """
-        Generate a line chart of execution time vs sample size for all criteria.
+        Generate execution time chart.
 
-        :return: data URL string or None if chart could not be generated.
+        Returns
+        -------
+        str | None
+            Base64-encoded image embedded as a data URL,
+            or None if chart generation fails.
+
+        Notes
+        -----
+        The chart displays execution time as a function
+        of sample size for all configured criteria.
         """
-
         buf = BytesIO()
         plt.figure(figsize=(10, 7))
 
@@ -97,7 +140,12 @@ class TimeComplexityReportBuilder:
 
     def _generate_html(self) -> str:
         """
-        Generate HTML report from processed data.
+        Generate HTML representation of the report.
+
+        Returns
+        -------
+        str
+            Rendered HTML document ready for PDF conversion.
         """
         plot_data = None
         if self.with_chart == ReportMode.WITH_CHART:
