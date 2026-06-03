@@ -1,11 +1,10 @@
 [tool.poetry]
 name = "pysatl-experiment"
-version = "0.1.0"
+version = "0.0.0"
 description = "package for PySATL math statistics experiments"
 authors = ["PYSATL Team <pysatl@yahoo.com>"]
-license = "MIT"
+license = "Apache License 2.0"
 readme = "README.md"
-package-mode = true
 packages = [{include = "pysatl_experiment"}]
 
 [[tool.poetry.source]]
@@ -60,6 +59,9 @@ experiment = "pysatl_experiment.cli.cli.cli:cli"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.poetry.requires-plugins]
+poetry-dynamic-versioning = { version = ">=1.8.0,<2.0.0", extras = ["plugin"] }
+
 [tool.isort]
 line_length = 120
 profile = "black"
@@ -96,4 +98,17 @@ lines-after-imports = 2
 
 [tool.mypy]
 ignore_missing_imports = true
-#check_untyped_defs = true
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "pep440"
+
+# Format for NON tagged commits
+format-jinja = """
+{%- if distance == 0 -%}
+    {{ base }}
+{%- else -%}
+    {{ base }}.dev{{ distance }}
+{%- endif -%}
+"""

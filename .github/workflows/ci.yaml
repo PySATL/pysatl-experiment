@@ -10,7 +10,7 @@ on:
     types: [opened, synchronize, reopened, closed, review_requested]
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -20,7 +20,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          submodules: recursive
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
@@ -75,3 +76,112 @@ jobs:
           else
             echo "Repository is clean, no changes detected."
           fi
+  build:
+    name: "Build"
+    needs: [ build-linux, pre-commit ]
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Build distribution
+        run: pip install poetry==2.1.1
+
+      - name: Install dynamic versioning plugin
+        run: poetry self add poetry-dynamic-versioning[plugin]
+
+      - name: Build distribution
+        run: poetry build
+
+      - name: Show version
+        run: poetry version
+
+      - name: Upload artifacts 📦
+        uses: actions/upload-artifact@v7
+        with:
+          name: pysatl-experiment-build
+          path: |
+            dist
+          retention-days: 10
+  pre-commit:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: pre-commit/action@v3.0.1
+  deploy-pypi:
+    name: "Publish Python 🐍 distribution 📦 to PyPI"
+    needs: [ build ]
+    runs-on: ubuntu-22.04
+    if: (github.event_name == 'release')
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pysatl-experiment
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Download artifact  📦
+        uses: actions/download-artifact@v8
+        with:
+          pattern: pysatl*-build
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.14.0
+  deploy-testpypi:
+    name: "Publish Python 🐍 distribution 📦 to Test PyPI"
+    needs: [ build ]
+    runs-on: ubuntu-22.04
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/pysatl-experiment/
+
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Download artifact 📦
+        uses: actions/download-artifact@v8
+        with:
+          pattern: pysatl*-build
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@v1.14.0
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
