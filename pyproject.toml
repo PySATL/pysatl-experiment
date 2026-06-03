@@ -76,16 +76,14 @@ select = [
 ]
 ignore = [
   "E241", "E272", "E221", "B007", "B904", "S603", "S607", "S608", "NPY002",
-  "D107", # __init__ w/o docstring
-  "D203", "D212", "D213", "D401", "D404",
+  "D107", "D203", "D212", "D213", "D401", "D404",
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [
   "S101", "S104", "S311", "S105", "S106", "S110", "D101", "D102", "D103",
 ]
-"**/__init__.py" = ["D104"]  # __init__ TODO?
-"pysatl_experiment/**/*.py" = ["D100"]  # Modules TODO?
+"**/__init__.py" = ["D104"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
