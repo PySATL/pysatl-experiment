@@ -1,3 +1,5 @@
+"""Tests for hypothesis validation."""
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -15,8 +17,7 @@ def runner() -> CliRunner:
 
 @patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
 def test_hypothesis_with_invalid_hyp(get_experiment_config: MagicMock, runner: CliRunner) -> None:
-    """
-    Tests the `hypothesis` command logic with an invalid hypothesis string.
+    """Tests the `hypothesis` command logic with an invalid hypothesis string.
 
     This test verifies that when the command is invoked with a string that
     does not correspond to any valid `Hypothesis` enum value, it behaves correctly by:
@@ -71,8 +72,7 @@ def test_hypothesis_with_valid_hyp(
     runner: CliRunner,
     valid_hyp: Hypothesis,
 ) -> None:
-    """
-    Tests the `hypothesis` command logic with a valid hypothesis.
+    """Tests the `hypothesis` command logic with a valid hypothesis.
 
     This test verifies that when the command is invoked with a valid `Hypothesis`
     value, it correctly performs all its intended side effects:

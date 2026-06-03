@@ -1,3 +1,5 @@
+"""Tests for criteria validation."""
+
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -16,8 +18,7 @@ def runner() -> CliRunner:
 
 @patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
 def test_criteria_fails_if_hypothesis_not_set(get_experiment_config: MagicMock, runner: CliRunner) -> None:
-    """
-    Tests that the `criteria` command fails if the hypothesis is not yet configured.
+    """Tests that the `criteria` command fails if the hypothesis is not yet configured.
 
     This test verifies the initial precondition check within the command by:
     1.  Simulating a configuration that lacks a 'hypothesis' key.
@@ -66,8 +67,7 @@ def test_criteria_fails_with_incompatible_codes(
     save_experiment_config: MagicMock,
     runner: CliRunner,
 ) -> None:
-    """
-    Tests that the command fails when provided criteria are incompatible with the hypothesis.
+    """Tests that the command fails when provided criteria are incompatible with the hypothesis.
 
     This test verifies the integration with the `CriteriaConfig` Pydantic model by:
     1.  Providing a configuration with a set hypothesis.
@@ -122,8 +122,7 @@ def test_criteria_success_with_valid_codes(
     save_experiment_config: MagicMock,
     runner: CliRunner,
 ) -> None:
-    """
-    Tests the successful execution of the `criteria` command with valid codes.
+    """Tests the successful execution of the `criteria` command with valid codes.
 
     This test verifies the "happy path" by:
     1.  Providing a configuration with a set hypothesis.

@@ -1,3 +1,13 @@
+"""
+Critical value report generation.
+
+This module provides a report builder that generates PDF reports
+containing critical values of statistical criteria for different
+sample sizes and significance levels.
+
+Optional visualizations may be included as charts.
+"""
+
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -13,7 +23,13 @@ from pysatl_experiment.report.common.utils import convert_html_to_pdf
 
 class CriticalValueReportBuilder:
     """
-    Standard critical value report builder.
+    Builder for critical value reports.
+
+    The builder generates tabular representations of critical values
+    and optionally includes charts illustrating how critical values
+    change with sample size.
+
+    Reports are rendered from Jinja2 templates and exported as PDF.
     """
 
     def __init__(
@@ -25,6 +41,24 @@ class CriticalValueReportBuilder:
         results_path: Path,
         with_chart: ReportMode,
     ):
+        """
+        Initialize report builder.
+
+        Parameters
+        ----------
+        criteria_config : list[CriterionConfig]
+            Criteria included in the report.
+        sample_sizes : list[int]
+            Evaluated sample sizes.
+        significance_levels : list[float]
+            Significance levels.
+        cv_values : list[float | tuple[float, float]]
+            Computed critical values.
+        results_path : Path
+            Directory for report output.
+        with_chart : ReportMode
+            Determines whether charts should be included.
+        """
         self.criteria_config = criteria_config
         self.sizes = sample_sizes
         self.significance_levels = significance_levels
@@ -39,9 +73,13 @@ class CriticalValueReportBuilder:
 
     def build(self) -> None:
         """
-        Build PDF file from critical value report builder.
-        """
+        Generate and save the critical value report.
 
+        Notes
+        -----
+        Temporary chart files are created during report generation
+        and removed automatically afterward.
+        """
         with TemporaryDirectory(prefix="cv_charts_") as temp_dir:
             charts_dir = Path(temp_dir)
 
@@ -52,13 +90,18 @@ class CriticalValueReportBuilder:
 
     def _generate_html(self, charts_dir: Path) -> str:
         """
-        Generate HTML with tables and optional charts.
+        Generate HTML representation of the report.
 
-        :param charts_dir: chart image directory.
+        Parameters
+        ----------
+        charts_dir : Path
+            Directory containing generated chart images.
 
-        :return: rendered HTML string with embedded chart paths.
+        Returns
+        -------
+        str
+            Rendered HTML document.
         """
-
         tables = []
         for config in self.criteria_config:
             table_data = self._generate_table_data(config.criterion_code)
@@ -87,14 +130,19 @@ class CriticalValueReportBuilder:
 
     def _generate_table_data(self, criterion_code: str) -> dict[str, object]:
         """
-        Generate table data.
+        Generate table data for a criterion.
 
-        :param criterion_code: the code of the criterion for which to generate the table data.
+        Parameters
+        ----------
+        criterion_code : str
+            Criterion identifier.
 
-        :return: a dictionary containing a list of rows, where each row is a dict with
-        'size' and 'values'.
+        Returns
+        -------
+        dict[str, object]
+            Structure containing rows and values
+            used for template rendering.
         """
-
         values = next(
             values
             for cfg, values in zip(self.criteria_config, self._chunk_cv_values(), strict=True)
@@ -112,14 +160,19 @@ class CriticalValueReportBuilder:
 
     def _generate_chart_data(self, criterion_code: str, charts_dir: Path) -> str:
         """
-        Generate a chart and save it as PNG file.
+        Generate chart for a criterion.
 
-        :param criterion_code: the code of the criterion for which to generate the chart.
-        :param charts_dir: chart image directory.
+        Parameters
+        ----------
+        criterion_code : str
+            Criterion identifier.
+        charts_dir : Path
+            Directory for chart images.
 
-        :return: path to chart file.
+        Returns
+        -------
+        str
         """
-
         chart_path = charts_dir / f"{criterion_code}.png"
 
         plt.figure(figsize=(8, 5), dpi=100)
@@ -150,10 +203,12 @@ class CriticalValueReportBuilder:
 
     def _chunk_cv_values(self) -> list[list[float | tuple[float, float]]]:
         """
-        Splits a flat cv_values list into parts according to the criteria.
+        Split critical value sequence into criterion-specific groups.
 
-        :return: a list of lists of critical values for each significance level.
+        Returns
+        -------
+        list[list[float | tuple[float, float]]]
+            Critical values grouped by criterion.
         """
-
         chunk_size = len(self.sizes) * len(self.significance_levels)
         return [self.cv_values[i : i + chunk_size] for i in range(0, len(self.cv_values), chunk_size)]

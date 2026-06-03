@@ -1,3 +1,5 @@
+"""Tests for report mode validation."""
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -15,8 +17,7 @@ def runner() -> CliRunner:
 
 @patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
 def test_report_mode_with_invalid_mode(get_experiment_config: MagicMock, runner: CliRunner) -> None:
-    """
-    Tests the `report_mode` command logic in isolation with an invalid argument.
+    """Tests the `report_mode` command logic in isolation with an invalid argument.
 
     This test verifies that when the `report_mode` command is invoked with a string
     that does not correspond to any valid `ReportMode` enum value, it behaves
@@ -71,8 +72,7 @@ def test_report_mode_with_valid_mode(
     runner: CliRunner,
     valid_mode: ReportMode,
 ) -> None:
-    """
-    Tests the `report_mode` command logic in isolation with valid arguments.
+    """Tests the `report_mode` command logic in isolation with valid arguments.
 
     This test verifies that when the command is invoked with any valid `ReportMode`
     enum value, it behaves correctly by:

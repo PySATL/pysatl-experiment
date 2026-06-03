@@ -1,3 +1,5 @@
+"""Tests for critical value report builder."""
+
 from unittest.mock import MagicMock, patch
 
 import pytest

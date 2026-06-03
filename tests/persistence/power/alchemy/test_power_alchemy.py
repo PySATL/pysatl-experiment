@@ -1,3 +1,5 @@
+"""Tests for SQLAlchemy power storage implementation."""
+
 from __future__ import annotations
 
 import pytest

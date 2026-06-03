@@ -1,3 +1,5 @@
+"""Power report building step implementation."""
+
 from pathlib import Path
 
 from line_profiler import profile
@@ -12,9 +14,7 @@ from pysatl_experiment.report.power.power import PowerReportBuilder
 
 
 class PowerReportBuildingStep(IExperimentStep):
-    """
-    Standard power experiment report building step.
-    """
+    """Standard power experiment report building step."""
 
     def __init__(
         self,
@@ -26,7 +26,29 @@ class PowerReportBuildingStep(IExperimentStep):
         result_storage: IPowerStorage,
         results_path: Path,
         with_chart: ReportMode,
-    ):
+    ) -> None:
+        """
+        Initialize power report building step.
+
+        Parameters
+        ----------
+        criteria_config : list[CriterionConfig]
+            Statistical criteria configurations.
+        significance_levels : list[float]
+            Significance levels.
+        alternatives : list[Alternative]
+            Alternative distribution configurations.
+        sample_sizes : list[int]
+            Sample sizes used in experiments.
+        monte_carlo_count : int
+            Number of Monte Carlo iterations.
+        result_storage : IPowerStorage
+            Storage with power experiment results.
+        results_path : Path
+            Output directory for generated reports.
+        with_chart : ReportMode
+            Report visualization mode.
+        """
         self.criteria_config = criteria_config
         self.significance_levels = significance_levels
         self.alternatives = alternatives
@@ -39,10 +61,7 @@ class PowerReportBuildingStep(IExperimentStep):
     @profile
     @override
     def run(self) -> None:
-        """
-        Run standard power report building step.
-        """
-
+        """Collect power statistics and build report."""
         power_data = self._collect_statistics()
 
         builder = PowerReportBuilder(
@@ -58,11 +77,15 @@ class PowerReportBuildingStep(IExperimentStep):
 
     def _collect_statistics(self) -> dict[str, dict[tuple[str, float], dict[int, list[bool]]]]:
         """
-        Collect power results.
+        Collect power experiment results from storage.
 
-        :return: {criterion_code -> (alt_name, alpha) -> {size: [bool]}}
+        Returns
+        -------
+        dict[str, dict[tuple[str, float], dict[int, list[bool]]]]
+            Nested mapping of criterion results grouped by
+            alternative distribution, significance level,
+            and sample size.
         """
-
         power_data: dict[str, dict[tuple[str, float], dict[int, list[bool]]]] = {}
 
         for criterion_config in self.criteria_config:
@@ -91,16 +114,29 @@ class PowerReportBuildingStep(IExperimentStep):
         significance_level: float,
     ) -> list[bool]:
         """
-        Get limit distribution from storage.
+        Load power experiment result from storage.
 
-        :param criterion_config: criterion configuration.
-        :param sample_size: sample size.
-        :param alternative: alternative.
-        :param significance_level: significance level.
+        Parameters
+        ----------
+        criterion_config : CriterionConfig
+            Criterion configuration.
+        sample_size : int
+            Sample size.
+        alternative : Alternative
+            Alternative distribution configuration.
+        significance_level : float
+            Significance level.
 
-        :return: limit distribution.
+        Returns
+        -------
+        list[bool]
+            Criterion decisions.
+
+        Raises
+        ------
+        ValueError
+            If results are not found.
         """
-
         query = PowerQuery(
             criterion_code=criterion_config.criterion_code,
             criterion_parameters=criterion_config.criterion.parameters,

@@ -1,3 +1,5 @@
+"""Power experiment execution step implementation."""
+
 import functools
 from dataclasses import dataclass
 
@@ -19,7 +21,14 @@ from pysatl_experiment.persistence.model.random_values.random_values import IRan
 @dataclass
 class PowerStepData(ExecutionStepData):
     """
-    Data for execution step in power experiment.
+    Data for a single execution step in power experiment.
+
+    Attributes
+    ----------
+    alternative : Alternative
+        Alternative distribution configuration.
+    significance_level : float
+        Significance level used for the criterion.
     """
 
     alternative: Alternative
@@ -29,6 +38,9 @@ class PowerStepData(ExecutionStepData):
 class PowerExecutionStep(IExperimentStep):
     """
     Standard power experiment execution step.
+
+    The step evaluates statistical power for multiple
+    alternatives and significance levels.
     """
 
     def __init__(
@@ -40,7 +52,27 @@ class PowerExecutionStep(IExperimentStep):
         result_storage: IPowerStorage,
         storage_connection: str,
         parallel_workers: int,
-    ):
+    ) -> None:
+        """
+        Initialize power execution step.
+
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        step_config : list[PowerStepData]
+            Execution task configurations.
+        monte_carlo_count : int
+            Number of Monte Carlo iterations.
+        data_storage : IRandomValuesStorage
+            Storage with generated random samples.
+        result_storage : IPowerStorage
+            Storage for power experiment results.
+        storage_connection : str
+            Database connection string.
+        parallel_workers : int
+            Number of parallel worker processes.
+        """
         self.experiment_id = experiment_id
         self.step_config = step_config
         self.monte_carlo_count = monte_carlo_count
@@ -52,10 +84,7 @@ class PowerExecutionStep(IExperimentStep):
     @profile
     @override
     def run(self) -> None:
-        """
-        Run power experiment in parallel with buffering.
-        """
-
+        """Execute all power experiment tasks in parallel."""
         task_specs = []
         for step_data in self.step_config:
             spec = TaskSpec(
@@ -113,9 +142,21 @@ class PowerExecutionStep(IExperimentStep):
         results_criteria: list[bool],
     ) -> None:
         """
-        Save result to power storage.
-        """
+        Save power experiment results to storage.
 
+        Parameters
+        ----------
+        criterion_code : str
+            Statistical criterion identifier.
+        sample_size : int
+            Sample size.
+        alternative : Alternative
+            Alternative distribution configuration.
+        significance_level : float
+            Significance level.
+        results_criteria : list[bool]
+            Criterion decisions for generated samples.
+        """
         query = PowerModel(
             experiment_id=self.experiment_id,
             criterion_code=criterion_code,

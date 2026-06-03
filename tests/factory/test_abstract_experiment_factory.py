@@ -1,3 +1,5 @@
+"""Tests for abstract experiment factory base logic."""
+
 import os
 import sys
 import types

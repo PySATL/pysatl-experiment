@@ -1,3 +1,5 @@
+"""Predefined random value generators for experiments."""
+
 from pysatl_experiment.experiment.generator.generators import (
     BetaRVSGenerator,
     CauchyRVSGenerator,

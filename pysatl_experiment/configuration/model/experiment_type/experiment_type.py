@@ -1,10 +1,11 @@
+"""Experiment type definitions."""
+
 from enum import Enum
+from typing import cast
 
 
 class ExperimentType(str, Enum):
-    """
-    Experiment type.
-    """
+    """Supported experiment types."""
 
     CRITICAL_VALUE = "critical_value"
     POWER = "power"
@@ -13,8 +14,11 @@ class ExperimentType(str, Enum):
     @classmethod
     def list(cls) -> list[str]:
         """
-        Collect all enum values.
+        Return all enum values.
 
-        @return: enum values
+        Returns
+        -------
+        list[str]
+            Available enum values.
         """
-        return [member.value for member in cls]
+        return [cast(ExperimentType, member).value for member in cls]  # TODO: check in tests

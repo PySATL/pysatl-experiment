@@ -1,3 +1,5 @@
+"""Tests for logging configuration and setup."""
+
 import logging
 import re
 import sys

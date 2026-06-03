@@ -1,3 +1,5 @@
+"""Tests for alternative hypothesis validation."""
+
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -66,9 +68,7 @@ def test_alternatives_fails_if_experiment_type_not_set(get_experiment_config: Ma
 def test_alternatives_fails_for_unsupported_experiment_type(
     get_experiment_config: MagicMock, runner: CliRunner
 ) -> None:
-    """
-    Tests that the command fails if alternatives are provided for a non-POWER experiment.
-    """
+    """Tests that the command fails if alternatives are provided for a non-POWER experiment."""
     experiment_name = "my-exp"
     get_experiment_config.return_value = ("my-exp", {"experiment_type": ExperimentType.CRITICAL_VALUE.value})
 
@@ -194,9 +194,7 @@ def test_alternatives_fails_with_ambiguous_generator_name(
     save_experiment_config: MagicMock,
     runner: CliRunner,
 ) -> None:
-    """
-    Tests failure when a generator prefix matches multiple available generators.
-    """
+    """Tests failure when a generator prefix matches multiple available generators."""
     experiment_name = "my-exp"
     initial_config = {"experiment_type": "power"}
     read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}

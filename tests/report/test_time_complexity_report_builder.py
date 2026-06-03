@@ -1,3 +1,5 @@
+"""Tests for time complexity report builder."""
+
 from io import BytesIO
 from unittest.mock import MagicMock, patch
 

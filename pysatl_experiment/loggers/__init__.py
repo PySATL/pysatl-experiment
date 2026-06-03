@@ -1,3 +1,19 @@
+"""
+Logging subsystem configuration and initialization utilities.
+
+This module contains the central logging configuration used throughout
+PySatl. It provides helper functions for creating logging configurations,
+configuring log levels, registering handlers and formatters, and
+initializing logging during application startup.
+
+Logging initialization is performed in two stages:
+
+1. Early initialization through ``setup_logging_pre()``, which enables
+   basic console logging before configuration files are loaded.
+2. Full initialization through ``setup_logging()``, which applies user
+   configuration and registers all required handlers.
+"""
+
 import logging
 import logging.config
 import os
@@ -16,28 +32,54 @@ from pysatl_experiment.loggers.rich_handler import FtRichHandler
 logger = logging.getLogger(__name__)
 LOGFORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
-# Initialize bufferhandler - will be used for /log endpoints
+# Initialize buffer handler - will be used for /log endpoints
 bufferHandler = FTBufferingHandler(1000)
 bufferHandler.setFormatter(Formatter(LOGFORMAT))
-
 
 error_console = get_rich_console(stderr=True, color_system=None)
 
 
-def get_existing_handlers(handlertype):
+def get_existing_handlers(handler_type):
     """
-    Returns Existing handler or None (if the handler has not yet been added to the root handlers).
+    Find an existing root logger handler of the specified type.
+
+    Searches through handlers registered on the root logger and returns
+    the first handler that is an instance of the specified class.
+
+    Parameters
+    ----------
+    handler_type : type
+        Handler type to search for.
+
+    Returns
+    -------
+    logging.Handler | None
+        Matching handler instance if found, otherwise ``None``.
+
+    Notes
+    -----
+    This helper is primarily used to avoid duplicate handler
+    registration during repeated logging initialization.
     """
-    return next((h for h in logging.root.handlers if isinstance(h, handlertype)), None)
+    return next((h for h in logging.root.handlers if isinstance(h, handler_type)), None)
+    # TODO: add explicit typing for handler classes and return values
 
 
 def setup_logging_pre() -> None:
     """
-    Early setup for logging.
-    Uses INFO loglevel and only the Streamhandler.
-    Early messages (before proper logging setup) will therefore only be sent to additional
-    logging handlers after the real initialization, because we don't know which
-    ones the user desires beforehand.
+    Perform preliminary logging initialization.
+
+    Configures a minimal logging environment that can be used before
+    application configuration has been loaded. At this stage only
+    console output and in-memory buffering are enabled.
+
+    Notes
+    -----
+    Early log messages are not automatically propagated to handlers
+    configured during full initialization.
+
+    This function is intended to be called during application startup
+    before configuration parsing occurs.
     """
     rh = FtRichHandler(console=error_console)
     rh.setFormatter(Formatter("%(message)s"))
@@ -50,9 +92,11 @@ def setup_logging_pre() -> None:
             bufferHandler,
         ],
     )
+    # TODO: investigate whether early log records should be replayed to
+    #  newly configured handlers during full initialization.
 
 
-FT_LOGGING_CONFIG = {
+FT_LOGGING_CONFIG: dict[str, Any] = {
     "version": 1,
     # "incremental": True,
     # "disable_existing_loggers": False,
@@ -80,7 +124,27 @@ FT_LOGGING_CONFIG = {
 
 def _set_log_levels(log_config: dict[str, Any], verbosity: int = 0, api_verbosity: str = "info") -> None:
     """
-    Set the logging level for the different loggers
+    Configure log levels for application and third-party loggers.
+
+    Updates the logging configuration dictionary with default log levels
+    for internal and external libraries according to the selected
+    verbosity settings.
+
+    Parameters
+    ----------
+    log_config : dict[str, Any]
+        Logging configuration dictionary.
+    verbosity : int, default=0
+        Application verbosity level.
+    api_verbosity : str, default="info"
+        Verbosity level used by the API server.
+
+    Notes
+    -----
+    Existing logger configurations are preserved.
+
+    Logger entries are added only when no explicit configuration is
+    already present.
     """
     if "loggers" not in log_config:
         log_config["loggers"] = {}
@@ -97,6 +161,9 @@ def _set_log_levels(log_config: dict[str, Any], verbosity: int = 0, api_verbosit
         "werkzeug": logging.ERROR if api_verbosity == "error" else logging.INFO,
     }
 
+    # TODO: Extract third-party logger definitions into a dedicated
+    #  configuration constant?
+
     # Add third party loggers to the configuration
     for logger_name, level in third_party_loggers.items():
         if logger_name not in log_config["loggers"]:
@@ -107,16 +174,77 @@ def _set_log_levels(log_config: dict[str, Any], verbosity: int = 0, api_verbosit
 
 
 def _add_root_handler(log_config: dict[str, Any], handler_name: str):
+    """
+    Register a handler on the root logger configuration.
+
+    Parameters
+    ----------
+    log_config : dict[str, Any]
+        Logging configuration dictionary.
+    handler_name : str
+        Name of the handler to register.
+
+    Notes
+    -----
+    Duplicate handler registrations are ignored.
+    """
     if handler_name not in log_config["root"]["handlers"]:
         log_config["root"]["handlers"].append(handler_name)
 
 
 def _add_formatter(log_config: dict[str, Any], format_name: str, format_: str):
+    """
+    Register a formatter definition in the logging configuration.
+
+    Parameters
+    ----------
+    log_config : dict[str, Any]
+        Logging configuration dictionary.
+    format_name : str
+        Formatter identifier.
+    format_ : str
+        Logging format string.
+
+    Notes
+    -----
+    Existing formatter definitions are preserved.
+    """
     if format_name not in log_config["formatters"]:
         log_config["formatters"][format_name] = {"format": format_}
 
 
 def _create_log_config(config: Config) -> dict[str, Any]:
+    """
+    Build the effective logging configuration.
+
+    Creates a logging configuration dictionary by combining default
+    logging settings with user-provided configuration options.
+
+    Supported output targets include rotating log files, syslog and
+    journald handlers.
+
+    Parameters
+    ----------
+    config : Config
+        Application configuration.
+
+    Returns
+    -------
+    dict[str, Any]
+        Logging configuration compatible with
+        ``logging.config.dictConfig``.
+
+    Raises
+    ------
+    OperationalException
+        If required logging dependencies are unavailable or log file
+        directories cannot be created.
+
+    Notes
+    -----
+    Handler definitions may be modified dynamically depending on the
+    current runtime environment.
+    """
     # Get log_config from user config or use default
     log_config = config.get("log_config", deepcopy(FT_LOGGING_CONFIG))
 
@@ -174,6 +302,10 @@ def _create_log_config(config: Config) -> dict[str, Any]:
                 }
             _add_root_handler(log_config, "file")
 
+    # TODO: split configuration generation into smaller helper functions?
+
+    # TODO: separate file, syslog and journald configuration logic
+
     # Dynamically update some handlers
     for handler_config in log_config.get("handlers", {}).values():
         if handler_config.get("class") == "pysatl_experiment.loggers.rich_handler.FtRichHandler":
@@ -197,7 +329,23 @@ def _create_log_config(config: Config) -> dict[str, Any]:
 
 def setup_logging(config: Config) -> None:
     """
-    Process -v/--verbose, --logfile options
+    Perform complete logging initialization.
+
+    Applies logging configuration, registers required handlers,
+    configures verbosity levels and enables optional colorized output.
+
+    Parameters
+    ----------
+    config : Config
+        Application configuration.
+
+    Notes
+    -----
+    This function should be executed after application configuration
+    has been fully loaded.
+
+    Logging initialization may be skipped during test execution unless
+    explicitly requested through configuration.
     """
     verbosity = config["verbosity"]
     if os.environ.get("PYTEST_VERSION") is None or config.get("tests_force_logging"):
@@ -213,7 +361,7 @@ def setup_logging(config: Config) -> None:
     # Set color system for console output
     if config.get("print_colorized", True):
         logger.info("Enabling colorized output.")
-        error_console._color_system = error_console._detect_color_system()
+        error_console._color_system = error_console._detect_color_system()  # TODO: fix protected member!!!!!!!
 
     logging.info("Logfile configured")
 
@@ -221,3 +369,18 @@ def setup_logging(config: Config) -> None:
     logging.root.setLevel(logging.INFO if verbosity < 1 else logging.DEBUG)
 
     logger.info("Verbosity set to %s", verbosity)
+
+    # TODO: test -v/--verbose, --logfile options
+
+
+#  TODO:
+#       Separate configuration loading, handler registration and
+#       verbosity management into dedicated components.
+
+# TODO:
+#       Extracting logging configuration construction into a
+#       dedicated builder class
+
+# TODO:
+#       Global handler instances introduce shared mutable state.
+#       Replace them with factory-created instances.
