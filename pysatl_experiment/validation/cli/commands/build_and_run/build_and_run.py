@@ -10,8 +10,9 @@ It serves as the bridge between CLI input validation and the
 experiment execution pipeline.
 """
 
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, cast
+from typing import Any, cast
 
 from click import ClickException
 from dacite import Config, from_dict

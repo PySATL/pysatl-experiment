@@ -1,8 +1,8 @@
 """Parallel task scheduling utilities."""
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import Any, Callable
+from typing import Any
 
 
 class Scheduler:
