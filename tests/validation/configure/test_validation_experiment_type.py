@@ -1,3 +1,5 @@
+"""Tests for experiment type validation."""
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -15,8 +17,7 @@ def runner() -> CliRunner:
 
 @patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
 def test_experiment_type_with_invalid_type(get_experiment_config: MagicMock, runner: CliRunner) -> None:
-    """
-    Tests the `experiment_type` command with an invalid type string.
+    """Tests the `experiment_type` command with an invalid type string.
 
     This test verifies that when the command is invoked with a string that
     does not correspond to any valid `ExperimentType` enum value, it behaves
@@ -68,8 +69,7 @@ def test_experiment_type_with_valid_type(
     runner: CliRunner,
     valid_type: ExperimentType,
 ) -> None:
-    """
-    Tests the `experiment_type` command logic with all valid arguments.
+    """Tests the `experiment_type` command logic with all valid arguments.
 
     This test verifies that when the command is invoked with any valid
     `ExperimentType` enum value, it behaves correctly by:

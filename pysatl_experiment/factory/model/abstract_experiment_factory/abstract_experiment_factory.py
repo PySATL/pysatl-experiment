@@ -1,9 +1,17 @@
+"""
+Abstract factory infrastructure for experiment construction.
+
+The module contains the base factory implementation used to assemble
+experiment execution pipelines. It encapsulates common logic shared by all experiment
+types and provides extension points for experiment-specific step creation.
+"""
+
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar, cast
 
-from pysatl_criterion.persistence.limit_distribution.datastorage.datastorage import AlchemyLimitDistributionStorage
-from pysatl_criterion.persistence.model.common.data_storage.data_storage import IDataStorage
-from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import LimitDistributionQuery
+from pysatl_criterion.persistence.models.base import IDataStorage
+from pysatl_criterion.persistence.models.limit_distribution import LimitDistributionQuery
+from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDistributionStorage
 from pysatl_criterion.statistics import (
     AbstractBetaGofStatistic,
     AbstractExponentialityGofStatistic,
@@ -51,20 +59,20 @@ RS = TypeVar("RS", bound=IDataStorage)
 
 
 class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
-    """
-    Abstract experiment factory interface.
-    """
+    """Base factory interface for experiment construction."""
 
     def __init__(self, experiment_data: D):
         self.experiment_data = experiment_data
 
     def create_experiment_steps(self) -> ExperimentSteps:
         """
-        Create experiment steps.
+        Create an experiment execution pipeline.
 
-        :return: experiment steps.
+        Returns
+        -------
+        ExperimentSteps
+            Fully configured experiment pipeline containing generation, execution and reporting steps
         """
-
         data_storage = self._init_data_storage()
         result_storage = self._init_result_storage()
         experiment_storage = self._init_experiment_storage()
@@ -102,11 +110,19 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
     @abstractmethod
     def _create_generation_step(self, data_storage: IRandomValuesStorage) -> G:
         """
-        Create generation step.
+        Create a generation step.
 
-        :param data_storage: random values storage.
+        This method must be implemented by concrete factories.
 
-        :return: generation step.
+        Parameters
+        ----------
+        data_storage : IRandomValuesStorage
+            Storage containing generated random samples.
+
+        Returns
+        -------
+        G
+            Configured generation step.
         """
         pass
 
@@ -118,34 +134,59 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         experiment_storage: IExperimentStorage,
     ) -> E:
         """
-        Create execution step.
+        Create an execution step.
 
-        :param data_storage: random values storage.
-        :param result_storage: result storage.
-        :param experiment_storage: experiment storage.
+        This method must be implemented by concrete experiment factories.
 
-        :return: execution step.
+        Parameters
+        ----------
+        data_storage : IRandomValuesStorage
+            Random values storage.
+        result_storage : RS
+            Experiment result storage.
+        experiment_storage : IExperimentStorage
+            Experiment metadata storage.
+
+        Returns
+        -------
+        E
+            Configured execution step.
+
         """
         pass
 
     @abstractmethod
     def _create_report_building_step(self, result_storage: RS) -> R:
         """
-        Create report building step.
+        Create a report-building step.
 
-        :param result_storage: result storage.
+        This method must be implemented by concrete experiment factories.
 
-        :return: report building step.
+        Parameters
+        ----------
+        result_storage : RS
+            Experiment result storage.
+
+        Returns
+        -------
+        R
+            Configured report-building step.
+
         """
         pass
 
     def _delete_sample_data(self, data_storage: IRandomValuesStorage) -> None:
         """
-        Delete sample data.
+        Delete generated sample data.
 
-        :param data_storage: random values storage.
+        Selects an appropriate cleanup strategy depending on the current
+        experiment type and removes stored random samples.
+
+        Parameters
+        ----------
+        data_storage : IRandomValuesStorage
+            Random values storage.
         """
-
         experiment_type = self.experiment_data.config.experiment_type
         if experiment_type == ExperimentType.CRITICAL_VALUE:
             self._delete_hypothesis_sample_data(data_storage)
@@ -156,11 +197,16 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     def _delete_hypothesis_sample_data(self, data_storage: IRandomValuesStorage) -> None:
         """
-        Delete hypothesis sample data.
+        Delete samples generated under the null hypothesis.
 
-        :param data_storage: random values storage.
+        Removes all samples associated with the configured hypothesis
+        generator and sample sizes.
+
+        Parameters
+        ----------
+        data_storage : IRandomValuesStorage
+            Random values storage.
         """
-
         generator_name, generator_parameters, _ = self._get_hypothesis_generator_metadata()
         sample_sizes = self.experiment_data.config.sample_sizes
 
@@ -174,11 +220,16 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     def _delete_alternatives_sample_data(self, data_storage: IRandomValuesStorage) -> None:
         """
-        Delete alternatives sample data.
+        Delete samples generated under alternative distributions.
 
-        :param data_storage: random values storage.
+        Removes all samples associated with configured alternative
+        generators and sample sizes.
+
+        Parameters
+        ----------
+        data_storage : IRandomValuesStorage
+            Random values storage.
         """
-
         alternatives_config = self.experiment_data.config.alternatives
         sample_sizes = self.experiment_data.config.sample_sizes
 
@@ -195,16 +246,25 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     def _get_hypothesis_generator_metadata(self) -> tuple[str, list[float], AbstractRVSGenerator]:
         """
-        Get hypothesis generator metadata.
+        Resolve metadata for the configured hypothesis generator.
 
-        :return: generator name, generator parameters, generator object
+        Creates a generator corresponding to the selected hypothesis and
+        extracts information required for storage access and execution.
+
+        Returns
+        -------
+        tuple[str, list[float], AbstractRVSGenerator]
+            Tuple containing generator name, generator parameters and
+            generator instance.
+
+        Raises
+        ------
+        ValueError
+            If the configured hypothesis is unsupported.
         """
-
         hypothesis_generator: AbstractRVSGenerator
-        generator_name = ""
-        generator_parameters = []
-
         hypothesis = self.experiment_data.config.hypothesis
+
         if hypothesis == Hypothesis.NORMAL:
             hypothesis_generator = NormalGenerator()
             generator_name = "NORMALGENERATOR"
@@ -240,6 +300,8 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         else:
             raise ValueError(f"Unknown hypothesis: {hypothesis}")
 
+        # TODO: switch!
+
         return generator_name, generator_parameters, hypothesis_generator
 
     _HYPOTHESIS_TO_BASE_CLASS: dict[Hypothesis, type[Any]] = {
@@ -254,6 +316,21 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
     }
 
     def _get_criteria_config(self) -> list[CriterionConfig]:
+        """
+        Resolve criterion configurations.
+
+        Maps user-provided criterion identifiers to concrete statistic
+        implementations compatible with the configured hypothesis.
+
+        Returns
+        -------
+        list[CriterionConfig]
+            Resolved criterion configurations.
+
+        Notes
+        -----
+        Criteria config consists of criterion from user, criterion code and statistics class object.
+        """
         config = self.experiment_data.config
         base_class = self._HYPOTHESIS_TO_BASE_CLASS[config.hypothesis]
         short_code_to_subclass = {}
@@ -279,11 +356,16 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     def _delete_results_from_storage(self, result_storage: IDataStorage) -> None:
         """
-        Delete results from storage.
+        Delete experiment results from storage.
 
-        :param result_storage: result storage.
+        Creates storage queries corresponding to the current experiment
+        configuration and removes all matching result records.
+
+        Parameters
+        ----------
+        result_storage : IDataStorage
+            Experiment result storage.
         """
-
         experiment_type = self.experiment_data.config.experiment_type
         sample_sizes = self.experiment_data.config.sample_sizes
         monte_carlo_count = self.experiment_data.config.monte_carlo_count
@@ -318,22 +400,29 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         for query in queries:
             result_storage.delete_data(query)
 
+    @staticmethod
     def _create_critical_value_queries(
-        self,
         statistics_codes: list[str],
         sample_sizes: list[int],
         monte_carlo_count: int,
     ) -> list[LimitDistributionQuery]:
         """
-        Create critical values queries.
+        Create critical value storage queries.
 
-        :param statistics_codes: statistics codes.
-        :param sample_sizes: sample sizes.
-        :param monte_carlo_count: monte carlo count.
+        Parameters
+        ----------
+        statistics_codes : list[str]
+            Statistic implementation codes.
+        sample_sizes : list[int]
+            Sample sizes.
+        monte_carlo_count : int
+            Monte Carlo iteration count.
 
-        :return: critical values queries.
+        Returns
+        -------
+        list[LimitDistributionQuery]
+            Queries identifying critical value results.
         """
-
         queries = []
         for code in statistics_codes:
             for size in sample_sizes:
@@ -347,22 +436,29 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         return queries
 
+    @staticmethod
     def _create_time_complexity_queries(
-        self,
         statistics_codes: list[str],
         sample_sizes: list[int],
         monte_carlo_count: int,
     ) -> list[TimeComplexityQuery]:
         """
-        Create time complexity queries.
+        Create time complexity storage queries.
 
-        :param statistics_codes: statistics codes.
-        :param sample_sizes: sample sizes.
-        :param monte_carlo_count: monte carlo count.
+        Parameters
+        ----------
+        statistics_codes : list[str]
+            Statistic implementation codes.
+        sample_sizes : list[int]
+            Sample sizes.
+        monte_carlo_count : int
+            Monte Carlo iteration count.
 
-        :return: time complexity queries.
+        Returns
+        -------
+        list[TimeComplexityQuery]
+            Queries identifying time complexity results.
         """
-
         queries = []
         for code in statistics_codes:
             for size in sample_sizes:
@@ -383,15 +479,22 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         monte_carlo_count: int,
     ) -> list[PowerQuery]:
         """
-        Create power queries.
+        Create statistical power storage queries.
 
-        :param statistics_codes: statistics codes.
-        :param sample_sizes: sample sizes.
-        :param monte_carlo_count: monte carlo count.
+        Parameters
+        ----------
+        statistics_codes : list[str]
+            Statistic implementation codes.
+        sample_sizes : list[int]
+            Sample sizes.
+        monte_carlo_count : int
+            Monte Carlo iteration count.
 
-        :return: power queries.
+        Returns
+        -------
+        list[PowerQuery]
+            Queries identifying power estimation results.
         """
-
         queries = []
         significance_levels = self.experiment_data.config.significance_levels
         alternatives = self.experiment_data.config.alternatives
@@ -417,13 +520,26 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     def _get_experiment_id(self, storage: IExperimentStorage) -> int:
         """
-        Get experiment id.
+        Resolve experiment identifier.
 
-        :storage: experiment configuration storage.
+        Builds an experiment query from the current configuration and
+        retrieves the corresponding experiment identifier.
 
-        :return: experiment id.
+        Parameters
+        ----------
+        storage : IExperimentStorage
+            Experiment metadata storage.
+
+        Returns
+        -------
+        int
+            Experiment identifier.
+
+        Raises
+        ------
+        ValueError
+            If the experiment configuration is not registered.
         """
-
         config = self.experiment_data.config
         experiment_type = config.experiment_type
 
@@ -462,11 +578,13 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     def _init_data_storage(self) -> IRandomValuesStorage:
         """
-        Init data storage.
+        Initialize random values storage.
 
-        :return: data storage.
+        Returns
+        -------
+        IRandomValuesStorage
+            Initialized random values storage.
         """
-
         storage_connection = self.experiment_data.config.storage_connection
         data_storage = AlchemyRandomValuesStorage(storage_connection)
         data_storage.init()
@@ -475,11 +593,13 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     def _init_experiment_storage(self) -> IExperimentStorage:
         """
-        Init experiment configuration storage.
+        Initialize experiment metadata storage.
 
-        :return: data storage.
+        Returns
+        -------
+        IExperimentStorage
+            Initialized experiment metadata storage.
         """
-
         storage_connection = self.experiment_data.config.storage_connection
         data_storage = AlchemyExperimentStorage(storage_connection)
         data_storage.init()
@@ -488,11 +608,21 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     def _init_result_storage(self) -> RS:
         """
-        Init result storage.
+        Initialize result storage.
 
-        :return: result storage.
+        Creates and initializes a storage implementation corresponding
+        to the configured experiment type.
+
+        Returns
+        -------
+        RS
+            Initialized result storage.
+
+        Raises
+        ------
+        ValueError
+            If the experiment type is unsupported.
         """
-
         experiment_type = self.experiment_data.config.experiment_type
         storage_connection = self.experiment_data.config.storage_connection
         if experiment_type == ExperimentType.CRITICAL_VALUE:
@@ -514,20 +644,39 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         self, generator_name: str, generator_parameters: list[float]
     ) -> AbstractRVSGenerator:
         """
-        Get generator class object by name and parameters.
+        Create a generator instance by name.
 
-        :param generator_name: generator name.
-        :param generator_parameters: generator parameters.
+        Parameters
+        ----------
+        generator_name : str
+            Generator class name.
+        generator_parameters : list[float]
+            Generator constructor parameters.
 
-        :return: generator class object.
+        Returns
+        -------
+        AbstractRVSGenerator
+            Configured generator instance.
+
+        Raises
+        ------
+        ValueError
+            If the generator implementation cannot be found.
+
+        Notes
+        -----
+        Parameters are passed to the constructor in the same order as
+        specified by the experiment configuration.
         """
-
         subclasses = AbstractRVSGenerator.__subclasses__()
         for sub in subclasses:
             sub_name = sub.__name__.upper()
             if sub_name == generator_name:
-                # arguments are passed in the order of the parameters list,
+                # Arguments are passed in the order of the parameters list,
                 # which is set by the user in CLI
-                return sub(*generator_parameters)
+                return cast(type[AbstractRVSGenerator], sub)(*generator_parameters)
 
         raise ValueError(f"Unknown generator: {generator_name}")
+
+
+# TODO: warnings!!

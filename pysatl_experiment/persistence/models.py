@@ -1,30 +1,63 @@
+"""
+Generic storage interfaces for experiment system.
+
+This module defines abstract base classes for:
+- random value storage (RVS)
+- critical value storage
+- result storage
+"""
+
 from abc import ABC, abstractmethod
 from typing import Any
 
 
 class IStore:
+    """
+    Base storage interface.
+
+    Provides lifecycle hooks for all stores.
+    """
+
     def migrate(self):
         """
-        Migrate store.
+        Run database migrations.
+
+        Returns
+        -------
+        None
         """
         pass
 
     def init(self):
         """
-        Initialize store.
+        Initialize storage backend.
+
+        Returns
+        -------
+        None
         """
         pass
 
 
 class IRvsStore(IStore, ABC):
+    """Random values storage interface."""
+
     def insert_all_rvs(self, generator_code: str, size: int, data: list[list[float]]):
         """
-        Insert several rvs data to store.
-        By default use single rvs insert.
+        Insert multiple RVS samples.
 
-        :param generator_code: generator unique code
-        :param size: rvs size
-        :param data: list of lists rvs data
+        Parameters
+        ----------
+        generator_code : str
+            Generator identifier.
+        size : int
+            Sample size.
+        data : list[list[float]]
+            List of samples.
+
+        Returns
+        -------
+        None
         """
         for d in data:
             self.insert_rvs(generator_code, size, d)
@@ -32,130 +65,214 @@ class IRvsStore(IStore, ABC):
     @abstractmethod
     def insert_rvs(self, generator_code: str, size: int, data: list[float]):
         """
-        Insert one rvs data to store.
+        Insert single RVS sample.
 
-        :param generator_code: generator unique code
-        :param size: rvs size
-        :param data: list of lists rvs data
+        Parameters
+        ----------
+        generator_code : str
+            Generator identifier.
+        size : int
+            Sample size.
+        data : list[float]
+            Sample data.
+
+        Returns
+        -------
+        None
         """
         pass
 
     def get_rvs_count(self, generator_code: str, size: int) -> int:
         """
-        Get rvs count from store.
-        By default use get rvs data.
+        Count stored RVS samples.
 
-        :param generator_code: generator unique code
-        :param size: rvs size
+        Parameters
+        ----------
+        generator_code : str
+            Generator identifier.
+        size : int
+            Sample size.
 
-        Return rvs data count
+        Returns
+        -------
+        int
+            Number of stored samples.
         """
         return len(self.get_rvs(generator_code, size))
 
     @abstractmethod
     def get_rvs(self, generator_code: str, size: int) -> list[list[float]]:
         """
-        Get rvs data from store.
+        Get all RVS samples.
 
-        :param generator_code: generator unique code
-        :param size: rvs size
+        Parameters
+        ----------
+        generator_code : str
+            Generator identifier.
+        size : int
+            Sample size.
 
-        Return list of lists rvs data
+        Returns
+        -------
+        list[list[float]]
+            Stored samples.
         """
         pass
 
     @abstractmethod
     def get_rvs_stat(self) -> list[tuple[str, int, int]]:
         """
-        Get rvs data statistics.
+        Get RVS statistics.
 
-        Return list of tuples (generator code, size, count)
+        Returns
+        -------
+        list[tuple[str, int, int]]
+            (generator_code, size, count)
         """
         pass
 
     @abstractmethod
     def clear_all_rvs(self):
         """
-        Clear ALL data in store.
+        Remove all stored RVS data.
+
+        Returns
+        -------
+        None
         """
         pass
 
 
 class ICriticalValueStore(IStore, ABC):
+    """Critical value storage interface."""
+
     @abstractmethod
     def insert_critical_value(self, code: str, size: int, sl: float, value: float | tuple[float, float]):
         """
-        Insert critical value to store.
+        Store critical value.
 
-        :param code: test code
-        :param size: rvs size
-        :param sl: significant level
-        :param value: critical value
+        Parameters
+        ----------
+        code : str
+            Test identifier.
+        size : int
+            Sample size.
+        sl : float
+            Significance level.
+        value : float | tuple[float, float]
+            Critical value.
         """
         pass
 
     @abstractmethod
     def insert_distribution(self, code: str, size: int, data: list[float]):
         """
-        Insert distribution to store.
+        Store distribution data.
 
-        :param code: test code
-        :param size: rvs size
-        :param data: distribution data
+        Parameters
+        ----------
+        code : str
+            Test identifier.
+        size : int
+            Sample size.
+        data : list[float]
+            Distribution values.
         """
         pass
 
     @abstractmethod
     def get_critical_value(self, code: str, size: int, sl: float) -> float | tuple[float, float] | None:
         """
-        Get critical value from store.
-        :param code: test code
-        :param size: rvs size
-        :param sl: significant level
+        Retrieve critical value.
+
+        Parameters
+        ----------
+        code : str
+            Test identifier.
+        size : int
+            Sample size.
+        sl : float
+            Significance level.
+
+        Returns
+        -------
+        float | tuple[float, float] | None
+            Stored value or None.
         """
         pass
 
     @abstractmethod
     def get_distribution(self, code: str, size: int) -> list[float] | None:
         """
-        Get distribution from store.
+        Retrieve distribution.
 
-        :param code: test code
-        :param size: rvs size
+        Parameters
+        ----------
+        code : str
+            Test identifier.
+        size : int
+            Sample size.
+
+        Returns
+        -------
+        list[float] | None
+            Distribution or None.
         """
         pass
 
 
 class IResultStore(IStore):
+    """Result storage interface."""
+
     @abstractmethod
     def insert_result(self, result_id: str, result: Any):
         """
-        Insert benchmark to store.
+        Store result.
 
-        :param result_id: result id
-        :param result: the result
+        Parameters
+        ----------
+        result_id : str
+            Unique identifier.
+        result : Any
+            Stored object.
         """
         pass
 
     @abstractmethod
     def get_result(self, result_id: str) -> Any:
         """
-        Get benchmark from store.
+        Retrieve result.
 
-        :param result_id: result id
+        Parameters
+        ----------
+        result_id : str
+            Unique identifier.
 
-        :return: result or None
+        Returns
+        -------
+        Any
+            Stored result.
         """
         pass
 
     @abstractmethod
     def get_results(self, offset: int, limit: int):  # -> [PowerResultModel]:
         """
-        Get several powers from store.
+        Retrieve paginated results.
 
-        :param offset: offset
-        :param limit: limit
+        Parameters
+        ----------
+        offset : int
+            Offset.
+        limit : int
+            Limit.
 
-        :return: list of results
+        Returns
+        -------
+        list[Any]
+            List of results.
         """
         pass
+
+
+# TODO: refactoring to db_store!!!

@@ -1,3 +1,5 @@
+"""Base experiment configuration model."""
+
 from dataclasses import dataclass
 
 from pysatl_experiment.configuration.model.criterion.criterion import Criterion
@@ -11,7 +13,34 @@ from pysatl_experiment.configuration.model.step_type.step_type import StepType
 @dataclass
 class ExperimentConfig:
     """
-    Experiment configuration.
+    Base experiment configuration.
+
+    Attributes
+    ----------
+    experiment_type : ExperimentType
+        Experiment execution mode.
+    storage_connection : str
+        Database or storage connection string.
+    run_mode : RunMode
+        Experiment execution behavior.
+    hypothesis : Hypothesis
+        Tested statistical hypothesis.
+    generator_type : StepType
+        Random sample generator implementation type.
+    executor_type : StepType
+        Experiment executor implementation type.
+    report_builder_type : StepType
+        Report builder implementation type.
+    sample_sizes : list[int]
+        Sample sizes used during experiments.
+    monte_carlo_count : int
+        Number of Monte Carlo iterations.
+    criteria : list[Criterion]
+        Configured goodness-of-fit criteria.
+    report_mode : ReportMode
+        Report generation mode.
+    parallel_workers : int
+        Number of parallel worker processes.
     """
 
     experiment_type: ExperimentType

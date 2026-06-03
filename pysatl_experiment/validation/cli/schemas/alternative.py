@@ -1,3 +1,12 @@
+"""
+Alternative hypothesis configuration and validation.
+
+This module defines structures for specifying alternative hypothesis
+generators used in statistical experiments. It supports both string-based
+and structured initialization, and performs runtime validation against
+available generator implementations.
+"""
+
 import inspect
 from typing import Any
 
@@ -9,20 +18,24 @@ from pysatl_experiment.experiment.generator import AbstractRVSGenerator
 
 class Alternative(BaseModel):
     """
-    Specifies an alternative hypothesis generator and its parameters.
+    Specification of an alternative hypothesis generator.
 
-    This model supports instantiation from a space-separated string
-    (e.g., passing "MyGenerator 1.0 5.5" instead of a dictionary).
+    This model defines a generator and its numeric parameters used in
+    statistical simulation experiments. It supports parsing from a
+    space-separated string and validates generator existence and parameter
+    correctness via introspection.
 
-    During validation, it dynamically checks if the `generator_name` exists
-    among subclasses of `AbstractRVSGenerator`. It also introspects the
-    generator's `__init__` method to ensure the count of provided `parameters`
-    matches the required unique arguments of that generator.
+    Attributes
+    ----------
+    generator_name : str
+        Name of the generator class (case-insensitive, resolved to uppercase).
+    parameters : list[float]
+        Numerical parameters passed to the generator constructor.
 
-    Attributes:
-        generator_name (str): The name of the generator class (case-insensitive).
-        parameters (list[float]): A list of numerical parameters required by
-        the generator's constructor.
+    Raises
+    ------
+    ValueError
+        If generator name is invalid, ambiguous, or parameters are incorrect.
     """
 
     generator_name: str
@@ -31,6 +44,27 @@ class Alternative(BaseModel):
     @field_validator("generator_name")
     @classmethod
     def normalize_and_resolve_generator_name(cls, value):
+        """
+        Resolve and normalize generator name.
+
+        Converts user input to uppercase and tries to match it against
+        available generator classes.
+
+        Parameters
+        ----------
+        value : str
+            User-provided generator name or prefix.
+
+        Returns
+        -------
+        str
+            Fully resolved generator class name in uppercase.
+
+        Raises
+        ------
+        ValueError
+            If no generator matches or multiple ambiguous matches exist.
+        """
         available_generators: list[str] = [
             gen_cls.__name__.upper() for gen_cls in AbstractRVSGenerator.__subclasses__()
         ]
@@ -55,6 +89,27 @@ class Alternative(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def parse_from_string(cls, data: Any) -> Any:
+        """
+        Parse alternative configuration from a space-separated string.
+
+        Converts string input into structured Alternative model.
+
+        Parameters
+        ----------
+        data : Any
+            Either a string in format "Generator param1 param2 ..."
+            or a dictionary.
+
+        Returns
+        -------
+        dict | Any
+            Parsed dictionary if input was string, otherwise original value.
+
+        Raises
+        ------
+        ValueError
+            If input string is empty or parameters are invalid.
+        """
         if not isinstance(data, str):
             return data
 
@@ -72,6 +127,23 @@ class Alternative(BaseModel):
 
     @model_validator(mode="after")
     def validate_generator_logic(self):
+        """
+        Validate generator existence and parameter consistency.
+
+        Checks whether:
+        - generator exists among AbstractRVSGenerator subclasses
+        - number of provided parameters matches constructor signature
+
+        Returns
+        -------
+        Alternative
+            Validated instance.
+
+        Raises
+        ------
+        ValueError
+            If generator is not found or parameter count mismatches.
+        """
         generator_by_name: dict[str, type[AbstractRVSGenerator]] = {
             gen_cls.__name__.upper(): gen_cls for gen_cls in AbstractRVSGenerator.__subclasses__()
         }
@@ -101,22 +173,47 @@ class Alternative(BaseModel):
 
 class AlternativesConfig(BaseModel):
     """
-    Configuration container for a list of alternatives.
+    Container for multiple alternative hypotheses.
 
-    Ensures that alternatives are only defined for experiment types that
-    support them (e.g., POWER analysis).
+    Ensures that alternative hypotheses are only defined for supported
+    experiment types (e.g., POWER analysis).
 
-    Attributes:
-    experiment_type (ExperimentType): The context of the current experiment.
-    alternatives (list[Alternative]): The list of defined alternatives.
-    Must be empty if `experiment_type` is not POWER.
+    Attributes
+    ----------
+    experiment_type : ExperimentType
+        Type of experiment controlling whether alternatives are allowed.
+    alternatives : list[Alternative]
+        List of alternative hypothesis definitions.
+
+    Raises
+    ------
+    ValueError
+        If alternatives are provided for unsupported experiment types.
     """
 
     experiment_type: ExperimentType
     alternatives: list[Alternative] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def check_alternatives_are_allowed(self):
+    def check_alternatives_are_allowed(self) -> "AlternativesConfig":
+        """
+        Ensure alternatives are allowed for selected experiment type.
+
+        Alternatives are only valid for POWER experiments.
+
+        Returns
+        -------
+        AlternativesConfig
+            Validated configuration.
+
+        Raises
+        ------
+        ValueError
+            If alternatives are used with unsupported experiment type.
+        """
         if self.experiment_type != ExperimentType.POWER and self.alternatives:
             raise ValueError(f"Alternatives are not supported for the experiment type '{self.experiment_type.value}'.")
         return self
+
+
+# TODO: check warning decorators

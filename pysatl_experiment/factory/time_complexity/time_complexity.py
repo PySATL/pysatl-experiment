@@ -1,3 +1,11 @@
+"""
+Time complexity experiment factory.
+
+This module contains the factory implementation responsible for
+constructing experiment steps required to evaluate computational
+complexity of statistical criteria.
+"""
+
 from pysatl_experiment.configuration.experiment_data.time_complexity.time_complexity import TimeComplexityExperimentData
 from pysatl_experiment.experiment.step.execution.common.hypothesis_generator_data.hypothesis_generator_data import (  # noqa: E501
     HypothesisGeneratorData,
@@ -31,21 +39,43 @@ class TimeComplexityExperimentFactory(
     ]
 ):
     """
-    Time complexity experiment factory.
+    Factory for time complexity experiments.
+
+    Creates generation, execution and report-building steps required
+    for measuring execution time of statistical criteria for different
+    sample sizes.
     """
 
     def __init__(self, experiment_data: TimeComplexityExperimentData):
+        """
+        Initialize the factory.
+
+        Parameters
+        ----------
+        experiment_data : TimeComplexityExperimentData
+            Time complexity experiment configuration and execution
+            metadata.
+        """
         super().__init__(experiment_data)
 
     def _create_generation_step(self, data_storage: IRandomValuesStorage) -> GenerationStep:
         """
-        Create generation step.
+        Create a sample generation step.
 
-        :param data_storage: data storage.
+        Determines which samples generated under the configured null
+        hypothesis are missing from storage and creates generation
+        tasks only for the required number of additional samples.
 
-        :return: time complexity generation step.
+        Parameters
+        ----------
+        data_storage : IRandomValuesStorage
+            Random values storage.
+
+        Returns
+        -------
+        GenerationStep
+            Configured generation step.
         """
-
         config = self.experiment_data.config
         monte_carlo_count = config.monte_carlo_count
         generator_name, generator_parameters, generator = self._get_hypothesis_generator_metadata()
@@ -83,15 +113,26 @@ class TimeComplexityExperimentFactory(
         experiment_storage: IExperimentStorage,
     ) -> TimeComplexityExecutionStep:
         """
-        Create time complexity execution step.
+        Create a time complexity execution step.
 
-        :param data_storage: data storage.
-        :param result_storage: result time complexity storage.
-        :param experiment_storage: experiment storage.
+        Determines which criterion and sample-size combinations do not
+        yet have stored timing measurements and prepares execution tasks
+        for those combinations.
 
-        :return: time complexity execution step.
+        Parameters
+        ----------
+        data_storage : IRandomValuesStorage
+            Random values storage.
+        result_storage : ITimeComplexityStorage
+            Time complexity result storage.
+        experiment_storage : IExperimentStorage
+            Experiment metadata storage.
+
+        Returns
+        -------
+        TimeComplexityExecutionStep
+            Configured execution step.
         """
-
         config = self.experiment_data.config
         experiment_id = self._get_experiment_id(experiment_storage)
         monte_carlo_count = config.monte_carlo_count
@@ -133,13 +174,21 @@ class TimeComplexityExperimentFactory(
 
     def _create_report_building_step(self, result_storage: ITimeComplexityStorage) -> TimeComplexityReportBuildingStep:
         """
-        Create time complexity report building step.
+        Create a report-building step.
 
-        :param result_storage: result time complexity storage.
+        Configures report generation using stored execution time
+        measurements and configured sample sizes.
 
-        :return: time complexity report building step.
+        Parameters
+        ----------
+        result_storage : ITimeComplexityStorage
+            Time complexity result storage.
+
+        Returns
+        -------
+        TimeComplexityReportBuildingStep
+            Configured report-building step.
         """
-
         criteria_config = self._get_criteria_config()
         sample_sizes = self.experiment_data.config.sample_sizes
         monte_carlo_count = self.experiment_data.config.monte_carlo_count

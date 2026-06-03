@@ -1,3 +1,5 @@
+"""Time complexity experiment configuration model."""
+
 from dataclasses import dataclass
 
 from pysatl_experiment.configuration.experiment_config.experiment_config import ExperimentConfig
@@ -5,6 +7,4 @@ from pysatl_experiment.configuration.experiment_config.experiment_config import 
 
 @dataclass
 class TimeComplexityExperimentConfig(ExperimentConfig):
-    """
-    Time complexity experiment configuration.
-    """
+    """Time complexity experiment configuration."""

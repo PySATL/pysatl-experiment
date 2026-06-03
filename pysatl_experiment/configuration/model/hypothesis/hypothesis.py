@@ -1,10 +1,10 @@
+"""Statistical hypothesis definitions."""
+
 from enum import Enum
 
 
 class Hypothesis(Enum):
-    """
-    Hypothesis.
-    """
+    """Supported goodness-of-fit hypotheses."""
 
     NORMAL = "normal"
     EXPONENTIAL = "exponential"
@@ -18,8 +18,11 @@ class Hypothesis(Enum):
     @classmethod
     def list(cls):
         """
-        Collect all enum values.
+        Return all enum values.
 
-        @return: enum values
+        Returns
+        -------
+        list[str]
+            Available enum values.
         """
         return [member.value for member in cls]

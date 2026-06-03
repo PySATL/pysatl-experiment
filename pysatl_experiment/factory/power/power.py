@@ -1,3 +1,11 @@
+"""
+Power experiment factory.
+
+This module contains the factory implementation responsible for
+constructing experiment steps required to estimate statistical power
+for goodness-of-fit criteria under alternative distributions.
+"""
+
 from pysatl_experiment.configuration.experiment_data.power.power import PowerExperimentData
 from pysatl_experiment.experiment.step.execution.power.power import PowerExecutionStep, PowerStepData
 from pysatl_experiment.experiment.step.generation.generation import GenerationStep, GenerationStepData
@@ -20,21 +28,42 @@ class PowerExperimentFactory(
     ]
 ):
     """
-    Power experiment factory.
+    Factory for statistical power experiments.
+
+    Creates generation, execution and report-building steps required
+    for statistical power estimation under configured alternative
+    distributions.
     """
 
     def __init__(self, experiment_data: PowerExperimentData):
+        """
+        Initialize the factory.
+
+        Parameters
+        ----------
+        experiment_data : PowerExperimentData
+            Power experiment configuration and execution metadata.
+        """
         super().__init__(experiment_data)
 
     def _create_generation_step(self, data_storage: IRandomValuesStorage) -> GenerationStep:
         """
-        Create generation step.
+        Create a sample generation step.
 
-        :param data_storage: data storage.
+        Determines which samples corresponding to alternative
+        distributions are missing from storage and creates generation
+        tasks only for the required number of additional samples.
 
-        :return: generation step.
+        Parameters
+        ----------
+        data_storage : IRandomValuesStorage
+            Random values storage.
+
+        Returns
+        -------
+        GenerationStep
+            Configured generation step.
         """
-
         config = self.experiment_data.config
         monte_carlo_count = config.monte_carlo_count
 
@@ -74,15 +103,27 @@ class PowerExperimentFactory(
         experiment_storage: IExperimentStorage,
     ) -> PowerExecutionStep:
         """
-        Create power execution step.
+        Create a statistical power execution step.
 
-        :param data_storage: data storage.
-        :param result_storage: result power storage.
-        :param experiment_storage: experiment storage.
+        Determines which combinations of criterion, sample size,
+        significance level and alternative distribution do not yet
+        have stored power estimates and prepares execution tasks for
+        those combinations.
 
-        :return: power execution step.
+        Parameters
+        ----------
+        data_storage : IRandomValuesStorage
+            Random values storage.
+        result_storage : IPowerStorage
+            Power result storage.
+        experiment_storage : IExperimentStorage
+            Experiment metadata storage.
+
+        Returns
+        -------
+        PowerExecutionStep
+            Configured execution step.
         """
-
         config = self.experiment_data.config
         experiment_id = self._get_experiment_id(experiment_storage)
         monte_carlo_count = config.monte_carlo_count
@@ -132,13 +173,22 @@ class PowerExperimentFactory(
         result_storage: IPowerStorage,
     ) -> PowerReportBuildingStep:
         """
-        Create power report building step.
+        Create a report-building step.
 
-        :param result_storage: result power storage.
+        Configures report generation using stored power estimates,
+        significance levels, sample sizes and alternative
+        distributions.
 
-        :return: power report building step.
+        Parameters
+        ----------
+        result_storage : IPowerStorage
+            Power result storage.
+
+        Returns
+        -------
+        PowerReportBuildingStep
+            Configured report-building step.
         """
-
         criteria_config = self._get_criteria_config()
         significance_levels = self.experiment_data.config.significance_levels
         sample_sizes = self.experiment_data.config.sample_sizes

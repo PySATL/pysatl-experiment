@@ -1,10 +1,10 @@
+"""Report generation mode definitions."""
+
 from enum import Enum
 
 
 class ReportMode(Enum):
-    """
-    Report mode (build report with chart or without chart).
-    """
+    """Report generation modes."""
 
     WITH_CHART = "with-chart"
     WITHOUT_CHART = "without-chart"
@@ -12,8 +12,11 @@ class ReportMode(Enum):
     @classmethod
     def list(cls):
         """
-        Collect all enum values.
+        Return all enum values.
 
-        @return: enum values
+        Returns
+        -------
+        list[str]
+            Available enum values.
         """
         return [member.value for member in cls]

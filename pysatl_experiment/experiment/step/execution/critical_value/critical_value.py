@@ -1,11 +1,10 @@
+"""Critical value experiment execution step implementation."""
+
 import functools
 from dataclasses import dataclass
 
 from line_profiler import profile
-from pysatl_criterion.persistence.model.limit_distribution.limit_distribution import (
-    ILimitDistributionStorage,
-    LimitDistributionModel,
-)
+from pysatl_criterion.persistence.models.limit_distribution import ILimitDistributionStorage, LimitDistributionModel
 
 from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 from pysatl_experiment.experiment.model.experiment_step.experiment_step import IExperimentStep
@@ -22,14 +21,15 @@ from pysatl_experiment.persistence.model.random_values.random_values import IRan
 
 @dataclass
 class CriticalValueStepData(ExecutionStepData):
-    """
-    Data for execution step in critical value experiment.
-    """
+    """Data for a single execution step in critical value experiment."""
 
 
 class CriticalValueExecutionStep(IExperimentStep):
     """
-    Standard critical value experiment execution step.
+    Execute critical value experiment execution step.
+
+    The step loads generated samples, runs statistical criteria,
+    and stores empirical limit distributions.
     """
 
     def __init__(
@@ -42,7 +42,29 @@ class CriticalValueExecutionStep(IExperimentStep):
         result_storage: ILimitDistributionStorage,
         storage_connection: str,
         parallel_workers: int,
-    ):
+    ) -> None:
+        """
+        Initialize critical value execution step.
+
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        hypothesis_generator_data : HypothesisGeneratorData
+            Hypothesis generator metadata.
+        step_config : list[CriticalValueStepData]
+            Execution task configurations.
+        monte_carlo_count : int
+            Number of Monte Carlo iterations.
+        data_storage : IRandomValuesStorage
+            Storage containing generated samples.
+        result_storage : ILimitDistributionStorage
+            Storage for limit distributions.
+        storage_connection : str
+            Database connection string.
+        parallel_workers : int
+            Number of parallel worker processes.
+        """
         self.experiment_id = experiment_id
         self.hypothesis_generator_data = hypothesis_generator_data
         self.step_config = step_config
@@ -55,7 +77,10 @@ class CriticalValueExecutionStep(IExperimentStep):
     @profile
     def run(self) -> None:
         """
-        Run critical value experiment in parallel with buffering.
+        Execute all critical value tasks in parallel.
+
+        Tasks are buffered before saving in order to reduce
+        storage overhead.
         """
         task_specs = []
         for step_data in self.step_config:
@@ -105,17 +130,21 @@ class CriticalValueExecutionStep(IExperimentStep):
         results_statistics: list[float],
     ) -> None:
         """
-        Save results statistics to storage.
+        Save calculated limit distribution to storage.
 
-        :param experiment_id: experiment id.
-        :param criterion_code: criterion code.
-        :param sample_size: sample size.
-        :param monte_carlo_count: monte carlo count.
-        :param results_statistics: results statistics.
-
-        :return: None.
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        criterion_code : str
+            Statistical criterion identifier.
+        sample_size : int
+            Sample size.
+        monte_carlo_count : int
+            Number of Monte Carlo iterations.
+        results_statistics : list[float]
+            Calculated statistic values.
         """
-
         data_to_save = LimitDistributionModel(
             experiment_id=experiment_id,
             criterion_code=criterion_code,

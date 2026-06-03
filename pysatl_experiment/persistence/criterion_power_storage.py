@@ -1,3 +1,13 @@
+"""
+Power experiment persistence layer (SQLAlchemy implementation).
+
+This module provides database models and storage implementation for
+storing and retrieving precomputed statistical power results.
+
+The module ensures uniqueness of these combinations via a database
+constraint and provides CRUD operations over these results.
+"""
+
 from __future__ import annotations
 
 import json
@@ -13,9 +23,7 @@ from pysatl_experiment.persistence.model.power.power import IPowerStorage, Power
 
 class AlchemyPower(ModelBase):
     """
-    SQLAlchemy ORM model representing precomputed statistical power results
-    for a specific experiment, criterion, alternative hypothesis, and
-    Monte-Carlo simulation setup.
+    SQLAlchemy ORM model representing precomputed statistical power results.
 
     Each row contains a unique combination of:
         - criterion type and its parameters,
@@ -27,25 +35,33 @@ class AlchemyPower(ModelBase):
     The uniqueness of these combinations is enforced by
     the ``uq_power_unique`` constraint.
 
-    Attributes:
-        id (int): Primary key of the record.
-        experiment_id (int): Identifier of the experiment this power result
-            belongs to.
-        criterion_code (str): Code of the statistical criterion used
-            (e.g., test type).
-        criterion_parameters (str): JSON-encoded or serialized parameters
-            of the criterion.
-        sample_size (int): Sample size for which the power value was
-            computed.
-        alternative_code (str): Code of the alternative hypothesis used
-            in the simulation.
-        alternative_parameters (str): JSON-encoded or serialized parameters
-            of the alternative hypothesis.
-        monte_carlo_count (int): Number of Monte-Carlo simulations performed.
-        significance_level (float): Significance level (alpha) used
-            for the test.
-        results_criteria (str): Serialized result of the power computation,
-            typically containing power values or related statistics.
+    Attributes
+    ----------
+    id : int
+        Primary key of the record.
+    experiment_id : int
+        Identifier of the experiment this result belongs to.
+    criterion_code : str
+        Identifier of the statistical test / criterion.
+    criterion_parameters : str
+        JSON-encoded parameters of the criterion.
+    sample_size : int
+        Sample size used in simulation.
+    alternative_code : str
+        Identifier of the alternative hypothesis.
+    alternative_parameters : str
+        JSON-encoded parameters of the alternative hypothesis.
+    monte_carlo_count : int
+        Number of Monte-Carlo simulations performed.
+    significance_level : float
+        Significance level (alpha).
+    results_criteria : str
+        Serialized computation result (typically boolean array or power values).
+
+    Notes
+    -----
+    This model stores serialized JSON fields as strings, which may require
+    consistent serialization strategy across the system.
     """
 
     __tablename__ = "power"
@@ -77,8 +93,7 @@ class AlchemyPower(ModelBase):
 
 class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
     """
-    SQLAlchemy-backed storage implementation for persisting and retrieving
-    statistical power calculation results.
+    SQLAlchemy-backed storage implementation for persisting and retrieving statistical power calculation results.
 
     This class manages CRUD operations for :class:`AlchemyPower` entities,
     providing a database-backed implementation of the ``IPowerStorage`` interface.
@@ -89,44 +104,72 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
     The storage must be explicitly initialized by calling :meth:`init` before any
     database operations can be performed.
 
-    Attributes:
-        session (SessionType): A SQLAlchemy session shared across all instances.
-        _initialized (bool): Internal flag indicating whether the storage
-            was properly initialized via :meth:`init`.
+    Attributes
+    ----------
+    session : SessionType:
+        A SQLAlchemy session shared across all instances.
+    _initialized : bool:
+        Internal flag indicating whether the storage
+        was properly initialized via :meth:`init`.
     """
 
     session: ClassVar[SessionType]
 
     def __init__(self, db_url: str):
         """
-        Initialize the storage with a database connection URL.
+        Initialize storage with database connection URL.
 
-        Args:
-            db_url (str): SQLAlchemy database URL used to configure the connection.
+        Parameters
+        ----------
+        db_url : str
+            SQLAlchemy database connection string.
+
+        Notes
+        -----
+        This constructor does not establish a database connection immediately.
+        Call :meth:`init` to initialize the session.
         """
         super().__init__(db_url=db_url)
         self._initialized: bool = False
 
     def init(self) -> None:
         """
-        Initialize the underlying database engine and session.
+        Initialize database engine and SQLAlchemy session.
 
-        Must be called before any read/write operations. Sets the internal
-        ``_initialized`` flag to ensure :meth:`_get_session` returns
-        a valid session instance.
+        This method must be called before performing any database operations.
+
+        Side Effects
+        ------------
+        - Initializes SQLAlchemy engine
+        - Creates session factory
+        - Sets internal initialization flag
+
+        Raises
+        ------
+        RuntimeError
+            If initialization fails at the base storage layer.
         """
         super().init()
         self._initialized = True
 
     def _get_session(self) -> SessionType:
         """
-        Return the active SQLAlchemy session.
+        Retrieve active SQLAlchemy session.
 
-        Raises:
-            RuntimeError: If the storage has not been initialized via :meth:`init`.
+        Returns
+        -------
+        SessionType
+            Active database session bound to this storage.
 
-        Returns:
-            SessionType: The SQLAlchemy session used for database operations.
+        Raises
+        ------
+        RuntimeError
+            If storage has not been initialized via :meth:`init`.
+
+        Notes
+        -----
+        Session is shared at class level (ClassVar), meaning it is global
+        across instances.
         """
         if not getattr(self, "_initialized", False):
             raise RuntimeError("Storage not initialized. Call init() first.")
@@ -134,19 +177,29 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
 
     def get_data(self, query: PowerQuery) -> PowerModel | None:
         """
-        Retrieve a power computation result matching the given query parameters.
+        Retrieve stored power result matching query parameters.
 
-        All parameter dictionaries are JSON-serialized for correct matching
-        against stored database values.
+        Parameters
+        ----------
+        query : PowerQuery
+            Query object defining:
+                - criterion and parameters
+                - sample size
+                - alternative hypothesis
+                - Monte-Carlo configuration
+                - significance level
 
-        Args:
-            query (PowerQuery): Query parameters defining the criterion, alternative,
-                sample size, Monte-Carlo configuration, and significance level.
+        Returns
+        -------
+        PowerModel | None
+            Matching stored result or None if not found.
 
-        Returns:
-            PowerModel | None:
-                - ``PowerModel`` with the stored results if a matching entry exists.
-                - ``None`` if no record matches the query.
+        Notes
+        -----
+        Matching is performed using JSON-serialized parameter comparison.
+
+        This makes exact match required; semantically equivalent but differently
+        serialized inputs will not match.
         """
         params_json = json.dumps(query.criterion_parameters)
         alt_params_json = json.dumps(query.alternative_parameters)
@@ -180,15 +233,22 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
 
     def insert_data(self, data: PowerModel) -> None:
         """
-        Insert a new power computation result or update an existing entry.
+        Insert or update a power computation result.
 
-        If a record with the same unique parameter combination already exists,
-        only the ``experiment_id`` and ``results_criteria`` fields are updated.
-        Otherwise, a new ``AlchemyPower`` row is created.
+        If a matching record exists, only mutable fields are updated.
+        Otherwise, a new record is created.
 
-        Args:
-            data (PowerModel): The power computation result to store.
+        Parameters
+        ----------
+        data : PowerModel
+            Computed power result to store.
+
+        Notes
+        -----
+        This method performs an UPSERT-like behavior implemented manually
+        via SELECT + INSERT/UPDATE.
         """
+        # TODO: change to UPSERT (ON CONFLICT DO UPDATE)?
         params_json = json.dumps(data.criterion_parameters)
         alt_params_json = json.dumps(data.alternative_parameters)
         existing: AlchemyPower | None = (
@@ -225,11 +285,16 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
 
     def delete_data(self, query: PowerQuery) -> None:
         """
-        Delete a stored power computation result matching the given parameters.
+        Delete stored power result matching query parameters.
 
-        Args:
-            query (PowerQuery): Definition of the criterion, alternative,
-                and simulation parameters identifying the record to delete.
+        Parameters
+        ----------
+        query : PowerQuery
+            Query defining record identity to delete.
+
+        Notes
+        -----
+        Deletion is strict and requires exact parameter match.
         """
         params_json = json.dumps(query.criterion_parameters)
         alt_params_json = json.dumps(query.alternative_parameters)
@@ -248,3 +313,6 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
             .delete()
         )
         self._get_session().commit()
+
+
+# TODO: add sort_keys= TRUE??

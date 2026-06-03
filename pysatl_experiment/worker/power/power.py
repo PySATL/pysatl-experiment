@@ -1,9 +1,17 @@
+"""
+Power analysis worker module.
+
+This module provides a worker implementation that evaluates the
+statistical power of a hypothesis test using Monte Carlo samples
+and precomputed critical values stored in a database.
+"""
+
 from dataclasses import dataclass
 
-from pysatl_criterion.critical_value.resolver.storage_resolver import StorageCriticalValueResolver
-from pysatl_criterion.persistence.limit_distribution.datastorage.datastorage import AlchemyLimitDistributionStorage
+from pysatl_criterion import GoodnessOfFitTest
+from pysatl_criterion.hypothesis_testing.critical_values.resolver.storage_resolver import StorageCriticalValueResolver
+from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDistributionStorage
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
-from pysatl_criterion.test.goodness_of_fit_test.goodness_of_fit_test import GoodnessOfFitTest
 
 from pysatl_experiment.worker.model.abstract_worker.abstract_worker import IWorker, WorkerResult
 
@@ -11,7 +19,13 @@ from pysatl_experiment.worker.model.abstract_worker.abstract_worker import IWork
 @dataclass
 class PowerWorkerResult(WorkerResult):
     """
-    Power worker result container.
+    Result container for power worker.
+
+    Attributes
+    ----------
+    results_criteria : list[bool]
+        Boolean outcomes indicating whether hypothesis was rejected
+        for each sample.
     """
 
     results_criteria: list[bool]
@@ -19,7 +33,33 @@ class PowerWorkerResult(WorkerResult):
 
 class PowerWorker(IWorker[PowerWorkerResult]):
     """
-    Power worker.
+    Worker for computing statistical power of a hypothesis test.
+
+    This worker evaluates whether a given test correctly rejects or
+    accepts the null hypothesis across multiple samples using precomputed
+    critical values stored in a database.
+
+    Parameters
+    ----------
+    statistics : AbstractGoodnessOfFitStatistic
+        Statistic used in hypothesis testing.
+    sample_data : list[list[float]]
+        Generated samples for evaluation.
+    significance_level : float
+        Significance level (alpha) used for hypothesis testing.
+    storage_connection : str
+        Connection string to SQLite database containing critical values.
+
+    Attributes
+    ----------
+    statistics : AbstractGoodnessOfFitStatistic
+        Statistic instance used in testing.
+    sample_data : list[list[float]]
+        Input samples.
+    significance_level : float
+        Alpha level for tests.
+    storage_connection : str
+        Database connection string.
     """
 
     def __init__(
@@ -29,6 +69,20 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         significance_level: float,
         storage_connection: str,
     ):
+        """
+        Initialize power worker.
+
+        Parameters
+        ----------
+        statistics : AbstractGoodnessOfFitStatistic
+            Statistic used in testing.
+        sample_data : list[list[float]]
+            Input datasets.
+        significance_level : float
+            Alpha level for hypothesis testing.
+        storage_connection : str
+            SQLAlchemy database connection string.
+        """
         self.statistics = statistics
         self.sample_data = sample_data
         self.significance_level = significance_level
@@ -36,16 +90,20 @@ class PowerWorker(IWorker[PowerWorkerResult]):
 
     def execute(self) -> PowerWorkerResult:
         """
-        Execute power worker.
-        """
+        Execute power computation across all samples.
 
+        Returns
+        -------
+        PowerWorkerResult
+            Results indicating whether hypothesis was rejected for each sample.
+        """
         storage = AlchemyLimitDistributionStorage(self.storage_connection)
         storage.init()
 
         cv_resolver = StorageCriticalValueResolver(storage)
 
         gof_test = GoodnessOfFitTest(
-            statistics=self.statistics,
+            statistics=[self.statistics],
             significance_level=self.significance_level,
             cv_resolver=cv_resolver,
         )
@@ -58,3 +116,7 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         worker_result = PowerWorkerResult(results_criteria=results_criteria)
 
         return worker_result
+
+
+# TODO: wrong types, should be fixed!!!!!!!
+# TODO: check tests with db and w/o

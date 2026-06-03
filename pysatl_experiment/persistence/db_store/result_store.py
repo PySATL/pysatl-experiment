@@ -1,3 +1,11 @@
+"""
+Database storage implementation for experiment results.
+
+The module provides ORM models and storage classes used to
+persist arbitrary result objects and reconstruct them from
+stored metadata.
+"""
+
 import importlib
 import json
 from typing import Any, ClassVar
@@ -12,9 +20,7 @@ from pysatl_experiment.persistence.models import IResultStore
 
 
 class ResultModel(ModelBase):
-    """
-    Result database model.
-    """
+    """ORM model representing a serialized experiment result."""
 
     __tablename__ = "result"
 
@@ -25,18 +31,22 @@ class ResultModel(ModelBase):
 
 
 class ResultDbStore(AbstractDbStore, IResultStore):
+    """Database-backed storage for serialized experiment results."""
+
     session: ClassVar[SessionType]
     __separator = ";"
 
     @override
-    def insert_result(self, result_id: str, result: Any):
-        """
-        Insert benchmark to store.
+    def insert_result(self, result_id: str, result: Any) -> None:
+        """Insert benchmark to store.
 
-        :param test_code: test code
-        :param benchmark:  benchmark
+        Parameters
+        ----------
+        result_id : str
+            Result identifier.
+        result : Any
+            Result object to persist.
         """
-
         json_data = json.dumps(result.__dict__)
         data = ResultModel(
             id=result_id,
@@ -49,12 +59,17 @@ class ResultDbStore(AbstractDbStore, IResultStore):
 
     @override
     def get_result(self, result_id: str) -> Any:
-        """
-        Get benchmark from store.
+        """Retrieve a result from storage.
 
-        :param result_id: test code
+        Parameters
+        ----------
+        result_id : str
+            Result identifier.
 
-        :return benchmark on None
+        Returns
+        -------
+        Any
+            Restored result object or ``None`` if not found.
         """
         result = ResultDbStore.session.get(ResultModel, result_id)
         if not result:
@@ -64,14 +79,20 @@ class ResultDbStore(AbstractDbStore, IResultStore):
         return getattr(module, result.className)(**json.loads(result.data))
 
     @override
-    def get_results(self, offset: int, limit: int):  # -> [PowerResultModel]:
-        """
-        Get several powers from store.
+    def get_results(self, offset: int, limit: int):  # -> [PowerResultModel]:  # TODO: annotation!
+        """Retrieve several stored results.
 
-        :param offset: offset
-        :param limit: limit
+        Parameters
+        ----------
+        offset : int
+            Number of records to skip.
+        limit : int
+            Maximum number of records to return.
 
-        :return list of PowerResultModel
+        Returns
+        -------
+        list[Type[ResultModel]]
+            List of restored result objects.
         """
         result = (ResultDbStore.session.query(ResultModel).order_by(ResultModel.id).offset(offset).limit(limit)).all()
         result = [getattr(importlib.import_module(r.module), r.className)(**json.loads(r.data)) for r in result]

@@ -1,5 +1,6 @@
+"""Parallel task specifications."""
+
 from dataclasses import dataclass, field
-from typing import Optional
 
 from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
 
@@ -7,22 +8,34 @@ from pysatl_experiment.configuration.model.experiment_type.experiment_type impor
 @dataclass
 class TaskSpec:
     """
-    Universal, pickle-serializable task specification.
-    Contains ONLY primitive types.
+    Universal pickle-serializable task specification.
+
+    Contains only primitive serializable types.
     """
 
     experiment_type: ExperimentType
+    """Experiment type."""
     statistic_class_name: str
+    """Statistic class name."""
     statistic_module: str
+    """Module containing statistic implementation."""
     sample_size: int
+    """Generated sample size."""
     monte_carlo_count: int
+    """Monte Carlo iterations count."""
     db_path: str
+    """Database connection path."""
 
-    # For Critical Value & Time Complexity
+    # For critical value & time complexity experiments
     hypothesis_generator: str = ""
+    """Hypothesis generator name."""
     hypothesis_parameters: list[float] = field(default_factory=list)
+    """Hypothesis generator parameters."""
 
-    # For Power
+    # For power experiments
     alternative_generator: str = ""
+    """Alternative generator name."""
     alternative_parameters: list[float] = field(default_factory=list)
-    significance_level: Optional[float] = None
+    """Alternative generator parameters."""
+    significance_level: float | None = None
+    """Significance level for power experiments."""

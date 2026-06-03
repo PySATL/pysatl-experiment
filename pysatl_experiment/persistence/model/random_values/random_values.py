@@ -1,11 +1,30 @@
+"""Random values storage models and interface."""
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from pysatl_criterion.persistence.model.common.data_storage.data_storage import DataModel, DataQuery, IDataStorage
+from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
 
 
 @dataclass
 class RandomValuesModel(DataModel):
+    """
+    Random values sample model.
+
+    Parameters
+    ----------
+    generator_name : str
+        Name of generator.
+    generator_parameters : list[float]
+        Generator parameters.
+    sample_size : int
+        Size of each sample.
+    sample_num : int
+        Sample index.
+    data : list[float]
+        Generated random values.
+    """
+
     generator_name: str
     generator_parameters: list[float]
     sample_size: int
@@ -15,6 +34,17 @@ class RandomValuesModel(DataModel):
 
 @dataclass
 class RandomValuesQuery(DataQuery):
+    """
+    Query for single random sample.
+
+    Parameters
+    ----------
+    generator_name : str
+    generator_parameters : list[float]
+    sample_size : int
+    sample_num : int
+    """
+
     generator_name: str
     generator_parameters: list[float]
     sample_size: int
@@ -23,6 +53,16 @@ class RandomValuesQuery(DataQuery):
 
 @dataclass
 class RandomValuesAllQuery(DataQuery):
+    """
+    Query for all samples of generator.
+
+    Parameters
+    ----------
+    generator_name : str
+    generator_parameters : list[float]
+    sample_size : int
+    """
+
     generator_name: str
     generator_parameters: list[float]
     sample_size: int
@@ -30,6 +70,17 @@ class RandomValuesAllQuery(DataQuery):
 
 @dataclass
 class RandomValuesCountQuery(DataQuery):
+    """
+    Query for limited number of samples.
+
+    Parameters
+    ----------
+    generator_name : str
+    generator_parameters : list[float]
+    sample_size : int
+    count : int
+    """
+
     generator_name: str
     generator_parameters: list[float]
     sample_size: int
@@ -38,6 +89,17 @@ class RandomValuesCountQuery(DataQuery):
 
 @dataclass
 class RandomValuesAllModel(DataModel):
+    """
+    Bulk random values container.
+
+    Parameters
+    ----------
+    generator_name : str
+    generator_parameters : list[float]
+    sample_size : int
+    data : list[list[float]]
+    """
+
     generator_name: str
     generator_parameters: list[float]
     sample_size: int
@@ -45,14 +107,16 @@ class RandomValuesAllModel(DataModel):
 
 
 class IRandomValuesStorage(IDataStorage[RandomValuesModel, RandomValuesQuery], ABC):
-    """
-    Random values storage interface.
-    """
+    """Random values storage interface."""
 
     @abstractmethod
     def get_rvs_count(self, query: RandomValuesAllQuery) -> int:
         """
         Get count of samples.
+
+        Parameters
+        ----------
+        query : RandomValuesAllModel
         """
         pass
 
@@ -60,6 +124,10 @@ class IRandomValuesStorage(IDataStorage[RandomValuesModel, RandomValuesQuery], A
     def insert_all_data(self, query: RandomValuesAllModel) -> None:
         """
         Insert all data based on hypothesis and sample size.
+
+        Parameters
+        ----------
+        query : RandomValuesAllModel
         """
         pass
 
@@ -67,6 +135,14 @@ class IRandomValuesStorage(IDataStorage[RandomValuesModel, RandomValuesQuery], A
     def get_all_data(self, query: RandomValuesAllQuery) -> list[RandomValuesModel] | None:
         """
         Get all data based on hypothesis and sample size.
+
+        Parameters
+        ----------
+        query : RandomValuesAllQuery
+
+        Returns
+        -------
+        list[RandomValuesModel] | None
         """
         pass
 
@@ -74,6 +150,10 @@ class IRandomValuesStorage(IDataStorage[RandomValuesModel, RandomValuesQuery], A
     def delete_all_data(self, query: RandomValuesAllQuery) -> None:
         """
         Delete all data based on hypothesis and sample size.
+
+        Parameters
+        ----------
+        query : RandomValuesAllQuery
         """
         pass
 
@@ -81,5 +161,13 @@ class IRandomValuesStorage(IDataStorage[RandomValuesModel, RandomValuesQuery], A
     def get_count_data(self, query: RandomValuesCountQuery) -> list[RandomValuesModel] | None:
         """
         Get count data based on hypothesis and sample size.
+
+        Parameters
+        ----------
+        query : RandomValuesCountQuery
+
+        Returns
+        -------
+        list[RandomValuesModel] | None
         """
         pass

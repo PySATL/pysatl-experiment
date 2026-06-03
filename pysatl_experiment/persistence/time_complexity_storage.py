@@ -1,3 +1,14 @@
+"""
+Time complexity persistence layer (SQLAlchemy implementation).
+
+This module provides database models and storage implementation for
+persisting execution time measurements of statistical criteria under
+different experiment configurations.
+
+The module ensures uniqueness of stored records via a composite database
+constraint and provides CRUD operations for time complexity results.
+"""
+
 from __future__ import annotations
 
 import json
@@ -17,42 +28,36 @@ from pysatl_experiment.persistence.model.time_complexity.time_complexity import 
 
 class AlchemyTimeComplexity(ModelBase):
     """
-    SQLAlchemy ORM model representing measured time complexity results
-    for a statistical criterion within an experiment.
+    SQLAlchemy ORM model for execution time measurements of statistical criteria under experiment configurations.
 
-    This table stores execution time metrics for running a criterion with
-    specific parameters, sample size, and Monte-Carlo iterations.
-    Each unique combination of criterion configuration and Monte-Carlo count
-    is stored exactly once, enforced by a unique constraint.
+    Each row stores timing results for a unique combination of:
+        - criterion code and its parameters,
+        - sample size,
+        - Monte-Carlo repetition count.
+
+    Uniqueness is enforced via the ``uq_time_complexity_unique`` constraint.
 
     Attributes
     ----------
     id : int
-        Primary key of the record.
+        Primary key.
     criterion_code : str
-        Identifier of the statistical criterion (e.g., "KS", "SHAPIRO").
-        Used to group results by criterion type.
+        Identifier of the statistical criterion/test.
     criterion_parameters : str
-        Serialized parameters of the criterion (e.g., JSON string).
+        JSON-serialized parameters of the criterion.
     sample_size : int
-        Number of samples used when computing the time complexity.
+        Sample size used in evaluation.
     monte_carlo_count : int
-        Number of Monte-Carlo iterations used to compute time metrics.
+        Number of Monte-Carlo simulations.
     experiment_id : int
-        Identifier of the experiment this result belongs to.
+        Identifier of the experiment run.
     results_times : str
-        Serialized execution time results (e.g., JSON or CSV string)
-        representing time measurements for each Monte-Carlo run.
+        JSON-serialized execution time results.
 
     Notes
     -----
-    Unique constraint `uq_time_complexity_unique` guarantees uniqueness of
-    time complexity data for a specific combination of:
-
-    - criterion_code
-    - criterion_parameters
-    - sample_size
-    - monte_carlo_count
+    All structured fields (parameters and results) are stored as JSON strings.
+    Consistent serialization is required for correct querying.
     """
 
     __tablename__ = "time_complexity"
@@ -78,94 +83,79 @@ class AlchemyTimeComplexity(ModelBase):
 
 class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
     """
-    Storage implementation for time-complexity measurement data using SQLAlchemy.
+    SQLAlchemy-backed storage for time complexity measurements.
 
-    This class provides persistent storage for `TimeComplexityModel` objects and
-    exposes CRUD-style operations for querying, inserting, and deleting
-    time-complexity results. It relies on the `AlchemyTimeComplexity` ORM model
-    and a lazily initialized SQLAlchemy session.
+    This class provides CRUD operations for storing and retrieving
+    execution time measurements of statistical criteria.
 
-    The storage must be initialized explicitly via :meth:`init` before use.
-    Attempts to read or write data without initialization will raise a
-    `RuntimeError`.
+    Records are uniquely identified by:
+        - criterion_code
+        - criterion_parameters (JSON-serialized)
+        - sample_size
+        - monte_carlo_count
 
-    Parameters
-    ----------
-    db_url : str
-        SQLAlchemy database connection string.
+    The storage must be explicitly initialized via :meth:`init`
+    before any database operations are performed.
 
     Attributes
     ----------
     session : ClassVar[SessionType]
-        Shared SQLAlchemy session used by this storage.
+        Shared SQLAlchemy session used by all storage instances.
     _initialized : bool
-        Indicates whether the storage was initialized via :meth:`init`.
-
-    Methods
-    -------
-    init() -> None
-        Initializes the database (tables, engine, session). Must be called
-        before performing operations.
-    get_data(query: TimeComplexityQuery) -> TimeComplexityModel | None
-        Retrieves a single time-complexity record matching the query criteria.
-    insert_data(data: TimeComplexityModel) -> None
-        Inserts a new record or updates an existing one matching the unique
-        constraint of the ORM entity.
-    delete_data(query: TimeComplexityQuery) -> None
-        Removes a record that matches the query criteria.
-
-    Notes
-    -----
-    The unique key for identifying a time-complexity record consists of:
-        - criterion_code
-        - criterion_parameters (serialized JSON)
-        - sample_size
-        - monte_carlo_count
-
-    The storage transparently serializes and deserializes complex objects
-    (criterion parameters and timing results) using JSON.
+        Indicates whether storage has been initialized.
     """
 
     session: ClassVar[SessionType]
 
     def __init__(self, db_url: str):
         """
-        Create a new storage instance.
+        Initialize time complexity storage.
 
         Parameters
         ----------
         db_url : str
             SQLAlchemy database connection string.
+
+        Notes
+        -----
+        The constructor does not create DB connection immediately.
+        Call :meth:`init` to initialize the storage.
         """
         super().__init__(db_url=db_url)
         self._initialized: bool = False
 
     def init(self) -> None:
         """
-        Initialize the storage by creating database structures
-        and preparing the shared SQLAlchemy session.
+        Initialize database engine and SQLAlchemy session.
 
-        Notes
-        -----
         This method must be called before using any CRUD operations.
-        """
 
+        Side Effects
+        ------------
+        - Creates database schema (if not exists)
+        - Initializes session factory
+        - Sets internal initialization flag
+        """
         super().init()
         self._initialized = True
 
     def _get_session(self) -> SessionType:
         """
-        Return the active SQLAlchemy session.
+        Return active SQLAlchemy session.
 
         Returns
         -------
         SessionType
-            The initialized SQLAlchemy session.
+            Active DB session.
 
         Raises
         ------
         RuntimeError
-            If the storage has not been initialized via :meth:`init`.
+            If storage was not initialized via :meth:`init`.
+
+        Notes
+        -----
+        Session is stored at class level (shared across instances).
         """
         if not getattr(self, "_initialized", False):
             raise RuntimeError("Storage not initialized. Call init() first.")
@@ -173,18 +163,24 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
 
     def get_data(self, query: TimeComplexityQuery) -> TimeComplexityModel | None:
         """
-        Retrieve time complexity data that matches a given query.
+        Retrieve stored time complexity result matching query parameters.
 
         Parameters
         ----------
         query : TimeComplexityQuery
-            Query parameters containing criterion configuration,
-            sample size, and Monte-Carlo count.
+            Query defining:
+                - criterion configuration
+                - sample size
+                - Monte-Carlo count
 
         Returns
         -------
-        TimeComplexityModel or None
-            The matching record, or ``None`` if no entry exists.
+        TimeComplexityModel | None
+            Matched record or None if not found.
+
+        Notes
+        -----
+        Matching is strict and relies on JSON-serialized parameter equality.
         """
         params_json = json.dumps(query.criterion_parameters)
         row: AlchemyTimeComplexity | None = (
@@ -211,21 +207,22 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
 
     def insert_data(self, data: TimeComplexityModel) -> None:
         """
-        Insert a new time complexity record or update an existing one.
+        Insert or update a time complexity record.
 
-        If a record with the same unique key (criterion parameters,
-        sample size, Monte-Carlo count) already exists, it is updated.
+        If a record with the same composite key exists, it is updated.
         Otherwise, a new record is created.
 
         Parameters
         ----------
         data : TimeComplexityModel
-            The time complexity measurement to store.
+            Time complexity measurement to store.
 
         Notes
         -----
-        - Existing records have their ``experiment_id`` and ``results_times`` replaced.
-        - ``criterion_parameters`` and ``results_times`` are serialized to JSON.
+        - Existing records update:
+            - experiment_id
+            - results_times
+        - criterion_parameters and results_times are JSON-serialized.
         """
         params_json = json.dumps(data.criterion_parameters)
         existing: AlchemyTimeComplexity | None = (
@@ -257,16 +254,17 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
 
     def delete_data(self, query: TimeComplexityQuery) -> None:
         """
-        Delete time complexity data matching the given query.
+        Delete time complexity record matching query.
 
         Parameters
         ----------
         query : TimeComplexityQuery
-            The parameters identifying which record to delete.
+            Key identifying record to delete.
 
         Notes
         -----
-        The method silently does nothing if no matching record exists.
+        Operation is no-op if record does not exist.
+        Matching is strict (exact JSON + numeric equality).
         """
         params_json = json.dumps(query.criterion_parameters)
         (
