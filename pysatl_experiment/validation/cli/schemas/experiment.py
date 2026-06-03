@@ -6,7 +6,7 @@ including base configuration and specialized variants for power analysis,
 critical value computation, and time complexity experiments.
 """
 
-from typing import Any, Literal, Union
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, ValidationError, ValidationInfo, field_validator, model_validator
 
@@ -308,7 +308,7 @@ class TimeComplexityConfig(BaseExperimentConfig):
     pass
 
 
-Experiment = Union[PowerConfig, CriticalValueConfig, TimeComplexityConfig]
+Experiment = PowerConfig | CriticalValueConfig | TimeComplexityConfig
 
 
 class ExperimentConfig(BaseModel):
