@@ -109,6 +109,6 @@ format-jinja = """
 {%- if distance == 0 -%}
     {{ base }}
 {%- else -%}
-    {{ base }}.dev{{ distance }}
+    {{ bump_version(base, -2) }}.dev{{ distance }}
 {%- endif -%}
 """
