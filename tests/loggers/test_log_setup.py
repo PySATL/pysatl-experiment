@@ -1,237 +1,88 @@
 """Tests for logging configuration and setup."""
 
-import logging
-import re
-import sys
+from copy import deepcopy
+from unittest.mock import patch
 
-import pytest
-
-from pysatl_experiment.exceptions import OperationalException
-from pysatl_experiment.loggers import FTBufferingHandler, FtRichHandler, setup_logging, setup_logging_pre
-from pysatl_experiment.loggers.set_log_levels import reduce_verbosity_for_bias_tester, restore_verbosity_for_bias_tester
+from pysatl_experiment.loggers import LOGGING_CONFIG, setup_logging
 
 
-@pytest.mark.usefixtures("keep_log_config_loggers")
-def test_set_loggers() -> None:
-    # Reset Logging to Debug, otherwise this fails randomly as it's set globally
-    logging.getLogger("requests").setLevel(logging.DEBUG)
-    logging.getLogger("urllib3").setLevel(logging.DEBUG)
-    logging.getLogger("ccxt.base.exchange").setLevel(logging.DEBUG)
-    logging.getLogger("telegram").setLevel(logging.DEBUG)
+def test_setup_logging_uses_default_config():
+    config = {}
 
-    previous_value1 = logging.getLogger("requests").level
-    previous_value2 = logging.getLogger("ccxt.base.exchange").level
-    previous_value3 = logging.getLogger("telegram").level
-    config = {"verbosity": 1, "tests_force_logging": True, "api_server": {"verbosity": "info"}}
-    setup_logging(config)
-
-    value1 = logging.getLogger("requests").level
-    assert previous_value1 is not value1
-    assert value1 is logging.INFO
-
-    value2 = logging.getLogger("ccxt.base.exchange").level
-    assert previous_value2 is not value2
-    assert value2 is logging.INFO
-
-    value3 = logging.getLogger("telegram").level
-    assert previous_value3 is not value3
-    assert value3 is logging.INFO
-    config["verbosity"] = 2
-    setup_logging(config)
-
-    assert logging.getLogger("requests").level is logging.DEBUG
-    assert logging.getLogger("ccxt.base.exchange").level is logging.INFO
-    assert logging.getLogger("telegram").level is logging.INFO
-    assert logging.getLogger("werkzeug").level is logging.INFO
-
-    config["verbosity"] = 3
-    config["api_server"] = {"verbosity": "error"}
-    setup_logging(config)
-
-    assert logging.getLogger("requests").level is logging.DEBUG
-    assert logging.getLogger("ccxt.base.exchange").level is logging.DEBUG
-    assert logging.getLogger("telegram").level is logging.INFO
-    assert logging.getLogger("werkzeug").level is logging.ERROR
-
-
-@pytest.mark.skipif(sys.platform == "win32", reason="does not run on windows")
-@pytest.mark.usefixtures("keep_log_config_loggers")
-def test_set_loggers_syslog():
-    logger = logging.getLogger()
-    orig_handlers = logger.handlers
-    logger.handlers = []
-
-    config = {
-        "tests_force_logging": True,
-        "verbosity": 2,
-        "logfile": "syslog:/dev/log",
-    }
-
-    setup_logging_pre()
-    setup_logging(config)
-    assert len(logger.handlers) == 3
-    assert [x for x in logger.handlers if isinstance(x, logging.handlers.SysLogHandler)]
-    assert [x for x in logger.handlers if isinstance(x, FtRichHandler)]
-    assert [x for x in logger.handlers if isinstance(x, FTBufferingHandler)]
-    # setting up logging again should NOT cause the loggers to be added a second time.
-    setup_logging(config)
-    assert len(logger.handlers) == 3
-    # reset handlers to not break pytest
-    logger.handlers = orig_handlers
-
-
-@pytest.mark.skipif(sys.platform == "win32", reason="does not run on windows")
-@pytest.mark.usefixtures("keep_log_config_loggers")
-def test_set_loggers_Filehandler(tmp_path):
-    logger = logging.getLogger()
-    orig_handlers = logger.handlers
-    logger.handlers = []
-    logfile = tmp_path / "logs/ft_logfile.log"
-    config = {
-        "tests_force_logging": True,
-        "verbosity": 2,
-        "logfile": str(logfile),
-    }
-
-    setup_logging_pre()
-    setup_logging(config)
-    assert len(logger.handlers) == 3
-    assert [x for x in logger.handlers if isinstance(x, logging.handlers.RotatingFileHandler)]
-    assert [x for x in logger.handlers if isinstance(x, FtRichHandler)]
-    assert [x for x in logger.handlers if isinstance(x, FTBufferingHandler)]
-    # setting up logging again should NOT cause the loggers to be added a second time.
-    setup_logging(config)
-    assert len(logger.handlers) == 3
-    # reset handlers to not break pytest
-    if logfile.exists:
-        logfile.unlink()
-    logger.handlers = orig_handlers
-
-
-@pytest.mark.skipif(sys.platform == "win32", reason="does not run on windows")
-@pytest.mark.usefixtures("keep_log_config_loggers")
-def test_set_loggers_Filehandler_without_permission(tmp_path):
-    logger = logging.getLogger()
-    orig_handlers = logger.handlers
-    logger.handlers = []
-
-    try:
-        tmp_path.chmod(0o400)
-        logfile = tmp_path / "logs/ft_logfile.log"
-        config = {
-            "tests_force_logging": True,
-            "verbosity": 2,
-            "logfile": str(logfile),
-        }
-
-        setup_logging_pre()
-        with pytest.raises(OperationalException):
-            setup_logging(config)
-
-        logger.handlers = orig_handlers
-    finally:
-        tmp_path.chmod(0o700)
-
-
-@pytest.mark.skip(reason="systemd is not installed on every system, so we're not testing this.")
-@pytest.mark.usefixtures("keep_log_config_loggers")
-def test_set_loggers_journald():
-    logger = logging.getLogger()
-    orig_handlers = logger.handlers
-    logger.handlers = []
-
-    config = {
-        "tests_force_logging": True,
-        "verbosity": 2,
-        "logfile": "journald",
-    }
-
-    setup_logging_pre()
-    setup_logging(config)
-    assert len(logger.handlers) == 3
-    assert [x for x in logger.handlers if type(x).__name__ == "JournaldLogHandler"]
-    assert [x for x in logger.handlers if isinstance(x, FtRichHandler)]
-    # reset handlers to not break pytest
-    logger.handlers = orig_handlers
-
-
-@pytest.mark.usefixtures("keep_log_config_loggers")
-def test_set_loggers_journald_importerror(import_fails):
-    logger = logging.getLogger()
-    orig_handlers = logger.handlers
-    logger.handlers = []
-
-    config = {
-        "tests_force_logging": True,
-        "verbosity": 2,
-        "logfile": "journald",
-    }
-    with pytest.raises(OperationalException, match=r"You need the cysystemd python package.*"):
+    with patch("logging.config.dictConfig") as dict_config:
         setup_logging(config)
-    logger.handlers = orig_handlers
+
+    dict_config.assert_called_once_with(LOGGING_CONFIG)
 
 
-@pytest.mark.usefixtures("keep_log_config_loggers")
-def test_set_loggers_json_format(capsys):
-    logger = logging.getLogger()
-    orig_handlers = logger.handlers
-    logger.handlers = []
-
-    config = {
-        "tests_force_logging": True,
-        "verbosity": 2,
-        "log_config": {
-            "version": 1,
-            "formatters": {
-                "json": {
-                    "()": "pysatl_experiment.loggers.json_formatter.JsonFormatter",
-                    "fmt_dict": {
-                        "timestamp": "asctime",
-                        "level": "levelname",
-                        "logger": "name",
-                        "message": "message",
-                    },
-                }
-            },
-            "handlers": {
-                "json": {
-                    "class": "logging.StreamHandler",
-                    "formatter": "json",
-                }
-            },
-            "root": {
-                "handlers": ["json"],
-                "level": "DEBUG",
-            },
-        },
+def test_setup_logging_uses_config_log_config():
+    custom_config = {
+        "version": 1,
+        "handlers": {},
+        "root": {},
     }
 
-    setup_logging_pre()
-    setup_logging(config)
-    assert len(logger.handlers) == 2
-    assert [x for x in logger.handlers if type(x).__name__ == "StreamHandler"]
-    assert [x for x in logger.handlers if isinstance(x, FTBufferingHandler)]
+    config = {
+        "log_config": custom_config,
+    }
 
-    logger.info("Test message")
+    with patch("logging.config.dictConfig") as dict_config:
+        setup_logging(config)
 
-    captured = capsys.readouterr()
-    assert re.search(r'{"timestamp": ".*"Test message".*', captured.err)
-
-    # reset handlers to not break pytest
-    logger.handlers = orig_handlers
+    dict_config.assert_called_once_with(custom_config)
 
 
-def test_reduce_verbosity():
-    setup_logging_pre()
-    reduce_verbosity_for_bias_tester()
-    prior_level = logging.getLogger("pysatl_experiment").getEffectiveLevel()
+def test_setup_logging_adds_file_handler():
+    config = {}
 
-    assert logging.getLogger("pysatl_experiment.resolvers").getEffectiveLevel() == logging.WARNING
-    # base level wasn't changed
-    assert logging.getLogger("pysatl_experiment").getEffectiveLevel() == prior_level
+    with patch("logging.config.dictConfig") as dict_config:
+        setup_logging(config, filename="test.log")
 
-    restore_verbosity_for_bias_tester()
+    passed_config = dict_config.call_args.args[0]
 
-    assert logging.getLogger("pysatl_experiment.resolvers").getEffectiveLevel() == prior_level
-    assert logging.getLogger("pysatl_experiment").getEffectiveLevel() == prior_level
-    # base level wasn't changed
+    assert "file" in passed_config["handlers"]
+
+    file_handler = passed_config["handlers"]["file"]
+
+    assert file_handler["class"] == "logging.handlers.RotatingFileHandler"
+    assert file_handler["filename"] == "test.log"
+
+    assert "file" in passed_config["root"]["handlers"]
+
+
+def test_setup_logging_sets_handler_levels():
+    config = {}
+
+    with patch("logging.config.dictConfig") as dict_config:
+        setup_logging(config, level="WARNING")
+
+    passed_config = dict_config.call_args.args[0]
+
+    for handler in passed_config["handlers"].values():
+        assert handler["level"] == "WARNING"
+
+
+def test_setup_logging_sets_level_for_console_and_file_handlers():
+    config = {}
+
+    with patch("logging.config.dictConfig") as dict_config:
+        setup_logging(
+            config,
+            level="ERROR",
+            filename="test.log",
+        )
+
+    passed_config = dict_config.call_args.args[0]
+
+    assert passed_config["handlers"]["console"]["level"] == "ERROR"
+    assert passed_config["handlers"]["file"]["level"] == "ERROR"
+
+
+def test_setup_logging_does_not_mutate_global_logging_config():
+    original = deepcopy(LOGGING_CONFIG)
+
+    with patch("logging.config.dictConfig"):
+        setup_logging({}, filename="test.log")
+
+    assert LOGGING_CONFIG == original
+    assert "file" not in LOGGING_CONFIG["handlers"]

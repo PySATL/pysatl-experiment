@@ -2,7 +2,8 @@
 
 from typing import Any, cast
 
-from click import BadParameter, argument, command
+from click import BadParameter, argument, command, option
+from click_loglevel import LogLevel
 
 from pysatl_experiment.cli.commands.common.common import normalize_experiment_name, read_experiment_data
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
@@ -12,6 +13,7 @@ from pysatl_experiment.experiment.experiment_steps.experiment_steps import Exper
 from pysatl_experiment.factory.critical_value.critical_value import CriticalValueExperimentFactory
 from pysatl_experiment.factory.power.power import PowerExperimentFactory
 from pysatl_experiment.factory.time_complexity.time_complexity import TimeComplexityExperimentFactory
+from pysatl_experiment.loggers import setup_logging
 from pysatl_experiment.validation.cli.commands.build_and_run.build_and_run import validate_build_and_run
 from pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
 
@@ -21,7 +23,9 @@ from pysatl_experiment.validation.cli.commands.common.common import if_experimen
 
 @command()
 @argument("name")
-def build_and_run(name: str) -> None:
+@option("-l", "--log-level", type=LogLevel(), default="WARNING", help="Set logging level", show_default=True)
+@option("--log-file", help="Set logging file")
+def build_and_run(name: str, log_level: int, log_file: str) -> None:
     """
     Build and execute an experiment.
 
@@ -34,14 +38,20 @@ def build_and_run(name: str) -> None:
     ------
     click.BadParameter
         If the experiment does not exist.
+        @param log_file: log file name
+        @param name: experiment name
+        @param log_level: log level
     """
     name = normalize_experiment_name(name)
 
     if not if_experiment_exists(name):
         raise BadParameter(f"Experiment with name {name} does not exist.")
 
-    experiment_data_dict = read_experiment_data(name)
-    experiment_data = validate_build_and_run(experiment_data_dict)
+    experiment_configuration = read_experiment_data(name)
+
+    setup_logging(experiment_configuration, log_level, log_file)
+
+    experiment_data = validate_build_and_run(experiment_configuration)
     experiment_steps = _build_experiment(experiment_data)
 
     experiment = Experiment(experiment_steps)
