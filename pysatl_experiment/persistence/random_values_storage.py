@@ -59,7 +59,7 @@ class AlchemyRandomValues(ModelBase):
     generator_parameters: Mapped[str] = mapped_column(String, nullable=False, index=True)  # type: ignore
     sample_size: Mapped[int] = mapped_column(Integer, nullable=False, index=True)  # type: ignore
     sample_num: Mapped[int] = mapped_column(Integer, nullable=False)  # type: ignore
-    data: Mapped[list[float]] = mapped_column(CompressedFloatArray(use_float32=True), nullable=False)  # type: ignore
+    data: Mapped[list[float]] = mapped_column(CompressedFloatArray(), nullable=False)  # type: ignore
 
     __table_args__ = (
         UniqueConstraint(
