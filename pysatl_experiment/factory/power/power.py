@@ -189,23 +189,14 @@ class PowerExperimentFactory(
         PowerReportBuildingStep
             Configured report-building step.
         """
-        criteria_config = self._get_criteria_config()
-        significance_levels = self.experiment_data.config.significance_levels
-        sample_sizes = self.experiment_data.config.sample_sizes
-        monte_carlo_count = self.experiment_data.config.monte_carlo_count
-        results_path = self.experiment_data.results_path
-        alternatives = self.experiment_data.config.alternatives
-        with_chart = self.experiment_data.config.report_mode
-
-        report_building_step = PowerReportBuildingStep(
-            criteria_config=criteria_config,
-            significance_levels=significance_levels,
-            alternatives=alternatives,
-            sample_sizes=sample_sizes,
-            monte_carlo_count=monte_carlo_count,
+        return PowerReportBuildingStep(
+            report_name=self.experiment_data.name,
+            criteria_config=self._get_criteria_config(),
+            significance_levels=self.experiment_data.config.significance_levels,
+            alternatives=self.experiment_data.config.alternatives,
+            sample_sizes=self.experiment_data.config.sample_sizes,
+            monte_carlo_count=self.experiment_data.config.monte_carlo_count,
             result_storage=result_storage,
-            results_path=results_path,
-            with_chart=with_chart,
+            results_path=self.experiment_data.results_path,
+            with_chart=self.experiment_data.config.report_mode,
         )
-
-        return report_building_step

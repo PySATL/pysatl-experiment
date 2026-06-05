@@ -34,6 +34,7 @@ class PowerReportBuilder:
 
     def __init__(
         self,
+        report_name: str,
         criteria_config: list[CriterionConfig],
         sample_sizes: list[int],
         alternatives: list[Alternative],
@@ -71,7 +72,7 @@ class PowerReportBuilder:
         self.with_chart = with_chart
 
         template_dir = Path(__file__).parents[1] / "report_templates/power"
-        self.pdf_path = self.results_path / "power_report.pdf"
+        self.pdf_path = self.results_path / f"{report_name}.pdf"
 
         self.template_env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
 

@@ -15,6 +15,7 @@ class TestTimeComplexityReportBuilder:
         sample_sizes = [10, 20, 30]
 
         builder = TimeComplexityReportBuilder(
+            report_name="test",
             criteria_config=criteria,
             sample_sizes=sample_sizes,
             times=time_data,
@@ -35,6 +36,7 @@ class TestTimeComplexityReportBuilder:
         self, mock_plt_close, mock_plt_savefig, mock_criterion_config, time_data, results_path
     ):
         builder = TimeComplexityReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config],
             sample_sizes=[10, 20],
             times=time_data,
@@ -66,6 +68,7 @@ class TestTimeComplexityReportBuilder:
 
     def test_generate_html_includes_chart_when_with_chart(self, mock_criterion_config, time_data, results_path):
         builder = TimeComplexityReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config],
             sample_sizes=[10, 20],
             times=time_data,
@@ -90,6 +93,7 @@ class TestTimeComplexityReportBuilder:
 
     def test_generate_html_excludes_chart_when_without_chart(self, mock_criterion_config, time_data, results_path):
         builder = TimeComplexityReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config],
             sample_sizes=[10, 20],
             times=time_data,
@@ -116,6 +120,7 @@ class TestTimeComplexityReportBuilder:
         self, mock_criterion_config, time_data, results_path, capsys
     ):
         builder = TimeComplexityReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config],
             sample_sizes=[10, 20],
             times=time_data,
@@ -141,6 +146,7 @@ class TestTimeComplexityReportBuilder:
     @patch("pysatl_experiment.report.time_complexity.time_complexity.convert_html_to_pdf")
     def test_build_creates_pdf_file(self, mock_convert, chart_mode, mock_criterion_config, time_data, results_path):
         builder = TimeComplexityReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config],
             sample_sizes=[10],
             times=time_data,
@@ -152,5 +158,5 @@ class TestTimeComplexityReportBuilder:
             builder.build()
 
             mock_gen_html.assert_called_once()
-            mock_convert.assert_called_once_with("<html>Content</html>", results_path / "time_complexity_report.pdf")
+            mock_convert.assert_called_once_with("<html>Content</html>", results_path / "test.pdf")
             assert (results_path / "time_complexity_report.pdf").parent.exists()
