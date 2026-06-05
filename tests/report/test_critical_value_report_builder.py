@@ -12,6 +12,7 @@ class TestCriticalValueReportBuilder:
     @patch("pysatl_experiment.report.critical_value.critical_value.plt")
     def test_chunk_cv_values_splits_correctly(self, mock_criterion_config, cv_values):
         builder = CriticalValueReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config, MagicMock(criterion_code="AD_")],
             sample_sizes=[10, 20],
             significance_levels=[0.05, 0.01],
@@ -26,6 +27,7 @@ class TestCriticalValueReportBuilder:
     @patch("pysatl_experiment.report.critical_value.critical_value.plt")
     def test_chunk_cv_values_empty(self, mock_criterion_config):
         builder = CriticalValueReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config],
             sample_sizes=[10, 20],
             significance_levels=[0.05, 0.01],
@@ -39,6 +41,7 @@ class TestCriticalValueReportBuilder:
     @patch("pysatl_experiment.report.critical_value.critical_value.convert_html_to_pdf")
     def test_build_calls_convert(self, mock_convert, mock_criterion_config, cv_values, chart_mode, results_path):
         builder = CriticalValueReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config, MagicMock(criterion_code="AD_")],
             sample_sizes=[10, 20],
             significance_levels=[0.05, 0.01],
@@ -52,6 +55,7 @@ class TestCriticalValueReportBuilder:
     @patch("pysatl_experiment.report.critical_value.critical_value.plt")
     def test_build_with_chart_calls_savefig(self, mock_plt, mock_criterion_config, cv_values, results_path):
         builder = CriticalValueReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config, MagicMock(criterion_code="AD_")],
             sample_sizes=[10, 20],
             significance_levels=[0.05, 0.01],
@@ -65,6 +69,7 @@ class TestCriticalValueReportBuilder:
     @patch("pysatl_experiment.report.critical_value.critical_value.plt")
     def test_build_no_chart_skips_plot(self, mock_plt, mock_criterion_config, cv_values, results_path):
         builder = CriticalValueReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config, MagicMock(criterion_code="AD_")],
             sample_sizes=[10, 20],
             significance_levels=[0.05, 0.01],
@@ -77,6 +82,7 @@ class TestCriticalValueReportBuilder:
 
     def test_generate_table_data_has_correct_rows(self, mock_criterion_config, cv_values, results_path):
         builder = CriticalValueReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config],
             sample_sizes=[10, 20],
             significance_levels=[0.05, 0.01],
@@ -89,6 +95,7 @@ class TestCriticalValueReportBuilder:
 
     def test_generate_table_data_has_correct_values(self, mock_criterion_config, cv_values, results_path):
         builder = CriticalValueReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config],
             sample_sizes=[10, 20],
             significance_levels=[0.05, 0.01],

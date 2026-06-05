@@ -34,6 +34,7 @@ class CriticalValueReportBuilder:
 
     def __init__(
         self,
+        report_name: str,
         criteria_config: list[CriterionConfig],
         sample_sizes: list[int],
         significance_levels: list[float],
@@ -59,15 +60,15 @@ class CriticalValueReportBuilder:
         with_chart : ReportMode
             Determines whether charts should be included.
         """
+        self.report_name = report_name
         self.criteria_config = criteria_config
         self.sizes = sample_sizes
         self.significance_levels = significance_levels
         self.cv_values = cv_values
         self.results_path = results_path
         self.with_chart = with_chart
-
         template_dir = Path(__file__).parents[1] / "report_templates/critical_values"
-        self.pdf_path = self.results_path / "critical_values_report.pdf"
+        self.pdf_path = self.results_path / f"{report_name}.pdf"
 
         self.template_env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
 

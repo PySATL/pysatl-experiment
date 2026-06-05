@@ -18,6 +18,7 @@ class CriticalValueReportBuildingStep(IExperimentStep):
 
     def __init__(
         self,
+        report_name: str,
         criteria_config: list[CriterionConfig],
         significance_levels: list[float],
         sample_sizes: list[int],
@@ -47,6 +48,7 @@ class CriticalValueReportBuildingStep(IExperimentStep):
             Report visualization mode.
         """
         self.criteria_config = criteria_config
+        self.report_name = report_name
         self.significance_levels = significance_levels
         self.sizes = sorted(sample_sizes)
         self.monte_carlo_count = monte_carlo_count
@@ -70,6 +72,7 @@ class CriticalValueReportBuildingStep(IExperimentStep):
                     cv_values.append(cv_value)
 
         report_builder = CriticalValueReportBuilder(
+            report_name=self.report_name,
             criteria_config=self.criteria_config,
             sample_sizes=self.sizes,
             significance_levels=self.significance_levels,
