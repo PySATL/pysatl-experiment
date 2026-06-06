@@ -47,6 +47,8 @@ class TimeComplexityReportBuilder:
 
         Parameters
         ----------
+        report_name : str
+            Name of the generated report.
         criteria_config : list[CriterionConfig]
             Criteria included in the report.
         sample_sizes : list[int]

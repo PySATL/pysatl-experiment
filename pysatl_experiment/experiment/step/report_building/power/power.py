@@ -33,6 +33,8 @@ class PowerReportBuildingStep(IExperimentStep):
 
         Parameters
         ----------
+        report_name : str
+            Name of the generated report.
         criteria_config : list[CriterionConfig]
             Statistical criteria configurations.
         significance_levels : list[float]
