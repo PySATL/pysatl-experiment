@@ -26,10 +26,12 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install Poetry
+        run: pip install poetry==2.1.1
+
+      - name: Install dependencies with Poetry
         run: |
-          python -m pip install --upgrade pip
-          pip install -r docs/requirements-docs.txt
+          poetry install --with dev
 
       - name: Fetch gh-pages branch
         run: |
@@ -43,13 +45,13 @@ jobs:
       - name: Build and push Mike
         if: ${{ github.event_name == 'push' }}
         run: |
-          mike deploy ${{ github.ref_name }} latest --push --update-aliases
+          poetry run mike deploy ${{ github.ref_name }} latest --push --update-aliases
 
       - name: Build and push Mike - Release
         if: ${{ github.event_name == 'release' }}
         run: |
-          mike deploy ${{ github.ref_name }} stable --push --update-aliases
+          poetry run mike deploy ${{ github.ref_name }} stable --push --update-aliases
 
       - name: Show mike versions
         run: |
-          mike list
+          poetry run mike list
