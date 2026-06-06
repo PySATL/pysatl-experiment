@@ -50,6 +50,7 @@ ruff = "0.15.15"
 pytest-mock = "3.15.1"
 pre-commit = "4.6.0"
 mypy = ">=1.15,<3.0"
+mkdocstrings = ">=0.30.0"
 mkdocstrings-python = "^2.0.3"
 
 [tool.poetry.scripts]
