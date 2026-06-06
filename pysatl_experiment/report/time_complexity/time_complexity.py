@@ -35,6 +35,7 @@ class TimeComplexityReportBuilder:
 
     def __init__(
         self,
+        report_name: str,
         criteria_config: list[CriterionConfig],
         sample_sizes: list[int],
         times: dict[str, list[tuple[int, float]]],
@@ -46,6 +47,8 @@ class TimeComplexityReportBuilder:
 
         Parameters
         ----------
+        report_name : str
+            Name of the generated report.
         criteria_config : list[CriterionConfig]
             Criteria included in the report.
         sample_sizes : list[int]
@@ -57,6 +60,7 @@ class TimeComplexityReportBuilder:
         with_chart : ReportMode
             Determines whether charts should be generated.
         """
+        self.report_name = report_name
         self.criteria_config = criteria_config
         self.sample_sizes = sample_sizes
         self.times = times
@@ -76,7 +80,7 @@ class TimeComplexityReportBuilder:
         """
         self.results_path.mkdir(parents=True, exist_ok=True)
         html_content = self._generate_html()
-        pdf_path = self.results_path / "time_complexity_report.pdf"
+        pdf_path = self.results_path / f"{self.report_name}.pdf"
         convert_html_to_pdf(html_content, pdf_path)
 
     def _generate_chart(self) -> str | None:

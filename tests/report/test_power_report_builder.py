@@ -20,6 +20,7 @@ class TestPowerReportBuilder:
         significance_levels = [0.05, 0.01]
 
         builder = PowerReportBuilder(
+            report_name="test",
             criteria_config=criteria,
             sample_sizes=sample_sizes,
             alternatives=alternatives,
@@ -36,7 +37,7 @@ class TestPowerReportBuilder:
         assert builder.power_result == power_data
         assert builder.results_path == results_path
         assert builder.with_chart == with_chart
-        assert builder.pdf_path == results_path / "power_report.pdf"
+        assert builder.pdf_path == results_path / "test.pdf"
 
     def test_generate_table_data_has_correct_structure_and_values(
         self, mock_criterion_config, mock_alternative, power_data, results_path
@@ -45,6 +46,7 @@ class TestPowerReportBuilder:
         mock_criterion_config_ad.criterion_code = "AD_"
 
         builder = PowerReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config, mock_criterion_config_ad],
             sample_sizes=[10, 20],
             alternatives=[mock_alternative],
@@ -88,6 +90,7 @@ class TestPowerReportBuilder:
         results_path,
     ):
         builder = PowerReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config],
             sample_sizes=[10, 20],
             alternatives=[mock_alternative],
@@ -123,6 +126,7 @@ class TestPowerReportBuilder:
         results_path,
     ):
         builder = PowerReportBuilder(
+            report_name="test",
             criteria_config=[mock_criterion_config],
             sample_sizes=[10],
             alternatives=[mock_alternative],

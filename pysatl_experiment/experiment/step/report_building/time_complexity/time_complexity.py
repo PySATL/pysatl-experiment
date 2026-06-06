@@ -21,6 +21,7 @@ class TimeComplexityReportBuildingStep(IExperimentStep):
 
     def __init__(
         self,
+        report_name: str,
         criteria_config: list[CriterionConfig],
         sample_sizes: list[int],
         monte_carlo_count: int,
@@ -33,6 +34,8 @@ class TimeComplexityReportBuildingStep(IExperimentStep):
 
         Parameters
         ----------
+        report_name : str
+            Name of the generated report.
         criteria_config : list[CriterionConfig]
             Statistical criteria configurations.
         sample_sizes : list[int]
@@ -46,6 +49,7 @@ class TimeComplexityReportBuildingStep(IExperimentStep):
         with_chart : ReportMode
             Report visualization mode.
         """
+        self.report_name = report_name
         self.criteria_config = criteria_config
         self.sizes = sorted(sample_sizes)
         self.monte_carlo_count = monte_carlo_count
@@ -60,6 +64,7 @@ class TimeComplexityReportBuildingStep(IExperimentStep):
         times_data = self._collect_statistics()
 
         report_builder = TimeComplexityReportBuilder(
+            report_name=self.report_name,
             criteria_config=self.criteria_config,
             sample_sizes=self.sizes,
             times=times_data,
