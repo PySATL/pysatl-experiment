@@ -33,14 +33,15 @@ def build_and_run(name: str, log_level: int, log_file: str) -> None:
     ----------
     name : str
         Experiment name. The ``.json`` extension is optional.
+    log_level : int
+        Logging level.
+    log_file : str
+        Logging file name.
 
     Raises
     ------
     click.BadParameter
         If the experiment does not exist.
-        @param log_file: log file name
-        @param name: experiment name
-        @param log_level: log level
     """
     name = normalize_experiment_name(name)
 

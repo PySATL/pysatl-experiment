@@ -54,6 +54,10 @@ def setup_logging(config: Config, level: int | str | None = None, filename: str 
     ----------
     config : Config
         Application configuration.
+    level : int or str or None, optional
+        Log level.
+    filename : str or None, optional
+        Log file name.
 
     Notes
     -----
@@ -62,9 +66,6 @@ def setup_logging(config: Config, level: int | str | None = None, filename: str 
 
     Logging initialization may be skipped during test execution unless
     explicitly requested through configuration.
-    @param config: application configuration
-    @param filename: log file name
-    @param level: log level
     """
     if filename:
         log_config = deepcopy(LOGGING_CONFIG)
