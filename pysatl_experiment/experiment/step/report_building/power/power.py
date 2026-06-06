@@ -18,6 +18,7 @@ class PowerReportBuildingStep(IExperimentStep):
 
     def __init__(
         self,
+        report_name: str,
         criteria_config: list[CriterionConfig],
         significance_levels: list[float],
         alternatives: list[Alternative],
@@ -32,6 +33,8 @@ class PowerReportBuildingStep(IExperimentStep):
 
         Parameters
         ----------
+        report_name : str
+            Name of the generated report.
         criteria_config : list[CriterionConfig]
             Statistical criteria configurations.
         significance_levels : list[float]
@@ -49,6 +52,7 @@ class PowerReportBuildingStep(IExperimentStep):
         with_chart : ReportMode
             Report visualization mode.
         """
+        self.report_name = report_name
         self.criteria_config = criteria_config
         self.significance_levels = significance_levels
         self.alternatives = alternatives
@@ -65,6 +69,7 @@ class PowerReportBuildingStep(IExperimentStep):
         power_data = self._collect_statistics()
 
         builder = PowerReportBuilder(
+            report_name=self.report_name,
             criteria_config=self.criteria_config,
             sample_sizes=self.sizes,
             alternatives=self.alternatives,
