@@ -16,6 +16,7 @@ on:
 permissions: {}
 
 
+# TODO: optimize size by making `docs` group!!
 jobs:
   build-docs:
     permissions:
