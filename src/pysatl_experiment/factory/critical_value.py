@@ -15,7 +15,7 @@ from pysatl_experiment.experiment.step.execution.common.hypothesis_generator_dat
 from pysatl_experiment.experiment.step.execution.critical_value import CriticalValueExecutionStep, CriticalValueStepData
 from pysatl_experiment.experiment.step.generation import GenerationStep, GenerationStepData
 from pysatl_experiment.experiment.step.report_building.critical_value import CriticalValueReportBuildingStep
-from pysatl_experiment.factory.model.abstract_experiment_factory import AbstractExperimentFactory
+from pysatl_experiment.factory.abstract_experiment_factory import AbstractExperimentFactory
 from pysatl_experiment.persistence.model.experiment import IExperimentStorage
 from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesAllQuery
 

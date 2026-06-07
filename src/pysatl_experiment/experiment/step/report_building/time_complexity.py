@@ -7,8 +7,8 @@ from line_profiler import profile
 from typing_extensions import override
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
-from pysatl_experiment.configuration.model.report_mode import ReportMode
-from pysatl_experiment.experiment.model.experiment_step import IExperimentStep
+from pysatl_experiment.configuration.models.report_mode import ReportMode
+from pysatl_experiment.experiment.abstract_experiment_step import IExperimentStep
 from pysatl_experiment.persistence.model.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
 from pysatl_experiment.report.time_complexity import TimeComplexityReportBuilder
 

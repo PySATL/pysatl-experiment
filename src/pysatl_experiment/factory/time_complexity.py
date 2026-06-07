@@ -16,7 +16,7 @@ from pysatl_experiment.experiment.step.execution.time_complexity import (
 )
 from pysatl_experiment.experiment.step.generation import GenerationStep, GenerationStepData
 from pysatl_experiment.experiment.step.report_building.time_complexity import TimeComplexityReportBuildingStep
-from pysatl_experiment.factory.model.abstract_experiment_factory import AbstractExperimentFactory
+from pysatl_experiment.factory.abstract_experiment_factory import AbstractExperimentFactory
 from pysatl_experiment.persistence.model.experiment import IExperimentStorage
 from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesAllQuery
 from pysatl_experiment.persistence.model.time_complexity import ITimeComplexityStorage, TimeComplexityQuery

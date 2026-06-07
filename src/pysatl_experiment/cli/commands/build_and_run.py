@@ -7,7 +7,7 @@ from click_loglevel import LogLevel
 
 from pysatl_experiment.cli.commands.common import normalize_experiment_name, read_experiment_data
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
-from pysatl_experiment.configuration.model.experiment_type import ExperimentType
+from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.experiment.experiment import Experiment
 from pysatl_experiment.experiment.experiment_steps import ExperimentSteps
 from pysatl_experiment.factory.critical_value import CriticalValueExperimentFactory

@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from pysatl_experiment.configuration.experiment_config.experiment_config import ExperimentConfig
-from pysatl_experiment.configuration.model.alternative import Alternative
+from pysatl_experiment.configuration.models.alternative import Alternative
 
 
 @dataclass

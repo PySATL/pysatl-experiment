@@ -17,7 +17,7 @@ from typing_extensions import override
 
 from pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
 from pysatl_experiment.persistence.db_store.model import AbstractDbStore
-from pysatl_experiment.persistence.model.random_values import (
+from pysatl_experiment.persistence.models.random_values import (
     IRandomValuesStorage,
     RandomValuesAllModel,
     RandomValuesAllQuery,

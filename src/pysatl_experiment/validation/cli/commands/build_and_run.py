@@ -30,10 +30,10 @@ from pysatl_experiment.configuration.experiment_config.time_complexity import (
 )
 from pysatl_experiment.configuration.experiment_data.common.steps_done import StepsDone
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
-from pysatl_experiment.configuration.model.experiment_type import ExperimentType
-from pysatl_experiment.configuration.model.hypothesis import Hypothesis
-from pysatl_experiment.configuration.model.run_mode import RunMode
-from pysatl_experiment.configuration.model.step_type import StepType
+from pysatl_experiment.configuration.models.experiment_type import ExperimentType
+from pysatl_experiment.configuration.models.hypothesis import Hypothesis
+from pysatl_experiment.configuration.models.run_mode import RunMode
+from pysatl_experiment.configuration.models.step_type import StepType
 from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
 from pysatl_experiment.persistence.model.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
 from pysatl_experiment.validation.cli.commands.common.checker import SQLiteCriticalValueChecker

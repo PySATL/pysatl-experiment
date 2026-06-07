@@ -12,7 +12,7 @@ The goal of this module is to decouple business logic from persistence
 details and allow swapping storage backends without affecting core logic.
 """
 
-from pysatl_experiment.persistence.models import ICriticalValueStore, IRvsStore, IStore
+from pysatl_experiment.persistence.interfaces import ICriticalValueStore, IRvsStore, IStore
 
 
 __all__ = ["ICriticalValueStore", "IRvsStore", "IStore"]

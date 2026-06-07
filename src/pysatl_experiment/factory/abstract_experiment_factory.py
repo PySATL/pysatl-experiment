@@ -25,9 +25,10 @@ from pysatl_criterion.statistics import (
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
-from pysatl_experiment.configuration.model.experiment_type import ExperimentType
-from pysatl_experiment.configuration.model.hypothesis import Hypothesis
-from pysatl_experiment.configuration.model.run_mode import RunMode
+from pysatl_experiment.configuration.models.experiment_type import ExperimentType
+from pysatl_experiment.configuration.models.hypothesis import Hypothesis
+from pysatl_experiment.configuration.models.run_mode import RunMode
+from pysatl_experiment.experiment.abstract_experiment_step import IExperimentStep
 from pysatl_experiment.experiment.experiment_steps import ExperimentSteps
 from pysatl_experiment.experiment.generator import AbstractRVSGenerator
 from pysatl_experiment.experiment.generator.generators import (
@@ -40,7 +41,6 @@ from pysatl_experiment.experiment.generator.generators import (
     UniformGenerator,
     WeibullGenerator,
 )
-from pysatl_experiment.experiment.model.experiment_step import IExperimentStep
 from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerStorage
 from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
 from pysatl_experiment.persistence.model.experiment import ExperimentQuery, IExperimentStorage

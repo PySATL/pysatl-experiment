@@ -17,7 +17,7 @@ from jinja2 import Environment, FileSystemLoader
 from matplotlib import pyplot as plt
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
-from pysatl_experiment.configuration.model.report_mode import ReportMode
+from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.report.common.utils import convert_html_to_pdf
 
 

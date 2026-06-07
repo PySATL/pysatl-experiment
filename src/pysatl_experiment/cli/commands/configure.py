@@ -15,11 +15,11 @@ from pysatl_experiment.cli.commands.common import (
     read_experiment_data,
     save_experiment_config,
 )
-from pysatl_experiment.configuration.model.experiment_type import ExperimentType
-from pysatl_experiment.configuration.model.hypothesis import Hypothesis
-from pysatl_experiment.configuration.model.report_mode import ReportMode
-from pysatl_experiment.configuration.model.run_mode import RunMode
-from pysatl_experiment.configuration.model.step_type import StepType
+from pysatl_experiment.configuration.models.experiment_type import ExperimentType
+from pysatl_experiment.configuration.models.hypothesis import Hypothesis
+from pysatl_experiment.configuration.models.report_mode import ReportMode
+from pysatl_experiment.configuration.models.run_mode import RunMode
+from pysatl_experiment.configuration.models.step_type import StepType
 from pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
 from pysatl_experiment.validation.cli.schemas.alternative import AlternativesConfig
 from pysatl_experiment.validation.cli.schemas.criteria import CriteriaConfig, Criterion

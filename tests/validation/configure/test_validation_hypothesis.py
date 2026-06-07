@@ -6,7 +6,7 @@ import pytest
 from click.testing import CliRunner
 
 from pysatl_experiment.cli.commands.configure import configure
-from pysatl_experiment.configuration.model.hypothesis import Hypothesis
+from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 
 
 @pytest.fixture

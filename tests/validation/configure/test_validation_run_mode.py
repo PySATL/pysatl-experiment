@@ -6,7 +6,7 @@ import pytest
 from click.testing import CliRunner
 
 from pysatl_experiment.cli.commands.configure import configure
-from pysatl_experiment.configuration.model.run_mode import RunMode
+from pysatl_experiment.configuration.models.run_mode import RunMode
 
 
 @pytest.fixture

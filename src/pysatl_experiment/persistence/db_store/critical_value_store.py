@@ -15,7 +15,7 @@ from typing_extensions import override
 
 from pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
 from pysatl_experiment.persistence.db_store.model import AbstractDbStore
-from pysatl_experiment.persistence.models import ICriticalValueStore
+from pysatl_experiment.persistence.interfaces import ICriticalValueStore
 
 
 class Distribution(ModelBase):

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 
-from pysatl_experiment.configuration.model.criterion import Criterion
+from pysatl_experiment.configuration.models.criterion import Criterion
 
 
 @dataclass
