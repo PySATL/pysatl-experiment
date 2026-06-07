@@ -15,7 +15,7 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
 def test_report_mode_with_invalid_mode(get_experiment_config: MagicMock, runner: CliRunner) -> None:
     """Tests the `report_mode` command logic in isolation with an invalid argument.
 
@@ -61,9 +61,9 @@ def test_report_mode_with_invalid_mode(get_experiment_config: MagicMock, runner:
     assert isinstance(result.exception, SystemExit)
 
 
-@patch("pysatl_experiment.cli.commands.configure.configure.save_experiment_config")
-@patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_mode", [e for e in ReportMode])
 def test_report_mode_with_valid_mode(
     if_experiment_exists: MagicMock,

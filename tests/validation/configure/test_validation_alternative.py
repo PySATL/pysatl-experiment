@@ -30,7 +30,7 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
 def test_alternatives_fails_if_experiment_type_not_set(get_experiment_config: MagicMock, runner: CliRunner) -> None:
     experiment_name = "my-exp"
     get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
@@ -64,7 +64,7 @@ def test_alternatives_fails_if_experiment_type_not_set(get_experiment_config: Ma
     assert isinstance(result.exception, SystemExit)
 
 
-@patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
 def test_alternatives_fails_for_unsupported_experiment_type(
     get_experiment_config: MagicMock, runner: CliRunner
 ) -> None:
@@ -100,9 +100,9 @@ def test_alternatives_fails_for_unsupported_experiment_type(
     assert result.exit_code != 0
 
 
-@patch("pysatl_experiment.cli.commands.configure.configure.save_experiment_config")
-@patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
 def test_alternatives_fails_with_wrong_parameter_count(
     if_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
@@ -140,9 +140,9 @@ def test_alternatives_fails_with_wrong_parameter_count(
     assert result.exit_code != 0
 
 
-@patch("pysatl_experiment.cli.commands.configure.configure.save_experiment_config")
-@patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
 def test_alternatives_fails_with_non_numeric_parameters(
     if_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
@@ -184,9 +184,9 @@ def test_alternatives_fails_with_non_numeric_parameters(
     "pysatl_experiment.validation.cli.schemas.alternative.AbstractRVSGenerator.__subclasses__",
     return_value=[NormalGenerator, CauchyGenerator, NormalGenerator],  # type: ignore
 )
-@patch("pysatl_experiment.cli.commands.configure.configure.save_experiment_config")
-@patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
 def test_alternatives_fails_with_ambiguous_generator_name(
     if_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
@@ -233,9 +233,9 @@ def test_alternatives_fails_with_ambiguous_generator_name(
     assert "Please be more specific" in output
 
 
-@patch("pysatl_experiment.cli.commands.configure.configure.save_experiment_config")
-@patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
 def test_alternatives_success_with_valid_inputs(
     if_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,

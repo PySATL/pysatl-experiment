@@ -15,7 +15,7 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("pysatl_experiment.cli.commands.configure.configure.get_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
 def test_generator_type_with_invalid_type(get_experiment_config: MagicMock, runner: CliRunner) -> None:
     """Tests the `generator_type` command with a completely invalid type string.
 
@@ -61,9 +61,9 @@ def test_generator_type_with_invalid_type(get_experiment_config: MagicMock, runn
     assert isinstance(result.exception, SystemExit)
 
 
-@patch("pysatl_experiment.cli.commands.configure.configure.save_experiment_config")
-@patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
 def test_generator_type_with_unsupported_custom_type(
     if_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
@@ -112,9 +112,9 @@ def test_generator_type_with_unsupported_custom_type(
     assert isinstance(result.exception, SystemExit)
 
 
-@patch("pysatl_experiment.cli.commands.configure.configure.save_experiment_config")
-@patch("pysatl_experiment.cli.commands.configure.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_type", [e for e in StepType if e != StepType.CUSTOM])
 def test_generator_type_with_valid_supported_type(
     if_experiment_exists: MagicMock,
