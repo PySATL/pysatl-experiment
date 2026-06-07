@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
-from pysatl_experiment.report.critical_value.critical_value import CriticalValueReportBuilder
+from pysatl_experiment.configuration.model.report_mode import ReportMode
+from pysatl_experiment.report.critical_value import CriticalValueReportBuilder
 
 
 class TestCriticalValueReportBuilder:

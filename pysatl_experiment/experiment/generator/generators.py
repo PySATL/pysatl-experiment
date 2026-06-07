@@ -661,3 +661,6 @@ class UniformGenerator(AbstractRVSGenerator):
     def generate(self, size):
         """Generate uniform distributed random sample."""
         return generate_uniform(size=size, a=self.a, b=self.b)
+
+
+# TODO: refactor generators! rename experiment to pipeline?

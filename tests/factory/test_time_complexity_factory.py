@@ -10,26 +10,22 @@ import pytest
 from numpy import float64
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 
-from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
-from pysatl_experiment.configuration.experiment_config.time_complexity.time_complexity import (
-    TimeComplexityExperimentConfig,
-)
-from pysatl_experiment.configuration.experiment_data.time_complexity.time_complexity import TimeComplexityExperimentData
-from pysatl_experiment.configuration.model.criterion.criterion import Criterion
-from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
-from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothesis
-from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
-from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
-from pysatl_experiment.configuration.model.step_type.step_type import StepType
-from pysatl_experiment.experiment.step.execution.time_complexity.time_complexity import TimeComplexityExecutionStep
-from pysatl_experiment.experiment.step.generation.generation import GenerationStep
-from pysatl_experiment.experiment.step.report_building.time_complexity.time_complexity import (
-    TimeComplexityReportBuildingStep,
-)
-from pysatl_experiment.factory.time_complexity.time_complexity import TimeComplexityExperimentFactory
-from pysatl_experiment.persistence.model.experiment.experiment import IExperimentStorage
-from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage
-from pysatl_experiment.persistence.model.time_complexity.time_complexity import ITimeComplexityStorage
+from pysatl_experiment.configuration.criteria_config import CriterionConfig
+from pysatl_experiment.configuration.experiment_config.time_complexity import TimeComplexityExperimentConfig
+from pysatl_experiment.configuration.experiment_data.time_complexity import TimeComplexityExperimentData
+from pysatl_experiment.configuration.model.criterion import Criterion
+from pysatl_experiment.configuration.model.experiment_type import ExperimentType
+from pysatl_experiment.configuration.model.hypothesis import Hypothesis
+from pysatl_experiment.configuration.model.report_mode import ReportMode
+from pysatl_experiment.configuration.model.run_mode import RunMode
+from pysatl_experiment.configuration.model.step_type import StepType
+from pysatl_experiment.experiment.step.execution.time_complexity import TimeComplexityExecutionStep
+from pysatl_experiment.experiment.step.generation import GenerationStep
+from pysatl_experiment.experiment.step.report_building.time_complexity import TimeComplexityReportBuildingStep
+from pysatl_experiment.factory.time_complexity import TimeComplexityExperimentFactory
+from pysatl_experiment.persistence.model.experiment import IExperimentStorage
+from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.model.time_complexity import ITimeComplexityStorage
 
 
 # Provide a stub for line_profiler to avoid optional dependency during imports

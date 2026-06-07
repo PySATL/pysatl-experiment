@@ -10,7 +10,7 @@ from pathlib import Path
 
 from xhtml2pdf import pisa
 
-from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
+from pysatl_experiment.configuration.criteria_config import CriterionConfig
 
 
 def convert_html_to_pdf(html: str, output_path: Path) -> None:

@@ -2,12 +2,12 @@
 
 from dataclasses import dataclass
 
-from pysatl_experiment.configuration.model.criterion.criterion import Criterion
-from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
-from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothesis
-from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
-from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
-from pysatl_experiment.configuration.model.step_type.step_type import StepType
+from pysatl_experiment.configuration.model.criterion import Criterion
+from pysatl_experiment.configuration.model.experiment_type import ExperimentType
+from pysatl_experiment.configuration.model.hypothesis import Hypothesis
+from pysatl_experiment.configuration.model.report_mode import ReportMode
+from pysatl_experiment.configuration.model.run_mode import RunMode
+from pysatl_experiment.configuration.model.step_type import StepType
 
 
 @dataclass

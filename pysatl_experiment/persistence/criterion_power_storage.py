@@ -18,7 +18,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
 from pysatl_experiment.persistence.db_store.model import AbstractDbStore
-from pysatl_experiment.persistence.model.power.power import IPowerStorage, PowerModel, PowerQuery
+from pysatl_experiment.persistence.model.power import IPowerStorage, PowerModel, PowerQuery
 
 
 class AlchemyPower(ModelBase):
