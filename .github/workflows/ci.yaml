@@ -40,22 +40,22 @@ jobs:
         run: poetry install --with dev
 
       - name: Run Ruff lint
-        run: poetry run ruff check pysatl_experiment tests --output-format=github
+        run: poetry run ruff check src/pysatl_experiment tests --output-format=github
 
       - name: Check formatting with Ruff
-        run: poetry run ruff format --check pysatl_experiment tests
+        run: poetry run ruff format --check src/pysatl_experiment tests
 
       - name: Run tests
         run: poetry run pytest --random-order tests
 
       - name: Check types
         run: |
-          poetry run mypy pysatl_experiment tests
+          poetry run mypy src/pysatl_experiment tests
 
       - name: Tests with Coveralls
         if: matrix.python-version == '3.12'
         run: |
-          poetry run pytest --random-order --cov=pysatl_experiment --cov-config=.coveragerc
+          poetry run pytest --random-order --cov=src/pysatl_experiment --cov-config=.coveragerc
 
       - name: Coveralls
         if: matrix.python-version == '3.12'
