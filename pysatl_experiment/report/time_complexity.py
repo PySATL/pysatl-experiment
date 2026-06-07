@@ -67,7 +67,7 @@ class TimeComplexityReportBuilder:
         self.results_path = results_path
         self.with_chart = with_chart
 
-        template_dir = Path(__file__).parents[1] / "report_templates/time_complexity"
+        template_dir = Path(__file__).parents[1] / "report_templates"  # TODO: common constant?
         self.template_env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
 
     def build(self) -> None:
