@@ -6,14 +6,14 @@ constructing experiment steps required to estimate statistical power
 for goodness-of-fit criteria under alternative distributions.
 """
 
-from src.pysatl_experiment.configuration.experiment_data.power import PowerExperimentData
-from src.pysatl_experiment.experiment.step.execution.power import PowerExecutionStep, PowerStepData
-from src.pysatl_experiment.experiment.step.generation import GenerationStep, GenerationStepData
-from src.pysatl_experiment.experiment.step.report_building.power import PowerReportBuildingStep
-from src.pysatl_experiment.factory.model.abstract_experiment_factory import AbstractExperimentFactory
-from src.pysatl_experiment.persistence.model.experiment import IExperimentStorage
-from src.pysatl_experiment.persistence.model.power import IPowerStorage, PowerQuery
-from src.pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesAllQuery
+from pysatl_experiment.configuration.experiment_data.power import PowerExperimentData
+from pysatl_experiment.experiment.step.execution.power import PowerExecutionStep, PowerStepData
+from pysatl_experiment.experiment.step.generation import GenerationStep, GenerationStepData
+from pysatl_experiment.experiment.step.report_building.power import PowerReportBuildingStep
+from pysatl_experiment.factory.model.abstract_experiment_factory import AbstractExperimentFactory
+from pysatl_experiment.persistence.model.experiment import IExperimentStorage
+from pysatl_experiment.persistence.model.power import IPowerStorage, PowerQuery
+from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesAllQuery
 
 
 class PowerExperimentFactory(

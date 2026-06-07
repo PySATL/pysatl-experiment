@@ -6,20 +6,20 @@ constructing experiment steps required to evaluate computational
 complexity of statistical criteria.
 """
 
-from src.pysatl_experiment.configuration.experiment_data.time_complexity import TimeComplexityExperimentData
-from src.pysatl_experiment.experiment.step.execution.common.hypothesis_generator_data import (  # noqa: E501
+from pysatl_experiment.configuration.experiment_data.time_complexity import TimeComplexityExperimentData
+from pysatl_experiment.experiment.step.execution.common.hypothesis_generator_data import (  # noqa: E501
     HypothesisGeneratorData,
 )
-from src.pysatl_experiment.experiment.step.execution.time_complexity import (
+from pysatl_experiment.experiment.step.execution.time_complexity import (
     TimeComplexityExecutionStep,
     TimeComplexityStepData,
 )
-from src.pysatl_experiment.experiment.step.generation import GenerationStep, GenerationStepData
-from src.pysatl_experiment.experiment.step.report_building.time_complexity import TimeComplexityReportBuildingStep
-from src.pysatl_experiment.factory.model.abstract_experiment_factory import AbstractExperimentFactory
-from src.pysatl_experiment.persistence.model.experiment import IExperimentStorage
-from src.pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesAllQuery
-from src.pysatl_experiment.persistence.model.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
+from pysatl_experiment.experiment.step.generation import GenerationStep, GenerationStepData
+from pysatl_experiment.experiment.step.report_building.time_complexity import TimeComplexityReportBuildingStep
+from pysatl_experiment.factory.model.abstract_experiment_factory import AbstractExperimentFactory
+from pysatl_experiment.persistence.model.experiment import IExperimentStorage
+from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesAllQuery
+from pysatl_experiment.persistence.model.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
 
 
 class TimeComplexityExperimentFactory(

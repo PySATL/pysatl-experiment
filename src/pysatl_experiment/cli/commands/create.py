@@ -2,8 +2,8 @@
 
 from click import BadParameter, argument, command, echo
 
-from src.pysatl_experiment.cli.commands.common import normalize_experiment_name, save_experiment_data
-from src.pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
+from pysatl_experiment.cli.commands.common import normalize_experiment_name, save_experiment_data
+from pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
 
 
 @command()

@@ -2,8 +2,8 @@
 
 from line_profiler import profile
 
-from src.pysatl_experiment.experiment.experiment_steps import ExperimentSteps
-from src.pysatl_experiment.experiment.model.experiment_step import IExperimentStep
+from pysatl_experiment.experiment.experiment_steps import ExperimentSteps
+from pysatl_experiment.experiment.model.experiment_step import IExperimentStep
 
 
 class Experiment:

@@ -5,16 +5,16 @@ from dataclasses import dataclass
 
 from line_profiler import profile
 
-from src.pysatl_experiment.configuration.model.experiment_type import ExperimentType
-from src.pysatl_experiment.experiment.model.experiment_step import IExperimentStep
-from src.pysatl_experiment.experiment.step.execution.common.execution_step_data import ExecutionStepData
-from src.pysatl_experiment.experiment.step.execution.common.hypothesis_generator_data import HypothesisGeneratorData
-from src.pysatl_experiment.parallel.buffered_saver import BufferedSaver
-from src.pysatl_experiment.parallel.scheduler import Scheduler
-from src.pysatl_experiment.parallel.task_spec import TaskSpec
-from src.pysatl_experiment.parallel.universal_worker import universal_execute_task
-from src.pysatl_experiment.persistence.model.random_values import IRandomValuesStorage
-from src.pysatl_experiment.persistence.model.time_complexity import ITimeComplexityStorage, TimeComplexityModel
+from pysatl_experiment.configuration.model.experiment_type import ExperimentType
+from pysatl_experiment.experiment.model.experiment_step import IExperimentStep
+from pysatl_experiment.experiment.step.execution.common.execution_step_data import ExecutionStepData
+from pysatl_experiment.experiment.step.execution.common.hypothesis_generator_data import HypothesisGeneratorData
+from pysatl_experiment.parallel.buffered_saver import BufferedSaver
+from pysatl_experiment.parallel.scheduler import Scheduler
+from pysatl_experiment.parallel.task_spec import TaskSpec
+from pysatl_experiment.parallel.universal_worker import universal_execute_task
+from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.model.time_complexity import ITimeComplexityStorage, TimeComplexityModel
 
 
 @dataclass

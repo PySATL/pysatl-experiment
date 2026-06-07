@@ -13,7 +13,7 @@ from pysatl_criterion.hypothesis_testing.critical_values.resolver.storage_resolv
 from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDistributionStorage
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 
-from src.pysatl_experiment.worker.model.abstract_worker import IWorker, WorkerResult
+from pysatl_experiment.worker.model.abstract_worker import IWorker, WorkerResult
 
 
 @dataclass

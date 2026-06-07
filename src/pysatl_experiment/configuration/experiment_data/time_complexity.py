@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
-from src.pysatl_experiment.configuration.experiment_config.time_complexity import TimeComplexityExperimentConfig
-from src.pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
+from pysatl_experiment.configuration.experiment_config.time_complexity import TimeComplexityExperimentConfig
+from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
 
 
 @dataclass

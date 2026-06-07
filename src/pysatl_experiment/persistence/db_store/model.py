@@ -6,9 +6,9 @@ from typing import ClassVar
 from sqlalchemy.orm import scoped_session, sessionmaker
 from typing_extensions import override
 
-from src.pysatl_experiment.persistence import IStore
-from src.pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
-from src.pysatl_experiment.persistence.db_store.db_init import get_request_or_thread_id, init_db
+from pysatl_experiment.persistence import IStore
+from pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
+from pysatl_experiment.persistence.db_store.db_init import get_request_or_thread_id, init_db
 
 
 class AbstractDbStore(IStore, ABC):

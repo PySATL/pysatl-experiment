@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from click.testing import CliRunner
 
-from src.pysatl_experiment.cli.commands.configure import configure
-from src.pysatl_experiment.configuration.model.experiment_type import ExperimentType
+from pysatl_experiment.cli.commands.configure import configure
+from pysatl_experiment.configuration.model.experiment_type import ExperimentType
 
 
 @pytest.fixture
@@ -15,7 +15,7 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("src.pysatl_experiment.cli.commands.configure.get_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
 def test_experiment_type_with_invalid_type(get_experiment_config: MagicMock, runner: CliRunner) -> None:
     """Tests the `experiment_type` command with an invalid type string.
 
@@ -58,9 +58,9 @@ def test_experiment_type_with_invalid_type(get_experiment_config: MagicMock, run
     assert isinstance(result.exception, SystemExit)
 
 
-@patch("src.pysatl_experiment.cli.commands.configure.save_experiment_config")
-@patch("src.pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("src.pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_type", [e for e in ExperimentType])
 def test_experiment_type_with_valid_type(
     if_experiment_exists: MagicMock,

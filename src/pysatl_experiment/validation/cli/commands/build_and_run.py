@@ -19,31 +19,29 @@ from dacite import Config, from_dict
 from dacite.data import Data
 from pydantic import ValidationError
 
-from src.pysatl_experiment.cli.commands.common import create_result_path
-from src.pysatl_experiment.configuration.experiment_config.critical_value import (
+from pysatl_experiment.cli.commands.common import create_result_path
+from pysatl_experiment.configuration.experiment_config.critical_value import (
     CriticalValueExperimentConfig as LegacyCriticalValueExperimentConfig,
 )
-from src.pysatl_experiment.configuration.experiment_config.experiment_config import ExperimentConfig
-from src.pysatl_experiment.configuration.experiment_config.power import (
-    PowerExperimentConfig as LegacyPowerExperimentConfig,
-)
-from src.pysatl_experiment.configuration.experiment_config.time_complexity import (
+from pysatl_experiment.configuration.experiment_config.experiment_config import ExperimentConfig
+from pysatl_experiment.configuration.experiment_config.power import PowerExperimentConfig as LegacyPowerExperimentConfig
+from pysatl_experiment.configuration.experiment_config.time_complexity import (
     TimeComplexityExperimentConfig as LegacyTimeComplexityExperimentConfig,
 )
-from src.pysatl_experiment.configuration.experiment_data.common.steps_done import StepsDone
-from src.pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
-from src.pysatl_experiment.configuration.model.experiment_type import ExperimentType
-from src.pysatl_experiment.configuration.model.hypothesis import Hypothesis
-from src.pysatl_experiment.configuration.model.run_mode import RunMode
-from src.pysatl_experiment.configuration.model.step_type import StepType
-from src.pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
-from src.pysatl_experiment.persistence.model.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
-from src.pysatl_experiment.validation.cli.commands.common.checker import SQLiteCriticalValueChecker
-from src.pysatl_experiment.validation.cli.schemas.experiment import BaseExperimentConfig as PydanticBaseExperiment
-from src.pysatl_experiment.validation.cli.schemas.experiment import CriticalValueConfig as PydanticCriticalValueConfig
-from src.pysatl_experiment.validation.cli.schemas.experiment import ExperimentConfig as ExperimentInputSchema
-from src.pysatl_experiment.validation.cli.schemas.experiment import PowerConfig as PydanticPowerConfig
-from src.pysatl_experiment.validation.cli.schemas.experiment import TimeComplexityConfig as PydanticTimeComplexityConfig
+from pysatl_experiment.configuration.experiment_data.common.steps_done import StepsDone
+from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
+from pysatl_experiment.configuration.model.experiment_type import ExperimentType
+from pysatl_experiment.configuration.model.hypothesis import Hypothesis
+from pysatl_experiment.configuration.model.run_mode import RunMode
+from pysatl_experiment.configuration.model.step_type import StepType
+from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
+from pysatl_experiment.persistence.model.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
+from pysatl_experiment.validation.cli.commands.common.checker import SQLiteCriticalValueChecker
+from pysatl_experiment.validation.cli.schemas.experiment import BaseExperimentConfig as PydanticBaseExperiment
+from pysatl_experiment.validation.cli.schemas.experiment import CriticalValueConfig as PydanticCriticalValueConfig
+from pysatl_experiment.validation.cli.schemas.experiment import ExperimentConfig as ExperimentInputSchema
+from pysatl_experiment.validation.cli.schemas.experiment import PowerConfig as PydanticPowerConfig
+from pysatl_experiment.validation.cli.schemas.experiment import TimeComplexityConfig as PydanticTimeComplexityConfig
 
 
 def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:

@@ -23,14 +23,14 @@ from pysatl_criterion.statistics import (
     AbstractWeibullGofStatistic,
 )
 
-from src.pysatl_experiment.configuration.criteria_config import CriterionConfig
-from src.pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
-from src.pysatl_experiment.configuration.model.experiment_type import ExperimentType
-from src.pysatl_experiment.configuration.model.hypothesis import Hypothesis
-from src.pysatl_experiment.configuration.model.run_mode import RunMode
-from src.pysatl_experiment.experiment.experiment_steps import ExperimentSteps
-from src.pysatl_experiment.experiment.generator import AbstractRVSGenerator
-from src.pysatl_experiment.experiment.generator.generators import (
+from pysatl_experiment.configuration.criteria_config import CriterionConfig
+from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
+from pysatl_experiment.configuration.model.experiment_type import ExperimentType
+from pysatl_experiment.configuration.model.hypothesis import Hypothesis
+from pysatl_experiment.configuration.model.run_mode import RunMode
+from pysatl_experiment.experiment.experiment_steps import ExperimentSteps
+from pysatl_experiment.experiment.generator import AbstractRVSGenerator
+from pysatl_experiment.experiment.generator.generators import (
     BetaRVSGenerator,
     ExponentialGenerator,
     GammaGenerator,
@@ -40,15 +40,15 @@ from src.pysatl_experiment.experiment.generator.generators import (
     UniformGenerator,
     WeibullGenerator,
 )
-from src.pysatl_experiment.experiment.model.experiment_step import IExperimentStep
-from src.pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerStorage
-from src.pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
-from src.pysatl_experiment.persistence.model.experiment import ExperimentQuery, IExperimentStorage
-from src.pysatl_experiment.persistence.model.power import PowerQuery
-from src.pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesAllQuery
-from src.pysatl_experiment.persistence.model.time_complexity import TimeComplexityQuery
-from src.pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
-from src.pysatl_experiment.persistence.time_complexity_storage import AlchemyTimeComplexityStorage
+from pysatl_experiment.experiment.model.experiment_step import IExperimentStep
+from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerStorage
+from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
+from pysatl_experiment.persistence.model.experiment import ExperimentQuery, IExperimentStorage
+from pysatl_experiment.persistence.model.power import PowerQuery
+from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesAllQuery
+from pysatl_experiment.persistence.model.time_complexity import TimeComplexityQuery
+from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
+from pysatl_experiment.persistence.time_complexity_storage import AlchemyTimeComplexityStorage
 
 
 D = TypeVar("D", contravariant=True, bound=ExperimentData)

@@ -16,9 +16,9 @@ from typing import ClassVar
 from sqlalchemy import Float, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
-from src.pysatl_experiment.persistence.db_store.model import AbstractDbStore
-from src.pysatl_experiment.persistence.model.power import IPowerStorage, PowerModel, PowerQuery
+from pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
+from pysatl_experiment.persistence.db_store.model import AbstractDbStore
+from pysatl_experiment.persistence.model.power import IPowerStorage, PowerModel, PowerQuery
 
 
 class AlchemyPower(ModelBase):

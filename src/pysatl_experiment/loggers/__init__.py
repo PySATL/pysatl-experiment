@@ -19,7 +19,7 @@ import logging.config
 from copy import deepcopy
 from typing import Any
 
-from src.pysatl_experiment.constants import Config
+from pysatl_experiment.constants import Config
 
 
 logger = logging.getLogger(__name__)

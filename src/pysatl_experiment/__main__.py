@@ -4,11 +4,10 @@ CLI entrypoint module.
 Runs the command-line interface for the pysatl_experiment application.
 """
 
-from src.pysatl_experiment.cli.cli import cli
+from pysatl_experiment.cli.cli import cli
 
 
 if __name__ == "__main__":
     cli()
 
-# TODO: proper inits
-# TODO: add src!
+# TODO: proper inits (delete empty!)

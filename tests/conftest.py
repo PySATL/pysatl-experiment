@@ -6,9 +6,9 @@ from unittest.mock import MagicMock
 import pytest
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 
-from src.pysatl_experiment.configuration.criteria_config import CriterionConfig
-from src.pysatl_experiment.configuration.model.criterion import Criterion
-from src.pysatl_experiment.configuration.model.report_mode import ReportMode
+from pysatl_experiment.configuration.criteria_config import CriterionConfig
+from pysatl_experiment.configuration.model.criterion import Criterion
+from pysatl_experiment.configuration.model.report_mode import ReportMode
 
 
 @pytest.fixture()
@@ -25,20 +25,20 @@ def import_fails() -> Generator[None, None, None]:
     # https://stackoverflow.com/questions/2481511/mocking-importerror-in-python
     import builtins
 
-    realimport = builtins.__import__
+    real_import = builtins.__import__
 
-    def mockedimport(name, *args, **kwargs):
+    def mocked_import(name, *args, **kwargs):
         if name in ["filelock", "cysystemd.journal", "uvloop"]:
             raise ImportError(f"No module named '{name}'")
-        return realimport(name, *args, **kwargs)
+        return real_import(name, *args, **kwargs)
 
-    builtins.__import__ = mockedimport
+    builtins.__import__ = mocked_import
 
     # Run test - then cleanup
     yield
 
-    # restore previous importfunction
-    builtins.__import__ = realimport
+    # restore previous import function
+    builtins.__import__ = real_import
 
 
 @pytest.fixture

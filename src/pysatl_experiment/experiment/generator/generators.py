@@ -96,7 +96,7 @@ from pysatl_criterion.core.distributions.uniform import generate_uniform
 from pysatl_criterion.core.distributions.weibull import generate_weibull
 from typing_extensions import override
 
-from src.pysatl_experiment.experiment.generator.model import AbstractRVSGenerator
+from pysatl_experiment.experiment.generator.model import AbstractRVSGenerator
 
 
 class BetaRVSGenerator(AbstractRVSGenerator):

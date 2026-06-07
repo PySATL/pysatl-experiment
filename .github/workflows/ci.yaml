@@ -50,7 +50,7 @@ jobs:
 
       - name: Check types
         run: |
-          poetry run mypy src/pysatl_experiment tests
+          poetry run mypy src tests
 
       - name: Tests with Coveralls
         if: matrix.python-version == '3.12'

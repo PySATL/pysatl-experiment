@@ -9,7 +9,7 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.exc import ArgumentError, NoSuchModuleError
 from sqlalchemy.pool import StaticPool
 
-from src.pysatl_experiment.exceptions import OperationalException
+from pysatl_experiment.exceptions import OperationalException
 
 
 logger = logging.getLogger(__name__)

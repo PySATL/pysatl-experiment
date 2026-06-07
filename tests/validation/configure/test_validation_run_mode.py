@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from click.testing import CliRunner
 
-from src.pysatl_experiment.cli.commands.configure import configure
-from src.pysatl_experiment.configuration.model.run_mode import RunMode
+from pysatl_experiment.cli.commands.configure import configure
+from pysatl_experiment.configuration.model.run_mode import RunMode
 
 
 @pytest.fixture
@@ -15,7 +15,7 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("src.pysatl_experiment.cli.commands.configure.get_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
 def test_run_mode_with_invalid_mode(get_experiment_config: MagicMock, runner: CliRunner) -> None:
     """Tests the `run_mode` command logic in isolation with an invalid argument.
 
@@ -59,9 +59,9 @@ def test_run_mode_with_invalid_mode(get_experiment_config: MagicMock, runner: Cl
     assert isinstance(result.exception, SystemExit)
 
 
-@patch("src.pysatl_experiment.cli.commands.configure.save_experiment_config")
-@patch("src.pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("src.pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_mode", [e for e in RunMode])
 def test_run_mode_with_valid_mode(
     if_experiment_exists: MagicMock,

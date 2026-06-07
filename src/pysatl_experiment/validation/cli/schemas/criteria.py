@@ -7,8 +7,8 @@ with a given hypothesis.
 
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
-from src.pysatl_experiment.cli.commands.common import get_statistics_short_codes_for_hypothesis
-from src.pysatl_experiment.configuration.model.hypothesis import Hypothesis
+from pysatl_experiment.cli.commands.common import get_statistics_short_codes_for_hypothesis
+from pysatl_experiment.configuration.model.hypothesis import Hypothesis
 
 
 class Criterion(BaseModel):

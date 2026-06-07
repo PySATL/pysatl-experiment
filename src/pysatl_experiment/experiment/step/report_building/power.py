@@ -5,12 +5,12 @@ from pathlib import Path
 from line_profiler import profile
 from typing_extensions import override
 
-from src.pysatl_experiment.configuration.criteria_config import CriterionConfig
-from src.pysatl_experiment.configuration.model.alternative import Alternative
-from src.pysatl_experiment.configuration.model.report_mode import ReportMode
-from src.pysatl_experiment.experiment.model.experiment_step import IExperimentStep
-from src.pysatl_experiment.persistence.model.power import IPowerStorage, PowerQuery
-from src.pysatl_experiment.report.power import PowerReportBuilder
+from pysatl_experiment.configuration.criteria_config import CriterionConfig
+from pysatl_experiment.configuration.model.alternative import Alternative
+from pysatl_experiment.configuration.model.report_mode import ReportMode
+from pysatl_experiment.experiment.model.experiment_step import IExperimentStep
+from pysatl_experiment.persistence.model.power import IPowerStorage, PowerQuery
+from pysatl_experiment.report.power import PowerReportBuilder
 
 
 class PowerReportBuildingStep(IExperimentStep):

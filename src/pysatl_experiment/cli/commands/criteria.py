@@ -3,7 +3,7 @@
 from click import Choice, command, echo, option
 from pysatl_criterion.utils.distribution import DistributionType
 
-from src.pysatl_experiment.cli.commands.common import get_statistics_short_codes_for_hypothesis
+from pysatl_experiment.cli.commands.common import get_statistics_short_codes_for_hypothesis
 
 
 def __show_available_criteria(distribution: str, codes: list[str]):

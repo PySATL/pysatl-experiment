@@ -7,7 +7,7 @@ from typing import cast
 from click import BadParameter, Choice, ClickException, FloatRange, IntRange, argument, command, echo, option
 from pydantic import ValidationError
 
-from src.pysatl_experiment.cli.commands.common import (
+from pysatl_experiment.cli.commands.common import (
     criteria_from_codes,
     get_experiment_config,
     get_statistics_short_codes_for_hypothesis,
@@ -15,14 +15,14 @@ from src.pysatl_experiment.cli.commands.common import (
     read_experiment_data,
     save_experiment_config,
 )
-from src.pysatl_experiment.configuration.model.experiment_type import ExperimentType
-from src.pysatl_experiment.configuration.model.hypothesis import Hypothesis
-from src.pysatl_experiment.configuration.model.report_mode import ReportMode
-from src.pysatl_experiment.configuration.model.run_mode import RunMode
-from src.pysatl_experiment.configuration.model.step_type import StepType
-from src.pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
-from src.pysatl_experiment.validation.cli.schemas.alternative import AlternativesConfig
-from src.pysatl_experiment.validation.cli.schemas.criteria import CriteriaConfig, Criterion
+from pysatl_experiment.configuration.model.experiment_type import ExperimentType
+from pysatl_experiment.configuration.model.hypothesis import Hypothesis
+from pysatl_experiment.configuration.model.report_mode import ReportMode
+from pysatl_experiment.configuration.model.run_mode import RunMode
+from pysatl_experiment.configuration.model.step_type import StepType
+from pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
+from pysatl_experiment.validation.cli.schemas.alternative import AlternativesConfig
+from pysatl_experiment.validation.cli.schemas.criteria import CriteriaConfig, Criterion
 
 
 def _configure_sample_sizes(experiment_config: dict, sizes: tuple[int, ...] | None):

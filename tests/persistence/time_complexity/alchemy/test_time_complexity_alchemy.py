@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from src.pysatl_experiment.persistence.model.time_complexity import TimeComplexityModel, TimeComplexityQuery
-from src.pysatl_experiment.persistence.time_complexity_storage import AlchemyTimeComplexityStorage
+from pysatl_experiment.persistence.model.time_complexity import TimeComplexityModel, TimeComplexityQuery
+from pysatl_experiment.persistence.time_complexity_storage import AlchemyTimeComplexityStorage
 
 
 @pytest.fixture()

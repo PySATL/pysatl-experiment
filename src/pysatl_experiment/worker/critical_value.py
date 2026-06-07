@@ -12,7 +12,7 @@ from line_profiler import profile
 from numpy import float64
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 
-from src.pysatl_experiment.worker.model.abstract_worker import IWorker, WorkerResult
+from pysatl_experiment.worker.model.abstract_worker import IWorker, WorkerResult
 
 
 @dataclass

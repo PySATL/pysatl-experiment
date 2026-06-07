@@ -7,10 +7,10 @@ from pysatl_criterion.hypothesis_testing.critical_values.cv_calculator.cv_calcul
 from pysatl_criterion.persistence.models.limit_distribution import ILimitDistributionStorage, LimitDistributionQuery
 from typing_extensions import override
 
-from src.pysatl_experiment.configuration.criteria_config import CriterionConfig
-from src.pysatl_experiment.configuration.model.report_mode import ReportMode
-from src.pysatl_experiment.experiment.model.experiment_step import IExperimentStep
-from src.pysatl_experiment.report.critical_value import CriticalValueReportBuilder
+from pysatl_experiment.configuration.criteria_config import CriterionConfig
+from pysatl_experiment.configuration.model.report_mode import ReportMode
+from pysatl_experiment.experiment.model.experiment_step import IExperimentStep
+from pysatl_experiment.report.critical_value import CriticalValueReportBuilder
 
 
 class CriticalValueReportBuildingStep(IExperimentStep):

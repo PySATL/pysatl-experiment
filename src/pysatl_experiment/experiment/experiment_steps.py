@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
-from src.pysatl_experiment.experiment.model.experiment_step import IExperimentStep
-from src.pysatl_experiment.persistence.model.experiment import IExperimentStorage
+from pysatl_experiment.experiment.model.experiment_step import IExperimentStep
+from pysatl_experiment.persistence.model.experiment import IExperimentStorage
 
 
 @dataclass

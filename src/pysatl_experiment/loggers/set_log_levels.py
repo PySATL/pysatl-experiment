@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 __BIAS_TESTER_LOGGERS = [
-    "src.pysatl_experiment.resolvers",
+    "pysatl_experiment.resolvers",
 ]  # TODO: replace hardcoded global logger name list with a configuration-driven approach?
 
 

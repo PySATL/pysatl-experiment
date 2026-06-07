@@ -1,6 +1,6 @@
 """Predefined random value generators for experiments."""
 
-from src.pysatl_experiment.experiment.generator.generators import (
+from pysatl_experiment.experiment.generator.generators import (
     BetaRVSGenerator,
     CauchyRVSGenerator,
     Chi2Generator,
@@ -17,7 +17,7 @@ from src.pysatl_experiment.experiment.generator.generators import (
     TukeyRVSGenerator,
     WeibullGenerator,
 )
-from src.pysatl_experiment.experiment.generator.model import AbstractRVSGenerator
+from pysatl_experiment.experiment.generator.model import AbstractRVSGenerator
 
 
 symmetric_generators = [

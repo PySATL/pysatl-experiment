@@ -14,9 +14,9 @@ from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 from typing_extensions import override
 
-from src.pysatl_experiment.persistence.db_store import ModelBase, SessionType
-from src.pysatl_experiment.persistence.db_store.model import AbstractDbStore
-from src.pysatl_experiment.persistence.models import IResultStore
+from pysatl_experiment.persistence.db_store import ModelBase, SessionType
+from pysatl_experiment.persistence.db_store.model import AbstractDbStore
+from pysatl_experiment.persistence.models import IResultStore
 
 
 class ResultModel(ModelBase):

@@ -5,17 +5,17 @@ from typing import Any, cast
 from click import BadParameter, argument, command, option
 from click_loglevel import LogLevel
 
-from src.pysatl_experiment.cli.commands.common import normalize_experiment_name, read_experiment_data
-from src.pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
-from src.pysatl_experiment.configuration.model.experiment_type import ExperimentType
-from src.pysatl_experiment.experiment.experiment import Experiment
-from src.pysatl_experiment.experiment.experiment_steps import ExperimentSteps
-from src.pysatl_experiment.factory.critical_value import CriticalValueExperimentFactory
-from src.pysatl_experiment.factory.power import PowerExperimentFactory
-from src.pysatl_experiment.factory.time_complexity import TimeComplexityExperimentFactory
-from src.pysatl_experiment.loggers import setup_logging
-from src.pysatl_experiment.validation.cli.commands.build_and_run import validate_build_and_run
-from src.pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
+from pysatl_experiment.cli.commands.common import normalize_experiment_name, read_experiment_data
+from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
+from pysatl_experiment.configuration.model.experiment_type import ExperimentType
+from pysatl_experiment.experiment.experiment import Experiment
+from pysatl_experiment.experiment.experiment_steps import ExperimentSteps
+from pysatl_experiment.factory.critical_value import CriticalValueExperimentFactory
+from pysatl_experiment.factory.power import PowerExperimentFactory
+from pysatl_experiment.factory.time_complexity import TimeComplexityExperimentFactory
+from pysatl_experiment.loggers import setup_logging
+from pysatl_experiment.validation.cli.commands.build_and_run import validate_build_and_run
+from pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
 
 
 # TODO: refactor names!

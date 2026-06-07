@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pysatl-experiment"
-version = "0.0.0"
+version = "0.2.0"  # TODO: proper version!!
 description = "package for PySATL math statistics experiments"
 authors = ["PYSATL Team <pysatl@yahoo.com>"]
 license = "Apache License 2.0"
@@ -61,8 +61,8 @@ experiment = "pysatl_experiment.cli.cli:cli"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry.requires-plugins]
-poetry-dynamic-versioning = { version = ">=1.8.0,<2.0.0", extras = ["plugin"] }
+# [tool.poetry.requires-plugins]
+# poetry-dynamic-versioning = { version = ">=1.8.0,<2.0.0", extras = ["plugin"] }
 
 [tool.isort]
 line_length = 120
@@ -99,6 +99,7 @@ max-complexity = 12
 lines-after-imports = 2
 
 [tool.mypy]
+mypy_path = "src"
 ignore_missing_imports = true
 
 [tool.poetry-dynamic-versioning]

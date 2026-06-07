@@ -17,9 +17,9 @@ from typing import ClassVar
 from sqlalchemy import Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
-from src.pysatl_experiment.persistence.db_store.model import AbstractDbStore
-from src.pysatl_experiment.persistence.model.time_complexity import (
+from pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
+from pysatl_experiment.persistence.db_store.model import AbstractDbStore
+from pysatl_experiment.persistence.model.time_complexity import (
     ITimeComplexityStorage,
     TimeComplexityModel,
     TimeComplexityQuery,

@@ -3,7 +3,7 @@
 from copy import deepcopy
 from unittest.mock import patch
 
-from src.pysatl_experiment.loggers import LOGGING_CONFIG, setup_logging
+from pysatl_experiment.loggers import LOGGING_CONFIG, setup_logging
 
 
 def test_setup_logging_uses_default_config():

@@ -2,7 +2,7 @@
 
 from line_profiler import profile
 
-from src.pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesCountQuery
+from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesCountQuery
 
 
 @profile

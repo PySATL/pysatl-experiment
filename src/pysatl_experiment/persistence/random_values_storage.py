@@ -15,9 +15,9 @@ from sqlalchemy import Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from typing_extensions import override
 
-from src.pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
-from src.pysatl_experiment.persistence.db_store.model import AbstractDbStore
-from src.pysatl_experiment.persistence.model.random_values import (
+from pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
+from pysatl_experiment.persistence.db_store.model import AbstractDbStore
+from pysatl_experiment.persistence.model.random_values import (
     IRandomValuesStorage,
     RandomValuesAllModel,
     RandomValuesAllQuery,

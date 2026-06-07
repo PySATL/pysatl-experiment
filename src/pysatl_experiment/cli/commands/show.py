@@ -4,7 +4,7 @@ import json
 
 from click import argument, command, echo
 
-from src.pysatl_experiment.cli.commands.common import normalize_experiment_name, read_experiment_data
+from pysatl_experiment.cli.commands.common import normalize_experiment_name, read_experiment_data
 
 
 @command()
