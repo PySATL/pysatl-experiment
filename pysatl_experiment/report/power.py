@@ -73,7 +73,7 @@ class PowerReportBuilder:
         self.results_path = results_path
         self.with_chart = with_chart
 
-        template_dir = Path(__file__).parents[1] / "report_templates"  # TODO: common constant?
+        template_dir = Path(__file__).parent / "report_templates"  # TODO: common constant?
         self.pdf_path = self.results_path / f"{report_name}.pdf"
 
         self.template_env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
