@@ -10,21 +10,21 @@ import pytest
 from numpy import float64
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 
-from pysatl_experiment.configuration.criteria_config import CriterionConfig
-from pysatl_experiment.configuration.experiment_config.critical_value import CriticalValueExperimentConfig
-from pysatl_experiment.configuration.experiment_data.critical_value import CriticalValueExperimentData
-from pysatl_experiment.configuration.model.criterion import Criterion
-from pysatl_experiment.configuration.model.experiment_type import ExperimentType
-from pysatl_experiment.configuration.model.hypothesis import Hypothesis
-from pysatl_experiment.configuration.model.report_mode import ReportMode
-from pysatl_experiment.configuration.model.run_mode import RunMode
-from pysatl_experiment.configuration.model.step_type import StepType
-from pysatl_experiment.experiment.step.execution.critical_value import CriticalValueExecutionStep
-from pysatl_experiment.experiment.step.generation import GenerationStep
-from pysatl_experiment.experiment.step.report_building.critical_value import CriticalValueReportBuildingStep
-from pysatl_experiment.factory.critical_value import CriticalValueExperimentFactory
-from pysatl_experiment.persistence.model.experiment import IExperimentStorage
-from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage
+from src.pysatl_experiment.configuration.criteria_config import CriterionConfig
+from src.pysatl_experiment.configuration.experiment_config.critical_value import CriticalValueExperimentConfig
+from src.pysatl_experiment.configuration.experiment_data.critical_value import CriticalValueExperimentData
+from src.pysatl_experiment.configuration.model.criterion import Criterion
+from src.pysatl_experiment.configuration.model.experiment_type import ExperimentType
+from src.pysatl_experiment.configuration.model.hypothesis import Hypothesis
+from src.pysatl_experiment.configuration.model.report_mode import ReportMode
+from src.pysatl_experiment.configuration.model.run_mode import RunMode
+from src.pysatl_experiment.configuration.model.step_type import StepType
+from src.pysatl_experiment.experiment.step.execution.critical_value import CriticalValueExecutionStep
+from src.pysatl_experiment.experiment.step.generation import GenerationStep
+from src.pysatl_experiment.experiment.step.report_building.critical_value import CriticalValueReportBuildingStep
+from src.pysatl_experiment.factory.critical_value import CriticalValueExperimentFactory
+from src.pysatl_experiment.persistence.model.experiment import IExperimentStorage
+from src.pysatl_experiment.persistence.model.random_values import IRandomValuesStorage
 
 
 # Provide a stub for line_profiler to avoid optional dependency during imports

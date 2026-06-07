@@ -8,17 +8,17 @@ from typing import Any
 
 import pytest
 
-from pysatl_experiment.configuration.criteria_config import CriterionConfig
-from pysatl_experiment.configuration.experiment_config.time_complexity import TimeComplexityExperimentConfig
-from pysatl_experiment.configuration.experiment_data.time_complexity import TimeComplexityExperimentData
-from pysatl_experiment.configuration.model.criterion import Criterion
-from pysatl_experiment.configuration.model.experiment_type import ExperimentType
-from pysatl_experiment.configuration.model.hypothesis import Hypothesis
-from pysatl_experiment.configuration.model.report_mode import ReportMode
-from pysatl_experiment.configuration.model.run_mode import RunMode
-from pysatl_experiment.configuration.model.step_type import StepType
-from pysatl_experiment.experiment.model.experiment_step import IExperimentStep
-from pysatl_experiment.factory.model.abstract_experiment_factory import AbstractExperimentFactory
+from src.pysatl_experiment.configuration.criteria_config import CriterionConfig
+from src.pysatl_experiment.configuration.experiment_config.time_complexity import TimeComplexityExperimentConfig
+from src.pysatl_experiment.configuration.experiment_data.time_complexity import TimeComplexityExperimentData
+from src.pysatl_experiment.configuration.model.criterion import Criterion
+from src.pysatl_experiment.configuration.model.experiment_type import ExperimentType
+from src.pysatl_experiment.configuration.model.hypothesis import Hypothesis
+from src.pysatl_experiment.configuration.model.report_mode import ReportMode
+from src.pysatl_experiment.configuration.model.run_mode import RunMode
+from src.pysatl_experiment.configuration.model.step_type import StepType
+from src.pysatl_experiment.experiment.model.experiment_step import IExperimentStep
+from src.pysatl_experiment.factory.model.abstract_experiment_factory import AbstractExperimentFactory
 
 
 # Stub line_profiler to avoid optional dependency issues in imports

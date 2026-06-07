@@ -3,7 +3,7 @@
 import pytest
 from pysatl_criterion import DistributionType
 
-from pysatl_experiment.cli.commands.common import get_statistics_short_codes_for_hypothesis
+from src.pysatl_experiment.cli.commands.common import get_statistics_short_codes_for_hypothesis
 
 
 def test_get_statistics_short_codes_for_single_hypothesis():

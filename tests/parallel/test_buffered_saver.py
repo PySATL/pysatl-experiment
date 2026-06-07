@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from pysatl_experiment.parallel.buffered_saver import BufferedSaver
+from src.pysatl_experiment.parallel.buffered_saver import BufferedSaver
 
 
 class TestBufferedSaver:

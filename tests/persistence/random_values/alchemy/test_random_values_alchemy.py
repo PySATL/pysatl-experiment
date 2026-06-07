@@ -7,14 +7,14 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pysatl_experiment.persistence.model.random_values import (
+from src.pysatl_experiment.persistence.model.random_values import (
     RandomValuesAllModel,
     RandomValuesAllQuery,
     RandomValuesCountQuery,
     RandomValuesModel,
     RandomValuesQuery,
 )
-from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
+from src.pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
 
 
 @pytest.fixture()

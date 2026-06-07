@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from pysatl_experiment.configuration.model.report_mode import ReportMode
-from pysatl_experiment.report.time_complexity import TimeComplexityReportBuilder
+from src.pysatl_experiment.configuration.model.report_mode import ReportMode
+from src.pysatl_experiment.report.time_complexity import TimeComplexityReportBuilder
 
 
 class TestTimeComplexityReportBuilder:
@@ -30,8 +30,8 @@ class TestTimeComplexityReportBuilder:
         assert builder.with_chart == with_chart
         assert builder.template_env is not None
 
-    @patch("pysatl_experiment.report.time_complexity.plt.savefig")
-    @patch("pysatl_experiment.report.time_complexity.plt.close")
+    @patch("src.pysatl_experiment.report.time_complexity.plt.savefig")
+    @patch("src.pysatl_experiment.report.time_complexity.plt.close")
     def test_generate_chart_creates_and_encodes_image(
         self, mock_plt_close, mock_plt_savefig, mock_criterion_config, time_data, results_path
     ):
@@ -48,10 +48,10 @@ class TestTimeComplexityReportBuilder:
         mock_buf_instance = MagicMock(spec=BytesIO)
         mock_buf_instance.getvalue.return_value = fake_image_data
 
-        with patch("pysatl_experiment.report.time_complexity.BytesIO") as mock_bytes_io:
+        with patch("src.pysatl_experiment.report.time_complexity.BytesIO") as mock_bytes_io:
             mock_bytes_io.return_value = mock_buf_instance
 
-            with patch("pysatl_experiment.report.time_complexity.base64") as mock_base64:
+            with patch("src.pysatl_experiment.report.time_complexity.base64") as mock_base64:
                 mock_base64.b64encode.return_value.decode.return_value = "encoded_fake_data"
 
                 result = builder._generate_chart()
@@ -143,7 +143,7 @@ class TestTimeComplexityReportBuilder:
             assert html_content == "<html>Chart Failed</html>"
 
     @pytest.mark.parametrize("chart_mode", [ReportMode.WITH_CHART, ReportMode.WITHOUT_CHART])
-    @patch("pysatl_experiment.report.time_complexity.convert_html_to_pdf")
+    @patch("src.pysatl_experiment.report.time_complexity.convert_html_to_pdf")
     def test_build_creates_pdf_file(self, mock_convert, chart_mode, mock_criterion_config, time_data, results_path):
         builder = TimeComplexityReportBuilder(
             report_name="test",

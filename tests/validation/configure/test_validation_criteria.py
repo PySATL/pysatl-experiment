@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from click.testing import CliRunner
 
-from pysatl_experiment.cli.commands.configure import configure
-from pysatl_experiment.configuration.model.hypothesis import Hypothesis
+from src.pysatl_experiment.cli.commands.configure import configure
+from src.pysatl_experiment.configuration.model.hypothesis import Hypothesis
 
 
 @pytest.fixture
@@ -16,7 +16,7 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
+@patch("src.pysatl_experiment.cli.commands.configure.get_experiment_config")
 def test_criteria_fails_if_hypothesis_not_set(get_experiment_config: MagicMock, runner: CliRunner) -> None:
     """Tests that the `criteria` command fails if the hypothesis is not yet configured.
 
@@ -58,9 +58,9 @@ def test_criteria_fails_if_hypothesis_not_set(get_experiment_config: MagicMock, 
     assert isinstance(result.exception, SystemExit)
 
 
-@patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
-@patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("src.pysatl_experiment.cli.commands.configure.save_experiment_config")
+@patch("src.pysatl_experiment.cli.commands.configure.read_experiment_data")
+@patch("src.pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
 def test_criteria_fails_with_incompatible_codes(
     if_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
@@ -111,10 +111,10 @@ def test_criteria_fails_with_incompatible_codes(
     assert isinstance(result.exception, SystemExit)
 
 
-@patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
-@patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.get_statistics_short_codes_for_hypothesis")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("src.pysatl_experiment.cli.commands.configure.save_experiment_config")
+@patch("src.pysatl_experiment.cli.commands.configure.read_experiment_data")
+@patch("src.pysatl_experiment.cli.commands.configure.get_statistics_short_codes_for_hypothesis")
+@patch("src.pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
 def test_criteria_success_with_valid_codes(
     if_experiment_exists: MagicMock,
     get_statistics_short_codes_for_hypothesis: MagicMock,
