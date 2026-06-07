@@ -5,7 +5,7 @@ description = "package for PySATL math statistics experiments"
 authors = ["PYSATL Team <pysatl@yahoo.com>"]
 license = "Apache License 2.0"
 readme = "README.md"
-packages = [{include = "pysatl_experiment"}]
+packages = [{include = "pysatl_experiment", from = "src"}]
 
 [[tool.poetry.source]]
 name = "testpypi"
@@ -55,7 +55,7 @@ mkdocstrings = ">=0.30.0"
 mkdocstrings-python = "^2.0.3"
 
 [tool.poetry.scripts]
-experiment = "pysatl_experiment.cli.cli.cli:cli"
+experiment = "pysatl_experiment.cli.cli:cli"
 
 [build-system]
 requires = ["poetry-core"]
