@@ -12,7 +12,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
+from pysatl_experiment.configuration.model.experiment_type import ExperimentType
 from pysatl_experiment.experiment.generator import AbstractRVSGenerator
 
 

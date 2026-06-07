@@ -82,3 +82,6 @@ class SQLiteCriticalValueChecker:
                 },
             )
             return result.scalar() == 1
+
+
+# TODO: refactor structure

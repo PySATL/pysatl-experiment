@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 
-from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
+from pysatl_experiment.configuration.model.experiment_type import ExperimentType
 
 
 @dataclass

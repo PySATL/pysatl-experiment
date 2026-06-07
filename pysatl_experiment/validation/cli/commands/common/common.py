@@ -6,7 +6,7 @@ experiment configuration files already exist in the project
 experiment directory.
 """
 
-from pysatl_experiment.cli.commands.common.common import get_project_root, normalize_experiment_name
+from pysatl_experiment.cli.commands.common import get_project_root, normalize_experiment_name
 
 
 def if_experiment_exists(name: str) -> bool:

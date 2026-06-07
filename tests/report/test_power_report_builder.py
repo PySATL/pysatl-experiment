@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
-from pysatl_experiment.report.power.power import PowerReportBuilder
+from pysatl_experiment.configuration.model.report_mode import ReportMode
+from pysatl_experiment.report.power import PowerReportBuilder
 
 
 class TestPowerReportBuilder:

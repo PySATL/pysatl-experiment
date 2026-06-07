@@ -2,7 +2,7 @@
 
 from click import group, version_option
 
-from pysatl_experiment.cli.commands.common.common import get_project_root
+from pysatl_experiment.cli.commands.common import get_project_root
 
 
 # TODO: refactor name!!
