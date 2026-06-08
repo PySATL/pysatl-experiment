@@ -15,9 +15,9 @@ from pysatl_experiment.cli.commands.common import (
     read_experiment_data,
     save_experiment_config,
 )
-from pysatl_experiment.cli.validation.cli.commands.common.common import if_experiment_exists
-from pysatl_experiment.cli.validation.cli.schemas.alternative import AlternativesConfig
-from pysatl_experiment.cli.validation.cli.schemas.criteria import CriteriaConfig, Criterion
+from pysatl_experiment.cli.validation.commands.common.common import if_experiment_exists
+from pysatl_experiment.cli.validation.schemas.alternative import AlternativesConfig
+from pysatl_experiment.cli.validation.schemas.criteria import CriteriaConfig, Criterion
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.report_mode import ReportMode

@@ -20,12 +20,12 @@ from dacite.data import Data
 from pydantic import ValidationError
 
 from pysatl_experiment.cli.commands.common import create_result_path
-from pysatl_experiment.cli.validation.cli.commands.common.checker import SQLiteCriticalValueChecker
-from pysatl_experiment.cli.validation.cli.schemas.experiment import BaseExperimentConfig as PydanticBaseExperiment
-from pysatl_experiment.cli.validation.cli.schemas.experiment import CriticalValueConfig as PydanticCriticalValueConfig
-from pysatl_experiment.cli.validation.cli.schemas.experiment import ExperimentConfig as ExperimentInputSchema
-from pysatl_experiment.cli.validation.cli.schemas.experiment import PowerConfig as PydanticPowerConfig
-from pysatl_experiment.cli.validation.cli.schemas.experiment import TimeComplexityConfig as PydanticTimeComplexityConfig
+from pysatl_experiment.cli.validation.commands.common.checker import SQLiteCriticalValueChecker
+from pysatl_experiment.cli.validation.schemas.experiment import BaseExperimentConfig as PydanticBaseExperiment
+from pysatl_experiment.cli.validation.schemas.experiment import CriticalValueConfig as PydanticCriticalValueConfig
+from pysatl_experiment.cli.validation.schemas.experiment import ExperimentConfig as ExperimentInputSchema
+from pysatl_experiment.cli.validation.schemas.experiment import PowerConfig as PydanticPowerConfig
+from pysatl_experiment.cli.validation.schemas.experiment import TimeComplexityConfig as PydanticTimeComplexityConfig
 from pysatl_experiment.configuration.experiment_config.critical_value import (
     CriticalValueExperimentConfig as LegacyCriticalValueExperimentConfig,
 )
