@@ -12,9 +12,8 @@ from pysatl_experiment.configuration.experiment_data.experiment_data import Expe
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.experiment_execution.experiment import Experiment
 from pysatl_experiment.experiment_execution.experiment_steps import ExperimentSteps
-from pysatl_experiment.factory.critical_value import CriticalValueExperimentFactory
-from pysatl_experiment.factory.power import PowerExperimentFactory
-from pysatl_experiment.factory.time_complexity import TimeComplexityExperimentFactory
+from pysatl_experiment.experiment_execution.factory import PowerExperimentFactory, TimeComplexityExperimentFactory
+from pysatl_experiment.experiment_execution.factory.critical_value import CriticalValueExperimentFactory
 from pysatl_experiment.loggers import setup_logging
 
 

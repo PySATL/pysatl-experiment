@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.parallel.task_spec import TaskSpec
+from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
 
 
 class TestTaskSpec:

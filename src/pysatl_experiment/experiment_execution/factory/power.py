@@ -7,10 +7,10 @@ for goodness-of-fit criteria under alternative distributions.
 """
 
 from pysatl_experiment.configuration.experiment_data.power import PowerExperimentData
+from pysatl_experiment.experiment_execution.factory.abstract_experiment_factory import AbstractExperimentFactory
 from pysatl_experiment.experiment_execution.step.execution.power import PowerExecutionStep, PowerStepData
 from pysatl_experiment.experiment_execution.step.generation import GenerationStep, GenerationStepData
 from pysatl_experiment.experiment_execution.step.report_building.power import PowerReportBuildingStep
-from pysatl_experiment.factory.abstract_experiment_factory import AbstractExperimentFactory
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerQuery
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery

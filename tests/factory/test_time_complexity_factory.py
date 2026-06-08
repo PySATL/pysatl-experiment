@@ -19,10 +19,10 @@ from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
+from pysatl_experiment.experiment_execution.factory import TimeComplexityExperimentFactory
 from pysatl_experiment.experiment_execution.step.execution.time_complexity import TimeComplexityExecutionStep
 from pysatl_experiment.experiment_execution.step.generation import GenerationStep
 from pysatl_experiment.experiment_execution.step.report_building.time_complexity import TimeComplexityReportBuildingStep
-from pysatl_experiment.factory.time_complexity import TimeComplexityExperimentFactory
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage

@@ -3,12 +3,15 @@
 import importlib
 
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
+from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
 from pysatl_experiment.experiment_execution.step.execution.common.utils import get_sample_data_from_storage
-from pysatl_experiment.parallel.task_spec import TaskSpec
+from pysatl_experiment.experiment_execution.worker.critical_value import CriticalValueWorker, CriticalValueWorkerResult
+from pysatl_experiment.experiment_execution.worker.power import PowerWorker, PowerWorkerResult
+from pysatl_experiment.experiment_execution.worker.time_complexity import (
+    TimeComplexityWorker,
+    TimeComplexityWorkerResult,
+)
 from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
-from pysatl_experiment.worker.critical_value import CriticalValueWorker, CriticalValueWorkerResult
-from pysatl_experiment.worker.power import PowerWorker, PowerWorkerResult
-from pysatl_experiment.worker.time_complexity import TimeComplexityWorker, TimeComplexityWorkerResult
 
 
 def universal_execute_task(spec: TaskSpec):

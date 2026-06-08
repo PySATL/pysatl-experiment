@@ -10,7 +10,7 @@ from time import perf_counter
 
 from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
 
-from pysatl_experiment.worker.abstract_worker import IWorker, WorkerResult
+from pysatl_experiment.experiment_execution.worker.abstract_worker import IWorker, WorkerResult
 
 
 @dataclass

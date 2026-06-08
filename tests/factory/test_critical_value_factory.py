@@ -19,10 +19,10 @@ from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
+from pysatl_experiment.experiment_execution.factory.critical_value import CriticalValueExperimentFactory
 from pysatl_experiment.experiment_execution.step.execution.critical_value import CriticalValueExecutionStep
 from pysatl_experiment.experiment_execution.step.generation import GenerationStep
 from pysatl_experiment.experiment_execution.step.report_building.critical_value import CriticalValueReportBuildingStep
-from pysatl_experiment.factory.critical_value import CriticalValueExperimentFactory
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 

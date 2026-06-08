@@ -8,14 +8,12 @@ from pysatl_criterion.persistence.models.limit_distribution import ILimitDistrib
 
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.experiment_execution.abstract_experiment_step import IExperimentStep
+from pysatl_experiment.experiment_execution.parallel import BufferedSaver, Scheduler, universal_execute_task
+from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
 from pysatl_experiment.experiment_execution.step.execution.common.execution_step_data import ExecutionStepData
 from pysatl_experiment.experiment_execution.step.execution.common.hypothesis_generator_data import (
     HypothesisGeneratorData,
 )
-from pysatl_experiment.parallel.buffered_saver import BufferedSaver
-from pysatl_experiment.parallel.scheduler import Scheduler
-from pysatl_experiment.parallel.task_spec import TaskSpec
-from pysatl_experiment.parallel.universal_worker import universal_execute_task
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 
 
