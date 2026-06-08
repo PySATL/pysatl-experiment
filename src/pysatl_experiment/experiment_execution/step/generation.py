@@ -5,9 +5,9 @@ from dataclasses import dataclass
 from line_profiler import profile
 from typing_extensions import override
 
-from pysatl_experiment.experiment.abstract_experiment_step import IExperimentStep
-from pysatl_experiment.experiment.generator import AbstractRVSGenerator
-from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesModel
+from pysatl_experiment.experiment_execution.abstract_experiment_step import IExperimentStep
+from pysatl_experiment.experiment_execution.generator import AbstractRVSGenerator
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesModel
 
 
 @dataclass

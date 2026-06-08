@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pysatl_experiment.persistence.model.random_values import (
+from pysatl_experiment.persistence.models.random_values import (
     RandomValuesAllModel,
     RandomValuesAllQuery,
     RandomValuesCountQuery,

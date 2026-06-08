@@ -18,7 +18,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from pysatl_experiment.persistence.db_store import ModelBase, SessionType
 from pysatl_experiment.persistence.db_store.model import AbstractDbStore
-from pysatl_experiment.persistence.model.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
+from pysatl_experiment.persistence.models.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
 
 
 class AlchemyExperiment(ModelBase):

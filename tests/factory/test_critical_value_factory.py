@@ -19,12 +19,12 @@ from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
-from pysatl_experiment.experiment.step.execution.critical_value import CriticalValueExecutionStep
-from pysatl_experiment.experiment.step.generation import GenerationStep
-from pysatl_experiment.experiment.step.report_building.critical_value import CriticalValueReportBuildingStep
+from pysatl_experiment.experiment_execution.step.execution.critical_value import CriticalValueExecutionStep
+from pysatl_experiment.experiment_execution.step.generation import GenerationStep
+from pysatl_experiment.experiment_execution.step.report_building.critical_value import CriticalValueReportBuildingStep
 from pysatl_experiment.factory.critical_value import CriticalValueExperimentFactory
-from pysatl_experiment.persistence.model.experiment import IExperimentStorage
-from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.models.experiment import IExperimentStorage
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 
 
 # Provide a stub for line_profiler to avoid optional dependency during imports

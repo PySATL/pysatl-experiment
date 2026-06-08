@@ -9,15 +9,18 @@ estimation.
 from pysatl_criterion.persistence.models.limit_distribution import ILimitDistributionStorage, LimitDistributionQuery
 
 from pysatl_experiment.configuration.experiment_data.critical_value import CriticalValueExperimentData
-from pysatl_experiment.experiment.step.execution.common.hypothesis_generator_data import (  # noqa: E501
+from pysatl_experiment.experiment_execution.step.execution.common.hypothesis_generator_data import (  # noqa: E501
     HypothesisGeneratorData,
 )
-from pysatl_experiment.experiment.step.execution.critical_value import CriticalValueExecutionStep, CriticalValueStepData
-from pysatl_experiment.experiment.step.generation import GenerationStep, GenerationStepData
-from pysatl_experiment.experiment.step.report_building.critical_value import CriticalValueReportBuildingStep
+from pysatl_experiment.experiment_execution.step.execution.critical_value import (
+    CriticalValueExecutionStep,
+    CriticalValueStepData,
+)
+from pysatl_experiment.experiment_execution.step.generation import GenerationStep, GenerationStepData
+from pysatl_experiment.experiment_execution.step.report_building.critical_value import CriticalValueReportBuildingStep
 from pysatl_experiment.factory.abstract_experiment_factory import AbstractExperimentFactory
-from pysatl_experiment.persistence.model.experiment import IExperimentStorage
-from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesAllQuery
+from pysatl_experiment.persistence.models.experiment import IExperimentStorage
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
 
 
 class CriticalValueExperimentFactory(

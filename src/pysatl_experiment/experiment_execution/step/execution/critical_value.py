@@ -1,79 +1,72 @@
-"""Power experiment execution step implementation."""
+"""Critical value experiment execution step implementation."""
 
 import functools
 from dataclasses import dataclass
 
 from line_profiler import profile
-from typing_extensions import override
+from pysatl_criterion.persistence.models.limit_distribution import ILimitDistributionStorage, LimitDistributionModel
 
-from pysatl_experiment.configuration.models.alternative import Alternative
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.experiment.abstract_experiment_step import IExperimentStep
-from pysatl_experiment.experiment.step.execution.common.execution_step_data import ExecutionStepData
+from pysatl_experiment.experiment_execution.abstract_experiment_step import IExperimentStep
+from pysatl_experiment.experiment_execution.step.execution.common.execution_step_data import ExecutionStepData
+from pysatl_experiment.experiment_execution.step.execution.common.hypothesis_generator_data import (
+    HypothesisGeneratorData,
+)
 from pysatl_experiment.parallel.buffered_saver import BufferedSaver
 from pysatl_experiment.parallel.scheduler import Scheduler
 from pysatl_experiment.parallel.task_spec import TaskSpec
 from pysatl_experiment.parallel.universal_worker import universal_execute_task
-from pysatl_experiment.persistence.model.power import IPowerStorage, PowerModel
-from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 
 
 @dataclass
-class PowerStepData(ExecutionStepData):
+class CriticalValueStepData(ExecutionStepData):
+    """Data for a single execution step in critical value experiment."""
+
+
+class CriticalValueExecutionStep(IExperimentStep):
     """
-    Data for a single execution step in power experiment.
+    Execute critical value experiment execution step.
 
-    Attributes
-    ----------
-    alternative : Alternative
-        Alternative distribution configuration.
-    significance_level : float
-        Significance level used for the criterion.
-    """
-
-    alternative: Alternative
-    significance_level: float
-
-
-class PowerExecutionStep(IExperimentStep):
-    """
-    Standard power experiment execution step.
-
-    The step evaluates statistical power for multiple
-    alternatives and significance levels.
+    The step loads generated samples, runs statistical criteria,
+    and stores empirical limit distributions.
     """
 
     def __init__(
         self,
         experiment_id: int,
-        step_config: list[PowerStepData],
+        hypothesis_generator_data: HypothesisGeneratorData,
+        step_config: list[CriticalValueStepData],
         monte_carlo_count: int,
         data_storage: IRandomValuesStorage,
-        result_storage: IPowerStorage,
+        result_storage: ILimitDistributionStorage,
         storage_connection: str,
         parallel_workers: int,
     ) -> None:
         """
-        Initialize power execution step.
+        Initialize critical value execution step.
 
         Parameters
         ----------
         experiment_id : int
             Experiment identifier.
-        step_config : list[PowerStepData]
+        hypothesis_generator_data : HypothesisGeneratorData
+            Hypothesis generator metadata.
+        step_config : list[CriticalValueStepData]
             Execution task configurations.
         monte_carlo_count : int
             Number of Monte Carlo iterations.
         data_storage : IRandomValuesStorage
-            Storage with generated random samples.
-        result_storage : IPowerStorage
-            Storage for power experiment results.
+            Storage containing generated samples.
+        result_storage : ILimitDistributionStorage
+            Storage for limit distributions.
         storage_connection : str
             Database connection string.
         parallel_workers : int
             Number of parallel worker processes.
         """
         self.experiment_id = experiment_id
+        self.hypothesis_generator_data = hypothesis_generator_data
         self.step_config = step_config
         self.monte_carlo_count = monte_carlo_count
         self.data_storage = data_storage
@@ -82,21 +75,24 @@ class PowerExecutionStep(IExperimentStep):
         self.parallel_workers = parallel_workers
 
     @profile
-    @override
     def run(self) -> None:
-        """Execute all power experiment tasks in parallel."""
+        """
+        Execute all critical value tasks in parallel.
+
+        Tasks are buffered before saving in order to reduce
+        storage overhead.
+        """
         task_specs = []
         for step_data in self.step_config:
             spec = TaskSpec(
-                experiment_type=ExperimentType.POWER,
+                experiment_type=ExperimentType.CRITICAL_VALUE,
                 statistic_class_name=step_data.statistics.__class__.__name__,
                 statistic_module=step_data.statistics.__class__.__module__,
                 sample_size=step_data.sample_size,
                 monte_carlo_count=self.monte_carlo_count,
                 db_path=self.storage_connection,
-                alternative_generator=step_data.alternative.generator_name,
-                alternative_parameters=step_data.alternative.parameters,
-                significance_level=step_data.significance_level,
+                hypothesis_generator=self.hypothesis_generator_data.generator_name,
+                hypothesis_parameters=self.hypothesis_generator_data.parameters,
             )
             task_specs.append(spec)
 
@@ -104,22 +100,13 @@ class PowerExecutionStep(IExperimentStep):
 
         def save_batch(results_batch: list):
             for res in results_batch:
-                (
-                    exp_type,
-                    criterion_code,
-                    sample_size,
-                    results_criteria,
-                    alt_generator,
-                    alt_parameters,
-                    sig_level,
-                ) = res
-                alternative = Alternative(generator_name=alt_generator, parameters=alt_parameters)
+                exp_type, criterion_code, sample_size, results_statistics = res
                 self._save_result_to_storage(
+                    experiment_id=self.experiment_id,
                     criterion_code=criterion_code,
                     sample_size=sample_size,
-                    alternative=alternative,
-                    significance_level=sig_level,
-                    results_criteria=results_criteria,
+                    monte_carlo_count=self.monte_carlo_count,
+                    results_statistics=results_statistics,
                 )
 
         total_tasks = len(tasks)
@@ -133,41 +120,38 @@ class PowerExecutionStep(IExperimentStep):
         finally:
             saver.flush()
 
+    @profile
     def _save_result_to_storage(
         self,
+        experiment_id: int,
         criterion_code: str,
         sample_size: int,
-        alternative: Alternative,
-        significance_level: float,
-        results_criteria: list[bool],
+        monte_carlo_count: int,
+        results_statistics: list[float],
     ) -> None:
         """
-        Save power experiment results to storage.
+        Save calculated limit distribution to storage.
 
         Parameters
         ----------
+        experiment_id : int
+            Experiment identifier.
         criterion_code : str
             Statistical criterion identifier.
         sample_size : int
             Sample size.
-        alternative : Alternative
-            Alternative distribution configuration.
-        significance_level : float
-            Significance level.
-        results_criteria : list[bool]
-            Criterion decisions for generated samples.
+        monte_carlo_count : int
+            Number of Monte Carlo iterations.
+        results_statistics : list[float]
+            Calculated statistic values.
         """
-        query = PowerModel(
-            experiment_id=self.experiment_id,
+        data_to_save = LimitDistributionModel(
+            experiment_id=experiment_id,
             criterion_code=criterion_code,
             criterion_parameters=[],
             sample_size=sample_size,
-            alternative_code=alternative.generator_name,
-            alternative_parameters=alternative.parameters,
-            monte_carlo_count=self.monte_carlo_count,
-            significance_level=significance_level,
-            results_criteria=results_criteria,
+            monte_carlo_count=monte_carlo_count,
+            results_statistics=results_statistics,
         )
 
-        storage = self.result_storage
-        storage.insert_data(query)
+        self.result_storage.insert_data(data_to_save)

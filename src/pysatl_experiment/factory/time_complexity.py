@@ -7,19 +7,19 @@ complexity of statistical criteria.
 """
 
 from pysatl_experiment.configuration.experiment_data.time_complexity import TimeComplexityExperimentData
-from pysatl_experiment.experiment.step.execution.common.hypothesis_generator_data import (  # noqa: E501
+from pysatl_experiment.experiment_execution.step.execution.common.hypothesis_generator_data import (  # noqa: E501
     HypothesisGeneratorData,
 )
-from pysatl_experiment.experiment.step.execution.time_complexity import (
+from pysatl_experiment.experiment_execution.step.execution.time_complexity import (
     TimeComplexityExecutionStep,
     TimeComplexityStepData,
 )
-from pysatl_experiment.experiment.step.generation import GenerationStep, GenerationStepData
-from pysatl_experiment.experiment.step.report_building.time_complexity import TimeComplexityReportBuildingStep
+from pysatl_experiment.experiment_execution.step.generation import GenerationStep, GenerationStepData
+from pysatl_experiment.experiment_execution.step.report_building.time_complexity import TimeComplexityReportBuildingStep
 from pysatl_experiment.factory.abstract_experiment_factory import AbstractExperimentFactory
-from pysatl_experiment.persistence.model.experiment import IExperimentStorage
-from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesAllQuery
-from pysatl_experiment.persistence.model.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
+from pysatl_experiment.persistence.models.experiment import IExperimentStorage
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
+from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
 
 
 class TimeComplexityExperimentFactory(

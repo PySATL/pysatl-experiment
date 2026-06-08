@@ -28,10 +28,10 @@ from pysatl_experiment.configuration.experiment_data.experiment_data import Expe
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.run_mode import RunMode
-from pysatl_experiment.experiment.abstract_experiment_step import IExperimentStep
-from pysatl_experiment.experiment.experiment_steps import ExperimentSteps
-from pysatl_experiment.experiment.generator import AbstractRVSGenerator
-from pysatl_experiment.experiment.generator.generators import (
+from pysatl_experiment.experiment_execution.abstract_experiment_step import IExperimentStep
+from pysatl_experiment.experiment_execution.experiment_steps import ExperimentSteps
+from pysatl_experiment.experiment_execution.generator import AbstractRVSGenerator
+from pysatl_experiment.experiment_execution.generator.generators import (
     BetaRVSGenerator,
     ExponentialGenerator,
     GammaGenerator,
@@ -43,10 +43,10 @@ from pysatl_experiment.experiment.generator.generators import (
 )
 from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerStorage
 from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
-from pysatl_experiment.persistence.model.experiment import ExperimentQuery, IExperimentStorage
-from pysatl_experiment.persistence.model.power import PowerQuery
-from pysatl_experiment.persistence.model.random_values import IRandomValuesStorage, RandomValuesAllQuery
-from pysatl_experiment.persistence.model.time_complexity import TimeComplexityQuery
+from pysatl_experiment.persistence.models.experiment import ExperimentQuery, IExperimentStorage
+from pysatl_experiment.persistence.models.power import PowerQuery
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
+from pysatl_experiment.persistence.models.time_complexity import TimeComplexityQuery
 from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
 from pysatl_experiment.persistence.time_complexity_storage import AlchemyTimeComplexityStorage
 

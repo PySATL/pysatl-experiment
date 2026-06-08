@@ -19,7 +19,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
 from pysatl_experiment.persistence.db_store.model import AbstractDbStore
-from pysatl_experiment.persistence.model.time_complexity import (
+from pysatl_experiment.persistence.models.time_complexity import (
     ITimeComplexityStorage,
     TimeComplexityModel,
     TimeComplexityQuery,

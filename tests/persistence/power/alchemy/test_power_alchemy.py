@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerStorage
-from pysatl_experiment.persistence.model.power import PowerModel, PowerQuery
+from pysatl_experiment.persistence.models.power import PowerModel, PowerQuery
 
 
 @pytest.fixture()

@@ -6,16 +6,16 @@ from click import BadParameter, argument, command, option
 from click_loglevel import LogLevel
 
 from pysatl_experiment.cli.commands.common import normalize_experiment_name, read_experiment_data
+from pysatl_experiment.cli.validation.cli.commands.build_and_run import validate_build_and_run
+from pysatl_experiment.cli.validation.cli.commands.common.common import if_experiment_exists
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.experiment.experiment import Experiment
-from pysatl_experiment.experiment.experiment_steps import ExperimentSteps
+from pysatl_experiment.experiment_execution.experiment import Experiment
+from pysatl_experiment.experiment_execution.experiment_steps import ExperimentSteps
 from pysatl_experiment.factory.critical_value import CriticalValueExperimentFactory
 from pysatl_experiment.factory.power import PowerExperimentFactory
 from pysatl_experiment.factory.time_complexity import TimeComplexityExperimentFactory
 from pysatl_experiment.loggers import setup_logging
-from pysatl_experiment.validation.cli.commands.build_and_run import validate_build_and_run
-from pysatl_experiment.validation.cli.commands.common.common import if_experiment_exists
 
 
 # TODO: refactor names!

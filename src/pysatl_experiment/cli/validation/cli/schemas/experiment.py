@@ -10,13 +10,13 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, ValidationError, ValidationInfo, field_validator, model_validator
 
+from pysatl_experiment.cli.validation.cli.commands.common.checker import SQLiteCriticalValueChecker
+from pysatl_experiment.cli.validation.cli.schemas.alternative import Alternative
+from pysatl_experiment.cli.validation.cli.schemas.criteria import CriteriaConfig, Criterion
 from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
-from pysatl_experiment.validation.cli.commands.common.checker import SQLiteCriticalValueChecker
-from pysatl_experiment.validation.cli.schemas.alternative import Alternative
-from pysatl_experiment.validation.cli.schemas.criteria import CriteriaConfig, Criterion
 
 
 class BaseExperimentConfig(BaseModel):

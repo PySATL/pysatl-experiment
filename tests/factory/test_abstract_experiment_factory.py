@@ -17,7 +17,7 @@ from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
-from pysatl_experiment.experiment.abstract_experiment_step import IExperimentStep
+from pysatl_experiment.experiment_execution.abstract_experiment_step import IExperimentStep
 from pysatl_experiment.factory.abstract_experiment_factory import AbstractExperimentFactory
 
 
