@@ -181,7 +181,7 @@ def test_alternatives_fails_with_non_numeric_parameters(
 
 
 @patch(
-    "pysatl_experiment.cli.validation.cli.schemas.alternative.AbstractRVSGenerator.__subclasses__",
+    "pysatl_experiment.cli.validation.schemas.alternative.AbstractRVSGenerator.__subclasses__",
     return_value=[NormalGenerator, CauchyGenerator, NormalGenerator],  # type: ignore
 )
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
