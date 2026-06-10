@@ -1,0 +1,149 @@
+"""Time complexity experiment execution step implementation."""
+
+import functools
+from dataclasses import dataclass
+
+from line_profiler import profile
+
+from pysatl_experiment.configuration.models.experiment_type import ExperimentType
+from pysatl_experiment.experiment_execution.abstract_experiment_step import IExperimentStep
+from pysatl_experiment.experiment_execution.parallel import BufferedSaver, Scheduler, universal_execute_task
+from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
+from pysatl_experiment.experiment_execution.step.execution.common.execution_step_data import ExecutionStepData
+from pysatl_experiment.experiment_execution.step.execution.common.hypothesis_generator_data import (
+    HypothesisGeneratorData,
+)
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage, TimeComplexityModel
+
+
+@dataclass
+class TimeComplexityStepData(ExecutionStepData):
+    """Data for a single execution step in time complexity experiment."""
+
+
+class TimeComplexityExecutionStep(IExperimentStep):
+    """
+    Standard time complexity experiment execution step.
+
+    The step measures criterion execution time
+    for different sample sizes.
+    """
+
+    def __init__(
+        self,
+        experiment_id: int,
+        hypothesis_generator_data: HypothesisGeneratorData,
+        step_config: list[TimeComplexityStepData],
+        monte_carlo_count: int,
+        data_storage: IRandomValuesStorage,
+        result_storage: ITimeComplexityStorage,
+        storage_connection: str,
+        parallel_workers: int,
+    ) -> None:
+        """
+        Initialize time complexity execution step.
+
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        hypothesis_generator_data : HypothesisGeneratorData
+            Hypothesis generator configuration.
+        step_config : list[TimeComplexityStepData]
+            Execution task configurations.
+        monte_carlo_count : int
+            Number of Monte Carlo iterations.
+        data_storage : IRandomValuesStorage
+            Storage with generated random samples.
+        result_storage : ITimeComplexityStorage
+            Storage for execution time measurements.
+        storage_connection : str
+            Database connection string.
+        parallel_workers : int
+            Number of parallel worker processes.
+        """
+        self.experiment_id = experiment_id
+        self.hypothesis_generator_data = hypothesis_generator_data
+        self.step_config = step_config
+        self.monte_carlo_count = monte_carlo_count
+        self.data_storage = data_storage
+        self.result_storage = result_storage
+        self.storage_connection = storage_connection
+        self.parallel_workers = parallel_workers
+
+    @profile
+    def run(self) -> None:
+        """Execute all time complexity tasks in parallel."""
+        task_specs = []
+        for step_data in self.step_config:
+            spec = TaskSpec(
+                experiment_type=ExperimentType.TIME_COMPLEXITY,
+                statistic_class_name=step_data.statistics.__class__.__name__,
+                statistic_module=step_data.statistics.__class__.__module__,
+                sample_size=step_data.sample_size,
+                monte_carlo_count=self.monte_carlo_count,
+                db_path=self.storage_connection,
+                hypothesis_generator=self.hypothesis_generator_data.generator_name,
+                hypothesis_parameters=self.hypothesis_generator_data.parameters,
+            )
+            task_specs.append(spec)
+
+        tasks = [functools.partial(universal_execute_task, spec) for spec in task_specs]
+
+        def save_batch(results_batch: list):
+            for res in results_batch:
+                exp_type, criterion_code, sample_size, results_times = res
+                self._save_result_to_storage(
+                    experiment_id=self.experiment_id,
+                    criterion_code=criterion_code,
+                    sample_size=sample_size,
+                    monte_carlo_count=self.monte_carlo_count,
+                    results_times=results_times,
+                )
+
+        total_tasks = len(tasks)
+        buffer_size = max(1, min(20, total_tasks // 2))
+        saver = BufferedSaver(save_func=save_batch, buffer_size=buffer_size)
+
+        try:
+            with Scheduler(max_workers=self.parallel_workers) as scheduler:
+                for result in scheduler.iterate_results(tasks):
+                    saver.add(result)
+        finally:
+            saver.flush()
+
+    def _save_result_to_storage(
+        self,
+        experiment_id: int,
+        criterion_code: str,
+        sample_size: int,
+        monte_carlo_count: int,
+        results_times: list[float],
+    ) -> None:
+        """
+        Save execution time measurements to storage.
+
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        criterion_code : str
+            Statistical criterion identifier.
+        sample_size : int
+            Sample size.
+        monte_carlo_count : int
+            Number of Monte Carlo iterations.
+        results_times : list[float]
+            Measured execution times.
+        """
+        data_to_save = TimeComplexityModel(
+            experiment_id=experiment_id,
+            criterion_code=criterion_code,
+            criterion_parameters=[],
+            sample_size=sample_size,
+            monte_carlo_count=monte_carlo_count,
+            results_times=results_times,
+        )
+
+        self.result_storage.insert_data(data_to_save)

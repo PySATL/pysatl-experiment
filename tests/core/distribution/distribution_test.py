@@ -281,3 +281,6 @@ class TestDistribution:
         e_var = np.var(rvs)
         assert e_mean == pytest.approx(mean, abs=0.2)
         assert e_var == pytest.approx(var, abs=0.3)
+
+
+# TODO: move to criterion?

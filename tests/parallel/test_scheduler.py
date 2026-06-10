@@ -5,7 +5,7 @@ import time
 
 import pytest
 
-from pysatl_experiment.parallel.scheduler import Scheduler
+from pysatl_experiment.experiment_execution.parallel import Scheduler
 
 
 def _test_task_simple():

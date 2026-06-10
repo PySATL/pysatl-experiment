@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+    types: [ opened, synchronize, reopened, closed, review_requested ]
   release:
     types: [published]
 
@@ -12,6 +16,7 @@ on:
 permissions: {}
 
 
+# TODO: optimize size by making `docs` group!!
 jobs:
   build-docs:
     permissions:
@@ -26,10 +31,17 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r docs/requirements-docs.txt
+          sudo apt-get update
+          sudo apt-get install -y libcairo2-dev pkg-config
+
+      - name: Install Poetry
+        run: pip install poetry==2.1.1
+
+      - name: Install dependencies with Poetry
+        run: |
+          poetry install --with dev
 
       - name: Fetch gh-pages branch
         run: |
@@ -43,13 +55,13 @@ jobs:
       - name: Build and push Mike
         if: ${{ github.event_name == 'push' }}
         run: |
-          mike deploy ${{ github.ref_name }} latest --push --update-aliases
+          poetry run mike deploy ${{ github.ref_name }} latest --push --update-aliases
 
       - name: Build and push Mike - Release
         if: ${{ github.event_name == 'release' }}
         run: |
-          mike deploy ${{ github.ref_name }} stable --push --update-aliases
+          poetry run mike deploy ${{ github.ref_name }} stable --push --update-aliases
 
       - name: Show mike versions
         run: |
-          mike list
+          poetry run mike list

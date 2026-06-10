@@ -8,23 +8,23 @@ from typing import Any
 
 import pytest
 
-from pysatl_experiment.configuration.criteria_config.criteria_config import CriterionConfig
-from pysatl_experiment.configuration.experiment_config.power.power import PowerExperimentConfig
-from pysatl_experiment.configuration.experiment_data.power.power import PowerExperimentData
-from pysatl_experiment.configuration.model.alternative.alternative import Alternative
-from pysatl_experiment.configuration.model.criterion.criterion import Criterion
-from pysatl_experiment.configuration.model.experiment_type.experiment_type import ExperimentType
-from pysatl_experiment.configuration.model.hypothesis.hypothesis import Hypothesis
-from pysatl_experiment.configuration.model.report_mode.report_mode import ReportMode
-from pysatl_experiment.configuration.model.run_mode.run_mode import RunMode
-from pysatl_experiment.configuration.model.step_type.step_type import StepType
-from pysatl_experiment.experiment.step.execution.power.power import PowerExecutionStep
-from pysatl_experiment.experiment.step.generation.generation import GenerationStep
-from pysatl_experiment.experiment.step.report_building.power.power import PowerReportBuildingStep
-from pysatl_experiment.factory.power.power import PowerExperimentFactory
-from pysatl_experiment.persistence.model.experiment.experiment import IExperimentStorage
-from pysatl_experiment.persistence.model.power.power import IPowerStorage
-from pysatl_experiment.persistence.model.random_values.random_values import IRandomValuesStorage
+from pysatl_experiment.configuration.criteria_config import CriterionConfig
+from pysatl_experiment.configuration.experiment_config.power import PowerExperimentConfig
+from pysatl_experiment.configuration.experiment_data.power import PowerExperimentData
+from pysatl_experiment.configuration.models.alternative import Alternative
+from pysatl_experiment.configuration.models.criterion import Criterion
+from pysatl_experiment.configuration.models.experiment_type import ExperimentType
+from pysatl_experiment.configuration.models.hypothesis import Hypothesis
+from pysatl_experiment.configuration.models.report_mode import ReportMode
+from pysatl_experiment.configuration.models.run_mode import RunMode
+from pysatl_experiment.configuration.models.step_type import StepType
+from pysatl_experiment.experiment_execution.factory import PowerExperimentFactory
+from pysatl_experiment.experiment_execution.step.execution.power import PowerExecutionStep
+from pysatl_experiment.experiment_execution.step.generation import GenerationStep
+from pysatl_experiment.experiment_execution.step.report_building.power import PowerReportBuildingStep
+from pysatl_experiment.persistence.models.experiment import IExperimentStorage
+from pysatl_experiment.persistence.models.power import IPowerStorage
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 
 
 # Provide a stub for line_profiler to avoid optional dependency during imports
