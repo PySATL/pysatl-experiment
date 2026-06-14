@@ -9,7 +9,7 @@ on:
       - main
     types: [ opened, synchronize, reopened, closed, review_requested ]
   release:
-    types: [published]
+    types: [ published ]
 
 
 # disable permissions for all of the available permissions
