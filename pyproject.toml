@@ -121,11 +121,6 @@ omit = [
   "*/__main__.py",
 ]
 
-[tool.coverage.report]
-exclude_lines = [
-  "if __name__ == .__main__.:",
-]
-
 # Format for NON tagged commits
 format-jinja = """
 {%- if distance == 0 -%}
