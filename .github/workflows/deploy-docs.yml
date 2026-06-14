@@ -41,7 +41,7 @@ jobs:
 
       - name: Install dependencies with Poetry
         run: |
-          poetry install --with dev
+          poetry install --with docs
 
       - name: Fetch gh-pages branch
         run: |
