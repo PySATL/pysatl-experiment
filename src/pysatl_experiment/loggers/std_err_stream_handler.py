@@ -91,3 +91,4 @@ class FTStdErrStreamHandler(Handler):
 
 
 # TODO: is this handler needed at all instead of StreamHandler? if so, check for tests
+# TODO: currently not used anywhere
