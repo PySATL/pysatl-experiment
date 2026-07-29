@@ -8,21 +8,27 @@ from typing import Any, cast
 
 import pytest
 from numpy import float64
-from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
+from pysatl_criterion import DistributionType
+from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
-from pysatl_experiment.configuration.experiment_config.time_complexity import TimeComplexityExperimentConfig
+from pysatl_experiment.configuration.experiment_config.time_complexity_experiment_config import (
+    TimeComplexityExperimentConfig,
+)
 from pysatl_experiment.configuration.experiment_data.time_complexity import TimeComplexityExperimentData
 from pysatl_experiment.configuration.models.criterion import Criterion
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
-from pysatl_experiment.experiment_execution.factory import TimeComplexityExperimentFactory
-from pysatl_experiment.experiment_execution.step.execution.time_complexity import TimeComplexityExecutionStep
-from pysatl_experiment.experiment_execution.step.generation import GenerationStep
-from pysatl_experiment.experiment_execution.step.report_building.time_complexity import TimeComplexityReportBuildingStep
+from pysatl_experiment.experiment_execution.experiment_factory import TimeComplexityExperimentFactory
+from pysatl_experiment.experiment_execution.step.execution_step.time_complexity.time_complexity_execution_step import (
+    TimeComplexityExecutionStep,
+)
+from pysatl_experiment.experiment_execution.step.generation_step.generation_step import GenerationStep
+from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_step import (
+    TimeComplexityReportBuildingStep,
+)
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage
@@ -182,7 +188,7 @@ def build_time_complexity_data(results_path: Path) -> TimeComplexityExperimentDa
         experiment_type=ExperimentType.TIME_COMPLEXITY,
         storage_connection=os.fspath(results_path / "test.sqlite"),
         run_mode=RunMode.REUSE,
-        hypothesis=Hypothesis.EXPONENTIAL,
+        hypothesis=DistributionType.EXPONENTIAL,
         generator_type=StepType.STANDARD,
         executor_type=StepType.STANDARD,
         report_builder_type=StepType.STANDARD,

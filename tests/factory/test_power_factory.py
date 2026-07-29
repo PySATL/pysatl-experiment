@@ -7,20 +7,20 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from pysatl_criterion import DistributionType
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
-from pysatl_experiment.configuration.experiment_config.power import PowerExperimentConfig
+from pysatl_experiment.configuration.experiment_config import PowerExperimentConfig
 from pysatl_experiment.configuration.experiment_data.power import PowerExperimentData
 from pysatl_experiment.configuration.models.alternative import Alternative
 from pysatl_experiment.configuration.models.criterion import Criterion
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
 from pysatl_experiment.experiment_execution.factory import PowerExperimentFactory
 from pysatl_experiment.experiment_execution.step.execution.power import PowerExecutionStep
-from pysatl_experiment.experiment_execution.step.generation import GenerationStep
+from pysatl_experiment.experiment_execution.step.generation_step.generation_step import GenerationStep
 from pysatl_experiment.experiment_execution.step.report_building.power import PowerReportBuildingStep
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.power import IPowerStorage
@@ -184,7 +184,7 @@ def build_power_data(results_path: Path) -> PowerExperimentData:
         experiment_type=ExperimentType.POWER,
         storage_connection=os.fspath(results_path / "test.sqlite"),
         run_mode=RunMode.REUSE,
-        hypothesis=Hypothesis.EXPONENTIAL,
+        hypothesis=DistributionType.EXPONENTIAL,
         generator_type=StepType.STANDARD,
         executor_type=StepType.STANDARD,
         report_builder_type=StepType.STANDARD,

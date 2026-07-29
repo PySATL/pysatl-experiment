@@ -6,7 +6,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pysatl_experiment.configuration.models.report_mode import ReportMode
-from pysatl_experiment.report.time_complexity import TimeComplexityReportBuilder
+from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_builder import (
+    TimeComplexityReportBuilder,
+)
 
 
 class TestTimeComplexityReportBuilder:

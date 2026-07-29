@@ -18,30 +18,30 @@ from click import ClickException
 from dacite import Config, from_dict
 from dacite.data import Data
 from pydantic import ValidationError
+from pysatl_criterion import DistributionType
 
-from pysatl_experiment.cli.commands.common import create_result_path
-from pysatl_experiment.cli.validation.commands.common.checker import SQLiteCriticalValueChecker
+from pysatl_experiment.cli.validation.commands.checker import SQLiteCriticalValueChecker
 from pysatl_experiment.cli.validation.schemas.experiment import BaseExperimentConfig as PydanticBaseExperiment
 from pysatl_experiment.cli.validation.schemas.experiment import CriticalValueConfig as PydanticCriticalValueConfig
 from pysatl_experiment.cli.validation.schemas.experiment import ExperimentConfig as ExperimentInputSchema
 from pysatl_experiment.cli.validation.schemas.experiment import PowerConfig as PydanticPowerConfig
 from pysatl_experiment.cli.validation.schemas.experiment import TimeComplexityConfig as PydanticTimeComplexityConfig
-from pysatl_experiment.configuration.experiment_config.critical_value import (
+from pysatl_experiment.configuration.experiment_config import ExperimentConfig
+from pysatl_experiment.configuration.experiment_config import PowerExperimentConfig as LegacyPowerExperimentConfig
+from pysatl_experiment.configuration.experiment_config.critical_value_experiment_config import (
     CriticalValueExperimentConfig as LegacyCriticalValueExperimentConfig,
 )
-from pysatl_experiment.configuration.experiment_config.experiment_config import ExperimentConfig
-from pysatl_experiment.configuration.experiment_config.power import PowerExperimentConfig as LegacyPowerExperimentConfig
-from pysatl_experiment.configuration.experiment_config.time_complexity import (
+from pysatl_experiment.configuration.experiment_config.time_complexity_experiment_config import (
     TimeComplexityExperimentConfig as LegacyTimeComplexityExperimentConfig,
 )
-from pysatl_experiment.configuration.experiment_data.common.steps_done import StepsDone
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
+from pysatl_experiment.configuration.models.steps_done import StepsDone
 from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
 from pysatl_experiment.persistence.models.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
+from pysatl_experiment.utils.files_utils import ensure_result_dir
 
 
 def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
@@ -137,7 +137,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
             storage=experiment_storage,
         )
 
-    result_path = create_result_path()
+    result_path = ensure_result_dir()
 
     experiment_data = ExperimentData(
         name=experiment_name,
@@ -339,7 +339,7 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
     enum_mapping: dict[type[Any], Callable[[Any], Any]] = {
         ExperimentType: lambda x: ExperimentType(x),
         RunMode: lambda x: RunMode(x),
-        Hypothesis: lambda x: Hypothesis(x),
+        DistributionType: lambda x: DistributionType(x),
         StepType: lambda x: StepType(x),
     }
 

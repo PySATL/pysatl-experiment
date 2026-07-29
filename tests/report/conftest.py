@@ -4,7 +4,7 @@ from collections.abc import Generator
 from unittest.mock import MagicMock
 
 import pytest
-from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
+from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.models.criterion import Criterion

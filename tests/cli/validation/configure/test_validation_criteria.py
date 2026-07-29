@@ -5,9 +5,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
+from pysatl_criterion import DistributionType
 
 from pysatl_experiment.cli.commands.configure import configure
-from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 
 
 @pytest.fixture
@@ -78,7 +78,7 @@ def test_criteria_fails_with_incompatible_codes(
     5.  Ensuring that the configuration is not saved.
     """
     experiment_name = "my-exp"
-    hypothesis = Hypothesis.NORMAL
+    hypothesis = DistributionType.NORMAL
     initial_config = {"hypothesis": hypothesis.value}
     read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}
 
@@ -133,7 +133,7 @@ def test_criteria_success_with_valid_codes(
         validated and normalized (uppercased) criteria list.
     6.  Checking for the correct success message in the output.
     """
-    hypothesis = Hypothesis.NORMAL
+    hypothesis = DistributionType.NORMAL
     initial_config: dict[str, Any] = {"hypothesis": hypothesis.value}
     experiment_name = "my-test-experiment"
     read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}

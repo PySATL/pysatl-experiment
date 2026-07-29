@@ -8,20 +8,22 @@ from typing import Any
 
 import pytest
 from numpy import float64
-from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
+from pysatl_criterion import DistributionType
+from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
-from pysatl_experiment.configuration.experiment_config.critical_value import CriticalValueExperimentConfig
+from pysatl_experiment.configuration.experiment_config.critical_value_experiment_config import (
+    CriticalValueExperimentConfig,
+)
 from pysatl_experiment.configuration.experiment_data.critical_value import CriticalValueExperimentData
 from pysatl_experiment.configuration.models.criterion import Criterion
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
 from pysatl_experiment.experiment_execution.factory.critical_value import CriticalValueExperimentFactory
 from pysatl_experiment.experiment_execution.step.execution.critical_value import CriticalValueExecutionStep
-from pysatl_experiment.experiment_execution.step.generation import GenerationStep
+from pysatl_experiment.experiment_execution.step.generation_step.generation_step import GenerationStep
 from pysatl_experiment.experiment_execution.step.report_building.critical_value import CriticalValueReportBuildingStep
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
@@ -181,7 +183,7 @@ def build_cv_data(results_path: Path) -> CriticalValueExperimentData:
         experiment_type=ExperimentType.CRITICAL_VALUE,
         storage_connection=os.fspath(results_path / "test.sqlite"),
         run_mode=RunMode.REUSE,
-        hypothesis=Hypothesis.EXPONENTIAL,
+        hypothesis=DistributionType.EXPONENTIAL,
         generator_type=StepType.STANDARD,
         executor_type=StepType.STANDARD,
         report_builder_type=StepType.STANDARD,

@@ -11,9 +11,9 @@ import inspect
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+from pysatl_criterion.generator.model import AbstractRVSGenerator
 
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.experiment_execution.generator import AbstractRVSGenerator
 
 
 class Alternative(BaseModel):
