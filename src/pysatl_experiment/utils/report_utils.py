@@ -62,6 +62,7 @@ def get_criterion_names(criteria_config: list[CriterionConfig]) -> list[str]:
     """
     return [c.criterion_code.partition("_")[0] for c in criteria_config]
 
+
 def get_report_template_dir() -> Path:
     """
     Resolve the report template directory path.

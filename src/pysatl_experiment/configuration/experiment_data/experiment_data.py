@@ -18,7 +18,7 @@ class ExperimentData(Generic[C]):
 
     Attributes
     ----------
-    name : str
+    experiment_name : str
         Experiment identifier.
     config : C
         Experiment configuration object.
@@ -28,7 +28,12 @@ class ExperimentData(Generic[C]):
         Experiment result artifacts path.
     """
 
-    name: str
+    experiment_name: str
     config: C
     steps_done: StepsDone
     results_path: Path
+
+    @property
+    def name(self) -> str:
+        """Backward-compatible alias for experiment_name."""
+        return self.experiment_name

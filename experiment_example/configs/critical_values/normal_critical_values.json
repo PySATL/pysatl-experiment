@@ -1,17 +1,9 @@
 {
-  "name": "2_evaluate_power",
+  "name": "normal_critical_values",
+  "storage_connection": "sqlite:///pysatl.sqlite",
+  "experiment_type": "critical_value",
   "config": {
-    "experiment_type": "power",
     "hypothesis": "normal",
-    "alternatives": [
-      {
-        "generator_name": "NORMALGENERATOR",
-        "parameters": [
-          0.5,
-          1
-        ]
-      }
-    ],
     "criteria": [
       {
         "criterion_code": "KS",
@@ -40,7 +32,6 @@
       0.01,
       0.05,
       0.1
-    ],
-    "storage_connection": "sqlite:///pysatl.sqlite"
+    ]
   }
 }

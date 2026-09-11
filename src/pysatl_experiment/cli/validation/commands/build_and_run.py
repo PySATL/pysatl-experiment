@@ -183,7 +183,7 @@ def _get_experiment_config_from_storage(
     elif experiment_type == ExperimentType.POWER:
         power_config = cast(LegacyPowerExperimentConfig, config)
         significance_levels = power_config.significance_levels
-        alternatives = {alternative.generator_name: alternative.parameters for alternative in power_config.alternatives}
+        alternatives = {alternative.distribution_type: alternative.parameters for alternative in power_config.alternatives}
 
     query = ExperimentQuery(
         experiment_type=experiment_type.value,
@@ -234,7 +234,7 @@ def _save_experiment_config_to_storage(config: ExperimentConfig, storage: IExper
     elif experiment_type == ExperimentType.POWER:
         power_config = cast(LegacyPowerExperimentConfig, config)
         significance_levels = power_config.significance_levels
-        alternatives = {alternative.generator_name: alternative.parameters for alternative in power_config.alternatives}
+        alternatives = {alternative.distribution_type: alternative.parameters for alternative in power_config.alternatives}
 
     query = ExperimentModel(
         experiment_type=experiment_type.value,

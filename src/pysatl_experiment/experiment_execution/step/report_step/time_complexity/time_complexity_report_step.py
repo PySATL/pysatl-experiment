@@ -1,18 +1,20 @@
 """Time complexity report building step implementation."""
 
-from pathlib import Path
-
 import numpy as np
 from line_profiler import profile
 from typing_extensions import override
 
-from pysatl_experiment.configuration.criteria_config import CriterionConfig
-from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
 from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_builder import (
     TimeComplexityReportBuilder,
 )
-from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
+from pysatl_experiment.persistence.models.time_complexity import (
+    ITimeComplexityStorage,
+    TimeComplexityQuery,
+)
+
+from .time_complexity_report_statistic import TimeComplexityReportStatistic
+from .time_complexity_report_step_context import TimeComplexityReportStepContext
 
 
 class TimeComplexityReportBuildingStep(IExperimentStep):
@@ -20,107 +22,91 @@ class TimeComplexityReportBuildingStep(IExperimentStep):
 
     def __init__(
         self,
-        report_name: str,
-        criteria_config: list[CriterionConfig],
-        sample_sizes: list[int],
-        monte_carlo_count: int,
+        ctx: TimeComplexityReportStepContext,
         result_storage: ITimeComplexityStorage,
-        results_path: Path,
-        with_chart: ReportMode,
     ) -> None:
         """
         Initialize time complexity report building step.
 
         Parameters
         ----------
-        report_name : str
-            Name of the generated report.
-        criteria_config : list[CriterionConfig]
-            Statistical criteria configurations.
-        sample_sizes : list[int]
-            Sample sizes used in experiments.
-        monte_carlo_count : int
-            Number of Monte Carlo iterations.
         result_storage : ITimeComplexityStorage
             Storage with execution time measurements.
-        results_path : Path
-            Output directory for generated reports.
-        with_chart : ReportMode
-            Report visualization mode.
         """
-        self.report_name = report_name
-        self.criteria_config = criteria_config
-        self.sizes = sorted(sample_sizes)
-        self.monte_carlo_count = monte_carlo_count
+        self.ctx = ctx
         self.result_storage = result_storage
-        self.results_path = results_path
-        self.with_chart = with_chart
+        self.experiment_name = ctx.experiment_name
+        self.criteria_config = ctx.criteria_config
+        self.sizes = sorted(ctx.sample_sizes)
+        self.monte_carlo_count = ctx.monte_carlo_count
+        self.results_path = ctx.results_path
+        self.with_chart = ctx.report_mode
 
     @profile
     @override
     def run(self) -> None:
         """Collect timing statistics and build report."""
-        times_data = self._collect_statistics()
+        statistic = self._collect_statistics()
 
-        report_builder = TimeComplexityReportBuilder(
-            report_name=self.report_name,
-            criteria_config=self.criteria_config,
+        TimeComplexityReportBuilder(
+            report_name=self.ctx.report_name,
             sample_sizes=self.sizes,
-            times=times_data,
+            statistic=statistic,
             results_path=self.results_path,
-            with_chart=self.with_chart,
-        )
-        report_builder.build()
+            report_mode=self.with_chart,
+        ).build()
 
-    def _collect_statistics(self) -> dict[str, list[tuple[int, float]]]:
+    def _collect_statistics(self) -> TimeComplexityReportStatistic:
         """
         Collect average execution times for each criterion.
 
         Returns
         -------
-        dict[str, list[tuple[int, float]]]
-            Mapping of criterion codes to average execution times.
+        TimeComplexityReportStatistic
+            Average execution times grouped by criterion code.
         """
-        stats = {}
+        stats = TimeComplexityReportStatistic()
+        for data in self.ctx.data_list:
+            times = self._get_times_from_storage(
+                experiment_name=self.experiment_name,
+                criterion_code=data.criterion.code(),
+                criterion_parameters=data.criterion.hypothesis().parameters(),
+                sample_size=data.sample_size,
+                samples_count=self.ctx.samples_count,
+            )
+
+            if times:
+                mean = float(np.mean(times))
+                stats.add_criterion_statistic(data.criterion_code, size, mean)
 
         for criterion in self.criteria_config:
-            criterion_stats = []
-
             for size in self.sizes:
-                times = self._get_times_from_storage(
-                    storage=self.result_storage,
-                    criterion_config=criterion,
-                    sample_size=size,
-                    monte_carlo_count=self.monte_carlo_count,
-                )
 
-                if times:
-                    mean = float(np.mean(times))
-                    criterion_stats.append((size, mean))
-
-            stats[criterion.criterion_code] = criterion_stats
 
         return stats
 
-    @staticmethod
     def _get_times_from_storage(
-        storage: ITimeComplexityStorage,
-        criterion_config: CriterionConfig,
+        self,
+        experiment_name: str,
+        criterion_code: str,
+        criterion_parameters: dict[str, float],
         sample_size: int,
-        monte_carlo_count: int,
+        samples_count: int,
     ) -> list[float]:
         """
         Load execution time measurements from storage.
 
         Parameters
         ----------
-        storage : ITimeComplexityStorage
-            Time complexity storage.
-        criterion_config : CriterionConfig
-            Criterion configuration.
+        experiment_name : str
+            Experiment name.
+        criterion_code : str
+            Criterion identifier.
+        criterion_parameters : dict[str, float]
+            Criterion parameters.
         sample_size : int
             Sample size.
-        monte_carlo_count : int
+        samples_count : int
             Number of Monte Carlo iterations.
 
         Returns
@@ -134,13 +120,14 @@ class TimeComplexityReportBuildingStep(IExperimentStep):
             If timing results are not found.
         """
         query = TimeComplexityQuery(
-            criterion_code=criterion_config.criterion_code,
-            criterion_parameters=criterion_config.criterion.parameters,
+            experiment_name=experiment_name,
+            criterion_code=criterion_code,
+            criterion_parameters=criterion_parameters,
             sample_size=sample_size,
-            monte_carlo_count=monte_carlo_count,
+            samples_count=samples_count,
         )
 
-        result = storage.get_data(query)
+        result = self.result_storage.get_data(query)
         if result is None:
             raise ValueError(f"Times for query {query} not found.")
 

@@ -17,9 +17,11 @@ import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 from matplotlib import pyplot as plt
 
-from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.models.report_mode import ReportMode
-from pysatl_experiment.utils.report_utils import convert_html_to_pdf, get_criterion_names, get_report_template_dir
+from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_statistic import (
+    TimeComplexityReportStatistic,
+)
+from pysatl_experiment.utils.report_utils import convert_html_to_pdf, get_report_template_dir
 
 
 class TimeComplexityReportBuilder:
@@ -36,11 +38,10 @@ class TimeComplexityReportBuilder:
     def __init__(
         self,
         report_name: str,
-        criteria_config: list[CriterionConfig],
         sample_sizes: list[int],
-        times: dict[str, list[tuple[int, float]]],
+        statistic: TimeComplexityReportStatistic,
         results_path: Path,
-        with_chart: ReportMode,
+        report_mode: ReportMode,
     ):
         """
         Initialize time complexity report builder.
@@ -49,23 +50,20 @@ class TimeComplexityReportBuilder:
         ----------
         report_name : str
             Name of the generated report.
-        criteria_config : list[CriterionConfig]
-            Criteria included in the report.
         sample_sizes : list[int]
             Evaluated sample sizes.
-        times : dict[str, list[tuple[int, float]]]
-            Execution time measurements.
+        statistic : TimeComplexityReportStatistic
+            Execution time statistics grouped by criterion code.
         results_path : Path
             Output directory.
-        with_chart : ReportMode
+        report_mode : ReportMode
             Determines whether charts should be generated.
         """
         self.report_name = report_name
-        self.criteria_config = criteria_config
         self.sample_sizes = sample_sizes
-        self.times = times
+        self.statistic = statistic
         self.results_path = results_path
-        self.with_chart = with_chart
+        self.report_mode = report_mode
 
         self.template_env = Environment(loader=FileSystemLoader(get_report_template_dir()), autoescape=True)
 
@@ -100,8 +98,7 @@ class TimeComplexityReportBuilder:
         buf = BytesIO()
         plt.figure(figsize=(10, 7))
 
-        for criterion in self.times.keys():
-            data = self.times[criterion]
+        for criterion, data in self.statistic.items():
             if not data:
                 continue
             sizes, times_list = zip(*data, strict=True)
@@ -151,7 +148,7 @@ class TimeComplexityReportBuilder:
             Rendered HTML document ready for PDF conversion.
         """
         plot_data = None
-        if self.with_chart == ReportMode.WITH_CHART:
+        if self.report_mode == ReportMode.WITH_CHART:
             try:
                 plot_data = self._generate_chart()
             except Exception as e:
@@ -159,8 +156,7 @@ class TimeComplexityReportBuilder:
                 plot_data = None
 
         return self.template_env.get_template("tc_template.html").render(
-            criteria=get_criterion_names(self.criteria_config),
-            report_data=self.times,
+            report_data=self.statistic.as_dict(),
             sizes=self.sample_sizes,
             plot_image=plot_data,
             timestamp=pd.Timestamp.now().strftime("%Y-%m-%d"),

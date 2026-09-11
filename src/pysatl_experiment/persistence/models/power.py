@@ -1,6 +1,7 @@
 """Power storage models and interface."""
 
-from abc import ABC
+from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
@@ -72,4 +73,14 @@ class PowerQuery(DataQuery):
 class IPowerStorage(IDataStorage[PowerModel, PowerQuery], ABC):
     """Power storage interface."""
 
-    pass
+    @abstractmethod
+    def bulk_insert_data(self, data_list: Iterable[PowerModel]) -> None:
+        """
+        Insert or update multiple power records.
+
+        Parameters
+        ----------
+        data_list : Iterable[PowerModel]
+            Power results to store.
+        """
+        pass

@@ -6,7 +6,7 @@ from pysatl_criterion.generator.model import AbstractRVSGenerator
 
 
 @dataclass
-class GenerationStepData:
+class GenerationData:
     """
     Configuration for random sample generation.
 
@@ -14,18 +14,26 @@ class GenerationStepData:
     ----------
     generator : AbstractRVSGenerator
         Generator instance.
-    generator_name : str
-        Generator identifier.
-    generator_parameters : list[float]
-        Generator parameters.
     sample_size : int
         Size of generated samples.
-    count : int
+    samples_count : int
         Number of samples to generate.
     """
 
     generator: AbstractRVSGenerator
-    generator_name: str
-    generator_parameters: list[float]
     sample_size: int
-    count: int
+    samples_count: int
+
+@dataclass
+class GenerationStepContext:
+    """
+    Configuration for random sample generation.
+
+    Attributes
+    ----------
+    data_list : list[GenerationData]
+    experiment_name : str
+    """
+
+    data_list: list[GenerationData]
+    experiment_name: str

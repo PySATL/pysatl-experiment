@@ -118,7 +118,7 @@ class PowerReportBuilder:
                     try:
                         chart_data = self._generate_chart_data(alternative, significance_level, charts_dir)
                     except Exception as e:
-                        print(f"Failed to generate chart for {alternative.generator_name}, α={significance_level}: {e}")
+                        print(f"Failed to generate chart for {alternative.distribution_type}, α={significance_level}: {e}")
                         chart_data = None
                 tables.append(
                     {
@@ -163,7 +163,7 @@ class PowerReportBuilder:
             row_data: dict[str, float] = {}
 
             for config in self.criteria_config:
-                key = (alternative.generator_name, significance_level)
+                key = (alternative.distribution_type, significance_level)
                 results = self.power_result[config.criterion_code].get(key, {}).get(size, [])
                 power = float(np.mean(results)) if results else 0.0
                 short_criterion_name = config.criterion_code.partition("_")[0]
@@ -198,14 +198,14 @@ class PowerReportBuilder:
         """
         charts_dir.mkdir(parents=True, exist_ok=True)
 
-        chart_path = charts_dir / f"{alternative.generator_name}_{significance_level}.png"
+        chart_path = charts_dir / f"{alternative.distribution_type}_{significance_level}.png"
 
         plt.figure(figsize=(10, 6), dpi=100)
 
         for config in self.criteria_config:
             sizes = []
             powers = []
-            key = (alternative.generator_name, significance_level)
+            key = (alternative.distribution_type, significance_level)
             for size in self.sample_sizes:
                 results = self.power_result[config.criterion_code].get(key, {}).get(size, [])
                 if results:
@@ -216,7 +216,7 @@ class PowerReportBuilder:
 
         plt.xlabel("Sample size")
         plt.ylabel("Power")
-        plt.title(f"Power vs Sample Size — {alternative.generator_name}, α={significance_level}")
+        plt.title(f"Power vs Sample Size — {alternative.distribution_type}, α={significance_level}")
         plt.grid(True, linestyle="--", alpha=0.5)
         plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize="small")
         plt.tight_layout(rect=(0, 0, 0.85, 1))

@@ -1,8 +1,17 @@
 {
-  "name": "1_calculate_critical_values",
+  "name": "2_evaluate_power",
   "config": {
-    "experiment_type": "critical_value",
+    "experiment_type": "power",
     "hypothesis": "normal",
+    "alternatives": [
+      {
+        "generator_name": "normal",
+        "parameters": {
+          "mean": 0.5,
+          "var": 1
+        }
+      }
+    ],
     "criteria": [
       {
         "criterion_code": "KS",

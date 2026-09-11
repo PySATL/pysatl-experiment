@@ -1,16 +1,12 @@
 """Critical value experiment execution step implementation."""
 
-import functools
-import importlib
 from dataclasses import dataclass
 
-from line_profiler import profile
 from pysatl_criterion.persistence.models.limit_distribution import ILimitDistributionStorage, LimitDistributionModel
+from typing_extensions import override
 
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.experiment_execution.parallel import BufferedSaver, Scheduler
 from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
-from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
 from pysatl_experiment.experiment_execution.step.execution_step.critical_value.critical_value_worker import (
     CriticalValueWorker,
     CriticalValueWorkerResult,
@@ -19,9 +15,11 @@ from pysatl_experiment.experiment_execution.step.execution_step.execution_step_d
     ExecutionStepData,
     HypothesisGeneratorData,
 )
+from pysatl_experiment.experiment_execution.step.execution_step.multithreading_execution_step import (
+    ExecutionTaskResult,
+    MultithreadingExecutionStep,
+)
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
-from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
-from pysatl_experiment.utils.experiment_utils import get_sample_data_from_storage
 
 
 @dataclass
@@ -29,7 +27,17 @@ class CriticalValueStepData(ExecutionStepData):
     """Data for a single execution step in critical value experiment."""
 
 
-class CriticalValueExecutionStep(IExperimentStep):
+CriticalValueExecutionResult = ExecutionTaskResult[CriticalValueWorkerResult]
+
+
+class CriticalValueExecutionStep(
+    MultithreadingExecutionStep[
+        CriticalValueStepData,
+        CriticalValueExecutionResult,
+        LimitDistributionModel,
+        ILimitDistributionStorage,
+    ]
+):
     """
     Execute critical value experiment execution step.
 
@@ -40,6 +48,7 @@ class CriticalValueExecutionStep(IExperimentStep):
     def __init__(
         self,
         experiment_id: int,
+        experiment_name: str,
         hypothesis_generator_data: HypothesisGeneratorData,
         step_config: list[CriticalValueStepData],
         monte_carlo_count: int,
@@ -48,137 +57,59 @@ class CriticalValueExecutionStep(IExperimentStep):
         storage_connection: str,
         parallel_workers: int,
     ) -> None:
-        """
-        Initialize critical value execution step.
-
-        Parameters
-        ----------
-        experiment_id : int
-            Experiment identifier.
-        hypothesis_generator_data : HypothesisGeneratorData
-            Hypothesis generator metadata.
-        step_config : list[CriticalValueStepData]
-            Execution task configurations.
-        monte_carlo_count : int
-            Number of Monte Carlo iterations.
-        data_storage : IRandomValuesStorage
-            Storage containing generated samples.
-        result_storage : ILimitDistributionStorage
-            Storage for limit distributions.
-        storage_connection : str
-            Database connection string.
-        parallel_workers : int
-            Number of parallel worker processes.
-        """
-        self.experiment_id = experiment_id
+        super().__init__(
+            experiment_id=experiment_id,
+            experiment_name=experiment_name,
+            step_config=step_config,
+            monte_carlo_count=monte_carlo_count,
+            result_storage=result_storage,
+            storage_connection=storage_connection,
+            parallel_workers=parallel_workers,
+        )
         self.hypothesis_generator_data = hypothesis_generator_data
-        self.step_config = step_config
-        self.monte_carlo_count = monte_carlo_count
         self.data_storage = data_storage
-        self.result_storage = result_storage
-        self.storage_connection = storage_connection
-        self.parallel_workers = parallel_workers
 
-    @profile
-    def run(self) -> None:
-        """
-        Execute all critical value tasks in parallel.
-
-        Tasks are buffered before saving in order to reduce
-        storage overhead.
-        """
+    @override
+    def _collect_tasks(self) -> list[TaskSpec]:
         task_specs = []
         for step_data in self.step_config:
             spec = TaskSpec(
                 experiment_type=ExperimentType.CRITICAL_VALUE,
+                experiment_name=self.experiment_name,
                 statistic_class_name=step_data.statistics.__class__.__name__,
                 statistic_module=step_data.statistics.__class__.__module__,
+                criterion_code=step_data.statistics.code(),
+                criterion_parameters=step_data.criterion_parameters,
                 sample_size=step_data.sample_size,
                 monte_carlo_count=self.monte_carlo_count,
                 db_path=self.storage_connection,
-                hypothesis_generator=self.hypothesis_generator_data.generator_name,
+                sample_generator_code=self.hypothesis_generator_data.generator_code,
+                sample_generator_parameters=self.hypothesis_generator_data.parameters,
+                hypothesis_generator=self.hypothesis_generator_data.generator_code,
                 hypothesis_parameters=self.hypothesis_generator_data.parameters,
             )
             task_specs.append(spec)
-
-        tasks = [functools.partial(CriticalValueExecutionStep._execute_task, spec) for spec in task_specs]
-
-        def save_batch(results_batch: list):
-            for res in results_batch:
-                exp_type, criterion_code, sample_size, results_statistics = res
-                self._save_result_to_storage(
-                    experiment_id=self.experiment_id,
-                    criterion_code=criterion_code,
-                    sample_size=sample_size,
-                    monte_carlo_count=self.monte_carlo_count,
-                    results_statistics=results_statistics,
-                )
-
-        total_tasks = len(tasks)
-        buffer_size = max(1, min(20, total_tasks // 2))
-        saver = BufferedSaver(save_func=save_batch, buffer_size=buffer_size)
-
-        try:
-            with Scheduler(max_workers=self.parallel_workers) as scheduler:
-                for result in scheduler.iterate_results(tasks):
-                    saver.add(result)
-        finally:
-            saver.flush()
+        return task_specs
 
     @staticmethod
-    def _execute_task(spec: TaskSpec):
-        storage = AlchemyRandomValuesStorage(spec.db_path)
-        storage.init()
+    @override
+    def _execute_task(spec: TaskSpec) -> CriticalValueExecutionResult:
+        sample_data, statistics = CriticalValueExecutionStep._load_samples_and_statistics(spec)
+        worker = CriticalValueWorker(statistics=statistics, sample_data=sample_data)
+        return ExecutionTaskResult(spec=spec, worker_result=worker.execute())
 
-        data = get_sample_data_from_storage(
-            generator_name=spec.hypothesis_generator,
-            generator_parameters=spec.hypothesis_parameters,
+    @override
+    def _to_model(self, result: CriticalValueExecutionResult) -> LimitDistributionModel:
+        spec = result.spec
+        return LimitDistributionModel(
+            experiment_id=self.experiment_id,
+            criterion_code=spec.criterion_code,
+            criterion_parameters=spec.criterion_parameters,
             sample_size=spec.sample_size,
-            count=spec.monte_carlo_count,
-            data_storage=storage,
+            monte_carlo_count=spec.monte_carlo_count,
+            results_statistics=result.worker_result.results_statistics,
         )
 
-        stat_module = importlib.import_module(spec.statistic_module)
-        stat_class = getattr(stat_module, spec.statistic_class_name)
-        statistics = stat_class()
-
-        crit_worker = CriticalValueWorker(statistics=statistics, sample_data=data)
-        crit_result: CriticalValueWorkerResult = crit_worker.execute()
-
-        return ExperimentType.CRITICAL_VALUE, statistics.code(), spec.sample_size, crit_result.results_statistics
-
-    @profile
-    def _save_result_to_storage(
-        self,
-        experiment_id: int,
-        criterion_code: str,
-        sample_size: int,
-        monte_carlo_count: int,
-        results_statistics: list[float],
-    ) -> None:
-        """
-        Save calculated limit distribution to storage.
-
-        Parameters
-        ----------
-        experiment_id : int
-            Experiment identifier.
-        criterion_code : str
-            Statistical criterion identifier.
-        sample_size : int
-            Sample size.
-        monte_carlo_count : int
-            Number of Monte Carlo iterations.
-        results_statistics : list[float]
-            Calculated statistic values.
-        """
-        data_to_save = LimitDistributionModel(
-            experiment_id=experiment_id,
-            criterion_code=criterion_code,
-            criterion_parameters=[],
-            sample_size=sample_size,
-            monte_carlo_count=monte_carlo_count,
-            results_statistics=results_statistics,
-        )
-
-        self.result_storage.insert_data(data_to_save)
+    @override
+    def _bulk_save(self, models: list[LimitDistributionModel]) -> None:
+        self.result_storage.bulk_insert_data(models)

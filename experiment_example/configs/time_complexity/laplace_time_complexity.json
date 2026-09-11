@@ -1,8 +1,10 @@
 {
   "name": "laplace_time_complexity",
+  "experiment_type": "time_complexity",
+  "storage_connection": "sqlite:///pysatl.sqlite",
   "config": {
-    "experiment_type": "time_complexity",
     "hypothesis": "laplace",
+    "hypothesis_params": {},
     "criteria": [
       {
         "criterion_code": "KS",
@@ -37,11 +39,12 @@
     "monte_carlo_count": 1000,
     "parallel_workers": 1,
     "sample_sizes": [
-      1000, 2000, 5000
+      1000,
+      2000,
+      5000
     ],
     "significance_levels": [
       0.05
-    ],
-    "storage_connection": "sqlite:///pysatl.sqlite"
+    ]
   }
 }

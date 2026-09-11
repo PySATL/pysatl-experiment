@@ -11,6 +11,7 @@ constraint and provides CRUD operations over these results.
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from typing import ClassVar
 
 from sqlalchemy import Float, Integer, String, UniqueConstraint
@@ -231,23 +232,7 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
             results_criteria=json.loads(row.results_criteria),
         )
 
-    def insert_data(self, data: PowerModel) -> None:
-        """
-        Insert or update a power computation result.
-
-        If a matching record exists, only mutable fields are updated.
-        Otherwise, a new record is created.
-
-        Parameters
-        ----------
-        data : PowerModel
-            Computed power result to store.
-
-        Notes
-        -----
-        This method performs an UPSERT-like behavior implemented manually
-        via SELECT + INSERT/UPDATE.
-        """
+    def _upsert_data(self, data: PowerModel) -> None:
         # TODO: change to UPSERT (ON CONFLICT DO UPDATE)?
         params_json = json.dumps(data.criterion_parameters)
         alt_params_json = json.dumps(data.alternative_parameters)
@@ -281,6 +266,43 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
         else:
             existing.experiment_id = int(data.experiment_id)
             existing.results_criteria = json.dumps([bool(x) for x in data.results_criteria])
+
+    def insert_data(self, data: PowerModel) -> None:
+        """
+        Insert or update a power computation result.
+
+        If a matching record exists, only mutable fields are updated.
+        Otherwise, a new record is created.
+
+        Parameters
+        ----------
+        data : PowerModel
+            Computed power result to store.
+
+        Notes
+        -----
+        This method performs an UPSERT-like behavior implemented manually
+        via SELECT + INSERT/UPDATE.
+        """
+        self._upsert_data(data)
+        self._get_session().commit()
+
+    def bulk_insert_data(self, data_list: Iterable[PowerModel]) -> None:
+        """
+        Insert or update multiple power computation results.
+
+        Parameters
+        ----------
+        data_list : Iterable[PowerModel]
+            Power results to store.
+
+        Notes
+        -----
+        Uses the same UPSERT-like behavior as :meth:`insert_data`, but
+        commits once after all records are processed.
+        """
+        for data in data_list:
+            self._upsert_data(data)
         self._get_session().commit()
 
     def delete_data(self, query: PowerQuery) -> None:

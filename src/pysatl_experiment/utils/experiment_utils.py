@@ -89,11 +89,12 @@ def read_experiment_data(experiment_name: str) -> dict:
 
 @profile
 def get_sample_data_from_storage(
-    generator_name: str,
-    generator_parameters: list[float],
+    generator_code: str,
     sample_size: int,
     count: int,
     data_storage: IRandomValuesStorage,
+    experiment_name: str,
+    generator_parameters: dict[str, float] | list[float] | None = None,
 ) -> list[list[float]]:
     """
     Load generated samples from storage.
@@ -102,7 +103,9 @@ def get_sample_data_from_storage(
     ----------
     generator_name : str
         Name of the random value generator.
-    generator_parameters : list[float]
+    experiment_name : str
+        Experiment name used to scope generated samples.
+    generator_parameters : dict[str, float] | list[float] | None
         Generator parameters used during sample generation.
     sample_size : int
         Size of each generated sample.
@@ -124,10 +127,11 @@ def get_sample_data_from_storage(
     data = []
 
     query = RandomValuesCountQuery(
-        generator_name=generator_name,
-        generator_parameters=generator_parameters,
+        experiment_name=experiment_name,
+        generator_code=generator_code,
         sample_size=sample_size,
         count=count,
+        generator_parameters=generator_parameters,
     )
 
     data_from_db = data_storage.get_count_data(query)

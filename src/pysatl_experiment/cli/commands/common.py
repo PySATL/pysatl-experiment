@@ -1,6 +1,6 @@
 """Common utilities for CLI commands and experiment management."""
 
-from typing import cast, overload
+from typing import overload
 
 from pysatl_criterion import DistributionType
 from pysatl_criterion.utils.statistic import get_available_criteria

@@ -10,8 +10,8 @@ from pysatl_experiment.configuration.experiment_data.experiment_data import Expe
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.experiment_execution.experiment import Experiment
 from pysatl_experiment.experiment_execution.experiment_factory import (
-    PowerExperimentFactory,
     CriticalValueExperimentFactory,
+    PowerExperimentFactory,
     TimeComplexityExperimentFactory,
 )
 from pysatl_experiment.experiment_execution.experiment_steps import ExperimentSteps

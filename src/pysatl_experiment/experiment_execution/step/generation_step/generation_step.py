@@ -1,10 +1,14 @@
 """Random sample generation step implementation."""
 
 from line_profiler import profile
+from pysatl_criterion.generator.model import AbstractRVSGenerator
 from typing_extensions import override
 
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
-from pysatl_experiment.experiment_execution.step.generation_step.generation_step_data import GenerationStepData
+from pysatl_experiment.experiment_execution.step.generation_step.generation_step_context import (
+    GenerationData,
+    GenerationStepContext,
+)
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesModel
 
 
@@ -13,38 +17,44 @@ class GenerationStep(IExperimentStep):
 
     def __init__(
         self,
-        step_config: list[GenerationStepData],
-        data_storage: IRandomValuesStorage,
+        ctx: GenerationStepContext,
+        random_values_storage: IRandomValuesStorage,
     ) -> None:
         """
         Initialize generation step.
 
         Parameters
         ----------
-        step_config : list[GenerationStepData]
+        ctx : GenerationStepContext
             Sample generation configurations.
-        data_storage : IRandomValuesStorage
+        random_values_storage : IRandomValuesStorage
             Storage for generated samples.
         """
-        self.step_config = step_config
-        self.data_storage = data_storage
+        self.ctx = ctx
+        self.random_values_storage = random_values_storage
 
     @profile
     @override
     def run(self) -> None:
         """Execute sample generation step."""
-        for step_data in self.step_config:
-            samples = self._generate_samples(step_data)
-            self._save_samples_to_storage(samples, step_data.sample_size, step_data)
+        for data in self.ctx.data_list:
+            if data.samples_count > 0:
+                samples = self._generate_samples(data.generator, data.sample_size, data.samples_count)
+                self._save_samples_to_storage(samples, self.ctx.experiment_name, data)
+
+    @property
+    def ctxs(self) -> list[GenerationData]:
+        """Return generation tasks."""
+        return self.ctx.data_list
 
     @profile
-    def _generate_samples(self, step_data: GenerationStepData) -> list[list[float]]:
+    def _generate_samples(self, generator: AbstractRVSGenerator, size: int, count: int) -> list[list[float]]:
         """
         Generate random samples.
 
         Parameters
         ----------
-        step_data : GenerationStepData
+        data : GenerationData
             Generation task configuration.
 
         Returns
@@ -53,15 +63,13 @@ class GenerationStep(IExperimentStep):
             Generated samples.
         """
         samples = []
-        for i in range(step_data.count):
-            sample = list(step_data.generator.generate(step_data.sample_size))
+        for i in range(count):
+            sample = list(generator.generate(size))
             samples.append(sample)
 
         return samples
 
-    def _save_samples_to_storage(
-        self, samples: list[list[float]], sample_size: int, step_data: GenerationStepData
-    ) -> None:
+    def _save_samples_to_storage(self, samples: list[list[float]], experiment_name: str, data: GenerationData) -> None:
         """
         Save generated samples to storage.
 
@@ -69,21 +77,20 @@ class GenerationStep(IExperimentStep):
         ----------
         samples : list[list[float]]
             Generated samples.
-        sample_size : int
+        experiment_name : str
             Sample size.
-        step_data : GenerationStepData
+        data : GenerationStepContext
             Generation task configuration.
         """
-        for i in range(len(samples)):
-            sample = samples[i]
-            generator_name = step_data.generator_name
-            generator_parameters = step_data.generator_parameters
-            sample_num = i + 1
-            data_to_save = RandomValuesModel(
-                generator_name=generator_name,
-                generator_parameters=generator_parameters,
-                sample_size=sample_size,
-                sample_num=sample_num,
+        data_to_save = [
+            RandomValuesModel(
+                generator_code=data.generator.code(),
+                generator_parameters=data.generator.parameters(),
+                sample_size=len(sample),
+                experiment_name=experiment_name,
                 data=sample,
             )
-            self.data_storage.insert_data(data_to_save)
+            for sample in samples
+        ]
+
+        self.random_values_storage.bulk_insert_data(data_to_save)

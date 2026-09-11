@@ -64,6 +64,16 @@ class FakeStatistics(AbstractGoodnessOfFitStatistic):
     def short_code():
         return "FAKE_CODE"
 
+    def hypothesis(self):
+        return None
+
+    def alternative(self):
+        return None
+
+    @staticmethod
+    def distribution():
+        return DistributionType.EXPONENTIAL
+
     def execute_statistic(self, rvs, **kwargs) -> float | float64:
         return 0
 
@@ -104,8 +114,8 @@ class FakeRandomValuesStorage:
 
 
 class FakeTimeComplexityStorage(ITimeComplexityStorage):
-    def __init__(self, has_result: set[tuple[str, int, int]]):
-        # key: (criterion_code, sample_size, monte_carlo_count)
+    def __init__(self, has_result: set[tuple[str, str, int, int]]):
+        # key: (experiment_name, criterion_code, sample_size, monte_carlo_count)
         self.has_result = has_result
         self.deleted_queries: list[Any] = []
 
@@ -114,9 +124,10 @@ class FakeTimeComplexityStorage(ITimeComplexityStorage):
 
     def get_data(self, query):
         key = (
+            query.experiment_name,
             query.criterion_code,
             query.sample_size,
-            query.monte_carlo_count,
+            query.samples_count,
         )
         return object() if key in self.has_result else None
 
@@ -124,6 +135,9 @@ class FakeTimeComplexityStorage(ITimeComplexityStorage):
         self.deleted_queries.append(query)
 
     def insert_data(self, model):  # pragma: no cover - steps aren't run
+        pass
+
+    def bulk_insert_data(self, models):  # pragma: no cover - steps aren't run
         pass
 
 
@@ -199,7 +213,7 @@ def build_time_complexity_data(results_path: Path) -> TimeComplexityExperimentDa
         parallel_workers=1,
     )
     return TimeComplexityExperimentData(
-        name="tc_test",
+        experiment_name="tc_test",
         config=config,
         steps_done=type("StepsDone", (), {"is_generation_step_done": False, "is_execution_step_done": False})(),
         results_path=results_path,
@@ -221,12 +235,11 @@ def test_create_generation_step_builds_needed_entries(tmp_results_path: Path):
     assert isinstance(gen_step, GenerationStep)
 
     # For size 10, rvs_count == monte_carlo -> no work; for size 20 needed = 3
-    assert len(gen_step.step_config) == 1
-    step0 = gen_step.step_config[0]
+    assert len(gen_step.ctxs) == 1
+    step0 = gen_step.ctxs[0]
     assert step0.sample_size == 20
-    assert step0.count == 3  # 5 - 2
-    assert step0.generator_name == "FAKEGENERATOR"
-    assert step0.generator_parameters == [1.0]
+    assert step0.samples_count == 3  # 5 - 2
+    assert step0.generator is fake_generator
 
 
 def test_create_execution_step_includes_missing_results(tmp_results_path: Path):
@@ -237,7 +250,7 @@ def test_create_execution_step_includes_missing_results(tmp_results_path: Path):
     rvs_storage = cast(IRandomValuesStorage, FakeRandomValuesStorage(counts_by_size={10: 5, 20: 5}))
 
     # Only (code, 10, 5) exists; (code, 20, 5) is missing -> expect one step
-    tc_storage = FakeTimeComplexityStorage(has_result={(FakeStatistics.code(), 10, 5)})
+    tc_storage = FakeTimeComplexityStorage(has_result={("tc_test", FakeStatistics.code(), 10, 5)})
     exp_storage = FakeExperimentStorage(experiment_id=42)
 
     exec_step = factory._create_execution_step(rvs_storage, tc_storage, exp_storage)
@@ -263,6 +276,7 @@ def test_create_report_building_step_sets_expected_fields(tmp_results_path: Path
     assert isinstance(rb_step, TimeComplexityReportBuildingStep)
 
     # Validate fields propagated from experiment data and criteria config
+    assert rb_step.experiment_name == data.experiment_name
     assert [c.criterion_code for c in rb_step.criteria_config] == [FakeStatistics.code()]
     assert rb_step.sizes == sorted(data.config.sample_sizes)
     assert rb_step.monte_carlo_count == data.config.monte_carlo_count

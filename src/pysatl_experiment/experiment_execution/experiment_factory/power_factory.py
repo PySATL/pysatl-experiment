@@ -7,20 +7,27 @@ for goodness-of-fit criteria under alternative distributions.
 """
 
 from pysatl_criterion.persistence.models.base import IDataStorage
+from pysatl_criterion.utils.generator import get_available_generator
 from typing_extensions import override
 
 from pysatl_experiment.configuration.experiment_data.power import PowerExperimentData
-from pysatl_experiment.experiment_execution.experiment_factory.abstract_experiment_factory import AbstractExperimentFactory
-from pysatl_experiment.experiment_execution.step.execution_step.power.power_execution_step import PowerExecutionStep, PowerStepData
+from pysatl_experiment.experiment_execution.experiment_factory.abstract_experiment_factory import (
+    AbstractExperimentFactory,
+)
+from pysatl_experiment.experiment_execution.step.execution_step.power.power_execution_step import (
+    PowerExecutionStep,
+    PowerStepData,
+)
 from pysatl_experiment.experiment_execution.step.generation_step.generation_step import (
+    GenerationData,
     GenerationStep,
-    GenerationStepData,
+    GenerationStepContext,
 )
 from pysatl_experiment.experiment_execution.step.report_step.power.power_report_step import PowerReportBuildingStep
 from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerStorage
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerQuery
-from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 
 
 class PowerExperimentFactory(
@@ -51,7 +58,7 @@ class PowerExperimentFactory(
         """
         super().__init__(experiment_data)
 
-    def _create_generation_step(self, data_storage: IRandomValuesStorage) -> GenerationStep:
+    def _create_generation_step(self, random_values_storage: IRandomValuesStorage) -> GenerationStep:
         """
         Create a sample generation step.
 
@@ -61,7 +68,7 @@ class PowerExperimentFactory(
 
         Parameters
         ----------
-        data_storage : IRandomValuesStorage
+        random_values_storage : IRandomValuesStorage
             Random values storage.
 
         Returns
@@ -70,36 +77,19 @@ class PowerExperimentFactory(
             Configured generation step.
         """
         config = self.experiment_data.config
-        monte_carlo_count = config.monte_carlo_count
 
-        step_config = []
-        for sample_size in config.sample_sizes:
-            for alternative in config.alternatives:
-                generator_name = alternative.generator_name
-                generator_parameters = alternative.parameters
-                query = RandomValuesAllQuery(
-                    generator_name=generator_name,
-                    generator_parameters=generator_parameters,
-                    sample_size=sample_size,
-                )
-                rvs_count = data_storage.get_rvs_count(query)
-                if rvs_count < monte_carlo_count:
-                    needed_rvs_count = monte_carlo_count - rvs_count
-                    generator = self._get_generator_class_object(generator_name, generator_parameters)
-                    step_data = GenerationStepData(
-                        generator=generator,
-                        generator_name=generator_name,
-                        generator_parameters=generator_parameters,
-                        sample_size=sample_size,
-                        count=needed_rvs_count,
-                    )
-                    step_config.append(step_data)
-                else:
-                    continue
+        data_list = [
+            GenerationData(
+                generator=get_available_generator(alternative.distribution_type, alternative.parameters),
+                sample_size=sample_size,
+                samples_count=config.monte_carlo_count,
+            )
+            for sample_size in config.sample_sizes
+            for alternative in config.alternatives
+        ]
 
-        generation_step = GenerationStep(step_config=step_config, data_storage=data_storage)
-
-        return generation_step
+        ctx = GenerationStepContext(data_list=data_list, experiment_name=self.experiment_data.name)
+        return GenerationStep(ctx=ctx, random_values_storage=random_values_storage)
 
     def _create_execution_step(
         self,
@@ -146,7 +136,7 @@ class PowerExperimentFactory(
                             criterion_parameters=criterion_config.criterion.parameters,
                             sample_size=sample_size,
                             monte_carlo_count=monte_carlo_count,
-                            alternative_code=alternative.generator_name,
+                            alternative_code=alternative.distribution_type,
                             alternative_parameters=alternative.parameters,
                             significance_level=significance_level,
                         )
@@ -156,13 +146,15 @@ class PowerExperimentFactory(
                             step_data = PowerStepData(
                                 statistics=statistics,
                                 sample_size=sample_size,
+                                criterion_parameters=criterion_config.criterion.parameters,
                                 alternative=alternative,
                                 significance_level=significance_level,
                             )
                             step_config.append(step_data)
 
-        execution_step = PowerExecutionStep(
+        return PowerExecutionStep(
             experiment_id=experiment_id,
+            experiment_name=self.experiment_data.experiment_name,
             step_config=step_config,
             monte_carlo_count=monte_carlo_count,
             data_storage=data_storage,
@@ -170,8 +162,6 @@ class PowerExperimentFactory(
             storage_connection=storage_connection,
             parallel_workers=config.parallel_workers,
         )
-
-        return execution_step
 
     def _create_report_building_step(
         self,

@@ -7,25 +7,36 @@ complexity of statistical criteria.
 """
 
 from pysatl_criterion.persistence.models.base import IDataStorage
+from pysatl_criterion.utils.generator import get_available_generator
 from typing_extensions import override
 
 from pysatl_experiment.configuration.experiment_data.time_complexity import TimeComplexityExperimentData
-from pysatl_experiment.experiment_execution.experiment_factory import AbstractExperimentFactory
+from pysatl_experiment.experiment_execution.experiment_factory.abstract_experiment_factory import (
+    AbstractExperimentFactory,
+)
 from pysatl_experiment.experiment_execution.step.execution_step.execution_step_data import HypothesisGeneratorData
 from pysatl_experiment.experiment_execution.step.execution_step.time_complexity.time_complexity_execution_step import (
     TimeComplexityExecutionStep,
     TimeComplexityStepData,
 )
 from pysatl_experiment.experiment_execution.step.generation_step.generation_step import (
+    GenerationData,
     GenerationStep,
-    GenerationStepData,
+    GenerationStepContext,
 )
 from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_step import (
     TimeComplexityReportBuildingStep,
 )
+from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_step_context import (
+    TimeComplexityReportData,
+    TimeComplexityReportStepContext,
+)
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
-from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
-from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.models.time_complexity import (
+    ITimeComplexityStorage,
+    TimeComplexityQuery,
+)
 from pysatl_experiment.persistence.time_complexity_storage import AlchemyTimeComplexityStorage
 
 
@@ -59,7 +70,7 @@ class TimeComplexityExperimentFactory(
         super().__init__(experiment_data)
 
     @override
-    def _create_generation_step(self, data_storage: IRandomValuesStorage) -> GenerationStep:
+    def _create_generation_step(self, random_values_storage: IRandomValuesStorage) -> GenerationStep:
         """
         Create a sample generation step.
 
@@ -69,7 +80,7 @@ class TimeComplexityExperimentFactory(
 
         Parameters
         ----------
-        data_storage : IRandomValuesStorage
+        random_values_storage : IRandomValuesStorage
             Random values storage.
 
         Returns
@@ -78,33 +89,18 @@ class TimeComplexityExperimentFactory(
             Configured generation step.
         """
         config = self.experiment_data.config
-        monte_carlo_count = config.monte_carlo_count
-        generator_name, generator_parameters, generator = self._get_hypothesis_generator_metadata()
 
-        step_config = []
-
-        for sample_size in config.sample_sizes:
-            rvs_count = data_storage.get_rvs_count(
-                RandomValuesAllQuery(
-                    generator_name=generator_name,
-                    generator_parameters=generator_parameters,
-                    sample_size=sample_size,
-                )
+        data_list = [
+            GenerationData(
+                generator=get_available_generator(config.hypothesis, config.hypothesis_params),
+                sample_size=sample_size,
+                samples_count=config.monte_carlo_count,
             )
-            if rvs_count < monte_carlo_count:
-                needed_rvs_count = monte_carlo_count - rvs_count
-                step_data = GenerationStepData(
-                    generator=generator,
-                    generator_name=generator_name,
-                    generator_parameters=generator_parameters,
-                    sample_size=sample_size,
-                    count=needed_rvs_count,
-                )
-                step_config.append(step_data)
-            else:
-                continue
+            for sample_size in config.sample_sizes
+        ]
 
-        return GenerationStep(step_config=step_config, data_storage=data_storage)
+        ctx = GenerationStepContext(data_list=data_list, experiment_name=self.experiment_data.name)
+        return GenerationStep(ctx=ctx, random_values_storage=random_values_storage)
 
     @override
     def _create_execution_step(
@@ -126,8 +122,6 @@ class TimeComplexityExperimentFactory(
             Random values storage.
         result_storage : ITimeComplexityStorage
             Time complexity result storage.
-        experiment_storage : IExperimentStorage
-            Experiment metadata storage.
 
         Returns
         -------
@@ -143,15 +137,20 @@ class TimeComplexityExperimentFactory(
         for criterion_config in criteria_config:
             for sample_size in config.sample_sizes:
                 query = TimeComplexityQuery(
+                    experiment_name=self.experiment_data.experiment_name,
                     criterion_code=criterion_config.criterion_code,
                     criterion_parameters=criterion_config.criterion.parameters,
                     sample_size=sample_size,
-                    monte_carlo_count=monte_carlo_count,
+                    samples_count=monte_carlo_count,
                 )
                 result = result_storage.get_data(query)
                 if result is None:
                     statistics = criterion_config.statistics_class_object
-                    step_data = TimeComplexityStepData(statistics=statistics, sample_size=sample_size)
+                    step_data = TimeComplexityStepData(
+                        statistics=statistics,
+                        sample_size=sample_size,
+                        criterion_parameters=criterion_config.criterion.parameters,
+                    )
                     step_config.append(step_data)
 
         hypothesis_generator_name, hypothesis_generator_parameters, _ = self._get_hypothesis_generator_metadata()
@@ -162,6 +161,7 @@ class TimeComplexityExperimentFactory(
 
         execution_step = TimeComplexityExecutionStep(
             experiment_id=experiment_id,
+            experiment_name=self.experiment_data.experiment_name,
             hypothesis_generator_data=hypothesis_generator_data,
             step_config=step_config,
             monte_carlo_count=monte_carlo_count,
@@ -191,14 +191,25 @@ class TimeComplexityExperimentFactory(
         TimeComplexityReportBuildingStep
             Configured report-building step.
         """
-        return TimeComplexityReportBuildingStep(
-            report_name=self.experiment_data.name,
-            criteria_config=self._get_criteria_config(),
-            sample_sizes=self.experiment_data.config.sample_sizes,
+        data_list = [
+            TimeComplexityReportData(
+                sample_size=sample_size,
+            )
+            for sample_size in self.experiment_data.config.sample_sizes
+        ]
+
+        ctx = TimeComplexityReportStepContext(
+            report_name=self.experiment_data.experiment_name,
+            experiment_name=self.experiment_data.experiment_name,
+            data_list=data_list,
             monte_carlo_count=self.experiment_data.config.monte_carlo_count,
-            result_storage=result_storage,
             results_path=self.experiment_data.results_path,
-            with_chart=self.experiment_data.config.report_mode,
+            report_mode=self.experiment_data.config.report_mode,
+        )
+
+        return TimeComplexityReportBuildingStep(
+            ctx=ctx,
+            result_storage=result_storage,
         )
 
     @override
@@ -258,6 +269,7 @@ class TimeComplexityExperimentFactory(
             statistics_codes.append(criterion_config.criterion_code)
 
         queries = self._create_time_complexity_queries(
+            experiment_name=self.experiment_data.experiment_name,
             statistics_codes=statistics_codes,
             sample_sizes=self.experiment_data.config.sample_sizes,
             monte_carlo_count=self.experiment_data.config.monte_carlo_count,

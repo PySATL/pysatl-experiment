@@ -48,6 +48,7 @@ class ExperimentConfig:
     storage_connection: str
     run_mode: RunMode
     hypothesis: DistributionType
+    hypothesis_params: dict[str, float]
     generator_type: StepType
     executor_type: StepType
     report_builder_type: StepType

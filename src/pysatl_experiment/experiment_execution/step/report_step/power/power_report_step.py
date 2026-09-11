@@ -103,7 +103,7 @@ class PowerReportBuildingStep(IExperimentStep):
                             alternative=alternative,
                             significance_level=significance_level,
                         )
-                        key = (alternative.generator_name, significance_level)
+                        key = (alternative.distribution_type, significance_level)
 
                         level1_dict = power_data.setdefault(criterion_config.criterion_code, {})
                         level2_dict = level1_dict.setdefault(key, {})
@@ -146,7 +146,7 @@ class PowerReportBuildingStep(IExperimentStep):
             criterion_code=criterion_config.criterion_code,
             criterion_parameters=criterion_config.criterion.parameters,
             sample_size=sample_size,
-            alternative_code=alternative.generator_name,
+            alternative_code=alternative.distribution_type,
             alternative_parameters=alternative.parameters,
             monte_carlo_count=self.monte_carlo_count,
             significance_level=significance_level,

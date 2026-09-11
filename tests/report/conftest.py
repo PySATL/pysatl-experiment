@@ -9,6 +9,9 @@ from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.models.criterion import Criterion
 from pysatl_experiment.configuration.models.report_mode import ReportMode
+from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_statistic import (
+    TimeComplexityReportStatistic,
+)
 
 
 @pytest.fixture()
@@ -94,7 +97,12 @@ def cv_values():
 
 @pytest.fixture
 def time_data():
-    return {"KS_": [(10, 0.001), (20, 0.002)], "AD_": [(10, 0.0015), (20, 0.0025)]}
+    return TimeComplexityReportStatistic(
+        {
+            "KS_": [(10, 0.001), (20, 0.002)],
+            "AD_": [(10, 0.0015), (20, 0.0025)],
+        }
+    )
 
 
 @pytest.fixture

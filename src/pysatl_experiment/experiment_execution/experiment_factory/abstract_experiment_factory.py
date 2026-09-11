@@ -10,17 +10,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar, cast
 
 from pysatl_criterion import DistributionType
-from pysatl_criterion.generator.generators import (
-    BetaRVSGenerator,
-    ExponentialGenerator,
-    GammaGenerator,
-    LognormGenerator,
-    NormalGenerator,
-    TRVSGenerator,
-    UniformGenerator,
-    WeibullGenerator,
-    LaplaceRVSGenerator,
-)
 from pysatl_criterion.generator.model import AbstractRVSGenerator
 from pysatl_criterion.persistence.models.base import IDataStorage
 from pysatl_criterion.persistence.models.limit_distribution import LimitDistributionQuery
@@ -28,13 +17,14 @@ from pysatl_criterion.statistics.goodness_of_fit import (
     AbstractBetaGofStatistic,
     AbstractExponentialityGofStatistic,
     AbstractGammaGofStatistic,
+    AbstractLaplaceGofStatistic,
     AbstractLogNormalGofStatistic,
     AbstractNormalityGofStatistic,
     AbstractStudentGofStatistic,
     AbstractUniformGofStatistic,
     AbstractWeibullGofStatistic,
-    AbstractLaplaceGofStatistic,
 )
+from pysatl_criterion.utils.generator import get_available_generator
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
@@ -107,7 +97,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         return experiment_steps
 
     @abstractmethod
-    def _create_generation_step(self, data_storage: IRandomValuesStorage) -> G:
+    def _create_generation_step(self, random_values_storage: IRandomValuesStorage) -> G:
         """
         Create a generation step.
 
@@ -115,7 +105,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         Parameters
         ----------
-        data_storage : IRandomValuesStorage
+        random_values_storage : IRandomValuesStorage
             Storage containing generated random samples.
 
         Returns
@@ -241,9 +231,10 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         for sample_size in sample_sizes:
             all_data_query = RandomValuesAllQuery(
-                generator_name=generator_name,
-                generator_parameters=generator_parameters,
+                generator_code=generator_name,
                 sample_size=sample_size,
+                experiment_name=self.experiment_data.experiment_name,
+                generator_parameters=generator_parameters,
             )
             data_storage.delete_all_data(all_data_query)
 
@@ -264,78 +255,15 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         for sample_size in sample_sizes:
             for alternative in alternatives_config:
-                generator_name = alternative.generator_name
+                generator_name = alternative.distribution_type
                 generator_parameters = alternative.parameters
                 all_data_query = RandomValuesAllQuery(
-                    generator_name=generator_name,
-                    generator_parameters=generator_parameters,
+                    generator_code=generator_name,
                     sample_size=sample_size,
+                    experiment_name=self.experiment_data.experiment_name,
+                    generator_parameters=generator_parameters,
                 )
                 data_storage.delete_all_data(all_data_query)
-
-    def _get_hypothesis_generator_metadata(self) -> tuple[str, list[float], AbstractRVSGenerator]:
-        """
-        Resolve metadata for the configured hypothesis generator.
-
-        Creates a generator corresponding to the selected hypothesis and
-        extracts information required for storage access and execution.
-
-        Returns
-        -------
-        tuple[str, list[float], AbstractRVSGenerator]
-            Tuple containing generator name, generator parameters and
-            generator instance.
-
-        Raises
-        ------
-        ValueError
-            If the configured hypothesis is unsupported.
-        """
-        hypothesis_generator: AbstractRVSGenerator
-        hypothesis = self.experiment_data.config.hypothesis
-
-        if hypothesis == DistributionType.NORMAL:
-            hypothesis_generator = NormalGenerator()
-            generator_name = "NORMALGENERATOR"
-            generator_parameters = [hypothesis_generator.mean, hypothesis_generator.var]
-        elif hypothesis == DistributionType.LAPLACE:
-            hypothesis_generator = LaplaceRVSGenerator(0, 1)
-            generator_name = "LAPLACEGENERATOR"
-            generator_parameters = [hypothesis_generator.t, hypothesis_generator.s]
-        elif hypothesis == DistributionType.EXPONENTIAL:
-            hypothesis_generator = ExponentialGenerator()
-            generator_name = "EXPONENTIALGENERATOR"
-            generator_parameters = [hypothesis_generator.lam]
-        elif hypothesis == DistributionType.WEIBULL:
-            hypothesis_generator = WeibullGenerator()
-            generator_name = "WEIBULLGENERATOR"
-            generator_parameters = [hypothesis_generator.a, hypothesis_generator.k]
-        elif hypothesis == DistributionType.GAMMA:
-            hypothesis_generator = GammaGenerator()
-            generator_name = "GAMMAGENERATOR"
-            generator_parameters = [hypothesis_generator.alfa, hypothesis_generator.beta]
-        elif hypothesis == DistributionType.BETA:
-            hypothesis_generator = BetaRVSGenerator()
-            generator_name = "BETARVSGENERATOR"
-            generator_parameters = [hypothesis_generator.a, hypothesis_generator.b]
-        elif hypothesis == DistributionType.LOG_NORMAL:
-            hypothesis_generator = LognormGenerator()
-            generator_name = "LOGNORMGENERATOR"
-            generator_parameters = [hypothesis_generator.s, hypothesis_generator.mu]
-        elif hypothesis == DistributionType.STUDENT:
-            hypothesis_generator = TRVSGenerator(df=1)
-            generator_name = "TRVSGENERATOR"
-            generator_parameters = [hypothesis_generator.df]
-        elif hypothesis == DistributionType.UNIFORM:
-            hypothesis_generator = UniformGenerator()
-            generator_name = "UNIFORMGENERATOR"
-            generator_parameters = [hypothesis_generator.a, hypothesis_generator.b]
-        else:
-            raise ValueError(f"Unknown hypothesis: {hypothesis}")
-
-        # TODO: switch!
-
-        return generator_name, generator_parameters, hypothesis_generator
 
     _HYPOTHESIS_TO_BASE_CLASS: dict[DistributionType, type[Any]] = {
         DistributionType.NORMAL: AbstractNormalityGofStatistic,
@@ -426,6 +354,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     @staticmethod
     def _create_time_complexity_queries(
+        experiment_name: str,
         statistics_codes: list[str],
         sample_sizes: list[int],
         monte_carlo_count: int,
@@ -435,6 +364,8 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         Parameters
         ----------
+        experiment_name : str
+            Experiment name.
         statistics_codes : list[str]
             Statistic implementation codes.
         sample_sizes : list[int]
@@ -451,10 +382,11 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         for code in statistics_codes:
             for size in sample_sizes:
                 query = TimeComplexityQuery(
+                    experiment_name=experiment_name,
                     criterion_code=code,
-                    criterion_parameters=[],
+                    criterion_parameters={},
                     sample_size=size,
-                    monte_carlo_count=monte_carlo_count,
+                    samples_count=monte_carlo_count,
                 )
                 queries.append(query)
 
@@ -491,7 +423,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             for size in sample_sizes:
                 for significance_level in significance_levels:
                     for alternative in alternatives:
-                        alternative_code = alternative.generator_name
+                        alternative_code = alternative.distribution_type
                         alternative_parameters = alternative.parameters
                         query = PowerQuery(
                             criterion_code=code,
@@ -539,7 +471,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             significance_levels = config.significance_levels
         elif experiment_type == ExperimentType.POWER:
             significance_levels = config.significance_levels
-            alternatives = {alternative.generator_name: alternative.parameters for alternative in config.alternatives}
+            alternatives = {alternative.distribution_type: alternative.parameters for alternative in config.alternatives}
 
         query = ExperimentQuery(
             experiment_type=experiment_type.value,
@@ -631,6 +563,11 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
                 return cast(type[AbstractRVSGenerator], sub)(*generator_parameters)
 
         raise ValueError(f"Unknown generator: {generator_name}")
+
+    def _get_hypothesis_generator_metadata(self) -> tuple[str, dict[str, float], AbstractRVSGenerator]:
+        """Resolve the null-hypothesis generator metadata."""
+        generator = get_available_generator(self.experiment_data.config.hypothesis, None)
+        return generator.code(), generator.parameters(), generator
 
 
 # TODO: warnings!!
