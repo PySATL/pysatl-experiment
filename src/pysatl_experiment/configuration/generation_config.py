@@ -4,6 +4,7 @@ from pysatl_criterion import DistributionType
 
 from pysatl_experiment.configuration.models.step_type import StepType
 
+
 @dataclass
 class GenerationConfig:
     samples_count: int

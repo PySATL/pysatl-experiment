@@ -19,10 +19,7 @@ from pysatl_experiment.experiment_execution.step.execution_step.time_complexity.
     TimeComplexityWorkerResult,
 )
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
-from pysatl_experiment.persistence.models.time_complexity import (
-    ITimeComplexityStorage,
-    TimeComplexityModel,
-)
+from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage, TimeComplexityModel
 
 
 @dataclass

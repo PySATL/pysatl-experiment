@@ -30,7 +30,7 @@ from pysatl_experiment.experiment_execution.step.report_step.critical_value.crit
     CriticalValueReportBuildingStep,
 )
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
-from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 
 
 class CriticalValueExperimentFactory(

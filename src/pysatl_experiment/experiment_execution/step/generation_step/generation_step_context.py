@@ -24,6 +24,7 @@ class GenerationData:
     sample_size: int
     samples_count: int
 
+
 @dataclass
 class GenerationStepContext:
     """

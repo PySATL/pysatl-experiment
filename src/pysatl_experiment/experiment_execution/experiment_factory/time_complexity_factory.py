@@ -33,10 +33,7 @@ from pysatl_experiment.experiment_execution.step.report_step.time_complexity.tim
 )
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
-from pysatl_experiment.persistence.models.time_complexity import (
-    ITimeComplexityStorage,
-    TimeComplexityQuery,
-)
+from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
 from pysatl_experiment.persistence.time_complexity_storage import AlchemyTimeComplexityStorage
 
 

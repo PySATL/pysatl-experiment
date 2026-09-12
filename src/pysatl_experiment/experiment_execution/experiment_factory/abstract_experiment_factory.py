@@ -471,7 +471,9 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             significance_levels = config.significance_levels
         elif experiment_type == ExperimentType.POWER:
             significance_levels = config.significance_levels
-            alternatives = {alternative.distribution_type: alternative.parameters for alternative in config.alternatives}
+            alternatives = {
+                alternative.distribution_type: alternative.parameters for alternative in config.alternatives
+            }
 
         query = ExperimentQuery(
             experiment_type=experiment_type.value,

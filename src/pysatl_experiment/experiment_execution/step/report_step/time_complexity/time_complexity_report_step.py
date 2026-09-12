@@ -8,10 +8,7 @@ from pysatl_experiment.experiment_execution.step.abstract_experiment_step import
 from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_builder import (
     TimeComplexityReportBuilder,
 )
-from pysatl_experiment.persistence.models.time_complexity import (
-    ITimeComplexityStorage,
-    TimeComplexityQuery,
-)
+from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
 
 from .time_complexity_report_statistic import TimeComplexityReportStatistic
 from .time_complexity_report_step_context import TimeComplexityReportStepContext
@@ -66,22 +63,34 @@ class TimeComplexityReportBuildingStep(IExperimentStep):
             Average execution times grouped by criterion code.
         """
         stats = TimeComplexityReportStatistic()
-        for data in self.ctx.data_list:
-            times = self._get_times_from_storage(
-                experiment_name=self.experiment_name,
-                criterion_code=data.criterion.code(),
-                criterion_parameters=data.criterion.hypothesis().parameters(),
-                sample_size=data.sample_size,
-                samples_count=self.ctx.samples_count,
-            )
 
-            if times:
-                mean = float(np.mean(times))
-                stats.add_criterion_statistic(data.criterion_code, size, mean)
+        # OLD CODE:
+        # for data in self.ctx.data_list:
+        #    times = self._get_times_from_storage(
+        #        experiment_name=self.experiment_name,
+        #        criterion_code=data.criterion.code(),
+        #        criterion_parameters=data.criterion.hypothesis().parameters(),
+        #        sample_size=data.sample_size,
+        #        samples_count=self.ctx.samples_count,
+        #    )
+        #
+        #    if times:
+        #        mean = float(np.mean(times))
+        #        stats.add_criterion_statistic(data.criterion_code, size, mean)
 
         for criterion in self.criteria_config:
             for size in self.sizes:
+                times = self._get_times_from_storage(
+                    experiment_name=self.experiment_name,
+                    criterion_code=criterion.code(),
+                    criterion_parameters=criterion.hypothesis().parameters(),
+                    sample_size=size,
+                    samples_count=self.ctx.samples_count,
+                )
 
+                if times:
+                    mean = float(np.mean(times))
+                    stats.add_criterion_statistic(criterion.code(), size, mean)
 
         return stats
 
