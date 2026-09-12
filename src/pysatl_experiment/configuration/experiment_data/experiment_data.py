@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Generic, TypeVar
 
 from pysatl_experiment.configuration.experiment_config.experiment_config import ExperimentConfig
-from pysatl_experiment.configuration.experiment_data.common.steps_done import StepsDone
+from pysatl_experiment.configuration.models.steps_done import StepsDone
 
 
 C = TypeVar("C", bound=ExperimentConfig)
@@ -18,7 +18,7 @@ class ExperimentData(Generic[C]):
 
     Attributes
     ----------
-    name : str
+    experiment_name : str
         Experiment identifier.
     config : C
         Experiment configuration object.
@@ -28,7 +28,12 @@ class ExperimentData(Generic[C]):
         Experiment result artifacts path.
     """
 
-    name: str
+    experiment_name: str
     config: C
     steps_done: StepsDone
     results_path: Path
+
+    @property
+    def name(self) -> str:
+        """Backward-compatible alias for experiment_name."""
+        return self.experiment_name

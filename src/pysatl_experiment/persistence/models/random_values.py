@@ -1,7 +1,10 @@
 """Random values storage models and interface."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Any, Iterable
 
 from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
 
@@ -13,23 +16,27 @@ class RandomValuesModel(DataModel):
 
     Parameters
     ----------
-    generator_name : str
+    generator_code : str
         Name of generator.
     generator_parameters : list[float]
         Generator parameters.
     sample_size : int
         Size of each sample.
-    sample_num : int
+    experiment_name : str
         Sample index.
     data : list[float]
         Generated random values.
     """
 
-    generator_name: str
-    generator_parameters: list[float]
+    generator_code: str
+    generator_parameters: dict[str, float]
     sample_size: int
-    sample_num: int
+    experiment_name: str
     data: list[float]
+
+    @staticmethod
+    def from_row(query: RandomValuesAllQuery) -> RandomValuesModel:
+        return RandomValuesModel()
 
 
 @dataclass
@@ -39,16 +46,15 @@ class RandomValuesQuery(DataQuery):
 
     Parameters
     ----------
-    generator_name : str
-    generator_parameters : list[float]
+    generator_code : str
     sample_size : int
-    sample_num : int
+    experiment_name : str
     """
 
-    generator_name: str
-    generator_parameters: list[float]
+    generator_code: str
     sample_size: int
-    sample_num: int
+    experiment_name: str
+    generator_parameters: dict[str, Any] | list[float] | None = None
 
 
 @dataclass
@@ -58,14 +64,14 @@ class RandomValuesAllQuery(DataQuery):
 
     Parameters
     ----------
-    generator_name : str
-    generator_parameters : list[float]
+    generator_code : str
     sample_size : int
     """
 
-    generator_name: str
-    generator_parameters: list[float]
+    generator_code: str
     sample_size: int
+    experiment_name: str = ""
+    generator_parameters: dict[str, Any] | list[float] | None = None
 
 
 @dataclass
@@ -75,35 +81,52 @@ class RandomValuesCountQuery(DataQuery):
 
     Parameters
     ----------
-    generator_name : str
-    generator_parameters : list[float]
+    generator_code : str
     sample_size : int
     count : int
     """
 
-    generator_name: str
-    generator_parameters: list[float]
+    generator_code: str
     sample_size: int
     count: int
+    experiment_name: str = ""
+    generator_parameters: dict[str, Any] | list[float] | None = None
 
 
-@dataclass
+@dataclass(init=False)
 class RandomValuesAllModel(DataModel):
     """
     Bulk random values container.
 
     Parameters
     ----------
-    generator_name : str
-    generator_parameters : list[float]
+    generator_code : str
+    experiment_name : str
+    generator_parameters : dict[str, float]
     sample_size : int
     data : list[list[float]]
     """
 
-    generator_name: str
-    generator_parameters: list[float]
+    generator_code: str
+    experiment_name: str
     sample_size: int
+    generator_parameters: dict[str, float] | list[float]
     data: list[list[float]]
+
+    def __init__(
+        self,
+        sample_size: int,
+        generator_parameters: dict[str, float] | list[float],
+        data: list[list[float]],
+        generator_code: str | None = None,
+        generator_name: str | None = None,
+        experiment_name: str = "",
+    ) -> None:
+        self.generator_code = generator_code if generator_code is not None else str(generator_name)
+        self.experiment_name = experiment_name
+        self.sample_size = sample_size
+        self.generator_parameters = generator_parameters
+        self.data = data
 
 
 class IRandomValuesStorage(IDataStorage[RandomValuesModel, RandomValuesQuery], ABC):
@@ -121,13 +144,13 @@ class IRandomValuesStorage(IDataStorage[RandomValuesModel, RandomValuesQuery], A
         pass
 
     @abstractmethod
-    def insert_all_data(self, query: RandomValuesAllModel) -> None:
+    def bulk_insert_data(self, data_list: Iterable[RandomValuesModel]) -> None:
         """
         Insert all data based on hypothesis and sample size.
 
         Parameters
         ----------
-        query : RandomValuesAllModel
+        data_list : list[RandomValuesModel]
         """
         pass
 

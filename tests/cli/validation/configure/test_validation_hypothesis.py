@@ -4,9 +4,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
+from pysatl_criterion import DistributionType
 
 from pysatl_experiment.cli.commands.configure import configure
-from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 
 
 @pytest.fixture
@@ -63,14 +63,14 @@ def test_hypothesis_with_invalid_hyp(get_experiment_config: MagicMock, runner: C
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.get_statistics_short_codes_for_hypothesis")
 @patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
-@pytest.mark.parametrize("valid_hyp", [h for h in Hypothesis])
+@pytest.mark.parametrize("valid_hyp", [h for h in DistributionType])
 def test_hypothesis_with_valid_hyp(
     if_experiment_exists: MagicMock,
     get_statistics_short_codes_for_hypothesis: MagicMock,
     read_experiment_data: MagicMock,
     save_experiment_config: MagicMock,
     runner: CliRunner,
-    valid_hyp: Hypothesis,
+    valid_hyp: DistributionType,
 ) -> None:
     """Tests the `hypothesis` command logic with a valid hypothesis.
 

@@ -1,0 +1,50 @@
+{
+  "name": "laplace_time_complexity",
+  "experiment_type": "time_complexity",
+  "storage_connection": "sqlite:///pysatl.sqlite",
+  "config": {
+    "hypothesis": "laplace",
+    "hypothesis_params": {},
+    "criteria": [
+      {
+        "criterion_code": "KS",
+        "parameters": []
+      },
+      {
+        "criterion_code": "AD",
+        "parameters": []
+      },
+      {
+        "criterion_code": "KUI",
+        "parameters": []
+      },
+      {
+        "criterion_code": "GRW",
+        "parameters": []
+      },
+      {
+        "criterion_code": "CVM",
+        "parameters": []
+      },
+      {
+        "criterion_code": "WAT",
+        "parameters": []
+      }
+    ],
+    "executor_type": "standard",
+    "generator_type": "standard",
+    "report_builder_type": "standard",
+    "report_mode": "with-chart",
+    "run_mode": "reuse",
+    "monte_carlo_count": 1000,
+    "parallel_workers": 1,
+    "sample_sizes": [
+      1000,
+      2000,
+      5000
+    ],
+    "significance_levels": [
+      0.05
+    ]
+  }
+}
