@@ -3,6 +3,9 @@
 from pathlib import Path
 
 from line_profiler import profile
+from pysatl_criterion.hypothesis_testing.critical_values.calculator.critical_value_calculator import (
+    LeftCriticalValueCalculator,
+)
 from pysatl_criterion.persistence.models.limit_distribution import ILimitDistributionStorage, LimitDistributionQuery
 from typing_extensions import override
 
@@ -18,15 +21,15 @@ class CriticalValueReportBuildingStep(IExperimentStep):
     """Standard critical value experiment report building step."""
 
     def __init__(
-        self,
-        report_name: str,
-        criteria_config: list[CriterionConfig],
-        significance_levels: list[float],
-        sample_sizes: list[int],
-        monte_carlo_count: int,
-        result_storage: ILimitDistributionStorage,
-        results_path: Path,
-        with_chart: ReportMode,
+            self,
+            report_name: str,
+            criteria_config: list[CriterionConfig],
+            significance_levels: list[float],
+            sample_sizes: list[int],
+            monte_carlo_count: int,
+            result_storage: ILimitDistributionStorage,
+            results_path: Path,
+            with_chart: ReportMode,
     ) -> None:
         """
         Initialize critical value report builder step.
@@ -66,10 +69,16 @@ class CriticalValueReportBuildingStep(IExperimentStep):
         cv_values = []
         for criterion_config in self.criteria_config:
             for sample_size in self.sizes:
-                cv_calculator = CVCalculator(self.result_storage)
+                # TODO: check tests
+                limit_distribution = self._get_limit_distribution_from_storage(self.result_storage,
+                                                                               criterion_config,
+                                                                               sample_size,
+                                                                               self.monte_carlo_count)
+
+                cv_calculator = LeftCriticalValueCalculator()  # TODO: choice of criteria!!!!
                 for significance_level in self.significance_levels:
-                    cv_value = cv_calculator.calculate_critical_value(
-                        criterion_config.criterion_code, sample_size, significance_level
+                    cv_value = cv_calculator.calculate(
+                        limit_distribution, significance_level
                     )
 
                     cv_values.append(cv_value)
@@ -87,10 +96,10 @@ class CriticalValueReportBuildingStep(IExperimentStep):
 
     @staticmethod
     def _get_limit_distribution_from_storage(
-        storage: ILimitDistributionStorage,
-        criterion_config: CriterionConfig,
-        sample_size: int,
-        monte_carlo_count: int,
+            storage: ILimitDistributionStorage,
+            criterion_config: CriterionConfig,
+            sample_size: int,
+            monte_carlo_count: int,
     ) -> list[float]:
         """
         Load empirical limit distribution from storage.

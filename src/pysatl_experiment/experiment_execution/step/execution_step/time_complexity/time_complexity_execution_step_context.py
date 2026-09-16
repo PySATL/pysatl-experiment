@@ -2,8 +2,6 @@
 
 from dataclasses import dataclass
 
-from pysatl_criterion.generator.model import AbstractRVSGenerator
-
 from pysatl_experiment.experiment_execution.step.generation_step.generation_step_context import GenerationData
 
 
@@ -18,4 +16,6 @@ class TimeComplexityExecutionStepContext:
     experiment_name : str
     """
 
-    parallel_workers: int
+    data_list: list[GenerationData]
+    experiment_name: str
+    # parallel_workers: int TODO

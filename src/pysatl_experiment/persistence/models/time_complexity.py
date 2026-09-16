@@ -3,7 +3,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import TypeAlias
 
 from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
 

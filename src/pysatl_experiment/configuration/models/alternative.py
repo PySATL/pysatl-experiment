@@ -18,8 +18,8 @@ class Alternative:
         Generator-specific numeric parameters.
     """
 
-    distribution_type: DistributionType
     parameters: dict[str, float]
+    distribution_type: DistributionType
 
     @property
     def distribution_type(self) -> DistributionType:

@@ -18,10 +18,10 @@ from pysatl_experiment.configuration.models.experiment_type import ExperimentTyp
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
-from pysatl_experiment.experiment_execution.factory import PowerExperimentFactory
-from pysatl_experiment.experiment_execution.step.execution.power import PowerExecutionStep
+from pysatl_experiment.experiment_execution.experiment_factory import PowerExperimentFactory
+from pysatl_experiment.experiment_execution.step.execution_step.power.power_execution_step import PowerExecutionStep
 from pysatl_experiment.experiment_execution.step.generation_step.generation_step import GenerationStep
-from pysatl_experiment.experiment_execution.step.report_building.power import PowerReportBuildingStep
+from pysatl_experiment.experiment_execution.step.report_step.power.power_report_step import PowerReportBuildingStep
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.power import IPowerStorage
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage

@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any, Iterable
+from typing import Any
 
 from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
 
@@ -34,9 +35,10 @@ class RandomValuesModel(DataModel):
     experiment_name: str
     data: list[float]
 
-    @staticmethod
-    def from_row(query: RandomValuesAllQuery) -> RandomValuesModel:
-        return RandomValuesModel()
+    # TODO: check for actual usage
+    # @staticmethod
+    # def from_row(query: RandomValuesAllQuery) -> RandomValuesModel:
+    #     return RandomValuesModel()
 
 
 @dataclass
@@ -114,13 +116,13 @@ class RandomValuesAllModel(DataModel):
     data: list[list[float]]
 
     def __init__(
-        self,
-        sample_size: int,
-        generator_parameters: dict[str, float] | list[float],
-        data: list[list[float]],
-        generator_code: str | None = None,
-        generator_name: str | None = None,
-        experiment_name: str = "",
+            self,
+            sample_size: int,
+            generator_parameters: dict[str, float] | list[float],
+            data: list[list[float]],
+            generator_code: str | None = None,
+            generator_name: str | None = None,
+            experiment_name: str = "",
     ) -> None:
         self.generator_code = generator_code if generator_code is not None else str(generator_name)
         self.experiment_name = experiment_name

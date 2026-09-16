@@ -15,22 +15,20 @@ from pysatl_experiment.experiment_execution.experiment_factory.abstract_experime
     AbstractExperimentFactory,
 )
 from pysatl_experiment.experiment_execution.step.execution_step.execution_step_data import HypothesisGeneratorData
-from pysatl_experiment.experiment_execution.step.execution_step.time_complexity.time_complexity_execution_step import (
+from pysatl_experiment.experiment_execution.step.execution_step.time_complexity import (
     TimeComplexityExecutionStep,
     TimeComplexityStepData,
 )
-from pysatl_experiment.experiment_execution.step.generation_step.generation_step import (
+from pysatl_experiment.experiment_execution.step.generation_step import (
     GenerationData,
     GenerationStep,
     GenerationStepContext,
 )
-from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_step import (
+from pysatl_experiment.experiment_execution.step.report_step.time_complexity import (
     TimeComplexityReportBuildingStep,
-)
-from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_step_context import (
     TimeComplexityReportData,
     TimeComplexityReportStepContext,
-)
+)  # TODO: refactor other imports like that
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage, TimeComplexityQuery

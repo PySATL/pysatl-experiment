@@ -16,4 +16,6 @@ class CriticalValueExecutionStepContext:
     experiment_name : str
     """
 
-    parallel_workers: int
+    data_list: list[GenerationData]
+    experiment_name: str
+    # parallel_workers: int TODO

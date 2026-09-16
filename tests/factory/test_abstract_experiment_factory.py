@@ -19,7 +19,7 @@ from pysatl_experiment.configuration.models.experiment_type import ExperimentTyp
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
-from pysatl_experiment.experiment_execution.factory import AbstractExperimentFactory
+from pysatl_experiment.experiment_execution.experiment_factory import AbstractExperimentFactory
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
 
 
