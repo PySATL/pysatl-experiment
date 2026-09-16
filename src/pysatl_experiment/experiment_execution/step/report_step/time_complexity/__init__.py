@@ -12,5 +12,5 @@ __all__ = [
     "TimeComplexityReportBuilder",
     "TimeComplexityReportBuildingStep",
     "TimeComplexityReportData",
-    "TimeComplexityReportStepContext"
+    "TimeComplexityReportStepContext",
 ]

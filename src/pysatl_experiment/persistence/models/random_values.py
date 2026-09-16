@@ -116,13 +116,13 @@ class RandomValuesAllModel(DataModel):
     data: list[list[float]]
 
     def __init__(
-            self,
-            sample_size: int,
-            generator_parameters: dict[str, float] | list[float],
-            data: list[list[float]],
-            generator_code: str | None = None,
-            generator_name: str | None = None,
-            experiment_name: str = "",
+        self,
+        sample_size: int,
+        generator_parameters: dict[str, float] | list[float],
+        data: list[list[float]],
+        generator_code: str | None = None,
+        generator_name: str | None = None,
+        experiment_name: str = "",
     ) -> None:
         self.generator_code = generator_code if generator_code is not None else str(generator_name)
         self.experiment_name = experiment_name
