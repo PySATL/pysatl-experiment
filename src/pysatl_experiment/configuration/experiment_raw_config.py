@@ -1,12 +1,15 @@
 from typing import Any
 
 
-class GenerationRawConfig:
-    samples_count: int
-    generator_type: str
-    generator_type: str | None
+class GenerationDistributionRawConfig:
     distribution_type: str | None
-    distribution_params: dict[str, float] | None
+    distribution_params: dict[str, float] | list[float] | None
+
+
+class GenerationRawConfig:
+    samples_count: int | None
+    generator_type: str | None
+    distributions: list[GenerationDistributionRawConfig] | None
     sample_sizes: list[int] | None
     parallel_workers: int | None
 

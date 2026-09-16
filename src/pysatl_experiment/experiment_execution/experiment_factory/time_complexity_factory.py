@@ -6,11 +6,16 @@ constructing experiment steps required to evaluate computational
 complexity of statistical criteria.
 """
 
+import random
+from typing import cast
+
 from pysatl_criterion.persistence.models.base import IDataStorage
+from pysatl_criterion.utils.distribution import get_available_distribution_descriptor
 from pysatl_criterion.utils.generator import get_available_generator
 from typing_extensions import override
 
 from pysatl_experiment.configuration.experiment_data.time_complexity import TimeComplexityExperimentData
+from pysatl_experiment.configuration.generation_config import GenerationConfig
 from pysatl_experiment.experiment_execution.experiment_factory.abstract_experiment_factory import (
     AbstractExperimentFactory,
 )
@@ -85,16 +90,39 @@ class TimeComplexityExperimentFactory(
         GenerationStep
             Configured generation step.
         """
-        config = self.experiment_data.config
+        config: GenerationConfig = self.experiment_data.config
 
-        data_list = [
-            GenerationData(
-                generator=get_available_generator(config.hypothesis, config.hypothesis_params),
-                sample_size=sample_size,
-                samples_count=config.monte_carlo_count,
-            )
-            for sample_size in config.sample_sizes
-        ]
+        data_list = []
+        for sample_size in config.sample_sizes:
+            for distribution_config in config.distributions:
+                distribution_params = distribution_config.distribution_params
+                distribution_type = distribution_config.distribution_type
+
+                if type(distribution_params) == list:
+                    distribution_descriptor = get_available_distribution_descriptor(distribution_type)
+                    a, b = distribution_params
+                    for i in range(config.samples_count):
+                        distribution_params = {
+                            item.name: random.uniform(a, b) for item in distribution_descriptor.parameters()
+                        }
+                        data_list.append(
+                            GenerationData(
+                                generator=get_available_generator(distribution_type, distribution_params),
+                                sample_size=sample_size,
+                                samples_count=1,
+                            )
+                        )
+
+                elif type(distribution_params) == dict:
+                    data_list.append(
+                        GenerationData(
+                            generator=get_available_generator(
+                                distribution_type, cast(dict[str, float], distribution_params)
+                            ),
+                            sample_size=sample_size,
+                            samples_count=config.samples_count,
+                        )
+                    )
 
         ctx = GenerationStepContext(data_list=data_list, experiment_name=self.experiment_data.name)
         return GenerationStep(ctx=ctx, random_values_storage=random_values_storage)

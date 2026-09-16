@@ -2,6 +2,32 @@
   "name": "normal_critical_values",
   "storage_connection": "sqlite:///pysatl.sqlite",
   "experiment_type": "critical_value",
+  "run_mode": "reuse",
+  "generate": {
+    "distributions": [
+      {
+        "distribution_type": "normal",
+        "distribution_params": {
+          "mean": 0,
+          "var": 1
+        }
+      }
+    ],
+    "samples_count": 1000,
+    "parallel_workers": 1,
+    "generator_type": "standard",
+    "sample_sizes": [
+      200,
+      400,
+      600,
+      800,
+      1000
+    ]
+  },
+  "report": {
+    "report_builder_type": "standard",
+    "report_mode": "with-chart"
+  },
   "config": {
     "hypothesis": "normal",
     "criteria": [
@@ -15,19 +41,7 @@
       }
     ],
     "executor_type": "standard",
-    "generator_type": "standard",
-    "report_builder_type": "standard",
-    "report_mode": "with-chart",
-    "run_mode": "reuse",
     "monte_carlo_count": 1000,
-    "parallel_workers": 1,
-    "sample_sizes": [
-      200,
-      400,
-      600,
-      800,
-      1000
-    ],
     "significance_levels": [
       0.01,
       0.05,
