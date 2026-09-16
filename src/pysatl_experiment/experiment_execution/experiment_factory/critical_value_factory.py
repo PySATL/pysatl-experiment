@@ -97,7 +97,11 @@ class CriticalValueExperimentFactory(
             for sample_size in config.sample_sizes
         ]
 
-        ctx = GenerationStepContext(data_list=data_list, experiment_name=self.experiment_data.name)
+        ctx = GenerationStepContext(
+            data_list=data_list,
+            experiment_name=self.experiment_data.name,
+            parallel_workers=config.parallel_workers,
+        )
         return GenerationStep(ctx=ctx, random_values_storage=random_values_storage)
 
     def _create_execution_step(

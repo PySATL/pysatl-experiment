@@ -88,7 +88,11 @@ class PowerExperimentFactory(
             for alternative in config.alternatives
         ]
 
-        ctx = GenerationStepContext(data_list=data_list, experiment_name=self.experiment_data.name)
+        ctx = GenerationStepContext(
+            data_list=data_list,
+            experiment_name=self.experiment_data.name,
+            parallel_workers=config.parallel_workers,
+        )
         return GenerationStep(ctx=ctx, random_values_storage=random_values_storage)
 
     def _create_execution_step(

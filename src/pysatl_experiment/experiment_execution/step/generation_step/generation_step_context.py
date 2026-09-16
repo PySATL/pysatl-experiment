@@ -34,7 +34,10 @@ class GenerationStepContext:
     ----------
     data_list : list[GenerationData]
     experiment_name : str
+    parallel_workers : int
+        Number of parallel worker processes.
     """
 
     data_list: list[GenerationData]
     experiment_name: str
+    parallel_workers: int = 1
