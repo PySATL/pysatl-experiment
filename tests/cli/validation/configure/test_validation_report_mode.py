@@ -15,7 +15,6 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-# @patch("pysatl_experiment.cli.commands.configure.get_experiment_config")  get_experiment_config: MagicMock,
 def test_report_mode_with_invalid_mode(runner: CliRunner) -> None:
     """Tests that the command rejects an invalid ReportMode value.
 
@@ -25,7 +24,6 @@ def test_report_mode_with_invalid_mode(runner: CliRunner) -> None:
     """
     invalid_mode = "this-is-not-a-valid-mode"
     experiment_name = "my-test-experiment"
-    # get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
 
     result = runner.invoke(
         configure,

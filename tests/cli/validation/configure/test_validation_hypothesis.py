@@ -15,7 +15,6 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-# @patch("pysatl_experiment.cli.commands.configure.get_experiment_config")  get_experiment_config: MagicMock,
 def test_hypothesis_with_invalid_hyp(runner: CliRunner) -> None:
     """Tests that the command rejects an invalid hypothesis value.
 
@@ -23,7 +22,6 @@ def test_hypothesis_with_invalid_hyp(runner: CliRunner) -> None:
     command never runs and the config is not saved.
     """
     invalid_hyp = "this-is-not-a-valid-hypothesis"
-    # get_experiment_config.return_value = ("my-experiment", {})
     experiment_name = "my-test-experiment"
 
     result = runner.invoke(

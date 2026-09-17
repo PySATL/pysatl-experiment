@@ -15,7 +15,6 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-# @patch("pysatl_experiment.cli.commands.configure.get_experiment_config")  get_experiment_config: MagicMock,
 def test_experiment_type_with_invalid_type(runner: CliRunner) -> None:
     """Tests the `experiment_type` command with an invalid type string.
 
@@ -29,7 +28,6 @@ def test_experiment_type_with_invalid_type(runner: CliRunner) -> None:
     """
     invalid_type = "this-is-not-a-valid-type"
     experiment_name = "my-test-experiment"
-    # get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
 
     result = runner.invoke(
         configure,
@@ -41,7 +39,6 @@ def test_experiment_type_with_invalid_type(runner: CliRunner) -> None:
             "-s", "23",
             "-c", "154",
             "-h", "normal",
-            # "-expt", "critical_value",
             "-con", "sqlite:///pysatl.sqlite",
         ],
     )
@@ -90,7 +87,6 @@ def test_experiment_type_with_valid_type(
             "-s", "23",
             "-c", "154",
             "-h", "normal",
-            # "-expt", "critical_value",
             "-con", "sqlite:///pysatl.sqlite",
         ],
     )

@@ -15,7 +15,6 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-# @patch("pysatl_experiment.cli.commands.configure.get_experiment_config")  get_experiment_config: MagicMock,
 def test_generator_type_with_invalid_type(runner: CliRunner) -> None:
     """Tests the `generator_type` command with a completely invalid type string.
 
@@ -30,7 +29,6 @@ def test_generator_type_with_invalid_type(runner: CliRunner) -> None:
     """
     invalid_type = "this-is-not-a-valid-type"
     experiment_name = "my-test-experiment"
-    # get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
 
     result = runner.invoke(
         configure,

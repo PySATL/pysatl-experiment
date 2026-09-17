@@ -11,20 +11,6 @@ from pysatl_experiment.cli.commands.configure import configure
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 
 
-# class NormalGenerator:
-#     def __init__(self, loc: float, scale: float, **kwargs):
-#         super().__init__(**kwargs)
-#         self.loc = loc
-#         self.scale = scale
-#
-#
-# class CauchyGenerator:
-#     def __init__(self, x0: float, gamma: float, **kwargs):
-#         super().__init__(**kwargs)
-#         self.x0 = x0
-#         self.gamma = gamma
-
-
 @pytest.fixture
 def runner() -> CliRunner:
     """Fixture to create a CliRunner instance."""
@@ -49,7 +35,6 @@ def test_alternatives_fails_if_experiment_type_not_set(
             "-s", "23",
             "-c", "154",
             "-h", "normal",
-            # "-expt", "critical_value",
             "-con", "sqlite:///pysatl.sqlite",
             "-rm", "reuse",
         ],
@@ -95,10 +80,8 @@ def test_alternatives_fails_for_unsupported_experiment_type(
 
     assert result.exit_code != 0
     assert "alternative" in result.output.lower()
-    #  TODO: registry empty in tests,
-    #   so AlternativesConfig fails with "did not match any available generators"
-    #   before validating non-POWER experiment_type —
-    #   populate registry in conftest and restore assertion?
+    # TODO: registry is empty in tests, so AlternativesConfig fails before checking non-POWER experiment_type —
+    #  populate via conftest
 
     is_experiment_exists.assert_called_once()
     read_experiment_data.assert_called_once()
@@ -179,7 +162,7 @@ def test_alternatives_fails_with_non_numeric_parameters(
 
 @patch(
     "pysatl_experiment.cli.validation.schemas.alternative._get_available_generator_classes",
-    return_value=[NormalGenerator, CauchyRVSGenerator, NormalGenerator],  # type: ignore
+    return_value=[NormalGenerator, CauchyRVSGenerator, NormalGenerator],
 )
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
