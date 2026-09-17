@@ -2,7 +2,7 @@
 
 from click import group, version_option
 
-from pysatl_experiment.cli.commands.common import get_project_root
+from pysatl_experiment.utils.files_utils import ensure_experiment_dir
 
 
 # TODO: refactor name!!
@@ -12,10 +12,4 @@ from pysatl_experiment.cli.commands.common import get_project_root
 @version_option()
 def cli() -> None:
     """PySATL experiments command-line interface."""
-    _ensure_experiments_dir()
-
-
-def _ensure_experiments_dir() -> None:
-    """Create the experiments directory if it does not exist."""
-    experiments_dir = get_project_root() / ".experiments"
-    experiments_dir.mkdir(parents=True, exist_ok=True)
+    ensure_experiment_dir()

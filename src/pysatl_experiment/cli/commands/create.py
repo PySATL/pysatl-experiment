@@ -2,8 +2,11 @@
 
 from click import BadParameter, argument, command, echo
 
-from pysatl_experiment.cli.commands.common import normalize_experiment_name, save_experiment_data
-from pysatl_experiment.cli.validation.commands.common.common import if_experiment_exists
+from pysatl_experiment.utils.experiment_utils import (
+    is_experiment_exists,
+    normalize_experiment_name,
+    save_experiment_data,
+)
 
 
 @command()
@@ -29,7 +32,7 @@ def create(name: str) -> None:
     """
     name = normalize_experiment_name(name)
 
-    experiment_exists = if_experiment_exists(name)
+    experiment_exists = is_experiment_exists(name)
     if experiment_exists:
         raise BadParameter(f"Experiment with name {name} already exists.")
 

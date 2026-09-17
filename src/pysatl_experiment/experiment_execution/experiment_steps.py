@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from pysatl_experiment.experiment_execution.abstract_experiment_step import IExperimentStep
+from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 
 

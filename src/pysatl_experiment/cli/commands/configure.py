@@ -6,23 +6,16 @@ from typing import cast
 
 from click import BadParameter, Choice, ClickException, FloatRange, IntRange, argument, command, echo, option
 from pydantic import ValidationError
+from pysatl_criterion import DistributionType
 
-from pysatl_experiment.cli.commands.common import (
-    criteria_from_codes,
-    get_experiment_config,
-    get_statistics_short_codes_for_hypothesis,
-    normalize_experiment_name,
-    read_experiment_data,
-    save_experiment_config,
-)
-from pysatl_experiment.cli.validation.commands.common.common import if_experiment_exists
+from pysatl_experiment.cli.commands.common import criteria_from_codes, get_statistics_short_codes_for_hypothesis
 from pysatl_experiment.cli.validation.schemas.alternative import AlternativesConfig
 from pysatl_experiment.cli.validation.schemas.criteria import CriteriaConfig, Criterion
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
+from pysatl_experiment.utils.experiment_utils import is_experiment_exists, read_experiment_data, save_experiment_config
 
 
 def _configure_sample_sizes(experiment_config: dict, sizes: tuple[int, ...] | None):
@@ -82,7 +75,6 @@ def _configure_criteria(experiment_config: dict, criteria: tuple[str, ...] | Non
         raise BadParameter(combined_message)
 
     validated_criteria = cast(list[Criterion], config.criteria)
-    # print(criteria) TODO: not needed?
 
     validated_criteria_list = [criterion.model_dump() for criterion in validated_criteria]
     experiment_config["criteria"] = validated_criteria_list
@@ -92,7 +84,7 @@ def _configure_hypothesis(experiment_config: dict, hypothesis: str | None):
     if hypothesis is None:
         return
 
-    validated_hypothesis = Hypothesis(hypothesis.lower())
+    validated_hypothesis = DistributionType(hypothesis.lower())
     experiment_config["hypothesis"] = validated_hypothesis.value
 
     criteria_for_hypothesis = get_statistics_short_codes_for_hypothesis(validated_hypothesis.value)
@@ -226,7 +218,11 @@ def _configure_significance_levels(experiment_config: dict, levels: tuple[float,
 @option("-rbt", "--report-builder-type", type=Choice(StepType.list()), help="Report builder type. Example: standard")
 @option("-c", "--count", required=True, type=IntRange(min=100), help="Montecarlo iterations count. Example: 10000")
 @option(
-    "-h", "--hypothesis", required=True, type=Choice(Hypothesis.list()), help="Hypothesis GoF type. Example: normal"
+    "-h",
+    "--hypothesis",
+    required=True,
+    type=Choice(DistributionType.list()),
+    help="Hypothesis GoF type. Example: normal",
 )
 @option("-gt", "--generator-type", type=Choice(StepType.list()), help="Generator type. Example: standard")
 @option(
@@ -292,13 +288,11 @@ def configure(
     workers : int
         Number of parallel workers.
     """
-    name = normalize_experiment_name(name)
-
-    experiment_exists = if_experiment_exists(name)
+    experiment_exists = is_experiment_exists(name)
     if not experiment_exists:
         raise ClickException(f"Experiment with name {name} does not exist.")
 
-    experiment_config = get_experiment_config(read_experiment_data(name))
+    experiment_config: dict = read_experiment_data(name).get("config")
 
     _configure_experiment_type(experiment_config, experiment_type)
     _configure_storage_connection(experiment_config, connection)

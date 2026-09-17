@@ -2,19 +2,26 @@
 
 from dataclasses import dataclass
 
+from pysatl_criterion import DistributionType
+
 
 @dataclass
-class Alternative:  # TODO: check??
+class Alternative:
     """
     Alternative distribution configuration.
 
     Attributes
     ----------
-    generator_name : str
+    distribution_type : str
         Alternative distribution generator identifier.
-    parameters : list[float]
+    parameters : dict[str, float]
         Generator-specific numeric parameters.
     """
 
-    generator_name: str
-    parameters: list[float]
+    parameters: dict[str, float]
+    distribution_type: DistributionType
+
+    @property
+    def distribution_type(self) -> DistributionType:
+        """Return generator code using the newer naming convention."""
+        return self.distribution_type

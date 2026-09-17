@@ -2,7 +2,9 @@
 
 from dataclasses import dataclass
 
-from pysatl_experiment.configuration.experiment_config.critical_value import CriticalValueExperimentConfig
+from pysatl_experiment.configuration.experiment_config.critical_value_experiment_config import (
+    CriticalValueExperimentConfig,
+)
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
 
 

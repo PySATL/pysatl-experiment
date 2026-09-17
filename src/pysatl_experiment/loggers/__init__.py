@@ -19,8 +19,6 @@ import logging.config
 from copy import deepcopy
 from typing import Any
 
-from pysatl_experiment.constants import Config
-
 
 logger = logging.getLogger(__name__)
 LOGFORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -43,7 +41,7 @@ LOGGING_CONFIG: dict[str, Any] = {
 }
 
 
-def setup_logging(config: Config, level: int | str | None = None, filename: str | None = None) -> None:
+def setup_logging(config: Any, level: int | str | None = None, filename: str | None = None) -> None:
     """
     Perform complete logging initialization.
 
@@ -79,7 +77,7 @@ def setup_logging(config: Config, level: int | str | None = None, filename: str 
         }
         log_config["root"]["handlers"].append("file")
     else:
-        log_config = config.get("log_config", deepcopy(LOGGING_CONFIG))
+        log_config = config.get("log_config") or deepcopy(LOGGING_CONFIG)
 
     handlers = log_config.get("handlers")
     if level and isinstance(handlers, dict):

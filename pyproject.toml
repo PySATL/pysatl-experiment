@@ -99,8 +99,14 @@ max-complexity = 12
 lines-after-imports = 2
 
 [tool.mypy]
+plugins = ["pydantic.mypy"]
 mypy_path = "src"
 ignore_missing_imports = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
 
 [tool.poetry-dynamic-versioning]
 enable = true
