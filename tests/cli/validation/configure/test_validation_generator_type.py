@@ -15,8 +15,8 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
-def test_generator_type_with_invalid_type(get_experiment_config: MagicMock, runner: CliRunner) -> None:
+# @patch("pysatl_experiment.cli.commands.configure.get_experiment_config")  get_experiment_config: MagicMock,
+def test_generator_type_with_invalid_type(runner: CliRunner) -> None:
     """Tests the `generator_type` command with a completely invalid type string.
 
     This test verifies that when the command is invoked with a string
@@ -30,42 +30,34 @@ def test_generator_type_with_invalid_type(get_experiment_config: MagicMock, runn
     """
     invalid_type = "this-is-not-a-valid-type"
     experiment_name = "my-test-experiment"
-    get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
+    # get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
 
     result = runner.invoke(
         configure,
         [
             experiment_name,
-            "-gt",
-            invalid_type,
-            "-cr",
-            "KS",
-            "-l",
-            "0.05",
-            "-s",
-            "23",
-            "-c",
-            "154",
-            "-h",
-            "normal",
-            "-expt",
-            "critical_value",
-            "-con",
-            "sqlite:///pysatl.sqlite",
-            "-rm",
-            "reuse",
+            "-gt", invalid_type,
+            "-cr", "KS",
+            "-l", "0.05",
+            "-s", "23",
+            "-c", "154",
+            "-h", "normal",
+            "-expt", "critical_value",
+            "-con", "sqlite:///pysatl.sqlite",
+            "-rm", "reuse",
         ],
     )
 
-    assert result.exit_code != 0
-    assert isinstance(result.exception, SystemExit)
+    assert result.exit_code == 2
+    assert "Invalid value" in result.output
+    assert invalid_type in result.output
 
 
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_generator_type_with_unsupported_custom_type(
-    if_experiment_exists: MagicMock,
+    is_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
     save_experiment_config: MagicMock,
     runner: CliRunner,
@@ -76,7 +68,7 @@ def test_generator_type_with_unsupported_custom_type(
     `StepType.CUSTOM` value works correctly by:
     1.  Exiting with a non-zero status code.
     2.  Printing the specific error message for the unsupported 'custom' type.
-    3.  Not attempting to get or save the experiment configuration.
+    3.  Not attempting to save the experiment configuration.
     """
     custom_type = StepType.CUSTOM.value
     experiment_name = "my-test-experiment"
@@ -87,37 +79,32 @@ def test_generator_type_with_unsupported_custom_type(
         configure,
         [
             experiment_name,
-            "-gt",
-            custom_type,
-            "-cr",
-            "KS",
-            "-l",
-            "0.05",
-            "-s",
-            "23",
-            "-c",
-            "154",
-            "-h",
-            "normal",
-            "-expt",
-            "critical_value",
-            "-con",
-            "sqlite:///pysatl.sqlite",
-            "-rm",
-            "reuse",
+            "-gt", custom_type,
+            "-cr", "KS",
+            "-l", "0.05",
+            "-s", "23",
+            "-c", "154",
+            "-h", "normal",
+            "-expt", "critical_value",
+            "-con", "sqlite:///pysatl.sqlite",
+            "-rm", "reuse",
         ],
     )
 
-    assert result.exit_code != 0
-    assert isinstance(result.exception, SystemExit)
+    assert result.exit_code == 2
+    assert "Custom type is not supported yet" in result.output
+
+    is_experiment_exists.assert_called_once()
+    read_experiment_data.assert_called_once()
+    save_experiment_config.assert_not_called()
 
 
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_type", [e for e in StepType if e != StepType.CUSTOM])
 def test_generator_type_with_valid_supported_type(
-    if_experiment_exists: MagicMock,
+    is_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
     save_experiment_config: MagicMock,
     runner: CliRunner,
@@ -130,7 +117,6 @@ def test_generator_type_with_valid_supported_type(
     1.  Exiting with a zero status code for success.
     2.  Calling the functions to get and save the configuration exactly once.
     3.  Updating the configuration dictionary with the correct key and value.
-    4.  Printing a confirmation message to the user.
     """
     experiment_name = "my-test-experiment"
     initial_config = {"hypothesis": "normal"}
@@ -140,29 +126,23 @@ def test_generator_type_with_valid_supported_type(
         configure,
         [
             experiment_name,
-            "-gt",
-            valid_type.value,
-            "-cr",
-            "KS",
-            "-l",
-            "0.05",
-            "-s",
-            "23",
-            "-c",
-            "154",
-            "-h",
-            "normal",
-            "-expt",
-            "critical_value",
-            "-con",
-            "sqlite:///pysatl.sqlite",
-            "-rm",
-            "reuse",
+            "-gt",  valid_type.value,
+            "-cr", "KS",
+            "-l", "0.05",
+            "-s", "23",
+            "-c", "154",
+            "-h", "normal",
+            "-expt", "critical_value",
+            "-con", "sqlite:///pysatl.sqlite",
+            "-rm", "reuse",
         ],
     )
 
     assert result.exit_code == 0
     assert result.exception is None
 
-    expected_config = initial_config.copy()
-    expected_config["generator_type"] = valid_type.value
+    assert initial_config["generator_type"] == valid_type.value
+
+    is_experiment_exists.assert_called_once()
+    read_experiment_data.assert_called_once()
+    save_experiment_config.assert_called_once()

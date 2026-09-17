@@ -15,58 +15,46 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
-def test_report_mode_with_invalid_mode(get_experiment_config: MagicMock, runner: CliRunner) -> None:
-    """Tests the `report_mode` command logic in isolation with an invalid argument.
+# @patch("pysatl_experiment.cli.commands.configure.get_experiment_config")  get_experiment_config: MagicMock,
+def test_report_mode_with_invalid_mode(runner: CliRunner) -> None:
+    """Tests that the command rejects an invalid ReportMode value.
 
-    This test verifies that when the `report_mode` command is invoked with a string
-    that does not correspond to any valid `ReportMode` enum value, it behaves
-    correctly by:
-    1.  Exiting with a non-zero status code to indicate failure.
-    2.  Printing a user-friendly error message that includes the invalid input.
-    3.  Suggesting the list of valid options to the user.
-    4.  Not calling the function to save the configuration, thus preventing
-        any side effects.
+    The invalid value is caught by Click during argument parsing, so the
+    command never runs and neither the experiment is looked up nor the
+    config is saved.
     """
     invalid_mode = "this-is-not-a-valid-mode"
     experiment_name = "my-test-experiment"
-    get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
+    # get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
 
     result = runner.invoke(
         configure,
         [
             experiment_name,
-            "-rp",
-            invalid_mode,
-            "-cr",
-            "KS",
-            "-l",
-            "0.05",
-            "-s",
-            "23",
-            "-c",
-            "154",
-            "-h",
-            "normal",
-            "-expt",
-            "critical_value",
-            "-con",
-            "sqlite:///pysatl.sqlite",
-            "-rm",
-            "reuse",
+            "-rp", invalid_mode,
+            "-cr", "KS",
+            "-l", "0.05",
+            "-s", "23",
+            "-c", "154",
+            "-h", "normal",
+            "-expt", "critical_value",
+            "-con", "sqlite:///pysatl.sqlite",
+            "-rm", "reuse",
         ],
     )
 
-    assert result.exit_code != 0
+    assert result.exit_code == 2
     assert isinstance(result.exception, SystemExit)
+    assert "Invalid value" in result.output
+    assert invalid_mode in result.output
 
 
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_mode", [e for e in ReportMode])
 def test_report_mode_with_valid_mode(
-    if_experiment_exists: MagicMock,
+    is_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
     save_experiment_config: MagicMock,
     runner: CliRunner,
@@ -79,7 +67,6 @@ def test_report_mode_with_valid_mode(
     1.  Exiting with a zero status code to indicate success.
     2.  Calling the configuration saving function exactly once.
     3.  Updating the configuration dictionary with the correct key and value.
-    4.  Printing a confirmation message to the user.
     """
     experiment_name = "my-test-experiment"
     initial_config = {"hypothesis": "normal"}
@@ -89,29 +76,23 @@ def test_report_mode_with_valid_mode(
         configure,
         [
             experiment_name,
-            "-rp",
-            valid_mode.value,
-            "-cr",
-            "KS",
-            "-l",
-            "0.05",
-            "-s",
-            "23",
-            "-c",
-            "154",
-            "-h",
-            "normal",
-            "-expt",
-            "critical_value",
-            "-con",
-            "sqlite:///pysatl.sqlite",
-            "-rm",
-            "reuse",
+            "-rp", valid_mode.value,
+            "-cr", "KS",
+            "-l", "0.05",
+            "-s", "23",
+            "-c", "154",
+            "-h", "normal",
+            "-expt", "critical_value",
+            "-con", "sqlite:///pysatl.sqlite",
+            "-rm", "reuse",
         ],
     )
 
     assert result.exit_code == 0
     assert result.exception is None
 
-    expected_config = initial_config.copy()
-    expected_config["report_mode"] = valid_mode.value
+    assert initial_config["report_mode"] == valid_mode.value
+
+    is_experiment_exists.assert_called_once_with(experiment_name)
+    read_experiment_data.assert_called_once_with(experiment_name)
+    save_experiment_config.assert_called_once_with(experiment_name, initial_config)

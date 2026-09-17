@@ -15,57 +15,47 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
-def test_hypothesis_with_invalid_hyp(get_experiment_config: MagicMock, runner: CliRunner) -> None:
-    """Tests the `hypothesis` command logic with an invalid hypothesis string.
+# @patch("pysatl_experiment.cli.commands.configure.get_experiment_config")  get_experiment_config: MagicMock,
+def test_hypothesis_with_invalid_hyp(runner: CliRunner) -> None:
+    """Tests that the command rejects an invalid hypothesis value.
 
-    This test verifies that when the command is invoked with a string that
-    does not correspond to any valid `Hypothesis` enum value, it behaves correctly by:
-    1.  Calling the function to get the configuration (as it happens before validation).
-    2.  Exiting with a non-zero status code upon validation failure.
-    3.  Printing an error message that includes the invalid input and lists
-        the valid options.
-    4.  Not calling the function to save the configuration, thus preventing
-        any side effects.
+    The invalid value is caught by Click during argument parsing, so the
+    command never runs and the config is not saved.
     """
     invalid_hyp = "this-is-not-a-valid-hypothesis"
-    get_experiment_config.return_value = ("my-experiment", {})
+    # get_experiment_config.return_value = ("my-experiment", {})
     experiment_name = "my-test-experiment"
 
     result = runner.invoke(
         configure,
         [
             experiment_name,
-            "-h",
-            invalid_hyp,
-            "-cr",
-            "KS",
-            "-l",
-            "0.05",
-            "-s",
-            "23",
-            "-c",
-            "154",
-            "-expt",
-            "critical_value",
-            "-con",
-            "sqlite:///pysatl.sqlite",
-            "-rm",
-            "reuse",
+            "-h", invalid_hyp,
+            "-cr", "KS",
+            "-l", "0.05",
+            "-s", "23",
+            "-c", "154",
+            "-expt", "critical_value",
+            "-con", "sqlite:///pysatl.sqlite",
+            "-rm", "reuse",
         ],
     )
 
-    assert result.exit_code != 0
+    assert result.exit_code == 2
     assert isinstance(result.exception, SystemExit)
+    assert "Invalid value" in result.output
+    assert invalid_hyp in result.output
 
 
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.get_statistics_short_codes_for_hypothesis")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.criteria_from_codes")
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_hyp", [h for h in DistributionType])
 def test_hypothesis_with_valid_hyp(
-    if_experiment_exists: MagicMock,
+    is_experiment_exists: MagicMock,
+    criteria_from_codes: MagicMock,
     get_statistics_short_codes_for_hypothesis: MagicMock,
     read_experiment_data: MagicMock,
     save_experiment_config: MagicMock,
@@ -86,34 +76,33 @@ def test_hypothesis_with_valid_hyp(
     experiment_name = "my-test-experiment"
     initial_config = {"hypothesis": "normal"}
     read_experiment_data.return_value = {"name": experiment_name, "config": initial_config}
-    mock_codes = ["code1", "code2"]
-    get_statistics_short_codes_for_hypothesis.return_value = mock_codes
-
-    mock_criteria_data = [{"criterion_code": "code1", "parameters": []}, {"criterion_code": "code2", "parameters": []}]
+    get_statistics_short_codes_for_hypothesis.return_value = ["KS", "AD"]
+    criteria_from_codes.return_value = [
+        {"criterion_code": "KS"},
+        {"criterion_code": "AD"},
+    ]
 
     result = runner.invoke(
         configure,
         [
             experiment_name,
-            "-h",
-            valid_hyp.value,
-            "-l",
-            "0.05",
-            "-s",
-            "23",
-            "-c",
-            "154",
-            "-expt",
-            "critical_value",
-            "-con",
-            "sqlite:///pysatl.sqlite",
-            "-rm",
-            "reuse",
+            "-h", valid_hyp.value,
+            "-l", "0.05",
+            "-s", "23",
+            "-c", "154",
+            "-expt", "critical_value",
+            "-con", "sqlite:///pysatl.sqlite",
+            "-rm", "reuse",
         ],
     )
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, f"output={result.output!r} exc={result.exception!r}"
     assert result.exception is None
 
     assert initial_config["hypothesis"] == valid_hyp.value
-    assert initial_config["criteria"] == mock_criteria_data
+    assert initial_config["criteria"] == [{"criterion_code": "KS"}, {"criterion_code": "AD"}]
+
+    is_experiment_exists.assert_called_once_with(experiment_name)
+    read_experiment_data.assert_called_once_with(experiment_name)
+    get_statistics_short_codes_for_hypothesis.assert_called_once_with(valid_hyp.value)
+    save_experiment_config.assert_called_once_with(experiment_name, initial_config)
