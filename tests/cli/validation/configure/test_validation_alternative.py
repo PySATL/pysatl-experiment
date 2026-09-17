@@ -18,10 +18,7 @@ def runner() -> CliRunner:
 
 
 @patch("pysatl_experiment.cli.commands.configure.is_experiment_exists")
-def test_alternatives_fails_if_experiment_type_not_set(
-        read_experiment_config: MagicMock,
-        runner: CliRunner
-) -> None:
+def test_alternatives_fails_if_experiment_type_not_set(read_experiment_config: MagicMock, runner: CliRunner) -> None:
     experiment_name = "my-exp"
     read_experiment_config.return_value = {"some_key": "some_value"}
 
@@ -29,14 +26,22 @@ def test_alternatives_fails_if_experiment_type_not_set(
         configure,
         [
             experiment_name,
-            "-alt", "Normal 1 1",
-            "-cr", "KS",
-            "-l", "0.05",
-            "-s", "23",
-            "-c", "154",
-            "-h", "normal",
-            "-con", "sqlite:///pysatl.sqlite",
-            "-rm", "reuse",
+            "-alt",
+            "Normal 1 1",
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
         ],
     )
 
@@ -50,10 +55,10 @@ def test_alternatives_fails_if_experiment_type_not_set(
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_alternatives_fails_for_unsupported_experiment_type(
-        is_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner
+    is_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
 ) -> None:
     """Tests that the command fails if alternatives are provided for a non-POWER experiment."""
     experiment_name = "my-exp"
@@ -66,15 +71,24 @@ def test_alternatives_fails_for_unsupported_experiment_type(
         configure,
         [
             experiment_name,
-            "-alt", "Normal 1 1",
-            "-cr", "KS",
-            "-l", "0.05",
-            "-s", "23",
-            "-c", "154",
-            "-h", "normal",
-            "-expt", "critical_value",
-            "-con", "sqlite:///pysatl.sqlite",
-            "-rm", "reuse",
+            "-alt",
+            "Normal 1 1",
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
         ],
     )
 
@@ -94,10 +108,10 @@ def test_alternatives_fails_for_unsupported_experiment_type(
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_alternatives_fails_with_wrong_parameter_count(
-        is_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner,
+    is_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
 ) -> None:
     experiment_name = "my-exp"
     initial_config = {"experiment_type": "power"}
@@ -106,15 +120,24 @@ def test_alternatives_fails_with_wrong_parameter_count(
         configure,
         [
             experiment_name,
-            "-alt", "Normal 1.0",
-            "-cr", "KS",
-            "-l", "0.05",
-            "-s", "23",
-            "-c", "154",
-            "-h", "normal",
-            "-expt", "critical_value",
-            "-con", "sqlite:///pysatl.sqlite",
-            "-rm", "reuse",
+            "-alt",
+            "Normal 1.0",
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
         ],
     )
 
@@ -129,10 +152,10 @@ def test_alternatives_fails_with_wrong_parameter_count(
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_alternatives_fails_with_non_numeric_parameters(
-        is_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner,
+    is_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
 ) -> None:
     experiment_name = "my-exp"
     initial_config = {"experiment_type": "power"}
@@ -141,15 +164,24 @@ def test_alternatives_fails_with_non_numeric_parameters(
         configure,
         [
             experiment_name,
-            "-alt", "Normal 1.0 abc",
-            "-cr", "KS",
-            "-l", "0.05",
-            "-s", "23",
-            "-c", "154",
-            "-h", "normal",
-            "-expt", "critical_value",
-            "-con", "sqlite:///pysatl.sqlite",
-            "-rm", "reuse",
+            "-alt",
+            "Normal 1.0 abc",
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
         ],
     )
 
@@ -168,11 +200,11 @@ def test_alternatives_fails_with_non_numeric_parameters(
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_alternatives_fails_with_ambiguous_generator_name(
-        is_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        fake_generator_subclasses: MagicMock,
-        runner: CliRunner,
+    is_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    fake_generator_subclasses: MagicMock,
+    runner: CliRunner,
 ) -> None:
     """Tests failure when a generator prefix matches multiple available generators."""
     experiment_name = "my-exp"
@@ -182,15 +214,24 @@ def test_alternatives_fails_with_ambiguous_generator_name(
         configure,
         [
             experiment_name,
-            "-alt", "Normal 1 2",
-            "-cr", "KS",
-            "-l", "0.05",
-            "-s", "23",
-            "-c", "154",
-            "-h", "normal",
-            "-expt", "power",
-            "-con", "sqlite:///pysatl.sqlite",
-            "-rm", "reuse",
+            "-alt",
+            "Normal 1 2",
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "power",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
         ],
     )
 
@@ -217,11 +258,11 @@ def test_alternatives_fails_with_ambiguous_generator_name(
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_alternatives_success_with_valid_inputs(
-        is_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        fake_generator_subclasses: MagicMock,
-        runner: CliRunner,
+    is_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    fake_generator_subclasses: MagicMock,
+    runner: CliRunner,
 ) -> None:
     experiment_name = "my-exp"
     initial_config: dict[str, Any] = {"experiment_type": "power"}
@@ -230,16 +271,26 @@ def test_alternatives_success_with_valid_inputs(
         configure,
         [
             experiment_name,
-            "-alt", "NormalG 1.0 0.5",
-            "-alt", "cauchy 0 2",
-            "-cr", "KS",
-            "-l", "0.05",
-            "-s", "23",
-            "-c", "154",
-            "-h", "normal",
-            "-expt", "power",
-            "-con", "sqlite:///pysatl.sqlite",
-            "-rm", "reuse",
+            "-alt",
+            "NormalG 1.0 0.5",
+            "-alt",
+            "cauchy 0 2",
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "power",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
         ],
     )
 

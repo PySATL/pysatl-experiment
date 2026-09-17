@@ -18,9 +18,9 @@ def runner() -> CliRunner:
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.is_experiment_exists")
 def test_run_mode_with_invalid_mode(
-        is_experiment_exists: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner,
+    is_experiment_exists: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
 ) -> None:
     """Tests the `run_mode` command logic in isolation with an invalid argument.
 
@@ -40,14 +40,22 @@ def test_run_mode_with_invalid_mode(
         configure,
         [
             experiment_name,
-            "-rm", invalid_mode,
-            "-cr", "KS",
-            "-l", "0.05",
-            "-s", "23",
-            "-c", "154",
-            "-h", "normal",
-            "-expt", "critical_value",
-            "-con", "sqlite:///pysatl.sqlite",
+            "-rm",
+            invalid_mode,
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
         ],
     )
 
@@ -87,14 +95,22 @@ def test_run_mode_with_valid_mode(
         configure,
         [
             experiment_name,
-            "-rm", valid_mode.value,
-            "-cr", "KS",
-            "-l", "0.05",
-            "-s", "23",
-            "-c", "154",
-            "-h", "normal",
-            "-expt", "critical_value",
-            "-con", "sqlite:///pysatl.sqlite",
+            "-rm",
+            valid_mode.value,
+            "-cr",
+            "KS",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
         ],
     )
 

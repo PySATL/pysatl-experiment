@@ -20,10 +20,10 @@ def runner() -> CliRunner:
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
 @patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_criteria_fails_with_incompatible_codes(
-        is_experiment_exists: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner,
+    is_experiment_exists: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
 ) -> None:
     """Tests that the command fails when provided criteria are incompatible with the hypothesis.
 
@@ -44,15 +44,24 @@ def test_criteria_fails_with_incompatible_codes(
         configure,
         [
             experiment_name,
-            "-cr", "KS",
-            "-cr", "ST1",
-            "-l", "0.05",
-            "-s", "23",
-            "-c", "154",
-            "-h", "normal",
-            "-expt", "critical_value",
-            "-con", "sqlite:///pysatl.sqlite",
-            "-rm", "reuse",
+            "-cr",
+            "KS",
+            "-cr",
+            "ST1",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
         ],
     )
 
@@ -70,11 +79,11 @@ def test_criteria_fails_with_incompatible_codes(
 @patch("pysatl_experiment.cli.commands.configure.get_statistics_short_codes_for_hypothesis")
 @patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_criteria_success_with_valid_codes(
-        is_experiment_exists: MagicMock,
-        get_statistics_short_codes_for_hypothesis: MagicMock,
-        read_experiment_data: MagicMock,
-        save_experiment_config: MagicMock,
-        runner: CliRunner,
+    is_experiment_exists: MagicMock,
+    get_statistics_short_codes_for_hypothesis: MagicMock,
+    read_experiment_data: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
 ) -> None:
     """Tests the successful execution of the `criteria` command with valid codes.
 
@@ -99,15 +108,24 @@ def test_criteria_success_with_valid_codes(
         configure,
         [
             experiment_name,
-            "-cr", "KS",
-            "-cr", "AD",
-            "-l", "0.05",
-            "-s", "23",
-            "-c", "154",
-            "-h", "normal",
-            "-expt", "critical_value",
-            "-con", "sqlite:///pysatl.sqlite",
-            "-rm", "reuse",
+            "-cr",
+            "KS",
+            "-cr",
+            "AD",
+            "-l",
+            "0.05",
+            "-s",
+            "23",
+            "-c",
+            "154",
+            "-h",
+            "normal",
+            "-expt",
+            "critical_value",
+            "-con",
+            "sqlite:///pysatl.sqlite",
+            "-rm",
+            "reuse",
         ],
     )
 

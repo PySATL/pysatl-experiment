@@ -83,9 +83,7 @@ class Alternative(BaseModel):
         ValueError
             If no generator matches or multiple ambiguous matches exist.
         """
-        available_generators: list[str] = [
-            gen_cls.__name__.upper() for gen_cls in _get_available_generator_classes()
-        ]
+        available_generators: list[str] = [gen_cls.__name__.upper() for gen_cls in _get_available_generator_classes()]
 
         user_prefix = value.upper()
 
@@ -171,8 +169,7 @@ class Alternative(BaseModel):
         if not generator_cls:  # pragma: no cover - guarded by field_validator
             available_generators = ", ".join(generator_by_name.keys())
             raise ValueError(
-                f"Generator '{self.generator_name}' is not found.\n"
-                f"Available generators are: [{available_generators}]"
+                f"Generator '{self.generator_name}' is not found.\nAvailable generators are: [{available_generators}]"
             )
 
         base_params = _base_generator_params()
