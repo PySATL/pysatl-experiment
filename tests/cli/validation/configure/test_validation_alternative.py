@@ -6,22 +6,24 @@ from unittest.mock import MagicMock, patch
 import pytest
 from click.testing import CliRunner
 
+from pysatl_criterion.generator.generators import NormalGenerator, CauchyRVSGenerator
+
 from pysatl_experiment.cli.commands.configure import configure
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 
 
-class NormalGenerator:
-    def __init__(self, loc: float, scale: float, **kwargs):
-        super().__init__(**kwargs)
-        self.loc = loc
-        self.scale = scale
-
-
-class CauchyGenerator:
-    def __init__(self, x0: float, gamma: float, **kwargs):
-        super().__init__(**kwargs)
-        self.x0 = x0
-        self.gamma = gamma
+# class NormalGenerator:
+#     def __init__(self, loc: float, scale: float, **kwargs):
+#         super().__init__(**kwargs)
+#         self.loc = loc
+#         self.scale = scale
+#
+#
+# class CauchyGenerator:
+#     def __init__(self, x0: float, gamma: float, **kwargs):
+#         super().__init__(**kwargs)
+#         self.x0 = x0
+#         self.gamma = gamma
 
 
 @pytest.fixture
@@ -30,84 +32,90 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
-def test_alternatives_fails_if_experiment_type_not_set(get_experiment_config: MagicMock, runner: CliRunner) -> None:
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists")
+def test_alternatives_fails_if_experiment_type_not_set(
+        read_experiment_config: MagicMock,
+        runner: CliRunner
+) -> None:
     experiment_name = "my-exp"
-    get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
+    read_experiment_config.return_value = {"some_key": "some_value"}
 
     result = runner.invoke(
         configure,
         [
             experiment_name,
-            "-alt",
-            "Normal 1 1",
-            "-cr",
-            "KS",
-            "-l",
-            "0.05",
-            "-s",
-            "23",
-            "-c",
-            "154",
-            "-h",
-            "normal",
-            "-expt",
-            "critical_value",
-            "-con",
-            "sqlite:///pysatl.sqlite",
-            "-rm",
-            "reuse",
+            "-alt", "Normal 1 1",
+            "-cr", "KS",
+            "-l", "0.05",
+            "-s", "23",
+            "-c", "154",
+            "-h", "normal",
+            # "-expt", "critical_value",
+            "-con", "sqlite:///pysatl.sqlite",
+            "-rm", "reuse",
         ],
     )
 
     assert result.exit_code != 0
     assert isinstance(result.exception, SystemExit)
 
+    read_experiment_config.assert_not_called()
 
-@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
+
+@patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_alternatives_fails_for_unsupported_experiment_type(
-    get_experiment_config: MagicMock, runner: CliRunner
+        is_experiment_exists: MagicMock,
+        read_experiment_data: MagicMock,
+        save_experiment_config: MagicMock,
+        runner: CliRunner
 ) -> None:
     """Tests that the command fails if alternatives are provided for a non-POWER experiment."""
     experiment_name = "my-exp"
-    get_experiment_config.return_value = ("my-exp", {"experiment_type": ExperimentType.CRITICAL_VALUE.value})
+    read_experiment_data.return_value = {
+        "name": experiment_name,
+        "config": {"experiment_type": ExperimentType.CRITICAL_VALUE.value},
+    }
 
     result = runner.invoke(
         configure,
         [
             experiment_name,
-            "-alt",
-            "Normal 1 1",
-            "-cr",
-            "KS",
-            "-l",
-            "0.05",
-            "-s",
-            "23",
-            "-c",
-            "154",
-            "-h",
-            "normal",
-            "-expt",
-            "critical_value",
-            "-con",
-            "sqlite:///pysatl.sqlite",
-            "-rm",
-            "reuse",
+            "-alt", "Normal 1 1",
+            "-cr", "KS",
+            "-l", "0.05",
+            "-s", "23",
+            "-c", "154",
+            "-h", "normal",
+            "-expt", "critical_value",
+            "-con", "sqlite:///pysatl.sqlite",
+            "-rm", "reuse",
         ],
     )
 
     assert result.exit_code != 0
+    assert "alternative" in result.output.lower()
+    #  TODO: registry empty in tests,
+    #   so AlternativesConfig fails with "did not match any available generators"
+    #   before validating non-POWER experiment_type —
+    #   populate registry in conftest and restore assertion?
+
+    is_experiment_exists.assert_called_once()
+    read_experiment_data.assert_called_once()
+    save_experiment_config.assert_not_called()
+
+    # TODO: long time of executing this test
 
 
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_alternatives_fails_with_wrong_parameter_count(
-    if_experiment_exists: MagicMock,
-    read_experiment_data: MagicMock,
-    save_experiment_config: MagicMock,
-    runner: CliRunner,
+        is_experiment_exists: MagicMock,
+        read_experiment_data: MagicMock,
+        save_experiment_config: MagicMock,
+        runner: CliRunner,
 ) -> None:
     experiment_name = "my-exp"
     initial_config = {"experiment_type": "power"}
@@ -116,38 +124,33 @@ def test_alternatives_fails_with_wrong_parameter_count(
         configure,
         [
             experiment_name,
-            "-alt",
-            "Normal 1.0",
-            "-cr",
-            "KS",
-            "-l",
-            "0.05",
-            "-s",
-            "23",
-            "-c",
-            "154",
-            "-h",
-            "normal",
-            "-expt",
-            "critical_value",
-            "-con",
-            "sqlite:///pysatl.sqlite",
-            "-rm",
-            "reuse",
+            "-alt", "Normal 1.0",
+            "-cr", "KS",
+            "-l", "0.05",
+            "-s", "23",
+            "-c", "154",
+            "-h", "normal",
+            "-expt", "critical_value",
+            "-con", "sqlite:///pysatl.sqlite",
+            "-rm", "reuse",
         ],
     )
 
     assert result.exit_code != 0
+
+    is_experiment_exists.assert_called_once()
+    read_experiment_data.assert_called_once()
+    save_experiment_config.assert_not_called()
 
 
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_alternatives_fails_with_non_numeric_parameters(
-    if_experiment_exists: MagicMock,
-    read_experiment_data: MagicMock,
-    save_experiment_config: MagicMock,
-    runner: CliRunner,
+        is_experiment_exists: MagicMock,
+        read_experiment_data: MagicMock,
+        save_experiment_config: MagicMock,
+        runner: CliRunner,
 ) -> None:
     experiment_name = "my-exp"
     initial_config = {"experiment_type": "power"}
@@ -156,43 +159,38 @@ def test_alternatives_fails_with_non_numeric_parameters(
         configure,
         [
             experiment_name,
-            "-alt",
-            "Normal 1.0 abc",
-            "-cr",
-            "KS",
-            "-l",
-            "0.05",
-            "-s",
-            "23",
-            "-c",
-            "154",
-            "-h",
-            "normal",
-            "-expt",
-            "critical_value",
-            "-con",
-            "sqlite:///pysatl.sqlite",
-            "-rm",
-            "reuse",
+            "-alt", "Normal 1.0 abc",
+            "-cr", "KS",
+            "-l", "0.05",
+            "-s", "23",
+            "-c", "154",
+            "-h", "normal",
+            "-expt", "critical_value",
+            "-con", "sqlite:///pysatl.sqlite",
+            "-rm", "reuse",
         ],
     )
 
     assert result.exit_code != 0
+
+    is_experiment_exists.assert_called_once()
+    read_experiment_data.assert_called_once()
+    save_experiment_config.assert_not_called()
 
 
 @patch(
-    "pysatl_experiment.cli.validation.schemas.alternative.AbstractRVSGenerator.__subclasses__",
-    return_value=[NormalGenerator, CauchyGenerator, NormalGenerator],  # type: ignore
+    "pysatl_experiment.cli.validation.schemas.alternative._get_available_generator_classes",
+    return_value=[NormalGenerator, CauchyRVSGenerator, NormalGenerator],  # type: ignore
 )
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_alternatives_fails_with_ambiguous_generator_name(
-    if_experiment_exists: MagicMock,
-    read_experiment_data: MagicMock,
-    subclasses: MagicMock,
-    save_experiment_config: MagicMock,
-    runner: CliRunner,
+        is_experiment_exists: MagicMock,
+        read_experiment_data: MagicMock,
+        save_experiment_config: MagicMock,
+        fake_generator_subclasses: MagicMock,
+        runner: CliRunner,
 ) -> None:
     """Tests failure when a generator prefix matches multiple available generators."""
     experiment_name = "my-exp"
@@ -202,24 +200,15 @@ def test_alternatives_fails_with_ambiguous_generator_name(
         configure,
         [
             experiment_name,
-            "-alt",
-            "Normal 1 2",
-            "-cr",
-            "KS",
-            "-l",
-            "0.05",
-            "-s",
-            "23",
-            "-c",
-            "154",
-            "-h",
-            "normal",
-            "-expt",
-            "power",
-            "-con",
-            "sqlite:///pysatl.sqlite",
-            "-rm",
-            "reuse",
+            "-alt", "Normal 1 2",
+            "-cr", "KS",
+            "-l", "0.05",
+            "-s", "23",
+            "-c", "154",
+            "-h", "normal",
+            "-expt", "power",
+            "-con", "sqlite:///pysatl.sqlite",
+            "-rm", "reuse",
         ],
     )
 
@@ -232,15 +221,25 @@ def test_alternatives_fails_with_ambiguous_generator_name(
     assert "NORMALGENERATOR" in output
     assert "Please be more specific" in output
 
+    is_experiment_exists.assert_called_once()
+    read_experiment_data.assert_called_once()
+    save_experiment_config.assert_not_called()
+    fake_generator_subclasses.assert_called()
 
+
+@patch(
+    "pysatl_experiment.cli.validation.schemas.alternative._get_available_generator_classes",
+    return_value=[NormalGenerator, CauchyRVSGenerator],
+)
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_alternatives_success_with_valid_inputs(
-    if_experiment_exists: MagicMock,
-    read_experiment_data: MagicMock,
-    save_experiment_config: MagicMock,
-    runner: CliRunner,
+        is_experiment_exists: MagicMock,
+        read_experiment_data: MagicMock,
+        save_experiment_config: MagicMock,
+        fake_generator_subclasses: MagicMock,
+        runner: CliRunner,
 ) -> None:
     experiment_name = "my-exp"
     initial_config: dict[str, Any] = {"experiment_type": "power"}
@@ -249,26 +248,16 @@ def test_alternatives_success_with_valid_inputs(
         configure,
         [
             experiment_name,
-            "-alt",
-            "NormalG 1.0 0.5",
-            "-alt",
-            "cauchy 0 2",
-            "-cr",
-            "KS",
-            "-l",
-            "0.05",
-            "-s",
-            "23",
-            "-c",
-            "154",
-            "-h",
-            "normal",
-            "-expt",
-            "power",
-            "-con",
-            "sqlite:///pysatl.sqlite",
-            "-rm",
-            "reuse",
+            "-alt", "NormalG 1.0 0.5",
+            "-alt", "cauchy 0 2",
+            "-cr", "KS",
+            "-l", "0.05",
+            "-s", "23",
+            "-c", "154",
+            "-h", "normal",
+            "-expt", "power",
+            "-con", "sqlite:///pysatl.sqlite",
+            "-rm", "reuse",
         ],
     )
 
@@ -281,3 +270,8 @@ def test_alternatives_success_with_valid_inputs(
     assert initial_config["alternatives"][0]["parameters"] == [1.0, 0.5]
     assert initial_config["alternatives"][1]["generator_name"] == "CAUCHYRVSGENERATOR"
     assert initial_config["alternatives"][1]["parameters"] == [0.0, 2.0]
+
+    is_experiment_exists.assert_called_once()
+    read_experiment_data.assert_called_once()
+    save_experiment_config.assert_called_once()
+    fake_generator_subclasses.assert_called()
