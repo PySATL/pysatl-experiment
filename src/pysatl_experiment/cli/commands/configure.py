@@ -157,7 +157,10 @@ def _configure_alternatives(experiment_config: dict, alternative: tuple[str, ...
     experiment_type = experiment_config.get("experiment_type")
 
     try:
-        validated_config = AlternativesConfig(experiment_type=experiment_type, alternatives=list(alternative))  # type: ignore[arg-type]
+        validated_config = AlternativesConfig(
+            experiment_type=experiment_type,
+            alternatives=list(alternative)
+        )  # type: ignore[arg-type]
 
         alternatives_data = validated_config.model_dump().get("alternatives", [])
     except ValidationError as e:
