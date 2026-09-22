@@ -5,6 +5,7 @@ from pathlib import Path
 
 from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 
+from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 
 
@@ -22,6 +23,9 @@ class TimeComplexityReportStepContext:
 
     experiment_name: str
     report_name: str
+    criteria_config: list[CriterionConfig]
+    sample_sizes: list[int]
+    monte_carlo_count: int
     samples_count: int
     results_path: Path
     report_mode: ReportMode

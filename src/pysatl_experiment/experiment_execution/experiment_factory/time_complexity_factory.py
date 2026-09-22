@@ -7,7 +7,6 @@ complexity of statistical criteria.
 """
 
 from pysatl_criterion.persistence.models.base import IDataStorage
-from pysatl_criterion.utils.generator import get_available_generator
 from typing_extensions import override
 
 from pysatl_experiment.configuration.experiment_data.time_complexity import TimeComplexityExperimentData
@@ -24,13 +23,15 @@ from pysatl_experiment.experiment_execution.step.generation_step import (
     GenerationStep,
     GenerationStepContext,
 )
+
+# TODO: refactor other imports like that
 from pysatl_experiment.experiment_execution.step.report_step.time_complexity import (
     TimeComplexityReportBuildingStep,
     TimeComplexityReportData,
     TimeComplexityReportStepContext,
-)  # TODO: refactor other imports like that
+)
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
-from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
 from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
 from pysatl_experiment.persistence.time_complexity_storage import AlchemyTimeComplexityStorage
 
@@ -64,6 +65,9 @@ class TimeComplexityExperimentFactory(
         """
         super().__init__(experiment_data)
 
+    # TODO: generator parameters are inconsistently typed across the codebase
+    #  (dict[str, float] in Alternative / configs vs list[float] in generators, queries
+    #  and tests). Introduce a single conversion helper and use it everywhere.
     @override
     def _create_generation_step(self, random_values_storage: IRandomValuesStorage) -> GenerationStep:
         """
@@ -84,17 +88,27 @@ class TimeComplexityExperimentFactory(
             Configured generation step.
         """
         config = self.experiment_data.config
+        generator_name, generator_parameters, generator = self._get_hypothesis_generator_metadata()
 
-        data_list = [
-            GenerationData(
-                generator=get_available_generator(config.hypothesis, config.hypothesis_params),
+        data_list = []
+        for sample_size in config.sample_sizes:
+            rvs_query = RandomValuesAllQuery(
+                generator_code=generator_name,
+                generator_parameters=generator_parameters,
                 sample_size=sample_size,
-                samples_count=config.monte_carlo_count,
             )
-            for sample_size in config.sample_sizes
-        ]
+            existing_count = random_values_storage.get_rvs_count(rvs_query)
+            missing_count = max(0, config.monte_carlo_count - existing_count)
+            if missing_count > 0:
+                data_list.append(
+                    GenerationData(
+                        generator=generator,
+                        sample_size=sample_size,
+                        samples_count=missing_count,
+                    )
+                )
 
-        ctx = GenerationStepContext(data_list=data_list, experiment_name=self.experiment_data.name)
+        ctx = GenerationStepContext(data_list=data_list, experiment_name=self.experiment_data.experiment_name)
         return GenerationStep(ctx=ctx, random_values_storage=random_values_storage)
 
     @override
@@ -186,20 +200,24 @@ class TimeComplexityExperimentFactory(
         TimeComplexityReportBuildingStep
             Configured report-building step.
         """
+        criteria_config = self._get_criteria_config()
+
         data_list = [
-            TimeComplexityReportData(
-                sample_size=sample_size,
-            )
+            TimeComplexityReportData(criterion=criterion_config.statistics_class_object, sample_size=sample_size)
+            for criterion_config in criteria_config
             for sample_size in self.experiment_data.config.sample_sizes
         ]
 
         ctx = TimeComplexityReportStepContext(
             report_name=self.experiment_data.experiment_name,
             experiment_name=self.experiment_data.experiment_name,
-            data_list=data_list,
+            criteria_config=criteria_config,
+            sample_sizes=self.experiment_data.config.sample_sizes,
             monte_carlo_count=self.experiment_data.config.monte_carlo_count,
+            samples_count=self.experiment_data.config.monte_carlo_count,
             results_path=self.experiment_data.results_path,
             report_mode=self.experiment_data.config.report_mode,
+            data_list=data_list,
         )
 
         return TimeComplexityReportBuildingStep(

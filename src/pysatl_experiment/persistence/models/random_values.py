@@ -9,6 +9,8 @@ from typing import Any
 
 from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
 
+from pysatl_experiment.configuration.models.parameters import NumericParameters
+
 
 @dataclass
 class RandomValuesModel(DataModel):
@@ -19,7 +21,7 @@ class RandomValuesModel(DataModel):
     ----------
     generator_code : str
         Name of generator.
-    generator_parameters : list[float]
+    generator_parameters : NumericParameters
         Generator parameters.
     sample_size : int
         Size of each sample.
@@ -30,7 +32,7 @@ class RandomValuesModel(DataModel):
     """
 
     generator_code: str
-    generator_parameters: dict[str, float]
+    generator_parameters: NumericParameters
     sample_size: int
     experiment_name: str
     data: list[float]

@@ -18,6 +18,7 @@ from typing import ClassVar
 from sqlalchemy import Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
+from pysatl_experiment.configuration.models.parameters import NumericParameters
 from pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
 from pysatl_experiment.persistence.db_store.model import AbstractDbStore
 from pysatl_experiment.persistence.models.time_complexity import (
@@ -305,7 +306,7 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
         self._get_session().commit()
 
     @staticmethod
-    def _serialize_criterion_parameters(parameters: dict[str, float]) -> str:
+    def _serialize_criterion_parameters(parameters: NumericParameters) -> str:
         return json.dumps(AlchemyTimeComplexityStorage._normalize_criterion_parameters(parameters), sort_keys=True)
 
     @staticmethod

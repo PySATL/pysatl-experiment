@@ -8,6 +8,8 @@ from typing import Any
 
 import pytest
 from pysatl_criterion import DistributionType
+from pysatl_criterion.generator.model import AbstractRVSGenerator
+from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.experiment_config.time_complexity_experiment_config import (
@@ -77,7 +79,7 @@ class FakeExperimentStorage:
         return self._id
 
 
-class FakeStatistics:
+class FakeStatistics(AbstractGoodnessOfFitStatistic):  # TODO!!!!!!!!!!!
     @staticmethod
     def code() -> str:
         return "FAKE_CODE"
@@ -108,7 +110,7 @@ class ConcreteFactory(
 
     # Deterministic overrides
     def _get_hypothesis_generator_metadata(self):  # type: ignore[override]
-        return "FAKEGEN", [1.0], object()
+        return "FAKEGEN", [1.0], AbstractRVSGenerator()  # TODO!!!!!!!!
 
     def _get_criteria_config(self):  # type: ignore[override]
         crit = Criterion(criterion_code="FAKE", parameters=[])
@@ -138,6 +140,15 @@ class ConcreteFactory(
     def _create_report_building_step(self, result_storage):  # type: ignore[override]
         return DummyStep("report")
 
+    # Deterministic overrides for cleanup hooks  TODO: add tests
+    def _delete_sample_data(self, data_storage):  # type: ignore[override]
+        for sample_size in self.experiment_data.config.sample_sizes:
+            data_storage.delete_all_data(sample_size)
+
+    def _delete_results_from_storage(self, result_storage):  # type: ignore[override]
+        for sample_size in self.experiment_data.config.sample_sizes:
+            result_storage.delete_data(sample_size)
+
 
 def build_tc_data(
     results_path: Path, run_mode: RunMode, is_gen_done: bool, is_exec_done: bool
@@ -147,6 +158,7 @@ def build_tc_data(
         storage_connection=os.fspath(results_path / "test.sqlite"),
         run_mode=run_mode,
         hypothesis=DistributionType.EXPONENTIAL,
+        hypothesis_params={},  # TODO: {"scale": 1.0}
         generator_type=StepType.STANDARD,
         executor_type=StepType.STANDARD,
         report_builder_type=StepType.STANDARD,
@@ -160,7 +172,7 @@ def build_tc_data(
         "StepsDone", (), {"is_generation_step_done": is_gen_done, "is_execution_step_done": is_exec_done}
     )()
     return TimeComplexityExperimentData(
-        name="abstract_test",
+        experiment_name="abstract_test",
         config=config,
         steps_done=steps_done,
         results_path=results_path,

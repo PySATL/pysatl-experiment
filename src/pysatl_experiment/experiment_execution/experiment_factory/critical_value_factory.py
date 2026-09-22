@@ -9,7 +9,6 @@ estimation.
 from pysatl_criterion.persistence.models.base import IDataStorage
 from pysatl_criterion.persistence.models.limit_distribution import ILimitDistributionStorage, LimitDistributionQuery
 from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDistributionStorage
-from pysatl_criterion.utils.generator import get_available_generator
 from typing_extensions import override
 
 from pysatl_experiment.configuration.experiment_data.critical_value import CriticalValueExperimentData
@@ -30,7 +29,7 @@ from pysatl_experiment.experiment_execution.step.report_step.critical_value.crit
     CriticalValueReportBuildingStep,
 )
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
-from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
 
 
 class CriticalValueExperimentFactory(
@@ -87,17 +86,27 @@ class CriticalValueExperimentFactory(
         generated.
         """
         config = self.experiment_data.config
+        generator_name, generator_parameters, generator = self._get_hypothesis_generator_metadata()
 
-        data_list = [
-            GenerationData(
-                generator=get_available_generator(config.hypothesis, config.hypothesis_params),
+        data_list = []
+        for sample_size in config.sample_sizes:
+            rvs_query = RandomValuesAllQuery(
+                generator_code=generator_name,
+                generator_parameters=generator_parameters,
                 sample_size=sample_size,
-                samples_count=config.monte_carlo_count,
             )
-            for sample_size in config.sample_sizes
-        ]
+            existing_count = random_values_storage.get_rvs_count(rvs_query)
+            missing_count = max(0, config.monte_carlo_count - existing_count)
+            if missing_count > 0:
+                data_list.append(
+                    GenerationData(
+                        generator=generator,
+                        sample_size=sample_size,
+                        samples_count=missing_count,
+                    )
+                )
 
-        ctx = GenerationStepContext(data_list=data_list, experiment_name=self.experiment_data.name)
+        ctx = GenerationStepContext(data_list=data_list, experiment_name=self.experiment_data.experiment_name)
         return GenerationStep(ctx=ctx, random_values_storage=random_values_storage)
 
     def _create_execution_step(

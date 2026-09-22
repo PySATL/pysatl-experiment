@@ -292,7 +292,7 @@ def configure(
     if not experiment_exists:
         raise ClickException(f"Experiment with name {name} does not exist.")
 
-    experiment_config: dict = read_experiment_data(name).get("config")
+    experiment_config: dict = read_experiment_data(name).get("config") or {}
 
     _configure_experiment_type(experiment_config, experiment_type)
     _configure_storage_connection(experiment_config, connection)

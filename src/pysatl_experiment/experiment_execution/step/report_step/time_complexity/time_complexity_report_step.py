@@ -4,6 +4,7 @@ import numpy as np
 from line_profiler import profile
 from typing_extensions import override
 
+from pysatl_experiment.configuration.models.parameters import NumericParameters
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
 from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_builder import (
     TimeComplexityReportBuilder,
@@ -82,15 +83,15 @@ class TimeComplexityReportBuildingStep(IExperimentStep):
             for size in self.sizes:
                 times = self._get_times_from_storage(
                     experiment_name=self.experiment_name,
-                    criterion_code=criterion.code(),
-                    criterion_parameters=criterion.hypothesis().parameters(),
+                    criterion_code=criterion.criterion_code,
+                    criterion_parameters=criterion.criterion.parameters,
                     sample_size=size,
                     samples_count=self.ctx.samples_count,
                 )
 
                 if times:
                     mean = float(np.mean(times))
-                    stats.add_criterion_statistic(criterion.code(), size, mean)
+                    stats.add_criterion_statistic(criterion.criterion_code, size, mean)
 
         return stats
 
@@ -98,7 +99,7 @@ class TimeComplexityReportBuildingStep(IExperimentStep):
         self,
         experiment_name: str,
         criterion_code: str,
-        criterion_parameters: dict[str, float],
+        criterion_parameters: NumericParameters,
         sample_size: int,
         samples_count: int,
     ) -> list[float]:
@@ -111,7 +112,7 @@ class TimeComplexityReportBuildingStep(IExperimentStep):
             Experiment name.
         criterion_code : str
             Criterion identifier.
-        criterion_parameters : dict[str, float]
+        criterion_parameters : NumericParameters
             Criterion parameters.
         sample_size : int
             Sample size.

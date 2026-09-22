@@ -191,6 +191,7 @@ def build_power_data(results_path: Path) -> PowerExperimentData:
         storage_connection=os.fspath(results_path / "test.sqlite"),
         run_mode=RunMode.REUSE,
         hypothesis=DistributionType.EXPONENTIAL,
+        hypothesis_params={"lam": 1.0},
         generator_type=StepType.STANDARD,
         executor_type=StepType.STANDARD,
         report_builder_type=StepType.STANDARD,
@@ -206,7 +207,7 @@ def build_power_data(results_path: Path) -> PowerExperimentData:
         parallel_workers=1,
     )
     return PowerExperimentData(
-        name="power_test",
+        experiment_name="power_test",
         config=config,
         steps_done=type("StepsDone", (), {"is_generation_step_done": False, "is_execution_step_done": False})(),
         results_path=results_path,
@@ -236,8 +237,7 @@ def test_generation_step_builds_needed_by_alternative(tmp_results_path: Path):
     step = gen_step.ctxs[0]
     assert step.sample_size == 10
     assert step.samples_count == 3
-    assert step.generator_code == "ALT_B"
-    assert step.generator_parameters == [0.2]
+    assert step.generator is fake_gen
 
 
 def test_execution_step_includes_missing_results_combinations(tmp_results_path: Path):
@@ -261,10 +261,10 @@ def test_execution_step_includes_missing_results_combinations(tmp_results_path: 
 
     # We have 2 alternatives × 2 sig levels = 4 combinations for the single sample size
     # One is present, expect 3 remaining in step_config
-    assert len(exec_step.ctxs) == 3
+    assert len(exec_step.step_config) == 3
     combo_set = {
         (sd.alternative.distribution_type, tuple(sd.alternative.parameters), sd.significance_level)
-        for sd in exec_step.ctxs
+        for sd in exec_step.step_config
     }
     assert ("ALT_A", (0.1,), 0.1) in combo_set
     assert ("ALT_B", (0.2,), 0.05) in combo_set
@@ -287,4 +287,4 @@ def test_report_building_step_sets_expected_fields(tmp_results_path: Path):
     assert rb_step.monte_carlo_count == data.config.monte_carlo_count
     assert rb_step.result_storage is power_storage
     assert rb_step.results_path == data.results_path
-    assert rb_step.report_mode == data.config.report_mode
+    assert rb_step.with_chart == data.config.report_mode

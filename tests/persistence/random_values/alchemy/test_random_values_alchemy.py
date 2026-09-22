@@ -37,7 +37,7 @@ def test_guard_requires_init(db_path: Path) -> None:
                 generator_code="gen",
                 generator_parameters=[0.5],
                 sample_size=10,
-                experiment_name=1,
+                experiment_name="1",
             )
         )
 
@@ -47,7 +47,7 @@ def test_get_data_empty_returns_none(storage: AlchemyRandomValuesStorage) -> Non
         generator_code="gen_A",
         generator_parameters=[0.1, 0.2],
         sample_size=20,
-        experiment_name=1,
+        experiment_name="1",
     )
     assert storage.get_data(query) is None
 
@@ -57,7 +57,7 @@ def test_insert_and_get_single_sample(storage: AlchemyRandomValuesStorage) -> No
         generator_code="gen_A",
         generator_parameters=[0.1, 0.2],
         sample_size=20,
-        experiment_name=1,
+        experiment_name="1",
         data=[0.11, 0.22, 0.33],
     )
     storage.insert_data(model)
@@ -67,7 +67,7 @@ def test_insert_and_get_single_sample(storage: AlchemyRandomValuesStorage) -> No
             generator_code="gen_A",
             generator_parameters=[0.1, 0.2],
             sample_size=20,
-            experiment_name=1,
+            experiment_name="1",
         )
     )
 
@@ -75,7 +75,7 @@ def test_insert_and_get_single_sample(storage: AlchemyRandomValuesStorage) -> No
     assert got.generator_code == model.generator_code
     assert got.generator_parameters == model.generator_parameters
     assert got.sample_size == model.sample_size
-    assert np.allclose(got.experiment_name, model.experiment_name, atol=1e-5)
+    assert got.experiment_name == model.experiment_name
     assert np.allclose(got.data, model.data, atol=1e-5)
 
 
@@ -84,7 +84,7 @@ def test_delete_single_sample(storage: AlchemyRandomValuesStorage) -> None:
         generator_code="gen_B",
         generator_parameters=[0.3],
         sample_size=5,
-        experiment_name=2,
+        experiment_name="2",
         data=[1.0, 2.0],
     )
     storage.insert_data(model)
@@ -94,7 +94,7 @@ def test_delete_single_sample(storage: AlchemyRandomValuesStorage) -> None:
             generator_code="gen_B",
             generator_parameters=[0.3],
             sample_size=5,
-            experiment_name=2,
+            experiment_name="2",
         )
     )
 
@@ -104,7 +104,7 @@ def test_delete_single_sample(storage: AlchemyRandomValuesStorage) -> None:
                 generator_code="gen_B",
                 generator_parameters=[0.3],
                 sample_size=5,
-                experiment_name=2,
+                experiment_name="2",
             )
         )
         is None
@@ -138,7 +138,7 @@ def test_insert_all_and_get_all_and_count(storage: AlchemyRandomValuesStorage) -
     )
 
     assert isinstance(all_data, list)
-    assert [m.experiment_name for m in all_data] == [1, 2, 3]
+    assert [m.experiment_name for m in all_data] == ["1", "2", "3"]
     actual = np.array([m.data for m in all_data])
     expected = np.array([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]])
     assert np.allclose(actual, expected, atol=1e-6)
@@ -163,7 +163,7 @@ def test_get_count_data_limits(storage: AlchemyRandomValuesStorage) -> None:
     )
 
     assert limited is not None
-    assert [m.experiment_name for m in limited] == [1, 2]
+    assert [m.experiment_name for m in limited] == ["1", "2"]
     assert [m.data for m in limited] == [[1], [2]]
 
 

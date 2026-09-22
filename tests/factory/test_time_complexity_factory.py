@@ -203,6 +203,7 @@ def build_time_complexity_data(results_path: Path) -> TimeComplexityExperimentDa
         storage_connection=os.fspath(results_path / "test.sqlite"),
         run_mode=RunMode.REUSE,
         hypothesis=DistributionType.EXPONENTIAL,
+        hypothesis_params={"lam": 1.0},
         generator_type=StepType.STANDARD,
         executor_type=StepType.STANDARD,
         report_builder_type=StepType.STANDARD,

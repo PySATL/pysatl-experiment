@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing_extensions import override
 
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
+from pysatl_experiment.configuration.models.parameters import NumericParameters
 from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
 from pysatl_experiment.experiment_execution.step.execution_step.execution_step_data import (
     ExecutionStepData,
@@ -26,7 +27,7 @@ from pysatl_experiment.persistence.models.time_complexity import ITimeComplexity
 class TimeComplexityStepData(ExecutionStepData):
     """Data for a single execution step in time complexity experiment."""
 
-    criterion_parameters: dict[str, float]
+    criterion_parameters: NumericParameters
 
 
 TimeComplexityExecutionResult = ExecutionTaskResult[TimeComplexityWorkerResult]

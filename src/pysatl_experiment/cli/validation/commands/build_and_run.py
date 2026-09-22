@@ -41,6 +41,7 @@ from pysatl_experiment.configuration.models.step_type import StepType
 from pysatl_experiment.configuration.models.steps_done import StepsDone
 from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
 from pysatl_experiment.persistence.models.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
+from pysatl_experiment.utils.experiment_utils import parameters_to_list
 from pysatl_experiment.utils.files_utils import ensure_result_dir
 
 
@@ -140,7 +141,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
     result_path = ensure_result_dir()
 
     experiment_data = ExperimentData(
-        name=experiment_name,
+        experiment_name=experiment_name,
         config=legacy_dataclass_config,
         steps_done=steps_done,
         results_path=result_path,
@@ -184,7 +185,8 @@ def _get_experiment_config_from_storage(
         power_config = cast(LegacyPowerExperimentConfig, config)
         significance_levels = power_config.significance_levels
         alternatives = {
-            alternative.distribution_type: alternative.parameters for alternative in power_config.alternatives
+            alternative.distribution_type.value: parameters_to_list(alternative.parameters)
+            for alternative in power_config.alternatives
         }
 
     query = ExperimentQuery(
@@ -237,7 +239,8 @@ def _save_experiment_config_to_storage(config: ExperimentConfig, storage: IExper
         power_config = cast(LegacyPowerExperimentConfig, config)
         significance_levels = power_config.significance_levels
         alternatives = {
-            alternative.distribution_type: alternative.parameters for alternative in power_config.alternatives
+            alternative.distribution_type.value: parameters_to_list(alternative.parameters)
+            for alternative in power_config.alternatives
         }
 
     query = ExperimentModel(

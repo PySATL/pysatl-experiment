@@ -109,6 +109,8 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
     @override
     def _to_model(self, result: PowerExecutionResult) -> PowerModel:
         spec = result.spec
+        if spec.significance_level is None:
+            raise ValueError("significance_level is required for power tasks")
         return PowerModel(
             experiment_id=self.experiment_id,
             criterion_code=spec.criterion_code,

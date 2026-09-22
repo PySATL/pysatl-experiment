@@ -6,6 +6,8 @@ from dataclasses import dataclass
 
 from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
 
+from pysatl_experiment.configuration.models.parameters import NumericParameters
+
 
 @dataclass
 class PowerModel(DataModel):
@@ -18,13 +20,13 @@ class PowerModel(DataModel):
         Experiment identifier.
     criterion_code : str
         Statistical criterion code.
-    criterion_parameters : list[float]
+    criterion_parameters : NumericParameters
         Parameters of criterion.
     sample_size : int
         Sample size.
     alternative_code : str
         Alternative hypothesis code.
-    alternative_parameters : list[float]
+    alternative_parameters : NumericParameters
         Parameters of alternative hypothesis.
     monte_carlo_count : int
         Number of simulations.
@@ -36,10 +38,10 @@ class PowerModel(DataModel):
 
     experiment_id: int
     criterion_code: str
-    criterion_parameters: list[float]
+    criterion_parameters: NumericParameters
     sample_size: int
     alternative_code: str
-    alternative_parameters: list[float]
+    alternative_parameters: NumericParameters
     monte_carlo_count: int
     significance_level: float
     results_criteria: list[bool]
@@ -53,19 +55,19 @@ class PowerQuery(DataQuery):
     Parameters
     ----------
     criterion_code : str
-    criterion_parameters : list[float]
+    criterion_parameters : NumericParameters
     sample_size : int
     alternative_code : str
-    alternative_parameters : list[float]
+    alternative_parameters : NumericParameters
     monte_carlo_count : int
     significance_level : float
     """
 
     criterion_code: str
-    criterion_parameters: list[float]
+    criterion_parameters: NumericParameters
     sample_size: int
     alternative_code: str
-    alternative_parameters: list[float]
+    alternative_parameters: NumericParameters
     monte_carlo_count: int
     significance_level: float
 

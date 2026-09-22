@@ -19,7 +19,7 @@ from jinja2 import Environment, FileSystemLoader
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.models.alternative import Alternative
 from pysatl_experiment.configuration.models.report_mode import ReportMode
-from pysatl_experiment.utils.report_utils import convert_html_to_pdf, get_criterion_names
+from pysatl_experiment.utils.report_utils import convert_html_to_pdf, get_criterion_names, get_report_template_dir
 
 
 class PowerReportBuilder:
@@ -73,7 +73,7 @@ class PowerReportBuilder:
         self.results_path = results_path
         self.with_chart = with_chart
 
-        template_dir = Path(__file__).parent / "report_templates"  # TODO: common constant?
+        template_dir = get_report_template_dir()
         self.pdf_path = self.results_path / f"{report_name}.pdf"
 
         self.template_env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)

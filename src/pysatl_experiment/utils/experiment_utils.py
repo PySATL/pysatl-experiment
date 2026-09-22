@@ -5,9 +5,30 @@ from pathlib import Path
 
 from line_profiler import profile
 
+from pysatl_experiment.configuration.models.parameters import NumericParameters
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesCountQuery
 from pysatl_experiment.utils.experiment_names import normalize_experiment_name
 from pysatl_experiment.utils.files_utils import ensure_experiment_conf, ensure_experiment_dir
+
+
+def parameters_to_list(parameters: NumericParameters) -> list[float]:
+    """
+    Convert numeric parameters to a positional list of values.
+
+    Accepts both keyword-style (``dict``) and positional-style (``list``)
+    parameter representations and normalizes them to a list.
+
+    Parameters
+    ----------
+    parameters : NumericParameters
+        Parameters to convert.
+
+    Returns
+    -------
+    list[float]
+        Positional list of parameter values.
+    """
+    return list(parameters.values()) if isinstance(parameters, dict) else list(parameters)
 
 
 def is_experiment_exists(experiment_name: str) -> bool:

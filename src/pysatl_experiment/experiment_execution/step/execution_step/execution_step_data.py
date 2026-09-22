@@ -5,6 +5,8 @@ from typing import Any
 
 from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 
+from pysatl_experiment.configuration.models.parameters import NumericParameters
+
 
 @dataclass
 class ExecutionStepData:
@@ -12,7 +14,7 @@ class ExecutionStepData:
 
     statistics: AbstractGoodnessOfFitStatistic
     sample_size: int
-    criterion_parameters: list[float]
+    criterion_parameters: NumericParameters
 
 
 @dataclass

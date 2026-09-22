@@ -7,7 +7,6 @@ for goodness-of-fit criteria under alternative distributions.
 """
 
 from pysatl_criterion.persistence.models.base import IDataStorage
-from pysatl_criterion.utils.generator import get_available_generator
 from typing_extensions import override
 
 from pysatl_experiment.configuration.experiment_data.power import PowerExperimentData
@@ -27,7 +26,7 @@ from pysatl_experiment.experiment_execution.step.report_step.power.power_report_
 from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerStorage
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerQuery
-from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
 
 
 class PowerExperimentFactory(
@@ -78,17 +77,27 @@ class PowerExperimentFactory(
         """
         config = self.experiment_data.config
 
-        data_list = [
-            GenerationData(
-                generator=get_available_generator(alternative.distribution_type, alternative.parameters),
-                sample_size=sample_size,
-                samples_count=config.monte_carlo_count,
-            )
-            for sample_size in config.sample_sizes
-            for alternative in config.alternatives
-        ]
+        data_list = []
+        for alternative in config.alternatives:
+            generator = self._get_generator_class_object(alternative.distribution_type, alternative.parameters)
+            for sample_size in config.sample_sizes:
+                rvs_query = RandomValuesAllQuery(
+                    generator_code=alternative.distribution_type,
+                    generator_parameters=alternative.parameters,
+                    sample_size=sample_size,
+                )
+                existing_count = random_values_storage.get_rvs_count(rvs_query)
+                missing_count = max(0, config.monte_carlo_count - existing_count)
+                if missing_count > 0:
+                    data_list.append(
+                        GenerationData(
+                            generator=generator,
+                            sample_size=sample_size,
+                            samples_count=missing_count,
+                        )
+                    )
 
-        ctx = GenerationStepContext(data_list=data_list, experiment_name=self.experiment_data.name)
+        ctx = GenerationStepContext(data_list=data_list, experiment_name=self.experiment_data.experiment_name)
         return GenerationStep(ctx=ctx, random_values_storage=random_values_storage)
 
     def _create_execution_step(

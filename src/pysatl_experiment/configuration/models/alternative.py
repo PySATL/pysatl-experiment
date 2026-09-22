@@ -4,6 +4,8 @@ from dataclasses import dataclass
 
 from pysatl_criterion import DistributionType
 
+from pysatl_experiment.configuration.models.parameters import NumericParameters
+
 
 @dataclass
 class Alternative:
@@ -14,14 +16,13 @@ class Alternative:
     ----------
     distribution_type : str
         Alternative distribution generator identifier.
-    parameters : dict[str, float]
+    parameters : NumericParameters
         Generator-specific numeric parameters.
     """
 
-    parameters: dict[str, float]
+    parameters: NumericParameters
     distribution_type: DistributionType
 
-    @property
-    def distribution_type(self) -> DistributionType:
-        """Return generator code using the newer naming convention."""
-        return self.distribution_type
+    # TODO: the `distribution_type` property was removed here — it shadowed the dataclass field
+    #  of the same name (making the generated __init__ raise AttributeError: property has no setter).
+    #  Keep the plain field `distribution_type: DistributionType` per the refactor intent.

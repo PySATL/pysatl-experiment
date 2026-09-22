@@ -69,6 +69,16 @@ class FakeStatistics(AbstractGoodnessOfFitStatistic):
     def code() -> str:
         return "FAKE_CODE"
 
+    def alternative(self):  # pragma: no cover - steps aren't run in these tests
+        raise NotImplementedError
+
+    @staticmethod
+    def distribution():  # pragma: no cover - steps aren't run in these tests
+        return DistributionType.EXPONENTIAL
+
+    def hypothesis(self):  # pragma: no cover - steps aren't run in these tests
+        raise NotImplementedError
+
 
 class FakeRandomValuesStorage(IRandomValuesStorage):
     def __init__(self, counts_by_size: dict[int, int]):
@@ -84,6 +94,9 @@ class FakeRandomValuesStorage(IRandomValuesStorage):
         return self.counts_by_size.get(query.sample_size, 0)
 
     def insert_data(self, model):  # pragma: no cover
+        pass
+
+    def bulk_insert_data(self, models):  # pragma: no cover - steps aren't run
         pass
 
     def delete_data(self, query):  # pragma: no cover
@@ -188,6 +201,7 @@ def build_cv_data(results_path: Path) -> CriticalValueExperimentData:
         storage_connection=os.fspath(results_path / "test.sqlite"),
         run_mode=RunMode.REUSE,
         hypothesis=DistributionType.EXPONENTIAL,
+        hypothesis_params={"lam": 1.0},
         generator_type=StepType.STANDARD,
         executor_type=StepType.STANDARD,
         report_builder_type=StepType.STANDARD,
@@ -199,7 +213,7 @@ def build_cv_data(results_path: Path) -> CriticalValueExperimentData:
         parallel_workers=1,
     )
     return CriticalValueExperimentData(
-        name="cv_test",
+        experiment_name="cv_test",
         config=config,
         steps_done=type("StepsDone", (), {"is_generation_step_done": False, "is_execution_step_done": False})(),
         results_path=results_path,
@@ -223,8 +237,7 @@ def test_generation_step_builds_needed_entries(tmp_results_path: Path):
     s0 = gen_step.ctxs[0]
     assert s0.sample_size == 20
     assert s0.samples_count == 3
-    assert s0.generator_code == "FAKEGENERATOR"
-    assert s0.generator_parameters == [1.0]
+    assert s0.generator is fake_gen
 
 
 def test_execution_step_includes_missing_results(tmp_results_path: Path):
@@ -241,12 +254,12 @@ def test_execution_step_includes_missing_results(tmp_results_path: Path):
     assert isinstance(exec_step, CriticalValueExecutionStep)
     assert exec_step.experiment_id == 99
     assert exec_step.monte_carlo_count == 5
-    assert exec_step.hypothesis_generator_data.distribution_type == "FAKEGENERATOR"
+    assert exec_step.hypothesis_generator_data.generator_code == "FAKEGENERATOR"
     assert exec_step.hypothesis_generator_data.parameters == [1.0]
 
     # Only one missing: size 20
-    assert len(exec_step.ctxs) == 1
-    sd = exec_step.ctxs[0]
+    assert len(exec_step.step_config) == 1
+    sd = exec_step.step_config[0]
     assert sd.sample_size == 20
     assert sd.statistics.code() == "FAKE_CODE"
 
@@ -266,4 +279,4 @@ def test_report_building_step_sets_expected_fields(tmp_results_path: Path):
     assert rb_step.monte_carlo_count == data.config.monte_carlo_count
     assert rb_step.result_storage is limit_storage
     assert rb_step.results_path == data.results_path
-    assert rb_step.report_mode == data.config.report_mode
+    assert rb_step.with_chart == data.config.report_mode

@@ -338,7 +338,7 @@ class AlchemyRandomValuesStorage(AbstractDbStore, IRandomValuesStorage):
         return [
             RandomValuesModel(
                 generator_code=query.generator_code,
-                generator_parameters=query.generator_parameters,
+                generator_parameters=query.generator_parameters or {},
                 sample_size=query.sample_size,
                 experiment_name=self._model_experiment_name(row),
                 data=row.data,
@@ -419,12 +419,8 @@ class AlchemyRandomValuesStorage(AbstractDbStore, IRandomValuesStorage):
         return 1
 
     @staticmethod
-    def _model_experiment_name(row: AlchemyRandomValues) -> str | int:
-        if row.experiment_name == "":
-            return int(row.sample_num)
-        if row.experiment_name.isdigit():
-            return int(row.experiment_name)
-        return row.experiment_name
+    def _model_experiment_name(row: AlchemyRandomValues) -> str:
+        return row.experiment_name if row.experiment_name else str(row.sample_num)
 
     @staticmethod
     def _experiment_name_filter(experiment_name: str | int) -> tuple:

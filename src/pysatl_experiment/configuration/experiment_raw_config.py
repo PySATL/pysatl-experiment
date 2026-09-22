@@ -10,7 +10,7 @@ class GenerationRawConfig:
     ----------
     samples_count : int
         Number of samples to generate.
-    generator_type : str or None
+    generator_type : str
         Type of random variable generator.
     distribution_type : str or None
         Type of probability distribution.
@@ -24,7 +24,6 @@ class GenerationRawConfig:
 
     samples_count: int
     generator_type: str
-    generator_type: str | None
     distribution_type: str | None
     distribution_params: dict[str, float] | None
     sample_sizes: list[int] | None

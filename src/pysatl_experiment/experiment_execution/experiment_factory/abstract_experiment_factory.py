@@ -29,6 +29,7 @@ from pysatl_criterion.utils.generator import get_available_generator
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
+from pysatl_experiment.configuration.models.parameters import NumericParameters
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.experiment_execution.experiment_steps import ExperimentSteps
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
@@ -38,6 +39,7 @@ from pysatl_experiment.persistence.models.power import PowerQuery
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
 from pysatl_experiment.persistence.models.time_complexity import TimeComplexityQuery
 from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
+from pysatl_experiment.utils.experiment_utils import parameters_to_list
 
 
 D = TypeVar("D", contravariant=True, bound=ExperimentData)
@@ -529,7 +531,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         return data_storage
 
     def _get_generator_class_object(
-        self, generator_name: str, generator_parameters: list[float]
+        self, generator_name: str, generator_parameters: NumericParameters
     ) -> AbstractRVSGenerator:
         """
         Create a generator instance by name.
@@ -538,7 +540,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         ----------
         generator_name : str
             Generator class name.
-        generator_parameters : list[float]
+        generator_parameters : NumericParameters
             Generator constructor parameters.
 
         Returns
@@ -562,7 +564,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             if sub_name == generator_name:
                 # Arguments are passed in the order of the parameters list,
                 # which is set by the user in CLI
-                return cast(type[AbstractRVSGenerator], sub)(*generator_parameters)
+                return cast(type[AbstractRVSGenerator], sub)(*parameters_to_list(generator_parameters))
 
         raise ValueError(f"Unknown generator: {generator_name}")
 

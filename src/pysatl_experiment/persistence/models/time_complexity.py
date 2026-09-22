@@ -6,6 +6,8 @@ from dataclasses import dataclass
 
 from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
 
+from pysatl_experiment.configuration.models.parameters import NumericParameters
+
 
 @dataclass
 class TimeComplexityModel(DataModel):
@@ -18,7 +20,7 @@ class TimeComplexityModel(DataModel):
         Experiment name.
     criterion_code : str
         Criterion identifier.
-    criterion_parameters : dict[str, float]
+    criterion_parameters : NumericParameters
         Criterion parameters.
     sample_size : int
         Sample size.
@@ -30,7 +32,7 @@ class TimeComplexityModel(DataModel):
 
     experiment_name: str
     criterion_code: str
-    criterion_parameters: dict[str, float]
+    criterion_parameters: NumericParameters
     sample_size: int
     samples_count: int
     results_times: list[float]
@@ -53,7 +55,7 @@ class TimeComplexityQuery(DataQuery):
 
     experiment_name: str
     criterion_code: str
-    criterion_parameters: dict[str, float]
+    criterion_parameters: NumericParameters
     sample_size: int
     samples_count: int
 
