@@ -4,11 +4,15 @@ from collections.abc import Generator
 from unittest.mock import MagicMock
 
 import pytest
-from pysatl_criterion.statistics.goodness_of_fit import AbstractGoodnessOfFitStatistic
+from pysatl_criterion import DistributionType
+from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.models.criterion import Criterion
 from pysatl_experiment.configuration.models.report_mode import ReportMode
+from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_statistic import (
+    TimeComplexityReportStatistic,
+)
 
 
 @pytest.fixture()
@@ -72,7 +76,7 @@ def results_path(tmp_path):
 @pytest.fixture
 def mock_alternative():
     alt = MagicMock()
-    alt.generator_name = "Normal"
+    alt.distribution_type = DistributionType.NORMAL
     alt.parameters = {"mean": 0, "std": 1}
     return alt
 
@@ -94,12 +98,17 @@ def cv_values():
 
 @pytest.fixture
 def time_data():
-    return {"KS_": [(10, 0.001), (20, 0.002)], "AD_": [(10, 0.0015), (20, 0.0025)]}
+    return TimeComplexityReportStatistic(
+        {
+            "KS_": [(10, 0.001), (20, 0.002)],
+            "AD_": [(10, 0.0015), (20, 0.0025)],
+        }
+    )
 
 
 @pytest.fixture
 def power_data():
     return {
-        "KS_": {("Normal", 0.05): {10: [True, False, True], 20: [True, True, False]}},
-        "AD_": {("Normal", 0.05): {10: [False, False, False], 20: [True, False, False]}},
+        "KS_": {(DistributionType.NORMAL, 0.05): {10: [True, False, True], 20: [True, True, False]}},
+        "AD_": {(DistributionType.NORMAL, 0.05): {10: [False, False, False], 20: [True, False, False]}},
     }

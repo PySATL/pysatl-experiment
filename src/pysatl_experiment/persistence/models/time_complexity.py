@@ -1,9 +1,12 @@
 """Time complexity storage models and interface."""
 
-from abc import ABC
+from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
+
+from pysatl_experiment.configuration.models.parameters import NumericParameters
 
 
 @dataclass
@@ -13,25 +16,25 @@ class TimeComplexityModel(DataModel):
 
     Parameters
     ----------
-    experiment_id : int
-        Experiment identifier.
+    experiment_name : str
+        Experiment name.
     criterion_code : str
         Criterion identifier.
-    criterion_parameters : list[float]
+    criterion_parameters : NumericParameters
         Criterion parameters.
     sample_size : int
         Sample size.
-    monte_carlo_count : int
+    samples_count : int
         Number of simulations.
     results_times : list[float]
         Execution time measurements.
     """
 
-    experiment_id: int
+    experiment_name: str
     criterion_code: str
-    criterion_parameters: list[float]
+    criterion_parameters: NumericParameters
     sample_size: int
-    monte_carlo_count: int
+    samples_count: int
     results_times: list[float]
 
 
@@ -42,19 +45,32 @@ class TimeComplexityQuery(DataQuery):
 
     Parameters
     ----------
+    experiment_name : str
+        Experiment name.
     criterion_code : str
-    criterion_parameters : list[float]
+    criterion_parameters : CriterionParameters
     sample_size : int
-    monte_carlo_count : int
+    samples_count : int
     """
 
+    experiment_name: str
     criterion_code: str
-    criterion_parameters: list[float]
+    criterion_parameters: NumericParameters
     sample_size: int
-    monte_carlo_count: int
+    samples_count: int
 
 
 class ITimeComplexityStorage(IDataStorage[TimeComplexityModel, TimeComplexityQuery], ABC):
     """Time complexity storage interface."""
 
-    pass
+    @abstractmethod
+    def bulk_insert_data(self, data_list: Iterable[TimeComplexityModel]) -> None:
+        """
+        Insert or update multiple time complexity records.
+
+        Parameters
+        ----------
+        data_list : Iterable[TimeComplexityModel]
+            Time complexity measurements to store.
+        """
+        pass

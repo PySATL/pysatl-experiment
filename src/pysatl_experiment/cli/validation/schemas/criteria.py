@@ -6,9 +6,9 @@ with a given hypothesis.
 """
 
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
+from pysatl_criterion import DistributionType
 
 from pysatl_experiment.cli.commands.common import get_statistics_short_codes_for_hypothesis
-from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 
 
 class Criterion(BaseModel):
@@ -61,7 +61,7 @@ class CriteriaConfig(BaseModel):
 
     Attributes
     ----------
-    hypothesis : Hypothesis
+    hypothesis : DistributionType
         Statistical hypothesis defining allowed criteria.
     criteria : list[Criterion]
         List of statistical criteria used in the experiment.
@@ -73,7 +73,7 @@ class CriteriaConfig(BaseModel):
         criteria exist for the hypothesis.
     """
 
-    hypothesis: Hypothesis
+    hypothesis: DistributionType
     criteria: list[Criterion]
 
     @field_validator("criteria")

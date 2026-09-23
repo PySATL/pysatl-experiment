@@ -12,11 +12,13 @@ constraint and provides CRUD operations for time complexity results.
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Mapping, Sequence
 from typing import ClassVar
 
 from sqlalchemy import Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
+from pysatl_experiment.configuration.models.parameters import NumericParameters
 from pysatl_experiment.persistence.db_store.base import ModelBase, SessionType
 from pysatl_experiment.persistence.db_store.model import AbstractDbStore
 from pysatl_experiment.persistence.models.time_complexity import (
@@ -47,10 +49,10 @@ class AlchemyTimeComplexity(ModelBase):
         JSON-serialized parameters of the criterion.
     sample_size : int
         Sample size used in evaluation.
-    monte_carlo_count : int
-        Number of Monte-Carlo simulations.
-    experiment_id : int
-        Identifier of the experiment run.
+    samples_count : int
+        Number of samples/simulations.
+    experiment_name : str
+        Name of the experiment run.
     results_times : str
         JSON-serialized execution time results.
 
@@ -66,16 +68,17 @@ class AlchemyTimeComplexity(ModelBase):
     criterion_code: Mapped[str] = mapped_column(String, nullable=False, index=True)  # type: ignore
     criterion_parameters: Mapped[str] = mapped_column(String, nullable=False, index=True)  # type: ignore
     sample_size: Mapped[int] = mapped_column(Integer, nullable=False, index=True)  # type: ignore
-    monte_carlo_count: Mapped[int] = mapped_column(Integer, nullable=False, index=True)  # type: ignore
-    experiment_id: Mapped[int] = mapped_column(Integer, nullable=False)  # type: ignore
+    samples_count: Mapped[int] = mapped_column(Integer, nullable=False, index=True)  # type: ignore
+    experiment_name: Mapped[str] = mapped_column(String, nullable=False)  # type: ignore
     results_times: Mapped[str] = mapped_column(String, nullable=False)  # type: ignore
 
     __table_args__ = (
         UniqueConstraint(
+            "experiment_name",
             "criterion_code",
             "criterion_parameters",
             "sample_size",
-            "monte_carlo_count",
+            "samples_count",
             name="uq_time_complexity_unique",
         ),
     )
@@ -89,10 +92,11 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
     execution time measurements of statistical criteria.
 
     Records are uniquely identified by:
+        - experiment_name
         - criterion_code
         - criterion_parameters (JSON-serialized)
         - sample_size
-        - monte_carlo_count
+        - samples_count
 
     The storage must be explicitly initialized via :meth:`init`
     before any database operations are performed.
@@ -171,7 +175,7 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
             Query defining:
                 - criterion configuration
                 - sample size
-                - Monte-Carlo count
+                - samples count
 
         Returns
         -------
@@ -182,28 +186,56 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
         -----
         Matching is strict and relies on JSON-serialized parameter equality.
         """
-        params_json = json.dumps(query.criterion_parameters)
+        params_json = self._serialize_criterion_parameters(query.criterion_parameters)
         row: AlchemyTimeComplexity | None = (
             self._get_session()
             .query(AlchemyTimeComplexity)
             .filter(
+                AlchemyTimeComplexity.experiment_name == query.experiment_name,
                 AlchemyTimeComplexity.criterion_code == query.criterion_code,
                 AlchemyTimeComplexity.criterion_parameters == params_json,
                 AlchemyTimeComplexity.sample_size == int(query.sample_size),
-                AlchemyTimeComplexity.monte_carlo_count == int(query.monte_carlo_count),
+                AlchemyTimeComplexity.samples_count == int(query.samples_count),
             )
             .one_or_none()
         )
         if row is None:
             return None
         return TimeComplexityModel(
-            experiment_id=int(row.experiment_id),
+            experiment_name=row.experiment_name,
             criterion_code=query.criterion_code,
-            criterion_parameters=query.criterion_parameters,
+            criterion_parameters=self._normalize_criterion_parameters(json.loads(row.criterion_parameters)),
             sample_size=query.sample_size,
-            monte_carlo_count=query.monte_carlo_count,
+            samples_count=query.samples_count,
             results_times=json.loads(row.results_times),
         )
+
+    def _upsert_data(self, data: TimeComplexityModel) -> None:
+        params_json = self._serialize_criterion_parameters(data.criterion_parameters)
+        existing: AlchemyTimeComplexity | None = (
+            self._get_session()
+            .query(AlchemyTimeComplexity)
+            .filter(
+                AlchemyTimeComplexity.experiment_name == data.experiment_name,
+                AlchemyTimeComplexity.criterion_code == data.criterion_code,
+                AlchemyTimeComplexity.criterion_parameters == params_json,
+                AlchemyTimeComplexity.sample_size == int(data.sample_size),
+                AlchemyTimeComplexity.samples_count == int(data.samples_count),
+            )
+            .one_or_none()
+        )
+        if existing is None:
+            entity = AlchemyTimeComplexity(
+                criterion_code=data.criterion_code,
+                criterion_parameters=params_json,
+                sample_size=int(data.sample_size),
+                samples_count=int(data.samples_count),
+                experiment_name=data.experiment_name,
+                results_times=json.dumps(data.results_times),
+            )
+            self._get_session().add(entity)
+        else:
+            existing.results_times = json.dumps(data.results_times)
 
     def insert_data(self, data: TimeComplexityModel) -> None:
         """
@@ -220,36 +252,28 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
         Notes
         -----
         - Existing records update:
-            - experiment_id
             - results_times
         - criterion_parameters and results_times are JSON-serialized.
         """
-        params_json = json.dumps(data.criterion_parameters)
-        existing: AlchemyTimeComplexity | None = (
-            self._get_session()
-            .query(AlchemyTimeComplexity)
-            .filter(
-                AlchemyTimeComplexity.criterion_code == data.criterion_code,
-                AlchemyTimeComplexity.criterion_parameters == params_json,
-                AlchemyTimeComplexity.sample_size == int(data.sample_size),
-                AlchemyTimeComplexity.monte_carlo_count == int(data.monte_carlo_count),
-            )
-            .one_or_none()
-        )
-        if existing is None:
-            entity = AlchemyTimeComplexity(
-                criterion_code=data.criterion_code,
-                criterion_parameters=params_json,
-                sample_size=int(data.sample_size),
-                monte_carlo_count=int(data.monte_carlo_count),
-                experiment_id=int(data.experiment_id),
-                results_times=json.dumps(data.results_times),
-            )
-            self._get_session().add(entity)
-        else:
-            # replace experiment_id and results_times for the unique key
-            existing.experiment_id = int(data.experiment_id)
-            existing.results_times = json.dumps(data.results_times)
+        self._upsert_data(data)
+        self._get_session().commit()
+
+    def bulk_insert_data(self, data_list: Iterable[TimeComplexityModel]) -> None:
+        """
+        Insert or update multiple time complexity records.
+
+        Parameters
+        ----------
+        data_list : Iterable[TimeComplexityModel]
+            Time complexity measurements to store.
+
+        Notes
+        -----
+        Uses the same UPSERT-like behavior as :meth:`insert_data`, but
+        commits once after all records are processed.
+        """
+        for data in data_list:
+            self._upsert_data(data)
         self._get_session().commit()
 
     def delete_data(self, query: TimeComplexityQuery) -> None:
@@ -266,16 +290,29 @@ class AlchemyTimeComplexityStorage(AbstractDbStore, ITimeComplexityStorage):
         Operation is no-op if record does not exist.
         Matching is strict (exact JSON + numeric equality).
         """
-        params_json = json.dumps(query.criterion_parameters)
+        params_json = self._serialize_criterion_parameters(query.criterion_parameters)
         (
             self._get_session()
             .query(AlchemyTimeComplexity)
             .filter(
+                AlchemyTimeComplexity.experiment_name == query.experiment_name,
                 AlchemyTimeComplexity.criterion_code == query.criterion_code,
                 AlchemyTimeComplexity.criterion_parameters == params_json,
                 AlchemyTimeComplexity.sample_size == int(query.sample_size),
-                AlchemyTimeComplexity.monte_carlo_count == int(query.monte_carlo_count),
+                AlchemyTimeComplexity.samples_count == int(query.samples_count),
             )
             .delete()
         )
         self._get_session().commit()
+
+    @staticmethod
+    def _serialize_criterion_parameters(parameters: NumericParameters) -> str:
+        return json.dumps(AlchemyTimeComplexityStorage._normalize_criterion_parameters(parameters), sort_keys=True)
+
+    @staticmethod
+    def _normalize_criterion_parameters(
+        parameters: Mapping[str, float] | Sequence[float],
+    ) -> dict[str, float]:
+        if isinstance(parameters, Mapping):
+            return {str(key): value for key, value in sorted(parameters.items(), key=lambda item: str(item[0]))}
+        return {str(index): value for index, value in enumerate(parameters)}

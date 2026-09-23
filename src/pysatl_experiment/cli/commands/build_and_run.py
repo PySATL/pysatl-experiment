@@ -5,16 +5,18 @@ from typing import Any, cast
 from click import BadParameter, argument, command, option
 from click_loglevel import LogLevel
 
-from pysatl_experiment.cli.commands.common import normalize_experiment_name, read_experiment_data
 from pysatl_experiment.cli.validation.commands.build_and_run import validate_build_and_run
-from pysatl_experiment.cli.validation.commands.common.common import if_experiment_exists
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.experiment_execution.experiment import Experiment
+from pysatl_experiment.experiment_execution.experiment_factory import (
+    CriticalValueExperimentFactory,
+    PowerExperimentFactory,
+    TimeComplexityExperimentFactory,
+)
 from pysatl_experiment.experiment_execution.experiment_steps import ExperimentSteps
-from pysatl_experiment.experiment_execution.factory import PowerExperimentFactory, TimeComplexityExperimentFactory
-from pysatl_experiment.experiment_execution.factory.critical_value import CriticalValueExperimentFactory
 from pysatl_experiment.loggers import setup_logging
+from pysatl_experiment.utils.experiment_utils import is_experiment_exists, read_experiment_data
 
 
 # TODO: refactor names!
@@ -42,9 +44,7 @@ def build_and_run(name: str, log_level: int, log_file: str) -> None:
     click.BadParameter
         If the experiment does not exist.
     """
-    name = normalize_experiment_name(name)
-
-    if not if_experiment_exists(name):
+    if not is_experiment_exists(name):
         raise BadParameter(f"Experiment with name {name} does not exist.")
 
     experiment_configuration = read_experiment_data(name)

@@ -2,9 +2,10 @@
 
 from dataclasses import dataclass
 
+from pysatl_criterion import DistributionType
+
 from pysatl_experiment.configuration.models.criterion import Criterion
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
@@ -23,7 +24,7 @@ class ExperimentConfig:
         Database or storage connection string.
     run_mode : RunMode
         Experiment execution behavior.
-    hypothesis : Hypothesis
+    hypothesis : DistributionType
         Tested statistical hypothesis.
     generator_type : StepType
         Random sample generator implementation type.
@@ -46,7 +47,8 @@ class ExperimentConfig:
     experiment_type: ExperimentType
     storage_connection: str
     run_mode: RunMode
-    hypothesis: Hypothesis
+    hypothesis: DistributionType
+    hypothesis_params: dict[str, float]
     generator_type: StepType
     executor_type: StepType
     report_builder_type: StepType

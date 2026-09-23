@@ -6,52 +6,60 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pysatl_experiment.configuration.models.report_mode import ReportMode
-from pysatl_experiment.report.time_complexity import TimeComplexityReportBuilder
+from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_builder import (
+    TimeComplexityReportBuilder,
+)
 
 
 class TestTimeComplexityReportBuilder:
-    def test_init_stores_attributes_correctly(self, mock_criterion_config, time_data, results_path, with_chart):
-        criteria = [mock_criterion_config]
+    def test_init_stores_attributes_correctly(self, time_data, results_path, with_chart):
         sample_sizes = [10, 20, 30]
 
         builder = TimeComplexityReportBuilder(
             report_name="test",
-            criteria_config=criteria,
             sample_sizes=sample_sizes,
-            times=time_data,
+            statistic=time_data,
             results_path=results_path,
-            with_chart=with_chart,
+            report_mode=with_chart,
         )
 
-        assert builder.criteria_config == criteria
         assert builder.sample_sizes == sample_sizes
-        assert builder.times == time_data
+        assert builder.statistic == time_data
         assert builder.results_path == results_path
-        assert builder.with_chart == with_chart
+        assert builder.report_mode == with_chart
         assert builder.template_env is not None
 
-    @patch("pysatl_experiment.report.time_complexity.plt.savefig")
-    @patch("pysatl_experiment.report.time_complexity.plt.close")
-    def test_generate_chart_creates_and_encodes_image(
-        self, mock_plt_close, mock_plt_savefig, mock_criterion_config, time_data, results_path
-    ):
+    @patch(
+        "pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_builder."
+        "plt.savefig"
+    )
+    @patch(
+        "pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_builder."
+        "plt.close"
+    )
+    def test_generate_chart_creates_and_encodes_image(self, mock_plt_close, mock_plt_savefig, time_data, results_path):
         builder = TimeComplexityReportBuilder(
             report_name="test",
-            criteria_config=[mock_criterion_config],
             sample_sizes=[10, 20],
-            times=time_data,
+            statistic=time_data,
             results_path=results_path,
-            with_chart=ReportMode.WITH_CHART,
+            report_mode=ReportMode.WITH_CHART,
         )
 
         fake_image_data = b"fake_png_image_data"
         mock_buf_instance = MagicMock(spec=BytesIO)
         mock_buf_instance.getvalue.return_value = fake_image_data
 
-        with patch("pysatl_experiment.report.time_complexity.BytesIO") as mock_bytes_io:
+        with patch(
+            "pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_builder."
+            "BytesIO"
+        ) as mock_bytes_io:
             mock_bytes_io.return_value = mock_buf_instance
 
-            with patch("pysatl_experiment.report.time_complexity.base64") as mock_base64:
+            with patch(
+                "pysatl_experiment.experiment_execution.step.report_step.time_complexity."
+                "time_complexity_report_builder.base64"
+            ) as mock_base64:
                 mock_base64.b64encode.return_value.decode.return_value = "encoded_fake_data"
 
                 result = builder._generate_chart()
@@ -66,14 +74,13 @@ class TestTimeComplexityReportBuilder:
 
                 assert result == "data:image/png;base64,encoded_fake_data"
 
-    def test_generate_html_includes_chart_when_with_chart(self, mock_criterion_config, time_data, results_path):
+    def test_generate_html_includes_chart_when_with_chart(self, time_data, results_path):
         builder = TimeComplexityReportBuilder(
             report_name="test",
-            criteria_config=[mock_criterion_config],
             sample_sizes=[10, 20],
-            times=time_data,
+            statistic=time_data,
             results_path=results_path,
-            with_chart=ReportMode.WITH_CHART,
+            report_mode=ReportMode.WITH_CHART,
         )
 
         mock_template = MagicMock()
@@ -89,16 +96,16 @@ class TestTimeComplexityReportBuilder:
             render_kwargs = mock_template.render.call_args[1]
             assert "plot_image" in render_kwargs
             assert render_kwargs["plot_image"] == "fake_data_url"
+            assert render_kwargs["report_data"] == time_data.as_dict()
             assert html_content == "<html>With Chart</html>"
 
-    def test_generate_html_excludes_chart_when_without_chart(self, mock_criterion_config, time_data, results_path):
+    def test_generate_html_excludes_chart_when_without_chart(self, time_data, results_path):
         builder = TimeComplexityReportBuilder(
             report_name="test",
-            criteria_config=[mock_criterion_config],
             sample_sizes=[10, 20],
-            times=time_data,
+            statistic=time_data,
             results_path=results_path,
-            with_chart=ReportMode.WITHOUT_CHART,
+            report_mode=ReportMode.WITHOUT_CHART,
         )
 
         mock_template = MagicMock()
@@ -114,18 +121,16 @@ class TestTimeComplexityReportBuilder:
             render_kwargs = mock_template.render.call_args[1]
             assert "plot_image" in render_kwargs
             assert render_kwargs["plot_image"] is None
+            assert render_kwargs["report_data"] == time_data.as_dict()
             assert html_content == "<html>Without Chart</html>"
 
-    def test_generate_html_handles_chart_generation_failure(
-        self, mock_criterion_config, time_data, results_path, capsys
-    ):
+    def test_generate_html_handles_chart_generation_failure(self, time_data, results_path):
         builder = TimeComplexityReportBuilder(
             report_name="test",
-            criteria_config=[mock_criterion_config],
             sample_sizes=[10, 20],
-            times=time_data,
+            statistic=time_data,
             results_path=results_path,
-            with_chart=ReportMode.WITH_CHART,
+            report_mode=ReportMode.WITH_CHART,
         )
 
         mock_template = MagicMock()
@@ -140,18 +145,21 @@ class TestTimeComplexityReportBuilder:
             render_kwargs = mock_template.render.call_args[1]
             assert "plot_image" in render_kwargs
             assert render_kwargs["plot_image"] is None
+            assert render_kwargs["report_data"] == time_data.as_dict()
             assert html_content == "<html>Chart Failed</html>"
 
     @pytest.mark.parametrize("chart_mode", [ReportMode.WITH_CHART, ReportMode.WITHOUT_CHART])
-    @patch("pysatl_experiment.report.time_complexity.convert_html_to_pdf")
-    def test_build_creates_pdf_file(self, mock_convert, chart_mode, mock_criterion_config, time_data, results_path):
+    @patch(
+        "pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_builder."
+        "convert_html_to_pdf"
+    )
+    def test_build_creates_pdf_file(self, mock_convert, chart_mode, time_data, results_path):
         builder = TimeComplexityReportBuilder(
             report_name="test",
-            criteria_config=[mock_criterion_config],
             sample_sizes=[10],
-            times=time_data,
+            statistic=time_data,
             results_path=results_path,
-            with_chart=chart_mode,
+            report_mode=chart_mode,
         )
 
         with patch.object(builder, "_generate_html", return_value="<html>Content</html>") as mock_gen_html:

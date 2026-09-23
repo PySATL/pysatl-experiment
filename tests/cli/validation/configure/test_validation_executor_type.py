@@ -15,8 +15,7 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
-def test_executor_type_with_invalid_type(get_experiment_config: MagicMock, runner: CliRunner) -> None:
+def test_executor_type_with_invalid_type(runner: CliRunner) -> None:
     """Tests the `executor_type` command with a completely invalid type string.
 
     This test verifies that when the command is invoked with a string
@@ -30,7 +29,6 @@ def test_executor_type_with_invalid_type(get_experiment_config: MagicMock, runne
     """
     invalid_type = "this-is-not-a-valid-type"
     experiment_name = "my-test-experiment"
-    get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
 
     result = runner.invoke(
         configure,
@@ -63,9 +61,9 @@ def test_executor_type_with_invalid_type(get_experiment_config: MagicMock, runne
 
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_executor_type_with_unsupported_custom_type(
-    if_experiment_exists: MagicMock,
+    is_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
     save_experiment_config: MagicMock,
     runner: CliRunner,
@@ -111,13 +109,17 @@ def test_executor_type_with_unsupported_custom_type(
     assert result.exit_code != 0
     assert isinstance(result.exception, SystemExit)
 
+    is_experiment_exists.assert_called_once()
+    read_experiment_data.assert_called_once()
+    save_experiment_config.assert_not_called()
+
 
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_type", [e for e in StepType if e != StepType.CUSTOM])
 def test_executor_type_with_valid_supported_type(
-    if_experiment_exists: MagicMock,
+    is_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
     save_experiment_config: MagicMock,
     runner: CliRunner,
@@ -166,3 +168,7 @@ def test_executor_type_with_valid_supported_type(
 
     expected_config = initial_config.copy()
     expected_config["executor_type"] = valid_type.value
+
+    is_experiment_exists.assert_called_once()
+    read_experiment_data.assert_called_once()
+    save_experiment_config.assert_called_once()

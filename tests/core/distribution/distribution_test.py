@@ -24,7 +24,7 @@ from pysatl_criterion.core.distributions.uniform import generate_uniform
 from pysatl_criterion.core.distributions.weibull import generate_weibull
 
 
-@pytest.mark.skip(reason="no way of currently testing this")
+@pytest.mark.xfail(reason="no way of currently testing this")
 class TestDistribution:
     size = 10000
 
@@ -146,7 +146,7 @@ class TestDistribution:
         ],
     )
     def test_generate_logistic(self, mean, var, t, s):
-        rvs = generate_logistic(10000, t=t, s=s)
+        rvs = generate_logistic(self.size, t=t, s=s)
         e_mean = np.mean(rvs)
         e_var = np.var(rvs)
         assert e_mean == pytest.approx(mean, abs=0.2)
