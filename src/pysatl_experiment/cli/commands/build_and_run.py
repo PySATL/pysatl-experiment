@@ -11,6 +11,7 @@ from pysatl_experiment.configuration.models.experiment_type import ExperimentTyp
 from pysatl_experiment.experiment_execution.experiment import Experiment
 from pysatl_experiment.experiment_execution.experiment_factory import (
     CriticalValueExperimentFactory,
+    GenerationOnlyExperimentFactory,
     PowerExperimentFactory,
     TimeComplexityExperimentFactory,
 )
@@ -52,10 +53,13 @@ def build_and_run(name: str, log_level: int, log_file: str) -> None:
     setup_logging(experiment_configuration, log_level, log_file)
 
     experiment_data = validate_build_and_run(experiment_configuration)
-    experiment_steps = _build_experiment(experiment_data)
+    _run_experiment_data(experiment_data)
 
-    experiment = Experiment(experiment_steps)
-    experiment.run_experiment()
+
+def _run_experiment_data(experiment_data: ExperimentData[Any]) -> None:
+    """Build and execute the validated experiment pipeline."""
+    experiment_steps = _build_experiment(experiment_data)
+    Experiment(experiment_steps).run_experiment()
 
 
 def _build_experiment(experiment_data: ExperimentData) -> ExperimentSteps:
@@ -76,6 +80,7 @@ def _build_experiment(experiment_data: ExperimentData) -> ExperimentSteps:
         ExperimentType.POWER: PowerExperimentFactory,
         ExperimentType.CRITICAL_VALUE: CriticalValueExperimentFactory,
         ExperimentType.TIME_COMPLEXITY: TimeComplexityExperimentFactory,
+        ExperimentType.GENERATION_ONLY: GenerationOnlyExperimentFactory,
     }
 
     experiment_type = experiment_data.config.experiment_type

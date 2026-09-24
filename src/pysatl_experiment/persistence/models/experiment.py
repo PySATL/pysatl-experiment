@@ -6,6 +6,7 @@ Defines experiment configuration structures and storage contract.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Protocol
 
 from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
 
@@ -123,6 +124,19 @@ class ExperimentQuery(DataQuery):
     significance_levels: list[float]
     report_mode: str
     parallel_workers: int
+
+
+class IExperimentStatusStorage(Protocol):
+    """Persist completion states for steps run by ``Experiment``."""
+
+    def set_generation_done(self, experiment_id: int) -> None:
+        """Mark the generation step as completed."""
+
+    def set_execution_done(self, experiment_id: int) -> None:
+        """Mark the execution step as completed."""
+
+    def set_report_building_done(self, experiment_id: int) -> None:
+        """Mark the report-building step as completed."""
 
 
 class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], ABC):

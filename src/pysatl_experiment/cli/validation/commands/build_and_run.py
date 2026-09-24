@@ -12,6 +12,7 @@ experiment execution pipeline.
 
 from collections.abc import Callable
 from enum import Enum
+from pathlib import Path
 from typing import Any, cast
 
 from click import ClickException
@@ -24,6 +25,7 @@ from pysatl_experiment.cli.validation.commands.checker import SQLiteCriticalValu
 from pysatl_experiment.cli.validation.schemas.experiment import BaseExperimentConfig as PydanticBaseExperiment
 from pysatl_experiment.cli.validation.schemas.experiment import CriticalValueConfig as PydanticCriticalValueConfig
 from pysatl_experiment.cli.validation.schemas.experiment import ExperimentConfig as ExperimentInputSchema
+from pysatl_experiment.cli.validation.schemas.experiment import GenerationOnlyConfig as PydanticGenerationOnlyConfig
 from pysatl_experiment.cli.validation.schemas.experiment import PowerConfig as PydanticPowerConfig
 from pysatl_experiment.cli.validation.schemas.experiment import TimeComplexityConfig as PydanticTimeComplexityConfig
 from pysatl_experiment.configuration.experiment_config import ExperimentConfig
@@ -31,6 +33,7 @@ from pysatl_experiment.configuration.experiment_config import PowerExperimentCon
 from pysatl_experiment.configuration.experiment_config.critical_value_experiment_config import (
     CriticalValueExperimentConfig as LegacyCriticalValueExperimentConfig,
 )
+from pysatl_experiment.configuration.experiment_config.generation_only import GenerationOnlyExperimentConfig
 from pysatl_experiment.configuration.experiment_config.time_complexity_experiment_config import (
     TimeComplexityExperimentConfig as LegacyTimeComplexityExperimentConfig,
 )
@@ -115,6 +118,25 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
 
     experiment_name = validated_data.name
     pydantic_config = validated_data.config
+
+    if isinstance(pydantic_config, PydanticGenerationOnlyConfig):
+        generation_config = GenerationOnlyExperimentConfig(
+            experiment_type=ExperimentType.GENERATION_ONLY,
+            storage_connection=pydantic_config.storage_connection,
+            run_mode=pydantic_config.run_mode,
+            distribution=pydantic_config.distribution,
+            sample_sizes=pydantic_config.sample_sizes,
+            samples_count=pydantic_config.samples_count,
+            parameter_config={name: rule.model_dump(mode="json") for name, rule in pydantic_config.parameters.items()},
+            seed=pydantic_config.seed,
+            parallel_workers=pydantic_config.parallel_workers,
+        )
+        return ExperimentData(
+            experiment_name=experiment_name,
+            config=generation_config,
+            steps_done=StepsDone(False, False, False),
+            results_path=Path(),
+        )
 
     legacy_dataclass_config = _adapt_pydantic_to_dataclass(pydantic_config)
     steps_done = StepsDone(
