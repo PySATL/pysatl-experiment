@@ -91,20 +91,14 @@ class GeneratedSamplesStorage(AbstractDbStore):
         """Return a generation run by its canonical configuration fingerprint."""
         with self.session() as session:
             entity = session.scalar(
-                select(AlchemyGenerationRun).where(
-                    AlchemyGenerationRun.config_fingerprint == fingerprint
-                )
+                select(AlchemyGenerationRun).where(AlchemyGenerationRun.config_fingerprint == fingerprint)
             )
             return self._to_run_model(entity) if entity is not None else None
 
     def delete_run(self, run_id: int) -> None:
         """Delete one resolved generation run and only its generated samples."""
         with self.session() as session:
-            session.execute(
-                delete(AlchemyGeneratedSample).where(
-                    AlchemyGeneratedSample.generation_run_id == run_id
-                )
-            )
+            session.execute(delete(AlchemyGeneratedSample).where(AlchemyGeneratedSample.generation_run_id == run_id))
             session.execute(delete(AlchemyGenerationRun).where(AlchemyGenerationRun.id == run_id))
             session.commit()
 

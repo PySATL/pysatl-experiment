@@ -374,9 +374,7 @@ class GenerationOnlyConfig(BaseModel):
         try:
             descriptor = get_available_distribution_descriptor(self.distribution)
         except StopIteration as error:
-            raise ValueError(
-                f"Distribution {self.distribution.value} does not expose parameter metadata"
-            ) from error
+            raise ValueError(f"Distribution {self.distribution.value} does not expose parameter metadata") from error
 
         parameters_by_name = {parameter.name: parameter for parameter in descriptor.parameters()}
         required = frozenset(parameters_by_name)

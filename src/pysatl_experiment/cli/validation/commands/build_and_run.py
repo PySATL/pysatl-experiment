@@ -127,9 +127,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
             distribution=pydantic_config.distribution,
             sample_sizes=pydantic_config.sample_sizes,
             samples_count=pydantic_config.samples_count,
-            parameter_config={
-                name: rule.model_dump(mode="json") for name, rule in pydantic_config.parameters.items()
-            },
+            parameter_config={name: rule.model_dump(mode="json") for name, rule in pydantic_config.parameters.items()},
             seed=pydantic_config.seed,
             parallel_workers=pydantic_config.parallel_workers,
         )

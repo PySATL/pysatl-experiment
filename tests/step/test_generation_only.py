@@ -6,10 +6,7 @@ import numpy as np
 import pytest
 from pysatl_criterion import DistributionType
 
-from pysatl_experiment.experiment_execution.step.generation_only import (
-    GenerationOnlyStep,
-    GenerationOnlyStepData,
-)
+from pysatl_experiment.experiment_execution.step.generation_only import GenerationOnlyStep, GenerationOnlyStepData
 from pysatl_experiment.persistence.generated_samples_storage import GeneratedSamplesStorage
 from pysatl_experiment.persistence.models.generated_samples import GeneratedSampleModel, GenerationRunModel
 
@@ -18,6 +15,7 @@ PARAMETERS = {
     "mean": {"type": "random_uniform", "low": -5.0, "high": 5.0},
     "var": {"type": "random_uniform", "low": 0.5, "high": 5.0},
 }
+
 
 def _storage_and_run(db_path: Path, count: int = 3, seed: int = 42) -> tuple[GeneratedSamplesStorage, int]:
     storage = GeneratedSamplesStorage(f"sqlite:///{db_path}")
@@ -71,7 +69,9 @@ def test_generation_draws_and_stores_parameters_for_every_sample(tmp_path: Path)
         assert 0.5 <= sample.parameters["var"] < 5.0
         means.append(sample.parameters["mean"])
     assert len(set(means)) == 3
-    assert storage.get_run(run_id).is_complete is False
+    run = storage.get_run(run_id)
+    assert run is not None
+    assert run.is_complete is False
 
 
 def test_generation_is_reproducible_for_the_same_seed(tmp_path: Path) -> None:
@@ -91,23 +91,15 @@ def test_generation_is_reproducible_for_the_same_seed(tmp_path: Path) -> None:
 
 
 def test_parallel_generation_matches_sequential_generation(tmp_path: Path) -> None:
-    sequential_storage, sequential_run_id = _storage_and_run(
-        tmp_path / "sequential.sqlite", count=6
-    )
+    sequential_storage, sequential_run_id = _storage_and_run(tmp_path / "sequential.sqlite", count=6)
     _step(sequential_storage, sequential_run_id, count=6, parallel_workers=1).run()
 
-    parallel_storage, parallel_run_id = _storage_and_run(
-        tmp_path / "parallel.sqlite", count=6
-    )
+    parallel_storage, parallel_run_id = _storage_and_run(tmp_path / "parallel.sqlite", count=6)
     _step(parallel_storage, parallel_run_id, count=6, parallel_workers=2).run()
 
     for sample_num in range(1, 7):
-        sequential = sequential_storage.get_sample(
-            sequential_run_id, sample_size=10, sample_num=sample_num
-        )
-        parallel = parallel_storage.get_sample(
-            parallel_run_id, sample_size=10, sample_num=sample_num
-        )
+        sequential = sequential_storage.get_sample(sequential_run_id, sample_size=10, sample_num=sample_num)
+        parallel = parallel_storage.get_sample(parallel_run_id, sample_size=10, sample_num=sample_num)
         assert sequential is not None
         assert parallel is not None
         assert parallel.parameters == sequential.parameters
@@ -247,9 +239,7 @@ def test_generation_supports_selected_distributions(
     distribution: DistributionType,
     parameters: dict[str, float],
 ) -> None:
-    parameter_config = {
-        name: {"type": "fixed", "value": value} for name, value in parameters.items()
-    }
+    parameter_config = {name: {"type": "fixed", "value": value} for name, value in parameters.items()}
     storage = GeneratedSamplesStorage(f"sqlite:///{tmp_path / f'{distribution.value}.sqlite'}")
     storage.init()
     run_id = storage.create_run(
