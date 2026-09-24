@@ -10,6 +10,7 @@ class ExperimentType(str, Enum):
     CRITICAL_VALUE = "critical_value"
     POWER = "power"
     TIME_COMPLEXITY = "time_complexity"
+    GENERATION_ONLY = "generation_only"
 
     @classmethod
     def list(cls) -> list[str]:

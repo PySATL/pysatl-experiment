@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
-from pysatl_experiment.persistence.models.experiment import IExperimentStorage
+from pysatl_experiment.persistence.models.experiment import IExperimentStatusStorage
 
 
 @dataclass
@@ -15,7 +15,7 @@ class ExperimentSteps:
     ----------
     experiment_id : int
         Experiment identifier in storage.
-    experiment_storage : IExperimentStorage
+    experiment_storage : IExperimentStatusStorage
         Experiment metadata storage.
     generation_step : IExperimentStep | None
         Data generation step.
@@ -26,7 +26,7 @@ class ExperimentSteps:
     """
 
     experiment_id: int
-    experiment_storage: IExperimentStorage
+    experiment_storage: IExperimentStatusStorage
     generation_step: IExperimentStep | None
     execution_step: IExperimentStep | None
     report_building_step: IExperimentStep | None

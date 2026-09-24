@@ -4,11 +4,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Generic, TypeVar
 
-from pysatl_experiment.configuration.experiment_config.experiment_config import ExperimentConfig
 from pysatl_experiment.configuration.models.steps_done import StepsDone
 
 
-C = TypeVar("C", bound=ExperimentConfig)
+C = TypeVar("C")
 
 
 @dataclass
