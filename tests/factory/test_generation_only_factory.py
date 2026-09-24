@@ -14,6 +14,7 @@ from pysatl_experiment.experiment_execution.experiment import Experiment
 from pysatl_experiment.experiment_execution.experiment_factory.generation_only_factory import (
     GenerationOnlyExperimentFactory,
 )
+from pysatl_experiment.experiment_execution.step.generation_only import GenerationOnlyStep
 from pysatl_experiment.persistence.generated_samples_storage import GeneratedSamplesStorage
 
 
@@ -49,6 +50,7 @@ def test_factory_creates_reusable_generation_pipeline(tmp_path: Path) -> None:
     storage.init()
     run_id = first_steps.experiment_id
     assert first_steps.generation_step is not None
+    assert isinstance(first_steps.generation_step, GenerationOnlyStep)
     assert first_steps.generation_step.step_data.parallel_workers == 2
     assert second_steps.generation_step is None
     assert storage.get_existing_sample_numbers(run_id, sample_size=10) == {1, 2}
@@ -84,7 +86,11 @@ def test_factory_overwrite_clears_only_matching_generation_run(tmp_path: Path) -
     replacement_steps = GenerationOnlyExperimentFactory(overwrite_data).create_experiment_steps()
 
     assert replacement_steps.generation_step is not None
-    assert replacement_steps.generation_step.storage.get_existing_sample_numbers(
-        replacement_steps.experiment_id,
-        sample_size=10,
-    ) == set()
+    assert isinstance(replacement_steps.generation_step, GenerationOnlyStep)
+    assert (
+        replacement_steps.generation_step.storage.get_existing_sample_numbers(
+            replacement_steps.experiment_id,
+            sample_size=10,
+        )
+        == set()
+    )

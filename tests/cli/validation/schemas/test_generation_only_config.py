@@ -5,7 +5,12 @@ from pydantic import ValidationError
 from pysatl_criterion import DistributionType
 from pysatl_criterion.utils.generator import get_available_generator
 
-from pysatl_experiment.cli.validation.schemas.experiment import ExperimentConfig, GenerationOnlyConfig
+from pysatl_experiment.cli.validation.schemas.experiment import (
+    ExperimentConfig,
+    FixedParameter,
+    GenerationOnlyConfig,
+    RandomUniformParameter,
+)
 
 
 def _normal_config() -> dict:
@@ -31,11 +36,16 @@ def test_generation_only_config_accepts_fixed_and_uniform_parameters() -> None:
     validated = ExperimentConfig.model_validate(_normal_config())
 
     assert isinstance(validated.config, GenerationOnlyConfig)
-    assert validated.config.distribution.value == "normal"
-    assert validated.config.parameters["var"].value == 1.0
-    assert validated.config.parameters["mean"].low == -5.0
-    assert validated.config.parameters["mean"].high == 5.0
-    assert validated.config.parallel_workers == 1
+    config = validated.config
+    assert config.distribution.value == "normal"
+    fixed_var = config.parameters["var"]
+    random_mean = config.parameters["mean"]
+    assert isinstance(fixed_var, FixedParameter)
+    assert isinstance(random_mean, RandomUniformParameter)
+    assert fixed_var.value == 1.0
+    assert random_mean.low == -5.0
+    assert random_mean.high == 5.0
+    assert config.parallel_workers == 1
 
 
 def test_generation_only_config_accepts_parallel_workers() -> None:
@@ -44,6 +54,7 @@ def test_generation_only_config_accepts_parallel_workers() -> None:
 
     validated = ExperimentConfig.model_validate(raw)
 
+    assert isinstance(validated.config, GenerationOnlyConfig)
     assert validated.config.parallel_workers == 4
 
 
@@ -57,6 +68,7 @@ def test_generation_only_config_uses_criterion_descriptor_for_new_distribution()
 
     validated = ExperimentConfig.model_validate(raw)
 
+    assert isinstance(validated.config, GenerationOnlyConfig)
     assert validated.config.distribution is DistributionType.CAUCHY
     assert set(validated.config.parameters) == {"t", "s"}
 
@@ -71,10 +83,16 @@ def test_generation_only_config_accepts_log_normal_generator_parameters() -> Non
 
     validated = ExperimentConfig.model_validate(raw)
 
-    assert set(validated.config.parameters) == {"mu", "s"}
+    assert isinstance(validated.config, GenerationOnlyConfig)
+    config = validated.config
+    assert set(config.parameters) == {"mu", "s"}
+    parameters = {}
+    for name, rule in config.parameters.items():
+        assert isinstance(rule, FixedParameter)
+        parameters[name] = rule.value
     generator = get_available_generator(
-        validated.config.distribution,
-        {name: rule.value for name, rule in validated.config.parameters.items()},
+        config.distribution,
+        parameters,
     )
     assert generator.parameters() == {"s": 1.0, "mu": 0.0}
 

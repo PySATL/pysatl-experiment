@@ -32,9 +32,7 @@ def _uint32_seed(sequence: np.random.SeedSequence) -> int:
     return int(sequence.generate_state(1, dtype=np.uint32)[0])
 
 
-def _draw_parameters(
-    parameter_config: dict[str, dict[str, Any]], rng: np.random.Generator
-) -> dict[str, float]:
+def _draw_parameters(parameter_config: dict[str, dict[str, Any]], rng: np.random.Generator) -> dict[str, float]:
     parameters = {}
     for name in sorted(parameter_config):
         rule = parameter_config[name]
@@ -63,21 +61,16 @@ def _generate_sample(
     parameter_sequence, sample_sequence = sequence.spawn(2)
     parameter_seed = _uint32_seed(parameter_sequence)
     sample_seed = _uint32_seed(sample_sequence)
-    parameters = _draw_parameters(
-        step_data.parameter_config, np.random.default_rng(parameter_seed)
-    )
+    parameters = _draw_parameters(step_data.parameter_config, np.random.default_rng(parameter_seed))
     generator = get_available_generator(step_data.distribution, parameters)
     data = generator.generate(sample_size, random_state=np.random.default_rng(sample_seed))
     sample = np.asarray(data, dtype=float)
     if sample.shape != (sample_size,):
         raise ValueError(
-            f"Generator for {step_data.distribution.value} returned shape {sample.shape}, "
-            f"expected ({sample_size},)"
+            f"Generator for {step_data.distribution.value} returned shape {sample.shape}, expected ({sample_size},)"
         )
     if not np.isfinite(sample).all():
-        raise ValueError(
-            f"Generator for {step_data.distribution.value} returned non-finite observations"
-        )
+        raise ValueError(f"Generator for {step_data.distribution.value} returned non-finite observations")
     return GeneratedSampleModel(
         generation_run_id=step_data.generation_run_id,
         sample_size=sample_size,
