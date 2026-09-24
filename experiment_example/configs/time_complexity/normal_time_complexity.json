@@ -1,0 +1,205 @@
+{
+  "name": "normal_time_complexity",
+  "config": {
+    "experiment_type": "time_complexity",
+    "hypothesis": "normal",
+    "criteria": [
+      {
+        "criterion_code": "RJB",
+        "parameters": []
+      },
+      {
+        "criterion_code": "ZQ",
+        "parameters": []
+      },
+      {
+        "criterion_code": "DLDMZEPD",
+        "parameters": []
+      },
+      {
+        "criterion_code": "KURTOSIS",
+        "parameters": []
+      },
+      {
+        "criterion_code": "HOSKING1",
+        "parameters": []
+      },
+      {
+        "criterion_code": "BM1",
+        "parameters": []
+      },
+      {
+        "criterion_code": "AVGDEGREE",
+        "parameters": []
+      },
+      {
+        "criterion_code": "COIN",
+        "parameters": []
+      },
+      {
+        "criterion_code": "LILLIE",
+        "parameters": []
+      },
+      {
+        "criterion_code": "DAP",
+        "parameters": []
+      },
+      {
+        "criterion_code": "HOSKING3",
+        "parameters": []
+      },
+      {
+        "criterion_code": "EDGESNUMBER",
+        "parameters": []
+      },
+      {
+        "criterion_code": "BM2",
+        "parameters": []
+      },
+      {
+        "criterion_code": "GLB",
+        "parameters": []
+      },
+      {
+        "criterion_code": "CC2",
+        "parameters": []
+      },
+      {
+        "criterion_code": "MAXDEGREE",
+        "parameters": []
+      },
+      {
+        "criterion_code": "FILLI",
+        "parameters": []
+      },
+      {
+        "criterion_code": "BHS",
+        "parameters": []
+      },
+      {
+        "criterion_code": "HOSKING4",
+        "parameters": []
+      },
+      {
+        "criterion_code": "SKEW",
+        "parameters": []
+      },
+      {
+        "criterion_code": "BS",
+        "parameters": []
+      },
+      {
+        "criterion_code": "CLIQUENUMBER",
+        "parameters": []
+      },
+      {
+        "criterion_code": "SW",
+        "parameters": []
+      },
+      {
+        "criterion_code": "HOSKING2",
+        "parameters": []
+      },
+      {
+        "criterion_code": "ZQS",
+        "parameters": []
+      },
+      {
+        "criterion_code": "MI",
+        "parameters": []
+      },
+      {
+        "criterion_code": "CVM",
+        "parameters": []
+      },
+      {
+        "criterion_code": "SWRG",
+        "parameters": []
+      },
+      {
+        "criterion_code": "RJ",
+        "parameters": []
+      },
+      {
+        "criterion_code": "ZWA",
+        "parameters": []
+      },
+      {
+        "criterion_code": "CONNECTEDCOMPONENTS",
+        "parameters": []
+      },
+      {
+        "criterion_code": "CC1",
+        "parameters": []
+      },
+      {
+        "criterion_code": "GMG",
+        "parameters": []
+      },
+      {
+        "criterion_code": "KS",
+        "parameters": []
+      },
+      {
+        "criterion_code": "JB",
+        "parameters": []
+      },
+      {
+        "criterion_code": "SF",
+        "parameters": []
+      },
+      {
+        "criterion_code": "D",
+        "parameters": []
+      },
+      {
+        "criterion_code": "SH",
+        "parameters": []
+      },
+      {
+        "criterion_code": "AD",
+        "parameters": []
+      },
+      {
+        "criterion_code": "EP",
+        "parameters": []
+      },
+      {
+        "criterion_code": "INDEPENDENCENUMBER",
+        "parameters": []
+      },
+      {
+        "criterion_code": "DH",
+        "parameters": []
+      },
+      {
+        "criterion_code": "LG",
+        "parameters": []
+      },
+      {
+        "criterion_code": "CS",
+        "parameters": []
+      },
+      {
+        "criterion_code": "ZWC",
+        "parameters": []
+      }
+    ],
+    "executor_type": "standard",
+    "generator_type": "standard",
+    "report_builder_type": "standard",
+    "report_mode": "with-chart",
+    "run_mode": "reuse",
+    "monte_carlo_count": 1000,
+    "parallel_workers": 1,
+    "sample_sizes": [
+      1000,
+      2000,
+      5000
+    ],
+    "significance_levels": [
+      0.05
+    ],
+    "storage_connection": "sqlite:///pysatl.sqlite"
+  }
+}

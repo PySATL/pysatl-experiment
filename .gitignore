@@ -167,3 +167,4 @@ cache.json
 local_tests.py
 requirements.txt
 requirements-dev.txt
+.codeassistant

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from pysatl_experiment.configuration.experiment_config.power import PowerExperimentConfig
+from pysatl_experiment.configuration.experiment_config import PowerExperimentConfig
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
 
 

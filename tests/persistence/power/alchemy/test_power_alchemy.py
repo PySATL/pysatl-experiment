@@ -88,6 +88,91 @@ def test_insert_and_get(storage: AlchemyPowerStorage) -> None:
     assert got.results_criteria == model.results_criteria
 
 
+def test_bulk_insert_data(storage: AlchemyPowerStorage) -> None:
+    models = [
+        PowerModel(
+            experiment_id=1,
+            criterion_code="crit_A",
+            criterion_parameters=[0.1],
+            sample_size=10,
+            alternative_code="alt_A",
+            alternative_parameters=[1.0],
+            monte_carlo_count=100,
+            significance_level=0.05,
+            results_criteria=[True],
+        ),
+        PowerModel(
+            experiment_id=2,
+            criterion_code="crit_B",
+            criterion_parameters=[0.2],
+            sample_size=20,
+            alternative_code="alt_B",
+            alternative_parameters=[2.0],
+            monte_carlo_count=200,
+            significance_level=0.1,
+            results_criteria=[False, True],
+        ),
+    ]
+
+    storage.bulk_insert_data(models)
+
+    for model in models:
+        got = storage.get_data(
+            PowerQuery(
+                criterion_code=model.criterion_code,
+                criterion_parameters=model.criterion_parameters,
+                sample_size=model.sample_size,
+                alternative_code=model.alternative_code,
+                alternative_parameters=model.alternative_parameters,
+                monte_carlo_count=model.monte_carlo_count,
+                significance_level=model.significance_level,
+            )
+        )
+        assert got == model
+
+
+def test_bulk_insert_data_updates_existing_record(storage: AlchemyPowerStorage) -> None:
+    storage.insert_data(
+        PowerModel(
+            experiment_id=1,
+            criterion_code="crit_A",
+            criterion_parameters=[0.1],
+            sample_size=10,
+            alternative_code="alt_A",
+            alternative_parameters=[1.0],
+            monte_carlo_count=100,
+            significance_level=0.05,
+            results_criteria=[True],
+        )
+    )
+    updated = PowerModel(
+        experiment_id=2,
+        criterion_code="crit_A",
+        criterion_parameters=[0.1],
+        sample_size=10,
+        alternative_code="alt_A",
+        alternative_parameters=[1.0],
+        monte_carlo_count=100,
+        significance_level=0.05,
+        results_criteria=[False, False],
+    )
+
+    storage.bulk_insert_data([updated])
+
+    got = storage.get_data(
+        PowerQuery(
+            criterion_code="crit_A",
+            criterion_parameters=[0.1],
+            sample_size=10,
+            alternative_code="alt_A",
+            alternative_parameters=[1.0],
+            monte_carlo_count=100,
+            significance_level=0.05,
+        )
+    )
+    assert got == updated
+
+
 def test_delete_data(storage: AlchemyPowerStorage) -> None:
     model = PowerModel(
         experiment_id=7,

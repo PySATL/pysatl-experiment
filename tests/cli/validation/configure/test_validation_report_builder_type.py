@@ -59,9 +59,9 @@ def test_report_builder_type_with_invalid_type(runner: CliRunner) -> None:
 
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 def test_report_builder_type_with_unsupported_custom_type(
-    if_experiment_exists: MagicMock,
+    is_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
     save_experiment_config: MagicMock,
     runner: CliRunner,
@@ -107,13 +107,17 @@ def test_report_builder_type_with_unsupported_custom_type(
 
     assert "Custom type is not supported yet." in result.output
 
+    is_experiment_exists.assert_called_once()
+    read_experiment_data.assert_called_once()
+    save_experiment_config.assert_not_called()
+
 
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_type", [e for e in StepType if e != StepType.CUSTOM])
 def test_report_builder_type_with_valid_supported_type(
-    if_experiment_exists: MagicMock,
+    is_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
     save_experiment_config: MagicMock,
     runner: CliRunner,
@@ -160,3 +164,7 @@ def test_report_builder_type_with_valid_supported_type(
 
     expected_config = initial_config.copy()
     expected_config["report_builder_type"] = valid_type.value
+
+    is_experiment_exists.assert_called_once()
+    read_experiment_data.assert_called_once()
+    save_experiment_config.assert_called_once()

@@ -15,8 +15,13 @@ def runner() -> CliRunner:
     return CliRunner()
 
 
-@patch("pysatl_experiment.cli.commands.configure.get_experiment_config")
-def test_run_mode_with_invalid_mode(get_experiment_config: MagicMock, runner: CliRunner) -> None:
+@patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists")
+def test_run_mode_with_invalid_mode(
+    is_experiment_exists: MagicMock,
+    save_experiment_config: MagicMock,
+    runner: CliRunner,
+) -> None:
     """Tests the `run_mode` command logic in isolation with an invalid argument.
 
     This test verifies that when the `run_mode` command is invoked with a string
@@ -30,7 +35,6 @@ def test_run_mode_with_invalid_mode(get_experiment_config: MagicMock, runner: Cl
     """
     invalid_mode = "this-is-not-a-valid-mode"
     experiment_name = "my-test-experiment"
-    get_experiment_config.return_value = (experiment_name, {"some_key": "some_value"})
 
     result = runner.invoke(
         configure,
@@ -55,16 +59,20 @@ def test_run_mode_with_invalid_mode(get_experiment_config: MagicMock, runner: Cl
         ],
     )
 
-    assert result.exit_code != 0
+    assert result.exit_code == 2
     assert isinstance(result.exception, SystemExit)
+    assert "Invalid value" in result.output
+    assert invalid_mode in result.output
+    is_experiment_exists.assert_not_called()
+    save_experiment_config.assert_not_called()
 
 
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
 @patch("pysatl_experiment.cli.commands.configure.read_experiment_data")
-@patch("pysatl_experiment.cli.commands.configure.if_experiment_exists", return_value=True)
+@patch("pysatl_experiment.cli.commands.configure.is_experiment_exists", return_value=True)
 @pytest.mark.parametrize("valid_mode", [e for e in RunMode])
 def test_run_mode_with_valid_mode(
-    if_experiment_exists: MagicMock,
+    is_experiment_exists: MagicMock,
     read_experiment_data: MagicMock,
     save_experiment_config: MagicMock,
     runner: CliRunner,
@@ -109,5 +117,10 @@ def test_run_mode_with_valid_mode(
     assert result.exit_code == 0
     assert result.exception is None
 
-    expected_config = initial_config
-    expected_config["run_mode"] = valid_mode.value
+    assert initial_config["run_mode"] == valid_mode.value
+
+    is_experiment_exists.assert_called_once_with(experiment_name)
+    read_experiment_data.assert_called_once_with(experiment_name)
+    save_experiment_config.assert_called_once_with(experiment_name, initial_config)
+
+    # TODO: keep RunMode.list() in sync with RunMode (tests parametrized by enum, not list)

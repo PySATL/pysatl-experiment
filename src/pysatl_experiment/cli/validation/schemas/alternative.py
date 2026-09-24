@@ -8,12 +8,29 @@ available generator implementations.
 """
 
 import inspect
+from functools import lru_cache
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+from pysatl_criterion.generator.model import AbstractRVSGenerator
 
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.experiment_execution.generator import AbstractRVSGenerator
+
+
+def _get_available_generator_classes() -> list[type[AbstractRVSGenerator]]:
+    """Return all registered RVS generator subclasses."""
+    return sorted(AbstractRVSGenerator.__subclasses__(), key=lambda cls: cls.__name__)
+
+
+@lru_cache(maxsize=1)
+def _base_generator_params() -> frozenset[str]:
+    """
+    Parameter names defined on AbstractRVSGenerator.__init__.
+
+    Cached: assumes the base class signature is stable at runtime.
+    If a test patches the signature, call ``_base_generator_params.cache_clear()``.
+    """
+    return frozenset(inspect.signature(AbstractRVSGenerator.__init__).parameters)
 
 
 class Alternative(BaseModel):
@@ -41,9 +58,10 @@ class Alternative(BaseModel):
     generator_name: str
     parameters: list[float]
 
+    # noinspection PyNestedDecorators
     @field_validator("generator_name")
     @classmethod
-    def normalize_and_resolve_generator_name(cls, value):
+    def normalize_and_resolve_generator_name(cls, value: str) -> str:
         """
         Resolve and normalize generator name.
 
@@ -65,9 +83,7 @@ class Alternative(BaseModel):
         ValueError
             If no generator matches or multiple ambiguous matches exist.
         """
-        available_generators: list[str] = [
-            gen_cls.__name__.upper() for gen_cls in AbstractRVSGenerator.__subclasses__()
-        ]
+        available_generators: list[str] = [gen_cls.__name__.upper() for gen_cls in _get_available_generator_classes()]
 
         user_prefix = value.upper()
 
@@ -86,6 +102,7 @@ class Alternative(BaseModel):
                 f"Generator prefix '{value}' is ambiguous. It matches: [{', '.join(matches)}]. Please be more specific."
             )
 
+    # noinspection PyNestedDecorators
     @model_validator(mode="before")
     @classmethod
     def parse_from_string(cls, data: Any) -> Any:
@@ -115,13 +132,13 @@ class Alternative(BaseModel):
 
         parts = data.split()
         if not parts:
-            raise ValueError("Alternative string cannot be empty.")
+            raise ValueError("Alternative string cannot be empty.") from None
 
         generator_name = parts[0]
         try:
             parameters = [float(p) for p in parts[1:]]
         except ValueError:
-            raise ValueError(f"All parameters for generator '{generator_name}' must be numbers.")
+            raise ValueError(f"All parameters for generator '{generator_name}' must be numbers.") from None
 
         return {"generator_name": generator_name, "parameters": parameters}
 
@@ -145,17 +162,17 @@ class Alternative(BaseModel):
             If generator is not found or parameter count mismatches.
         """
         generator_by_name: dict[str, type[AbstractRVSGenerator]] = {
-            gen_cls.__name__.upper(): gen_cls for gen_cls in AbstractRVSGenerator.__subclasses__()
+            gen_cls.__name__.upper(): gen_cls for gen_cls in _get_available_generator_classes()
         }
 
         generator_cls = generator_by_name.get(self.generator_name.upper())
-        if not generator_cls:
+        if not generator_cls:  # pragma: no cover - guarded by field_validator
             available_generators = ", ".join(generator_by_name.keys())
             raise ValueError(
-                f"Generator '{self.generator_name}' is not found.\n Available generators are: [{available_generators}]"
+                f"Generator '{self.generator_name}' is not found.\nAvailable generators are: [{available_generators}]"
             )
 
-        base_params = set(inspect.signature(AbstractRVSGenerator.__init__).parameters.keys())
+        base_params = _base_generator_params()
 
         sig = inspect.signature(generator_cls.__init__)
 
@@ -216,4 +233,4 @@ class AlternativesConfig(BaseModel):
         return self
 
 
-# TODO: check warning decorators
+# TODO: remove noinspection PyNestedDecorators later

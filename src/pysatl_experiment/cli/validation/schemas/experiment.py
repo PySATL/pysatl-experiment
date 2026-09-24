@@ -9,11 +9,11 @@ critical value computation, and time complexity experiments.
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field, ValidationError, ValidationInfo, field_validator, model_validator
+from pysatl_criterion import DistributionType
 
-from pysatl_experiment.cli.validation.commands.common.checker import SQLiteCriticalValueChecker
+from pysatl_experiment.cli.validation.commands.checker import SQLiteCriticalValueChecker
 from pysatl_experiment.cli.validation.schemas.alternative import Alternative
 from pysatl_experiment.cli.validation.schemas.criteria import CriteriaConfig, Criterion
-from pysatl_experiment.configuration.models.hypothesis import Hypothesis
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
@@ -27,7 +27,7 @@ class BaseExperimentConfig(BaseModel):
 
     Attributes
     ----------
-    hypothesis : Hypothesis
+    hypothesis : DistributionType
         Statistical hypothesis being tested.
     run_mode : RunMode
         Execution mode of the experiment.
@@ -56,7 +56,7 @@ class BaseExperimentConfig(BaseModel):
         If validation of criteria or numeric constraints fails.
     """
 
-    hypothesis: Hypothesis
+    hypothesis: DistributionType
     run_mode: RunMode
     report_mode: ReportMode
     generator_type: StepType
