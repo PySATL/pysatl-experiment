@@ -56,9 +56,7 @@ def test_ensure_user_data_dir_uses_absolute_constant(
 
 # Checks that both directory helpers create their directory and return its path.
 @pytest.mark.parametrize(("helper_name", "const_name"), DIR_HELPERS)
-def test_dir_helper_creates_and_returns_directory(
-    user_data_dir: Path, helper_name: str, const_name: str
-) -> None:
+def test_dir_helper_creates_and_returns_directory(user_data_dir: Path, helper_name: str, const_name: str) -> None:
     target = getattr(files_utils, helper_name)()
 
     assert target == user_data_dir / getattr(files_utils, const_name)

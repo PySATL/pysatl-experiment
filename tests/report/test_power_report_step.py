@@ -8,9 +8,7 @@ import pytest
 from pysatl_criterion import DistributionType
 
 from pysatl_experiment.configuration.models.report_mode import ReportMode
-from pysatl_experiment.experiment_execution.step.report_step.power.power_report_step import (
-    PowerReportBuildingStep,
-)
+from pysatl_experiment.experiment_execution.step.report_step.power.power_report_step import PowerReportBuildingStep
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerModel, PowerQuery
 
 
