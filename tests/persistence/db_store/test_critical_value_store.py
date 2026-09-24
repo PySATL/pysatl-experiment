@@ -45,7 +45,9 @@ def test_orm_models_table_names() -> None:
 
 # Checks that single-sided critical values are stored and read back unchanged.
 @pytest.mark.parametrize(("code", "size", "sl", "value"), CRITICAL_VALUE_CASES)
-def test_insert_and_get_critical_value(store: CriticalValueDbStore, code: str, size: int, sl: float, value: float) -> None:
+def test_insert_and_get_critical_value(
+    store: CriticalValueDbStore, code: str, size: int, sl: float, value: float
+) -> None:
     store.insert_critical_value(code, size, sl, value)
 
     assert store.get_critical_value(code, size, sl) == value
