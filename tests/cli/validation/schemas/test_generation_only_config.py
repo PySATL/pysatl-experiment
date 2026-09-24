@@ -3,6 +3,7 @@
 import pytest
 from pydantic import ValidationError
 from pysatl_criterion import DistributionType
+from pysatl_criterion.utils.generator import get_available_generator
 
 from pysatl_experiment.cli.validation.schemas.experiment import ExperimentConfig, GenerationOnlyConfig
 
@@ -58,6 +59,24 @@ def test_generation_only_config_uses_criterion_descriptor_for_new_distribution()
 
     assert validated.config.distribution is DistributionType.CAUCHY
     assert set(validated.config.parameters) == {"t", "s"}
+
+
+def test_generation_only_config_accepts_log_normal_generator_parameters() -> None:
+    raw = _normal_config()
+    raw["config"]["distribution"] = "log_normal"
+    raw["config"]["parameters"] = {
+        "mu": {"type": "fixed", "value": 0.0},
+        "s": {"type": "fixed", "value": 1.0},
+    }
+
+    validated = ExperimentConfig.model_validate(raw)
+
+    assert set(validated.config.parameters) == {"mu", "s"}
+    generator = get_available_generator(
+        validated.config.distribution,
+        {name: rule.value for name, rule in validated.config.parameters.items()},
+    )
+    assert generator.parameters() == {"s": 1.0, "mu": 0.0}
 
 
 def test_generation_only_config_applies_descriptor_validator_to_parameter_range() -> None:
