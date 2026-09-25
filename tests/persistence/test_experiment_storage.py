@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import pytest
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import Table, UniqueConstraint
 
 from pysatl_experiment.persistence.experiment_storage import AlchemyExperiment, AlchemyExperimentStorage
 from pysatl_experiment.persistence.models.experiment import ExperimentModel, ExperimentQuery
@@ -126,9 +126,8 @@ def test_init_marks_storage_as_initialized() -> None:
 
 # Checks that the ORM model name and composite unique key are as documented.
 def test_orm_model_table_and_unique_constraint() -> None:
-    unique_constraints = [
-        constraint for constraint in AlchemyExperiment.__table__.constraints if isinstance(constraint, UniqueConstraint)
-    ]
+    table = cast(Table, AlchemyExperiment.__table__)
+    unique_constraints = [constraint for constraint in table.constraints if isinstance(constraint, UniqueConstraint)]
 
     assert AlchemyExperiment.__tablename__ == "experiments"
     assert len(unique_constraints) == 1
@@ -184,7 +183,7 @@ def test_to_model_returns_boolean_flags(flag: str) -> None:
 def test_insert_data_stores_new_experiment(store: AlchemyExperimentStorage) -> None:
     model = make_model()
 
-    assert store.insert_data(model) is None
+    store.insert_data(model)
 
     assert store.get_data(make_query()) == model
 
@@ -226,6 +225,7 @@ def test_insert_data_update_keeps_configuration_columns(store: AlchemyExperiment
     store.insert_data(make_model(is_execution_done=True, parallel_workers=4))
 
     stored = store.get_data(make_query())
+    assert stored is not None
     assert stored.parallel_workers == 4
     assert stored.sample_sizes == [10, 20]
     assert stored.criteria == {"KS": [0.1, 0.2]}
@@ -256,7 +256,7 @@ def test_insert_data_creates_row_for_other_signature(store: AlchemyExperimentSto
 def test_delete_data_removes_experiment(store: AlchemyExperimentStorage) -> None:
     store.insert_data(make_model())
 
-    assert store.delete_data(make_query()) is None
+    store.delete_data(make_query())
 
     assert store.get_data(make_query()) is None
     assert store.session().query(AlchemyExperiment).count() == 0
@@ -337,6 +337,7 @@ def test_set_status_flags_are_updated_independently(store: AlchemyExperimentStor
     store.set_report_building_done(experiment_id)
 
     stored = store.get_data(make_query())
+    assert stored is not None
     assert stored.is_generation_done is True
     assert stored.is_report_building_done is True
     assert stored.is_execution_done is False

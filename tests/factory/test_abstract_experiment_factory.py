@@ -23,6 +23,8 @@ from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
 from pysatl_experiment.experiment_execution.experiment_factory import AbstractExperimentFactory
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
+from pysatl_experiment.persistence.models.experiment import IExperimentStorage
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 
 
 # Stub line_profiler to avoid optional dependency issues in imports
@@ -40,43 +42,82 @@ sys.modules.setdefault("line_profiler", _lp)
 # ----------------- Fakes / helpers -----------------
 
 
-class FakeRandomValuesStorage:
-    def __init__(self):
-        self.deleted_all_queries = []
+class FakeRandomValuesStorage(IRandomValuesStorage):
+    def __init__(self) -> None:
+        self.deleted_all_queries: list[Any] = []
 
-    def init(self):  # pragma: no cover
+    def init(self) -> None:  # pragma: no cover
         pass
 
-    def delete_all_data(self, query):
+    def get_data(self, query: Any) -> None:  # pragma: no cover
+        return None
+
+    def insert_data(self, model: Any) -> None:  # pragma: no cover
+        pass
+
+    def delete_data(self, query: Any) -> None:  # pragma: no cover
+        pass
+
+    def get_rvs_count(self, query: Any) -> int:  # pragma: no cover
+        return 0
+
+    def bulk_insert_data(self, models: Any) -> None:  # pragma: no cover
+        pass
+
+    def get_all_data(self, query: Any) -> Any:  # pragma: no cover
+        return None
+
+    def delete_all_data(self, query: Any) -> None:
         self.deleted_all_queries.append(query)
+
+    def get_count_data(self, query: Any) -> Any:  # pragma: no cover
+        return None
 
 
 class FakeResultStorage:
-    def __init__(self):
-        self.deleted_queries = []
+    def __init__(self) -> None:
+        self.deleted_queries: list[Any] = []
 
-    def init(self):  # pragma: no cover
+    def init(self) -> None:  # pragma: no cover
         pass
 
-    def delete_data(self, query):
+    def delete_data(self, query: Any) -> None:
         self.deleted_queries.append(query)
 
-    def get_data(self, query):  # pragma: no cover
+    def get_data(self, query: Any) -> None:  # pragma: no cover
         return None
 
-    def insert_data(self, data):  # pragma: no cover
+    def insert_data(self, data: Any) -> None:  # pragma: no cover
         pass
 
 
-class FakeExperimentStorage:
-    def __init__(self, experiment_id: int = 123):
+class FakeExperimentStorage(IExperimentStorage):
+    def __init__(self, experiment_id: int | None = 123) -> None:
         self._id = experiment_id
 
-    def init(self):  # pragma: no cover
+    def init(self) -> None:  # pragma: no cover
         pass
 
-    def get_experiment_id(self, query):
+    def get_data(self, query: Any) -> None:  # pragma: no cover
+        return None
+
+    def insert_data(self, data: Any) -> None:  # pragma: no cover
+        pass
+
+    def delete_data(self, query: Any) -> None:  # pragma: no cover
+        pass
+
+    def get_experiment_id(self, query: Any) -> int | None:
         return self._id
+
+    def set_generation_done(self, experiment_id: int) -> None:  # pragma: no cover
+        pass
+
+    def set_execution_done(self, experiment_id: int) -> None:  # pragma: no cover
+        pass
+
+    def set_report_building_done(self, experiment_id: int) -> None:  # pragma: no cover
+        pass
 
 
 class FakeStatistics(AbstractGoodnessOfFitStatistic):  # TODO!!!!!!!!!!!

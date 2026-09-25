@@ -6,7 +6,7 @@ import sys
 import types
 from concurrent.futures import Future
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, cast
 from unittest.mock import MagicMock
 
 import pytest
@@ -15,6 +15,7 @@ from pysatl_experiment.configuration.models.experiment_type import ExperimentTyp
 from pysatl_experiment.experiment_execution.parallel import scheduler as scheduler_module
 from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
 from pysatl_experiment.experiment_execution.step.execution_step import multithreading_execution_step
+from pysatl_experiment.experiment_execution.step.execution_step.abstract_worker import WorkerResult
 from pysatl_experiment.experiment_execution.step.execution_step.multithreading_execution_step import (
     ExecutionTaskResult,
     MultithreadingExecutionStep,
@@ -25,6 +26,19 @@ from pysatl_experiment.persistence.random_values_storage import AlchemyRandomVal
 
 FAKE_STATISTIC_MODULE = "fake_statistics_for_multithreading_tests"
 BAD_CRITERION_CODE = "BAD"
+
+
+class StubWorkerResult(WorkerResult):
+    """Stub worker result carrying a string payload."""
+
+    def __init__(self, value: str = "") -> None:
+        self.value = value
+
+    def __eq__(self, other: object) -> bool:
+        """Compare StubWorkerResult instances by value."""
+        if isinstance(other, StubWorkerResult):
+            return self.value == other.value
+        return super().__eq__(other)
 
 
 class FakeStatistic:
@@ -72,13 +86,13 @@ class StubExecutionStep(MultithreadingExecutionStep):
         return list(self.task_specs)
 
     @staticmethod
-    def _execute_task(spec: TaskSpec) -> ExecutionTaskResult:
+    def _execute_task(spec: TaskSpec) -> ExecutionTaskResult[StubWorkerResult]:
         if spec.criterion_code == BAD_CRITERION_CODE:
             raise ValueError("bad task")
-        return ExecutionTaskResult(spec=spec, worker_result=f"result:{spec.criterion_code}")
+        return ExecutionTaskResult(spec=spec, worker_result=StubWorkerResult(f"result:{spec.criterion_code}"))
 
-    def _to_model(self, result: ExecutionTaskResult) -> tuple[str, str]:
-        return (result.spec.criterion_code, result.worker_result)
+    def _to_model(self, result: ExecutionTaskResult[StubWorkerResult]) -> tuple[str, str]:
+        return (result.spec.criterion_code, result.worker_result.value)
 
     def _bulk_save(self, models: list[tuple[str, str]]) -> None:
         self.saved_batches.append(list(models))
@@ -192,7 +206,15 @@ def test_base_class_declares_four_abstract_methods() -> None:
 # Checks that the abstract base class itself cannot be instantiated.
 def test_base_class_cannot_be_instantiated() -> None:
     with pytest.raises(TypeError):
-        MultithreadingExecutionStep()  # type: ignore[abstract]
+        MultithreadingExecutionStep(  # type: ignore[abstract]
+            experiment_id=1,
+            experiment_name="test",
+            step_config=[],
+            monte_carlo_count=1,
+            result_storage=MagicMock(),
+            storage_connection="sqlite://",
+            parallel_workers=1,
+        )
 
 
 # Checks that the abstract method bodies are callable and return None.
@@ -201,7 +223,10 @@ def test_abstract_method_bodies_return_none() -> None:
 
     assert MultithreadingExecutionStep._collect_tasks(step) is None
     assert MultithreadingExecutionStep._execute_task(make_spec()) is None
-    assert MultithreadingExecutionStep._to_model(step, ExecutionTaskResult(make_spec(), "payload")) is None
+    assert (
+        MultithreadingExecutionStep._to_model(step, ExecutionTaskResult(make_spec(), StubWorkerResult("payload")))
+        is None
+    )
     assert MultithreadingExecutionStep._bulk_save(step, []) is None
 
 
@@ -272,7 +297,7 @@ def test_run_flushes_buffered_results_when_a_task_fails(inline_executor: type[In
 def test_save_batch_converts_results_and_persists_models() -> None:
     saved_batches: list[list[Any]] = []
     step = make_step([], saved_batches)
-    results = [ExecutionTaskResult(make_spec(criterion_code="KS"), "result:KS")]
+    results = [ExecutionTaskResult(make_spec(criterion_code="KS"), StubWorkerResult("result:KS"))]
 
     step.save_batch(results)
 
@@ -294,7 +319,9 @@ def test_save_batch_skips_storage_for_empty_batch() -> None:
 def test_save_batch_preserves_result_order(codes: tuple[str, ...]) -> None:
     saved_batches: list[list[Any]] = []
     step = make_step([], saved_batches)
-    results = [ExecutionTaskResult(make_spec(criterion_code=code), f"result:{code}") for code in codes]
+    results = [
+        ExecutionTaskResult(make_spec(criterion_code=code), StubWorkerResult(f"result:{code}")) for code in codes
+    ]
 
     step.save_batch(results)
 
@@ -305,16 +332,18 @@ def test_save_batch_preserves_result_order(codes: tuple[str, ...]) -> None:
 def test_execution_task_result_stores_spec_and_worker_result() -> None:
     spec = make_spec()
 
-    result = ExecutionTaskResult(spec=spec, worker_result="payload")
+    result = ExecutionTaskResult(spec=spec, worker_result=StubWorkerResult("payload"))
 
     assert result.spec is spec
-    assert result.worker_result == "payload"
+    assert result.worker_result == StubWorkerResult("payload")
 
 
 # Checks that task results compare by value.
 @pytest.mark.parametrize("worker_result", ["payload", 0, [1, 2]])
 def test_execution_task_result_equality(worker_result: Any) -> None:
-    assert ExecutionTaskResult(make_spec(), worker_result) == ExecutionTaskResult(make_spec(), worker_result)
+    assert ExecutionTaskResult(make_spec(), cast(WorkerResult, worker_result)) == ExecutionTaskResult(
+        make_spec(), cast(WorkerResult, worker_result)
+    )
 
 
 # Checks that the loader reads the stored samples and builds the statistic.
