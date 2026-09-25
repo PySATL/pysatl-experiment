@@ -7,14 +7,14 @@ on:
   pull_request:
     branches:
       - main
-    types: [opened, synchronize, reopened, closed, review_requested]
+    types: [ opened, synchronize, reopened, closed, review_requested ]
 
 jobs:
   build-linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: [ "3.10", "3.11", "3.12" ]
 
     steps:
       - name: Checkout repository

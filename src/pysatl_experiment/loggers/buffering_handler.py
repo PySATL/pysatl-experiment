@@ -51,3 +51,6 @@ class FTBufferingHandler(BufferingHandler):
             self.buffer = self.buffer[records_to_keep:]  # TODO: replace with queue/circular buffer??
         finally:
             self.release()
+
+
+# TODO: currently not used anywhere
