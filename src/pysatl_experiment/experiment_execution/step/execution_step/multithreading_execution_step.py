@@ -14,15 +14,16 @@ from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 from typing_extensions import override
 
 from pysatl_experiment.experiment_execution.parallel import BufferedSaver, Scheduler
-from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
 from pysatl_experiment.experiment_execution.step.execution_step.abstract_worker import WorkerResult
 from pysatl_experiment.experiment_execution.step.execution_step.execution_step_data import ExecutionStepData
+from pysatl_experiment.experiment_execution.step.execution_step.task_spec import ExecutionTaskSpec
 from pysatl_experiment.persistence.models.random_values import RandomValuesCountQuery
 from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
 
 
 StepDataT = TypeVar("StepDataT", bound=ExecutionStepData)
+TaskSpecT = TypeVar("TaskSpecT", bound=ExecutionTaskSpec)
 WorkerResultT = TypeVar("WorkerResultT", bound=WorkerResult)
 ExecutionResultT = TypeVar("ExecutionResultT")
 ModelT = TypeVar("ModelT", bound=DataModel)
@@ -30,14 +31,18 @@ ResultStorageT = TypeVar("ResultStorageT", bound=IDataStorage)
 
 
 @dataclass
-class ExecutionTaskResult(Generic[WorkerResultT]):
+class ExecutionTaskResult(Generic[TaskSpecT, WorkerResultT]):
     """Worker result coupled with the task metadata used to build storage models."""
 
-    spec: TaskSpec
+    spec: TaskSpecT
     worker_result: WorkerResultT
 
 
-class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionResultT, ModelT, ResultStorageT], ABC):
+class MultithreadingExecutionStep(
+    IExperimentStep,
+    Generic[StepDataT, TaskSpecT, ExecutionResultT, ModelT, ResultStorageT],
+    ABC,
+):
     """Base class for execution steps that process random samples in parallel."""
 
     def __init__(
@@ -77,13 +82,13 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
             saver.flush()
 
     @abstractmethod
-    def _collect_tasks(self) -> list[TaskSpec]:
+    def _collect_tasks(self) -> list[TaskSpecT]:
         """Create serializable task specifications for worker processes."""
         pass
 
     @staticmethod
     @abstractmethod
-    def _execute_task(spec: TaskSpec) -> ExecutionResultT:
+    def _execute_task(spec: TaskSpecT) -> ExecutionResultT:
         """Execute one task in a worker process."""
         pass
 
@@ -104,7 +109,9 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
             self._bulk_save(models)
 
     @staticmethod
-    def _load_samples_and_statistics(spec: TaskSpec) -> tuple[list[list[float]], AbstractGoodnessOfFitStatistic]:
+    def _load_samples_and_statistics(
+        spec: ExecutionTaskSpec,
+    ) -> tuple[list[list[float]], AbstractGoodnessOfFitStatistic]:
         """Load random samples and instantiate the statistic described by a task spec."""
         storage = AlchemyRandomValuesStorage(spec.db_path)
         storage.init()
@@ -130,9 +137,7 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
         return sample_data, statistics
 
     @staticmethod
-    def _get_sample_generator_code(spec: TaskSpec) -> str:
+    def _get_sample_generator_code(spec: ExecutionTaskSpec) -> str:
         if spec.sample_generator_code:
             return spec.sample_generator_code
-        if spec.alternative_generator:
-            return spec.alternative_generator
-        return spec.hypothesis_generator
+        raise ValueError("Sample generator code is required.")

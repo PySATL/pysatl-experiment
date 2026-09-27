@@ -12,7 +12,7 @@ class ExecutionStepData:
 
     statistics: AbstractGoodnessOfFitStatistic
     sample_size: int
-    criterion_parameters: list[float]
+    criterion_parameters: dict[str, float] | list[float]
 
 
 @dataclass

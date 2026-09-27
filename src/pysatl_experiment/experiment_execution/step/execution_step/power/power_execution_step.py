@@ -5,14 +5,13 @@ from dataclasses import dataclass
 from typing_extensions import override
 
 from pysatl_experiment.configuration.models.alternative import Alternative
-from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
 from pysatl_experiment.experiment_execution.step.execution_step.execution_step_data import ExecutionStepData
 from pysatl_experiment.experiment_execution.step.execution_step.multithreading_execution_step import (
     ExecutionTaskResult,
     MultithreadingExecutionStep,
 )
 from pysatl_experiment.experiment_execution.step.execution_step.power.power_worker import PowerWorker, PowerWorkerResult
+from pysatl_experiment.experiment_execution.step.execution_step.power.task_spec import PowerExecutionTaskSpec
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerModel
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 
@@ -32,12 +31,21 @@ class PowerStepData(ExecutionStepData):
 
     alternative: Alternative
     significance_level: float
+    criterion_parameters: list[float]
 
 
-PowerExecutionResult = ExecutionTaskResult[PowerWorkerResult]
+PowerExecutionResult = ExecutionTaskResult[PowerExecutionTaskSpec, PowerWorkerResult]
 
 
-class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecutionResult, PowerModel, IPowerStorage]):
+class PowerExecutionStep(
+    MultithreadingExecutionStep[
+        PowerStepData,
+        PowerExecutionTaskSpec,
+        PowerExecutionResult,
+        PowerModel,
+        IPowerStorage,
+    ]
+):
     """
     Standard power experiment execution step.
 
@@ -68,12 +76,11 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
         self.data_storage = data_storage
 
     @override
-    def _collect_tasks(self) -> list[TaskSpec]:
+    def _collect_tasks(self) -> list[PowerExecutionTaskSpec]:
         task_specs = []
         for step_data in self.step_config:
             alternative = step_data.alternative
-            spec = TaskSpec(
-                experiment_type=ExperimentType.POWER,
+            spec = PowerExecutionTaskSpec(
                 experiment_name=self.experiment_name,
                 statistic_class_name=step_data.statistics.__class__.__name__,
                 statistic_module=step_data.statistics.__class__.__module__,
@@ -93,10 +100,8 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
 
     @staticmethod
     @override
-    def _execute_task(spec: TaskSpec) -> PowerExecutionResult:
+    def _execute_task(spec: PowerExecutionTaskSpec) -> PowerExecutionResult:
         sample_data, statistics = PowerExecutionStep._load_samples_and_statistics(spec)
-        if spec.significance_level is None:
-            raise ValueError("Significance level is required for power experiment.")
 
         worker = PowerWorker(
             statistics=statistics,
@@ -117,7 +122,7 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
             alternative_code=spec.alternative_generator,
             alternative_parameters=spec.alternative_parameters,
             monte_carlo_count=spec.monte_carlo_count,
-            significance_level=float(spec.significance_level),
+            significance_level=spec.significance_level,
             results_criteria=result.worker_result.results_criteria,
         )
 

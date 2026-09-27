@@ -4,8 +4,6 @@ from dataclasses import dataclass
 
 from typing_extensions import override
 
-from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
 from pysatl_experiment.experiment_execution.step.execution_step.execution_step_data import (
     ExecutionStepData,
     HypothesisGeneratorData,
@@ -13,6 +11,9 @@ from pysatl_experiment.experiment_execution.step.execution_step.execution_step_d
 from pysatl_experiment.experiment_execution.step.execution_step.multithreading_execution_step import (
     ExecutionTaskResult,
     MultithreadingExecutionStep,
+)
+from pysatl_experiment.experiment_execution.step.execution_step.time_complexity.task_spec import (
+    TimeComplexityExecutionTaskSpec,
 )
 from pysatl_experiment.experiment_execution.step.execution_step.time_complexity.time_complexity_worker import (
     TimeComplexityWorker,
@@ -29,12 +30,13 @@ class TimeComplexityStepData(ExecutionStepData):
     criterion_parameters: dict[str, float]
 
 
-TimeComplexityExecutionResult = ExecutionTaskResult[TimeComplexityWorkerResult]
+TimeComplexityExecutionResult = ExecutionTaskResult[TimeComplexityExecutionTaskSpec, TimeComplexityWorkerResult]
 
 
 class TimeComplexityExecutionStep(
     MultithreadingExecutionStep[
         TimeComplexityStepData,
+        TimeComplexityExecutionTaskSpec,
         TimeComplexityExecutionResult,
         TimeComplexityModel,
         ITimeComplexityStorage,
@@ -71,11 +73,10 @@ class TimeComplexityExecutionStep(
         self.data_storage = data_storage
 
     @override
-    def _collect_tasks(self) -> list[TaskSpec]:
+    def _collect_tasks(self) -> list[TimeComplexityExecutionTaskSpec]:
         task_specs = []
         for step_data in self.step_config:
-            spec = TaskSpec(
-                experiment_type=ExperimentType.TIME_COMPLEXITY,
+            spec = TimeComplexityExecutionTaskSpec(
                 experiment_name=self.experiment_name,
                 statistic_class_name=step_data.statistics.__class__.__name__,
                 statistic_module=step_data.statistics.__class__.__module__,
@@ -94,7 +95,7 @@ class TimeComplexityExecutionStep(
 
     @staticmethod
     @override
-    def _execute_task(spec: TaskSpec) -> TimeComplexityExecutionResult:
+    def _execute_task(spec: TimeComplexityExecutionTaskSpec) -> TimeComplexityExecutionResult:
         sample_data, statistics = TimeComplexityExecutionStep._load_samples_and_statistics(spec)
         worker = TimeComplexityWorker(statistics=statistics, sample_data=sample_data)
         return ExecutionTaskResult(spec=spec, worker_result=worker.execute())

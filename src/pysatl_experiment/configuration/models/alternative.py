@@ -14,14 +14,9 @@ class Alternative:
     ----------
     distribution_type : str
         Alternative distribution generator identifier.
-    parameters : dict[str, float]
+    parameters : list[float]
         Generator-specific numeric parameters.
     """
 
     distribution_type: DistributionType
-    parameters: dict[str, float]
-
-    @property
-    def distribution_type(self) -> DistributionType:
-        """Return generator code using the newer naming convention."""
-        return self.distribution_type
+    parameters: list[float]

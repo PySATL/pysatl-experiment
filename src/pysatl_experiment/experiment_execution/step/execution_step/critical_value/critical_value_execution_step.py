@@ -5,11 +5,12 @@ from dataclasses import dataclass
 from pysatl_criterion.persistence.models.limit_distribution import ILimitDistributionStorage, LimitDistributionModel
 from typing_extensions import override
 
-from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
 from pysatl_experiment.experiment_execution.step.execution_step.critical_value.critical_value_worker import (
     CriticalValueWorker,
     CriticalValueWorkerResult,
+)
+from pysatl_experiment.experiment_execution.step.execution_step.critical_value.task_spec import (
+    CriticalValueExecutionTaskSpec,
 )
 from pysatl_experiment.experiment_execution.step.execution_step.execution_step_data import (
     ExecutionStepData,
@@ -26,13 +27,16 @@ from pysatl_experiment.persistence.models.random_values import IRandomValuesStor
 class CriticalValueStepData(ExecutionStepData):
     """Data for a single execution step in critical value experiment."""
 
+    criterion_parameters: list[float]
 
-CriticalValueExecutionResult = ExecutionTaskResult[CriticalValueWorkerResult]
+
+CriticalValueExecutionResult = ExecutionTaskResult[CriticalValueExecutionTaskSpec, CriticalValueWorkerResult]
 
 
 class CriticalValueExecutionStep(
     MultithreadingExecutionStep[
         CriticalValueStepData,
+        CriticalValueExecutionTaskSpec,
         CriticalValueExecutionResult,
         LimitDistributionModel,
         ILimitDistributionStorage,
@@ -70,11 +74,10 @@ class CriticalValueExecutionStep(
         self.data_storage = data_storage
 
     @override
-    def _collect_tasks(self) -> list[TaskSpec]:
+    def _collect_tasks(self) -> list[CriticalValueExecutionTaskSpec]:
         task_specs = []
         for step_data in self.step_config:
-            spec = TaskSpec(
-                experiment_type=ExperimentType.CRITICAL_VALUE,
+            spec = CriticalValueExecutionTaskSpec(
                 experiment_name=self.experiment_name,
                 statistic_class_name=step_data.statistics.__class__.__name__,
                 statistic_module=step_data.statistics.__class__.__module__,
@@ -93,7 +96,7 @@ class CriticalValueExecutionStep(
 
     @staticmethod
     @override
-    def _execute_task(spec: TaskSpec) -> CriticalValueExecutionResult:
+    def _execute_task(spec: CriticalValueExecutionTaskSpec) -> CriticalValueExecutionResult:
         sample_data, statistics = CriticalValueExecutionStep._load_samples_and_statistics(spec)
         worker = CriticalValueWorker(statistics=statistics, sample_data=sample_data)
         return ExecutionTaskResult(spec=spec, worker_result=worker.execute())
