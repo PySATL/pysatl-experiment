@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pysatl-experiment"
-version = "0.2.0"  # TODO: proper version!!
+version = "0.3.0"  # TODO: proper version!!
 description = "package for PySATL math statistics experiments"
 authors = ["PYSATL Team <pysatl@yahoo.com>"]
 license = "Apache License 2.0"
