@@ -20,6 +20,7 @@ from pysatl_experiment.cli.validation.commands.build_and_run import (
 )
 from pysatl_experiment.cli.validation.schemas.experiment import BaseExperimentConfig as PydanticBaseExperiment
 from pysatl_experiment.cli.validation.schemas.experiment import ExperimentConfig as ExperimentInputSchema
+from pysatl_experiment.cli.validation.schemas.experiment import TimeComplexityConfig as PydanticTimeComplexityConfig
 from pysatl_experiment.configuration.experiment_config.critical_value_experiment_config import (
     CriticalValueExperimentConfig,
 )
@@ -237,7 +238,12 @@ def test_adapt_pydantic_to_dataclass_maps_supported_config(from_dict_mock: Magic
     validated = ExperimentInputSchema.model_validate(_raw_config())
     from_dict_mock.return_value = _legacy_time_complexity_config()
 
-    result = _adapt_pydantic_to_dataclass(validated.config)
+    # The adapter only handles the legacy pipeline, so narrow the discriminated union the
+    # same way build_and_run narrows it before calling.
+    config = validated.config
+    assert isinstance(config, PydanticTimeComplexityConfig)
+
+    result = _adapt_pydantic_to_dataclass(config)
 
     assert result is from_dict_mock.return_value
     from_dict_mock.assert_called_once()
