@@ -120,18 +120,17 @@ warn_required_dynamic_aliases = true
 enable = true
 vcs = "git"
 style = "pep440"
+# Format for NON tagged commits
+format-jinja = """
+{%- if distance == 0 -%}
+    {{ base }}
+{%- else -%}
+    {{ base }}.post{{ distance }}.dev0+{{ commit }}
+{%- endif -%}
+"""
 
 [tool.coverage.run]
 source = ["pysatl_experiment"]
 omit = [
   "*/__main__.py",
 ]
-
-# Format for NON tagged commits
-format-jinja = """
-{%- if distance == 0 -%}
-    {{ base }}
-{%- else -%}
-    {{ bump_version(base, -2) }}.dev{{ distance }}
-{%- endif -%}
-"""
