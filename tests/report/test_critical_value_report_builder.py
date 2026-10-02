@@ -1,6 +1,6 @@
 """Tests for critical value report builder."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 
@@ -110,3 +110,41 @@ class TestCriticalValueReportBuilder:
         )
         data = builder._generate_table_data("KS_")
         assert len(data["rows"][0]["values"]) == 2
+
+    def test_build_falls_back_to_table_when_chart_generation_fails(
+        self,
+        mock_criterion_config,
+        cv_values,
+        results_path,
+        capsys,
+    ):
+        builder = CriticalValueReportBuilder(
+            report_name="test",
+            criteria_config=[mock_criterion_config],
+            sample_sizes=[10, 20],
+            significance_levels=[0.05, 0.01],
+            cv_values=cv_values[:4],
+            results_path=results_path,
+            with_chart=ReportMode.WITH_CHART,
+        )
+
+        with (
+            patch.object(
+                builder,
+                "_generate_chart_data",
+                side_effect=RuntimeError("chart boom"),
+            ) as mock_chart_data,
+            patch(
+                "pysatl_experiment.experiment_execution.step.report_step.critical_value."
+                "critical_value_report_builder.convert_html_to_pdf"
+            ) as mock_convert,
+        ):
+            builder.build()
+
+        mock_chart_data.assert_called_once_with("KS_", ANY)
+        mock_convert.assert_called_once()
+        html_content = mock_convert.call_args[0][0]
+        assert "KS_" in html_content
+
+        captured = capsys.readouterr()
+        assert "Failed to generate chart for KS_: chart boom" in captured.out

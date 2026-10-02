@@ -2,19 +2,24 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
 from pydantic import ValidationError
 from pysatl_criterion import DistributionType
+from pysatl_criterion.utils.distribution import get_available_distribution_descriptor
 
 from pysatl_experiment.cli.validation.schemas.criteria import Criterion
 from pysatl_experiment.cli.validation.schemas.experiment import (
     BaseExperimentConfig,
     CriticalValueConfig,
     ExperimentConfig,
+    FixedParameter,
+    GenerationOnlyConfig,
     PowerConfig,
+    RandomUniformParameter,
     TimeComplexityConfig,
 )
 from pysatl_experiment.configuration.models.report_mode import ReportMode
@@ -313,3 +318,224 @@ def test_experiment_config_supports_power_config_with_context() -> None:
     )
 
     assert isinstance(config.config, PowerConfig)
+
+
+def generation_only_data(**overrides: Any) -> dict[str, Any]:
+    """Build a fully valid raw mapping for a generation-only configuration."""
+    data: dict[str, Any] = {
+        "experiment_type": "generation_only",
+        "distribution": "normal",
+        "sample_sizes": [10, 20],
+        "samples_count": 5,
+        "parameters": {"mean": {"type": "fixed", "value": 0.0}, "var": {"type": "fixed", "value": 1.0}},
+        "seed": 7,
+        "run_mode": RunMode.REUSE,
+        "storage_connection": "sqlite:///generation.sqlite",
+    }
+    data.update(overrides)
+    return data
+
+
+def distributions_without_metadata() -> tuple[DistributionType, ...]:
+    """Collect distributions that do not expose parameter metadata."""
+    without_metadata = []
+    for distribution in DistributionType:
+        try:
+            get_available_distribution_descriptor(distribution)
+        except StopIteration:
+            without_metadata.append(distribution)
+    return tuple(without_metadata)
+
+
+# Checks that finite values are accepted as fixed distribution parameters.
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param(0.0, id="zero"),
+        pytest.param(1.5, id="fraction"),
+        pytest.param(-2.25, id="negative"),
+    ],
+)
+def test_fixed_parameter_accepts_finite_value(value: float) -> None:
+    parameter = FixedParameter(value=value)
+
+    assert parameter.type == "fixed"
+    assert parameter.value == value
+
+
+# Checks that values unable to describe a finite parameter are rejected.
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param(math.nan, id="nan"),
+        pytest.param(math.inf, id="positive-infinity"),
+        pytest.param(-math.inf, id="negative-infinity"),
+    ],
+)
+def test_fixed_parameter_rejects_non_finite_value(value: float) -> None:
+    with pytest.raises(ValidationError, match="parameter value must be finite"):
+        FixedParameter(value=value)
+
+
+# Checks that strictly ordered finite bounds are accepted as uniform parameters.
+@pytest.mark.parametrize(
+    ("low", "high"),
+    [
+        pytest.param(-5.0, 5.0, id="symmetric"),
+        pytest.param(-1.0, -0.5, id="negative"),
+        pytest.param(0.0, 1e-9, id="narrow"),
+    ],
+)
+def test_random_uniform_parameter_accepts_ordered_bounds(low: float, high: float) -> None:
+    parameter = RandomUniformParameter(type="random_uniform", low=low, high=high)
+
+    assert parameter.type == "random_uniform"
+    assert (parameter.low, parameter.high) == (low, high)
+
+
+# Checks that non-finite uniform bounds are rejected.
+@pytest.mark.parametrize(
+    ("low", "high"),
+    [
+        pytest.param(math.nan, 1.0, id="nan-low"),
+        pytest.param(0.0, math.inf, id="inf-high"),
+        pytest.param(-math.inf, math.inf, id="both-infinite"),
+    ],
+)
+def test_random_uniform_parameter_rejects_non_finite_bounds(low: float, high: float) -> None:
+    with pytest.raises(ValidationError, match="uniform parameter bounds must be finite"):
+        RandomUniformParameter(type="random_uniform", low=low, high=high)
+
+
+# Checks that uniform bounds which are not strictly increasing are rejected.
+@pytest.mark.parametrize(
+    ("low", "high"),
+    [
+        pytest.param(1.0, 1.0, id="equal"),
+        pytest.param(2.0, 1.0, id="reversed"),
+    ],
+)
+def test_random_uniform_parameter_rejects_unordered_bounds(low: float, high: float) -> None:
+    with pytest.raises(ValidationError, match="low must be less than high"):
+        RandomUniformParameter(type="random_uniform", low=low, high=high)
+
+
+# Checks that a generation-only configuration with fixed parameters is accepted.
+def test_generation_only_config_accepts_fixed_parameters() -> None:
+    config = GenerationOnlyConfig(**generation_only_data())
+
+    assert config.experiment_type == "generation_only"
+    assert config.distribution is DistributionType.NORMAL
+    assert config.parameters == {"mean": FixedParameter(value=0.0), "var": FixedParameter(value=1.0)}
+    assert config.parallel_workers == 1
+
+
+# Checks that a generation-only configuration with uniform parameters is accepted.
+def test_generation_only_config_accepts_uniform_parameters() -> None:
+    config = GenerationOnlyConfig(
+        **generation_only_data(
+            parameters={
+                "mean": {"type": "random_uniform", "low": -1.0, "high": 1.0},
+                "var": {"type": "fixed", "value": 2.0},
+            }
+        )
+    )
+
+    assert config.parameters == {
+        "mean": RandomUniformParameter(type="random_uniform", low=-1.0, high=1.0),
+        "var": FixedParameter(value=2.0),
+    }
+
+
+# Checks that a distribution without parameter metadata is reported as unsupported.
+def test_generation_only_config_rejects_distribution_without_metadata() -> None:
+    unsupported = distributions_without_metadata()
+
+    assert unsupported, "expected at least one distribution without parameter metadata"
+
+    with pytest.raises(ValidationError, match="does not expose parameter metadata"):
+        GenerationOnlyConfig(**generation_only_data(distribution=unsupported[0].value))
+
+
+# Checks that parameters unknown to the distribution descriptor are rejected.
+def test_generation_only_config_rejects_unknown_parameter() -> None:
+    parameters = {
+        "mean": {"type": "fixed", "value": 0.0},
+        "var": {"type": "fixed", "value": 1.0},
+        "sigma": {"type": "fixed", "value": 1.0},
+    }
+
+    with pytest.raises(ValidationError, match=r"Unknown parameters for normal: sigma"):
+        GenerationOnlyConfig(**generation_only_data(parameters=parameters))
+
+
+# Checks that parameters required by the distribution descriptor must be provided.
+def test_generation_only_config_rejects_missing_parameter() -> None:
+    with pytest.raises(ValidationError, match=r"Missing parameters for normal: var"):
+        GenerationOnlyConfig(**generation_only_data(parameters={"mean": {"type": "fixed", "value": 0.0}}))
+
+
+# Checks that the descriptor validator is applied to both bounds of a parameter rule.
+@pytest.mark.parametrize(
+    "rule",
+    [
+        pytest.param({"type": "fixed", "value": -1.0}, id="fixed-negative"),
+        pytest.param({"type": "fixed", "value": 0.0}, id="fixed-zero"),
+        pytest.param({"type": "random_uniform", "low": -1.0, "high": 1.0}, id="uniform"),
+    ],
+)
+def test_generation_only_config_rejects_constraint_violation(rule: dict[str, Any]) -> None:
+    parameters = {"mean": {"type": "fixed", "value": 0.0}, "var": rule}
+
+    with pytest.raises(ValidationError, match=r"normal\.var violates its distribution constraint"):
+        GenerationOnlyConfig(**generation_only_data(parameters=parameters))
+
+
+# Checks that the smallest accepted positive value satisfies the descriptor validator.
+def test_generation_only_config_accepts_smallest_positive_parameter() -> None:
+    parameters = {"mean": {"type": "fixed", "value": 0.0}, "var": {"type": "fixed", "value": 1e-12}}
+    config = GenerationOnlyConfig(**generation_only_data(parameters=parameters))
+
+    assert config.parameters["var"] == FixedParameter(value=1e-12)
+
+
+# Checks that sample sizes below the minimum are rejected for generation-only runs.
+@pytest.mark.parametrize("sample_sizes", [[9], [10, 5]])
+def test_generation_only_config_rejects_small_sample_sizes(sample_sizes: list[int]) -> None:
+    with pytest.raises(ValidationError, match=r"Sample sizes must be greater than 10\."):
+        GenerationOnlyConfig(**generation_only_data(sample_sizes=sample_sizes))
+
+
+# Checks that repeated sample sizes are rejected for generation-only runs.
+@pytest.mark.parametrize("sample_sizes", [[10, 10], [10, 20, 10]])
+def test_generation_only_config_rejects_duplicate_sample_sizes(sample_sizes: list[int]) -> None:
+    with pytest.raises(ValidationError, match="Sample sizes must be unique"):
+        GenerationOnlyConfig(**generation_only_data(sample_sizes=sample_sizes))
+
+
+# Checks that unique sample sizes starting from the minimum are accepted.
+def test_generation_only_config_accepts_unique_sample_sizes() -> None:
+    config = GenerationOnlyConfig(**generation_only_data(sample_sizes=[10, 11]))
+
+    assert config.sample_sizes == [10, 11]
+
+
+# Checks that the container builds a generation-only config from its discriminator.
+def test_experiment_config_supports_generation_only_config() -> None:
+    config = ExperimentConfig.model_validate({"name": "generation", "config": generation_only_data()})
+
+    assert isinstance(config.config, GenerationOnlyConfig)
+    assert config.name == "generation"
+
+
+# Checks that the config validator guards against a missing configuration object.
+def test_experiment_config_check_config_rejects_missing_config() -> None:
+    with pytest.raises(ValueError, match="Missing config"):
+        ExperimentConfig.check_config(None)
+
+
+# Checks that the config validator passes a present configuration through unchanged.
+def test_experiment_config_check_config_returns_present_config() -> None:
+    config = generation_only_data()
+
+    assert ExperimentConfig.check_config(config) is config
