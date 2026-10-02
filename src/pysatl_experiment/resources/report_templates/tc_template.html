@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Time Complexity Report</title>
+    <title>{{ report_name }}</title>
     <style>
         html, body {
             width: 100%;
@@ -45,7 +45,7 @@
     <table class="header-table">
         <tr>
             <td style="text-align:left;">
-                <b><span>Time Complexity Report</span></b>
+                <b><span>Time Complexity Report: {{ report_name }}</span></b>
             </td>
             <td style="text-align:right;">
                 <b><span>{{ timestamp }}</span></b>
@@ -56,17 +56,17 @@
     <table class="data-table">
         <tr class="header-row">
             <td>Size</td>
-            {% for criterion in report_data %}
-            <td>{{ criterion }} Test</td>
+            {% for series in report_data %}
+            <td>{{ series.label }}</td>
             {% endfor %}
         </tr>
 
         {% for size in sizes %}
         <tr>
         <td>{{ size }}</td>
-            {% for criterion in report_data %}
+            {% for series in report_data %}
             <td>
-                {% for item in report_data[criterion] %}
+                {% for item in report_data[series] %}
                     {% if item[0] == size %}
                             {{ "%.2f ms"|format(item[1] * 1000) }}
                     {% endif %}

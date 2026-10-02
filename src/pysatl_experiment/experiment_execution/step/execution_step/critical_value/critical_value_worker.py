@@ -13,6 +13,7 @@ from numpy import float64
 from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 
 from pysatl_experiment.experiment_execution.step.execution_step.abstract_worker import IWorker, WorkerResult
+from pysatl_experiment.types import SampleBatch
 
 
 @dataclass
@@ -40,18 +41,18 @@ class CriticalValueWorker(IWorker[CriticalValueWorkerResult]):
     ----------
     statistics : AbstractGoodnessOfFitStatistic
         Statistical test or metric used to compute values on each sample.
-    sample_data : list[list[float]]
+    sample_data : SampleBatch
         Collection of samples. Each inner list represents one dataset.
 
     Attributes
     ----------
     statistics : AbstractGoodnessOfFitStatistic
         Statistic instance used for computations.
-    sample_data : list[list[float]]
+    sample_data : SampleBatch
         Input samples to process.
     """
 
-    def __init__(self, statistics: AbstractGoodnessOfFitStatistic, sample_data: list[list[float]]):
+    def __init__(self, statistics: AbstractGoodnessOfFitStatistic, sample_data: SampleBatch):
         """
         Initialize worker.
 
@@ -59,7 +60,7 @@ class CriticalValueWorker(IWorker[CriticalValueWorkerResult]):
         ----------
         statistics : AbstractGoodnessOfFitStatistic
             Statistic instance used for computation.
-        sample_data : list[list[float]]
+        sample_data : SampleBatch
             Input datasets.
         """
         self.statistics = statistics
@@ -75,7 +76,9 @@ class CriticalValueWorker(IWorker[CriticalValueWorkerResult]):
         CriticalValueWorkerResult
             Object containing computed statistic values for all samples.
         """
-        results_statistics = [self.statistics.execute_statistic(rvs=data) for data in self.sample_data]
+        results_statistics = [
+            self.statistics.execute_statistic(rvs=sample.values) for sample in self.sample_data.samples
+        ]
 
         result = CriticalValueWorkerResult(results_statistics=results_statistics)
 

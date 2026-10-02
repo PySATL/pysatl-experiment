@@ -14,14 +14,19 @@ from tempfile import TemporaryDirectory
 import numpy as np
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
-from matplotlib import pyplot as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.figure import Figure
+from pysatl_criterion.hypothesis_testing.alternative_factory.alternative_factories import AbstractAlternativeFactory
 
-from pysatl_experiment.configuration.criteria_config import CriterionConfig
-from pysatl_experiment.configuration.models.report_mode import ReportMode
+from pysatl_experiment.experiment_execution.configured_criterion import ConfiguredCriterion
+from pysatl_experiment.experiment_execution.step.report_step.abstract_report_builder import IReportBuilder
+from pysatl_experiment.experiment_execution.step.report_step.report_context import ReportBuilderContext
+from pysatl_experiment.persistence.models.limit_distribution import LimitDistributionModel
+from pysatl_experiment.types import ReportMode
 from pysatl_experiment.utils.report_utils import convert_html_to_pdf
 
 
-class CriticalValueReportBuilder:
+class CriticalValueReportBuilder(IReportBuilder[ReportBuilderContext[LimitDistributionModel]]):
     """
     Builder for critical value reports.
 
@@ -34,55 +39,40 @@ class CriticalValueReportBuilder:
 
     def __init__(
         self,
-        report_name: str,
-        criteria_config: list[CriterionConfig],
+        criteria_config: list[ConfiguredCriterion],
         sample_sizes: list[int],
         significance_levels: list[float],
-        cv_values: list[float | tuple[float, float]],
-        results_path: Path,
-        with_chart: ReportMode,
-    ):
-        """
-        Initialize report builder.
-
-        Parameters
-        ----------
-        report_name : str
-            Name of the generated report.
-        criteria_config : list[CriterionConfig]
-            Criteria included in the report.
-        sample_sizes : list[int]
-            Evaluated sample sizes.
-        significance_levels : list[float]
-            Significance levels.
-        cv_values : list[float | tuple[float, float]]
-            Computed critical values.
-        results_path : Path
-            Directory for report output.
-        with_chart : ReportMode
-            Determines whether charts should be included.
-        """
-        self.report_name = report_name
+    ) -> None:
         self.criteria_config = criteria_config
-        self.sizes = sample_sizes
         self.significance_levels = significance_levels
-        self.cv_values = cv_values
-        self.results_path = results_path
-        self.with_chart = with_chart
-        template_dir = Path(__file__).parent / "report_templates"  # TODO: common constant?
-        self.pdf_path = self.results_path / f"{report_name}.pdf"
+        self.sizes = sorted(sample_sizes)
 
-        self.template_env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
-
-    def build(self) -> None:
-        """
-        Generate and save the critical value report.
-
-        Notes
-        -----
-        Temporary chart files are created during report generation
-        and removed automatically afterward.
-        """
+    def build(self, context: ReportBuilderContext[LimitDistributionModel]) -> None:
+        """Prepare statistics from loaded results and render the selected template."""
+        self.report_name = context.report_name
+        self.results_path = context.results_path
+        self.with_chart = context.report_mode
+        self.pdf_path = context.results_path / f"{context.report_name}.pdf"
+        self.template_name = context.template_path.name
+        self.template_env = Environment(loader=FileSystemLoader(context.template_path.parent), autoescape=True)
+        self.cv_values = []
+        for config in self.criteria_config:
+            factory = AbstractAlternativeFactory.get_concrete_factory(
+                config.statistics_class_object.alternative().type()
+            )
+            calculator = factory.get_critical_value_calculator()
+            for size in self.sizes:
+                matches = [
+                    row
+                    for row in context.data
+                    if row.criterion_code == config.criterion_code
+                    and row.criterion_parameters == config.criterion.parameters
+                    and row.sample_size == size
+                ]
+                if len(matches) != 1:
+                    raise ValueError(f"Expected one limit distribution for {config.criterion_code}, size={size}")
+                for alpha in self.significance_levels:
+                    self.cv_values.append(calculator.calculate(matches[0].results_statistics, alpha))
         with TemporaryDirectory(prefix="cv_charts_") as temp_dir:
             charts_dir = Path(temp_dir)
 
@@ -125,7 +115,8 @@ class CriticalValueReportBuilder:
                 }
             )
 
-        html = self.template_env.get_template("cv_template.html").render(
+        html = self.template_env.get_template(self.template_name).render(
+            report_name=self.report_name,
             tables=tables,
             timestamp=pd.Timestamp.now().strftime("%Y-%m-%d"),
         )
@@ -178,7 +169,9 @@ class CriticalValueReportBuilder:
         """
         chart_path = charts_dir / f"{criterion_code}.png"
 
-        plt.figure(figsize=(8, 5), dpi=100)
+        figure = Figure(figsize=(8, 5), dpi=100)
+        FigureCanvasAgg(figure)
+        axes = figure.subplots()
 
         chunked_values = self._chunk_cv_values()
 
@@ -188,19 +181,18 @@ class CriticalValueReportBuilder:
 
         for j, alpha in enumerate(self.significance_levels):
             cv_values = values_2d[:, j]
-            plt.plot(self.sizes, cv_values, marker="o", linestyle="-", label=f"α = {alpha}")
+            axes.plot(self.sizes, cv_values, marker="o", linestyle="-", label=f"α = {alpha}")
 
-        plt.xlabel("Sample Size")
-        plt.ylabel("Critical Value")
-        plt.title(f"Critical Value vs Sample Size — {criterion_code}")
-        plt.grid(True, linestyle="--", alpha=0.5)
+        axes.set_xlabel("Sample Size")
+        axes.set_ylabel("Critical Value")
+        axes.set_title(f"Critical Value vs Sample Size — {criterion_code}")
+        axes.grid(True, linestyle="--", alpha=0.5)
 
-        plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", fontsize="small")
+        axes.legend(bbox_to_anchor=(1.02, 1), loc="upper left", fontsize="small")
 
-        plt.tight_layout(rect=(0, 0, 0.85, 1))
+        figure.tight_layout(rect=(0, 0, 0.85, 1))
 
-        plt.savefig(chart_path, format="png", dpi=150, bbox_inches="tight")
-        plt.close()
+        figure.savefig(chart_path, format="png", dpi=150, bbox_inches="tight")
 
         return str(chart_path.resolve().as_posix())
 

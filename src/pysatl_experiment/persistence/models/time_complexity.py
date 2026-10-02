@@ -1,11 +1,10 @@
-"""Time complexity storage models and interface."""
+"""Data models and queries for time complexity."""
 
-from abc import ABC, abstractmethod
-from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import TypeAlias
 
-from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
+from pysatl_criterion.persistence.models.base import DataModel, DataQuery
+
+from pysatl_experiment.persistence.validation import require_nonempty_name, require_positive_integer
 
 
 @dataclass
@@ -27,6 +26,8 @@ class TimeComplexityModel(DataModel):
         Number of simulations.
     results_times : list[float]
         Execution time measurements.
+    generator_code : str
+        Source sample-series identifier, including configured parameter ranges.
     """
 
     experiment_name: str
@@ -35,6 +36,11 @@ class TimeComplexityModel(DataModel):
     sample_size: int
     samples_count: int
     results_times: list[float]
+    generator_code: str
+
+    def __post_init__(self) -> None:
+        """Require the source series to be part of every result's identity."""
+        require_nonempty_name(self.generator_code, "generator_code")
 
 
 @dataclass
@@ -50,6 +56,8 @@ class TimeComplexityQuery(DataQuery):
     criterion_parameters : CriterionParameters
     sample_size : int
     samples_count : int
+    generator_code : str
+        Source sample-series identifier.
     """
 
     experiment_name: str
@@ -57,19 +65,32 @@ class TimeComplexityQuery(DataQuery):
     criterion_parameters: dict[str, float]
     sample_size: int
     samples_count: int
+    generator_code: str
+
+    def __post_init__(self) -> None:
+        """Require an exact source series when querying a result."""
+        require_nonempty_name(self.generator_code, "generator_code")
 
 
-class ITimeComplexityStorage(IDataStorage[TimeComplexityModel, TimeComplexityQuery], ABC):
-    """Time complexity storage interface."""
+@dataclass(frozen=True, kw_only=True)
+class TimeComplexityFilter:
+    """Select one experiment's results; None leaves optional fields unrestricted."""
 
-    @abstractmethod
-    def bulk_insert_data(self, data_list: Iterable[TimeComplexityModel]) -> None:
-        """
-        Insert or update multiple time complexity records.
+    experiment_name: str
+    criterion_code: str | None = None
+    criterion_parameters: dict[str, float] | None = None
+    sample_size: int | None = None
+    samples_count: int | None = None
+    generator_code: str | None = None
 
-        Parameters
-        ----------
-        data_list : Iterable[TimeComplexityModel]
-            Time complexity measurements to store.
-        """
-        pass
+    def __post_init__(self) -> None:
+        """Require an explicit experiment and valid optional dimensions."""
+        require_nonempty_name(self.experiment_name, "experiment_name")
+        if self.criterion_code is not None:
+            require_nonempty_name(self.criterion_code, "criterion_code")
+        if self.generator_code is not None:
+            require_nonempty_name(self.generator_code, "generator_code")
+        for field in ("sample_size", "samples_count"):
+            value = getattr(self, field)
+            if value is not None:
+                require_positive_integer(value, field)

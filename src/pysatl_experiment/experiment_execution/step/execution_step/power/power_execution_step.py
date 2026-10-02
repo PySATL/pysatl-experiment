@@ -1,113 +1,71 @@
-"""Power experiment execution step implementation."""
+"""Execute prepared power tasks with separately supplied storage dependencies."""
 
-from dataclasses import dataclass
+from functools import partial
 
 from typing_extensions import override
 
-from pysatl_experiment.configuration.models.alternative import Alternative
-from pysatl_experiment.experiment_execution.step.execution_step.execution_step_data import ExecutionStepData
-from pysatl_experiment.experiment_execution.step.execution_step.multithreading_execution_step import (
+from pysatl_experiment.experiment_execution.step.execution_step.parallel_execution_step import (
     ExecutionTaskResult,
-    MultithreadingExecutionStep,
+    ParallelExecutionStep,
 )
-from pysatl_experiment.experiment_execution.step.execution_step.power.power_worker import PowerWorker, PowerWorkerResult
-from pysatl_experiment.experiment_execution.step.execution_step.power.task_spec import PowerExecutionTaskSpec
-from pysatl_experiment.persistence.models.power import IPowerStorage, PowerModel
-from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.contracts.power import IPowerStorage
+from pysatl_experiment.persistence.models.power import PowerModel
+from pysatl_experiment.sample_loading.source import SampleSource, SampleSourceFactory
+
+from .context import PowerExecutionContext
+from .power_worker import PowerWorker, PowerWorkerResult
+from .task_spec import PowerTask
 
 
-@dataclass
-class PowerStepData(ExecutionStepData):
-    """
-    Data for a single execution step in power experiment.
-
-    Attributes
-    ----------
-    alternative : Alternative
-        Alternative distribution configuration.
-    significance_level : float
-        Significance level used for the criterion.
-    """
-
-    alternative: Alternative
-    significance_level: float
-    criterion_parameters: list[float]
-
-
-PowerExecutionResult = ExecutionTaskResult[PowerExecutionTaskSpec, PowerWorkerResult]
+PowerExecutionResult = ExecutionTaskResult[PowerTask, PowerWorkerResult]
 
 
 class PowerExecutionStep(
-    MultithreadingExecutionStep[
-        PowerStepData,
-        PowerExecutionTaskSpec,
-        PowerExecutionResult,
-        PowerModel,
-        IPowerStorage,
-    ]
+    ParallelExecutionStep[PowerTask, PowerExecutionResult, PowerModel, IPowerStorage, SampleSource]
 ):
-    """
-    Standard power experiment execution step.
-
-    The step evaluates statistical power for multiple
-    alternatives and significance levels.
-    """
+    """Load and compute in child processes; save results in the parent process."""
 
     def __init__(
         self,
-        experiment_id: int,
-        experiment_name: str,
-        step_config: list[PowerStepData],
-        monte_carlo_count: int,
-        data_storage: IRandomValuesStorage,
+        context: PowerExecutionContext,
+        sample_source: SampleSourceFactory,
         result_storage: IPowerStorage,
+        *,
         storage_connection: str,
-        parallel_workers: int,
     ) -> None:
         super().__init__(
-            experiment_id=experiment_id,
-            experiment_name=experiment_name,
-            step_config=step_config,
-            monte_carlo_count=monte_carlo_count,
+            parallel_workers=context.parallel_workers,
             result_storage=result_storage,
-            storage_connection=storage_connection,
-            parallel_workers=parallel_workers,
+            context_factory=sample_source,
+            total_tasks=len(context.tasks),
+            write_batch_size=context.write_batch_size,
         )
-        self.data_storage = data_storage
+        self.context = context
+        self.storage_connection = storage_connection
+
+    @property
+    def experiment_name(self) -> str:
+        """Return the experiment identity owned by the context."""
+        return self.context.experiment_name
 
     @override
-    def _collect_tasks(self) -> list[PowerExecutionTaskSpec]:
-        task_specs = []
-        for step_data in self.step_config:
-            alternative = step_data.alternative
-            spec = PowerExecutionTaskSpec(
-                experiment_name=self.experiment_name,
-                statistic_class_name=step_data.statistics.__class__.__name__,
-                statistic_module=step_data.statistics.__class__.__module__,
-                criterion_code=step_data.statistics.code(),
-                criterion_parameters=step_data.criterion_parameters,
-                sample_size=step_data.sample_size,
-                monte_carlo_count=self.monte_carlo_count,
-                db_path=self.storage_connection,
-                sample_generator_code=alternative.distribution_type,
-                sample_generator_parameters=alternative.parameters,
-                alternative_generator=alternative.distribution_type,
-                alternative_parameters=alternative.parameters,
-                significance_level=step_data.significance_level,
-            )
-            task_specs.append(spec)
-        return task_specs
+    def _collect_tasks(self) -> list[PowerTask]:
+        return list(self.context.tasks)
+
+    @override
+    def _make_task(self, spec: PowerTask):
+        return partial(type(self)._execute_task, spec, storage_connection=self.storage_connection)
 
     @staticmethod
-    @override
-    def _execute_task(spec: PowerExecutionTaskSpec) -> PowerExecutionResult:
-        sample_data, statistics = PowerExecutionStep._load_samples_and_statistics(spec)
-
+    def _execute_task(spec: PowerTask, source: SampleSource, *, storage_connection: str) -> PowerExecutionResult:
+        """Load samples and construct the configured statistic in the worker process."""
+        samples = source.load(spec.sample_set)
+        statistics = spec.criterion.implementation(**spec.criterion.parameters)
         worker = PowerWorker(
             statistics=statistics,
-            sample_data=sample_data,
+            sample_data=samples,
             significance_level=spec.significance_level,
-            storage_connection=spec.db_path,
+            storage_connection=storage_connection,
         )
         return ExecutionTaskResult(spec=spec, worker_result=worker.execute())
 
@@ -115,14 +73,14 @@ class PowerExecutionStep(
     def _to_model(self, result: PowerExecutionResult) -> PowerModel:
         spec = result.spec
         return PowerModel(
-            experiment_id=self.experiment_id,
-            criterion_code=spec.criterion_code,
-            criterion_parameters=spec.criterion_parameters,
-            sample_size=spec.sample_size,
-            alternative_code=spec.alternative_generator,
+            experiment_name=spec.sample_set.experiment_name,
+            alternative_code=spec.sample_set.generator_code,
             alternative_parameters=spec.alternative_parameters,
-            monte_carlo_count=spec.monte_carlo_count,
             significance_level=spec.significance_level,
+            criterion_code=spec.criterion.code,
+            criterion_parameters=spec.criterion.parameters,
+            sample_size=spec.sample_set.sample_size,
+            monte_carlo_count=spec.sample_set.samples_count,
             results_criteria=result.worker_result.results_criteria,
         )
 

@@ -1,10 +1,8 @@
-"""Power storage models and interface."""
+"""Data models and queries for power."""
 
-from abc import ABC, abstractmethod
-from collections.abc import Iterable
 from dataclasses import dataclass
 
-from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
+from pysatl_criterion.persistence.models.base import DataModel, DataQuery
 
 
 @dataclass
@@ -14,7 +12,7 @@ class PowerModel(DataModel):
 
     Parameters
     ----------
-    experiment_id : int
+    experiment_name : str
         Experiment identifier.
     criterion_code : str
         Statistical criterion code.
@@ -24,7 +22,7 @@ class PowerModel(DataModel):
         Sample size.
     alternative_code : str
         Alternative hypothesis code.
-    alternative_parameters : list[float]
+    alternative_parameters : dict[str, float | list[float]] | list[float]
         Parameters of alternative hypothesis.
     monte_carlo_count : int
         Number of simulations.
@@ -34,12 +32,12 @@ class PowerModel(DataModel):
         Simulation results (rejections / non-rejections).
     """
 
-    experiment_id: int
+    experiment_name: str
     criterion_code: str
-    criterion_parameters: list[float]
+    criterion_parameters: dict[str, float] | list[float]
     sample_size: int
     alternative_code: str
-    alternative_parameters: list[float]
+    alternative_parameters: dict[str, float | list[float]] | list[float]
     monte_carlo_count: int
     significance_level: float
     results_criteria: list[bool]
@@ -56,31 +54,16 @@ class PowerQuery(DataQuery):
     criterion_parameters : list[float]
     sample_size : int
     alternative_code : str
-    alternative_parameters : list[float]
+    alternative_parameters : dict[str, float | list[float]] | list[float]
     monte_carlo_count : int
     significance_level : float
     """
 
+    experiment_name: str
     criterion_code: str
-    criterion_parameters: list[float]
+    criterion_parameters: dict[str, float] | list[float]
     sample_size: int
     alternative_code: str
-    alternative_parameters: list[float]
+    alternative_parameters: dict[str, float | list[float]] | list[float]
     monte_carlo_count: int
     significance_level: float
-
-
-class IPowerStorage(IDataStorage[PowerModel, PowerQuery], ABC):
-    """Power storage interface."""
-
-    @abstractmethod
-    def bulk_insert_data(self, data_list: Iterable[PowerModel]) -> None:
-        """
-        Insert or update multiple power records.
-
-        Parameters
-        ----------
-        data_list : Iterable[PowerModel]
-            Power results to store.
-        """
-        pass

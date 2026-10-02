@@ -5,7 +5,9 @@ from pathlib import Path
 
 from line_profiler import profile
 
-from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesCountQuery
+from pysatl_experiment.persistence.contracts.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.models.random_values import RandomValuesFilter
+from pysatl_experiment.persistence.random_values_iterator import RandomValuesIterator
 from pysatl_experiment.utils.experiment_names import normalize_experiment_name
 from pysatl_experiment.utils.files_utils import ensure_experiment_conf, ensure_experiment_dir
 
@@ -94,7 +96,6 @@ def get_sample_data_from_storage(
     count: int,
     data_storage: IRandomValuesStorage,
     experiment_name: str,
-    generator_parameters: dict[str, float] | list[float] | None = None,
 ) -> list[list[float]]:
     """
     Load generated samples from storage.
@@ -105,8 +106,6 @@ def get_sample_data_from_storage(
         Name of the random value generator.
     experiment_name : str
         Experiment name used to scope generated samples.
-    generator_parameters : dict[str, float] | list[float] | None
-        Generator parameters used during sample generation.
     sample_size : int
         Size of each generated sample.
     count : int
@@ -124,22 +123,13 @@ def get_sample_data_from_storage(
     ValueError
         If the storage contains fewer samples than requested.
     """
-    data = []
-
-    query = RandomValuesCountQuery(
+    query = RandomValuesFilter(
         experiment_name=experiment_name,
         generator_code=generator_code,
         sample_size=sample_size,
-        count=count,
-        generator_parameters=generator_parameters,
     )
 
-    data_from_db = data_storage.get_count_data(query)
-    if data_from_db is None or len(data_from_db) < count:
+    data = [sample.data for sample in RandomValuesIterator(data_storage, query, limit=count)]
+    if len(data) < count:
         raise ValueError("Not enough data in storage.")
-
-    for sample_data in data_from_db:
-        sample = sample_data.data
-        data.append(sample)
-
     return data

@@ -7,15 +7,16 @@ from typing import cast
 from click import BadParameter, Choice, ClickException, FloatRange, IntRange, argument, command, echo, option
 from pydantic import ValidationError
 from pysatl_criterion import DistributionType
+from pysatl_criterion.generator.model import AbstractRVSGenerator
+from pysatl_criterion.utils.generator import get_available_generator
 
 from pysatl_experiment.cli.commands.common import criteria_from_codes, get_statistics_short_codes_for_hypothesis
 from pysatl_experiment.cli.validation.schemas.alternative import AlternativesConfig
 from pysatl_experiment.cli.validation.schemas.criteria import CriteriaConfig, Criterion
-from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.configuration.models.report_mode import ReportMode
-from pysatl_experiment.configuration.models.run_mode import RunMode
-from pysatl_experiment.configuration.models.step_type import StepType
-from pysatl_experiment.utils.experiment_utils import is_experiment_exists, read_experiment_data, save_experiment_config
+from pysatl_experiment.configuration import RawExperimentConfig
+from pysatl_experiment.configuration.validation import ConfigValidationError, validate_experiment_config
+from pysatl_experiment.types import ExperimentType, ReportMode, RunMode, StepType
+from pysatl_experiment.utils.experiment_utils import is_experiment_exists, read_experiment_data, save_experiment_data
 
 
 def _configure_sample_sizes(experiment_config: dict, sizes: tuple[int, ...] | None):
@@ -292,23 +293,64 @@ def configure(
     if not experiment_exists:
         raise ClickException(f"Experiment with name {name} does not exist.")
 
-    experiment_config: dict = read_experiment_data(name).get("config")
+    document = read_experiment_data(name)
+    if "config" in document:
+        raise ClickException("This command expects the nested generate/execute/report configuration format.")
+    generation = document.setdefault("generate", {})
+    execution = document.setdefault("execute", {})
+    report = document.setdefault("report", {})
+    if not all(isinstance(section, dict) for section in (generation, execution, report)):
+        raise ClickException("generate, execute and report must be JSON objects to configure their fields.")
 
-    _configure_experiment_type(experiment_config, experiment_type)
-    _configure_storage_connection(experiment_config, connection)
-    _configure_significance_levels(experiment_config, levels)
-    _configure_sample_sizes(experiment_config, size)
-    _configure_run_mode(experiment_config, run_mode)
-    _configure_report_mode(experiment_config, report_mode)
-    _configure_report_builder_type(experiment_config, report_builder_type)
-    _configure_monte_carlo_count(experiment_config, count)
-    _configure_hypothesis(experiment_config, hypothesis)
-    _configure_generator_type(experiment_config, generator_type)
-    _configure_executor_type(experiment_config, executor_type)
-    _configure_criteria(experiment_config, criteria)
-    _configure_alternatives(experiment_config, alternative)
-    _configure_workers(experiment_config, workers)
+    _configure_experiment_type(document, experiment_type)
+    _configure_storage_connection(document, connection)
+    _configure_run_mode(document, run_mode)
+    _configure_report_mode(report, report_mode)
+    _configure_report_builder_type(report, report_builder_type)
+    _configure_generator_type(generation, generator_type)
+    _configure_executor_type(execution, executor_type)
+    _configure_monte_carlo_count(execution, count)
+    _configure_hypothesis(execution, hypothesis)
+    execution.setdefault("hypothesis_params", {})
+    _configure_criteria(execution, criteria)
+    # CLI-selected criteria have no named parameters until explicitly configured.
+    for criterion in execution["criteria"]:
+        if criterion.get("parameters") == []:
+            criterion["parameters"] = {}
+    if levels:
+        execution["significance_levels"] = list(levels)
+    else:
+        execution.setdefault("significance_levels", [0.05])
+    _configure_workers(generation, workers)
+    _configure_workers(execution, workers)
 
-    save_experiment_config(name, experiment_config)
+    if experiment_type == "power":
+        execution["sample_sizes"] = list(size)
+        generation.pop("sample_sizes", None)
+        generation.pop("samples_count", None)
+    else:
+        generation["sample_sizes"] = list(size)
+        generation["samples_count"] = count
+        execution.pop("sample_sizes", None)
 
-    echo(f"Experiment {name} successfully configured! Configuration: \n {json.dumps(experiment_config, indent=4)}")
+    if alternative:
+        temporary = {"experiment_type": experiment_type}
+        _configure_alternatives(temporary, alternative)
+        generator_types = {cls.__name__.upper(): cls for cls in AbstractRVSGenerator.__subclasses__()}
+        generators = [
+            generator_types[item["generator_name"]](*item["parameters"]) for item in temporary["alternatives"]
+        ]
+        generation["distributions"] = [
+            {"distribution_type": generator.distribution_type().value, "distribution_params": generator.parameters()}
+            for generator in generators
+        ]
+    elif not generation.get("distributions"):
+        generator = get_available_generator(DistributionType(hypothesis), execution["hypothesis_params"])
+        generation["distributions"] = [{"distribution_type": hypothesis, "distribution_params": generator.parameters()}]
+
+    try:
+        validate_experiment_config(RawExperimentConfig(document))
+    except ConfigValidationError as error:
+        raise ClickException(str(error)) from error
+    save_experiment_data(name, document)
+    echo(f"Experiment {name} successfully configured! Configuration: \n {json.dumps(document, indent=4)}")

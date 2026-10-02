@@ -1,5 +1,5 @@
 {
-  "name": "normal_critical_values",
+  "experiment_name": "normal_critical_values",
   "storage_connection": "sqlite:///pysatl.sqlite",
   "experiment_type": "critical_value",
   "run_mode": "reuse",
@@ -26,18 +26,20 @@
   },
   "report": {
     "report_builder_type": "standard",
-    "report_mode": "with-chart"
+    "report_mode": "with-chart",
+    "results_path": "user_data/.results"
   },
-  "config": {
+  "execute": {
     "hypothesis": "normal",
+    "hypothesis_params": {},
     "criteria": [
       {
         "criterion_code": "KS",
-        "parameters": []
+        "parameters": {}
       },
       {
         "criterion_code": "AD",
-        "parameters": []
+        "parameters": {}
       }
     ],
     "executor_type": "standard",

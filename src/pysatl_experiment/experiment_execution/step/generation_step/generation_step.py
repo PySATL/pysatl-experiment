@@ -1,9 +1,7 @@
 """Random sample generation step implementation."""
 
-import importlib
-import math
+from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Any
 
 from line_profiler import profile
 from pysatl_criterion.generator.model import AbstractRVSGenerator
@@ -16,48 +14,53 @@ from pysatl_experiment.experiment_execution.step.generation_step.generation_step
 from pysatl_experiment.experiment_execution.step.generation_step.multithreading_generation_step import (
     MultithreadingGenerationStep,
 )
-from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesModel
+from pysatl_experiment.persistence.contracts.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.models.random_values import RandomValuesModel
+from pysatl_experiment.types import Sample
 
 
 @dataclass
 class GenerationTaskSpec:
     """
-    Serializable task specification for random sample generation.
+    Task specification carrying a configured, picklable generator instance.
+
+    Process execution transfers the generator's state with each task.
 
     Attributes
     ----------
-    generator_class_name : str
-        Generator class name.
-    generator_module : str
-        Module containing generator implementation.
-    generator_code : str
-        Generator code used by random values storage.
-    generator_parameters : dict[str, Any]
-        Generator parameters used by random values storage and worker initialization.
+    generator : AbstractRVSGenerator
+        Configured generator used to produce this task's samples.
     sample_size : int
         Size of generated samples.
     samples_count : int
         Number of samples to generate in this task.
     experiment_name : str
         Experiment name used to scope generated samples.
+    generator_code : str
+        Stable sample-series code shared by all realizations of its parameters.
     """
 
-    generator_class_name: str
-    generator_module: str
-    generator_code: str
-    generator_parameters: dict[str, Any]
+    generator: AbstractRVSGenerator
     sample_size: int
     samples_count: int
     experiment_name: str
+    generator_code: str
 
 
 GenerationResult = list[RandomValuesModel]
 
 
+@dataclass(frozen=True)
+class GenerationBatch:
+    """Requests executed together with a bounded total number of samples."""
+
+    specs: tuple[GenerationTaskSpec, ...]
+
+
 class GenerationStep(
     MultithreadingGenerationStep[
         GenerationData,
-        GenerationTaskSpec,
+        GenerationBatch,
         GenerationResult,
         RandomValuesModel,
         IRandomValuesStorage,
@@ -84,18 +87,31 @@ class GenerationStep(
             step_config=ctx.data_list,
             result_storage=random_values_storage,
             parallel_workers=ctx.parallel_workers,
+            total_samples=sum(data.samples_count for data in ctx.data_list),
+            write_batch_size=ctx.write_batch_size,
         )
         self.ctx = ctx
         self.random_values_storage = random_values_storage
+        self.samples_per_task = ctx.samples_per_task
 
     @override
-    def _collect_tasks(self) -> list[GenerationTaskSpec]:
-        task_specs = []
+    def _collect_tasks(self) -> Iterator[GenerationBatch]:
+        """Split large requests and pack small ones across generators and sizes."""
+        specs = []
+        samples_count = 0
         for data in self.step_config:
-            for samples_count in self._split_samples_count(data.samples_count):
-                task_specs.append(self._to_task_spec(data, samples_count))
-
-        return task_specs
+            remaining = data.samples_count
+            while remaining > 0:
+                count = min(remaining, self.samples_per_task - samples_count)
+                specs.append(self._to_task_spec(data, count))
+                samples_count += count
+                remaining -= count
+                if samples_count == self.samples_per_task:
+                    yield GenerationBatch(tuple(specs))
+                    specs = []
+                    samples_count = 0
+        if specs:
+            yield GenerationBatch(tuple(specs))
 
     @property
     def ctxs(self) -> list[GenerationData]:
@@ -104,19 +120,22 @@ class GenerationStep(
 
     @staticmethod
     @override
-    def _execute_task(spec: GenerationTaskSpec) -> GenerationResult:
-        generator = GenerationStep._load_generator(spec)
-        samples = GenerationStep._generate_samples(generator, spec.sample_size, spec.samples_count)
-        return [
-            RandomValuesModel(
-                generator_code=spec.generator_code,
-                generator_parameters=spec.generator_parameters,
-                sample_size=spec.sample_size,
-                experiment_name=spec.experiment_name,
-                data=sample,
+    def _execute_task(batch: GenerationBatch, context: None) -> GenerationResult:
+        models = []
+        for spec in batch.specs:
+            generator_parameters = spec.generator.parameters().copy()
+            samples = GenerationStep._generate_samples(spec.generator, spec.sample_size, spec.samples_count)
+            models.extend(
+                RandomValuesModel(
+                    generator_code=spec.generator_code,
+                    generator_parameters=generator_parameters,
+                    sample_size=spec.sample_size,
+                    experiment_name=spec.experiment_name,
+                    data=sample.values,
+                )
+                for sample in samples
             )
-            for sample in samples
-        ]
+        return models
 
     @override
     def _to_models(self, result: GenerationResult) -> list[RandomValuesModel]:
@@ -124,44 +143,20 @@ class GenerationStep(
 
     @override
     def _bulk_save(self, models: list[RandomValuesModel]) -> None:
-        self.random_values_storage.bulk_insert_data(models)
-
-    def _split_samples_count(self, samples_count: int) -> list[int]:
-        if samples_count <= 0:
-            return []
-
-        target_tasks_count = max(1, self.parallel_workers * 4)
-        chunk_size = max(1, math.ceil(samples_count / target_tasks_count))
-        chunks = []
-        remaining_samples = samples_count
-        while remaining_samples > 0:
-            current_chunk_size = min(chunk_size, remaining_samples)
-            chunks.append(current_chunk_size)
-            remaining_samples -= current_chunk_size
-
-        return chunks
+        self.random_values_storage.bulk_insert(models, batch_size=self.write_batch_size)
 
     def _to_task_spec(self, data: GenerationData, samples_count: int) -> GenerationTaskSpec:
-        generator = data.generator
         return GenerationTaskSpec(
-            generator_class_name=generator.__class__.__name__,
-            generator_module=generator.__class__.__module__,
-            generator_code=generator.code(),
-            generator_parameters=generator.parameters(),
+            generator=data.generator,
             sample_size=data.sample_size,
             samples_count=samples_count,
             experiment_name=self.ctx.experiment_name,
+            generator_code=data.generator_code,
         )
 
     @staticmethod
-    def _load_generator(spec: GenerationTaskSpec) -> AbstractRVSGenerator:
-        generator_module = importlib.import_module(spec.generator_module)
-        generator_class = getattr(generator_module, spec.generator_class_name)
-        return generator_class(**spec.generator_parameters)
-
-    @staticmethod
     @profile
-    def _generate_samples(generator: AbstractRVSGenerator, size: int, count: int) -> list[list[float]]:
+    def _generate_samples(generator: AbstractRVSGenerator, size: int, count: int) -> list[Sample]:
         """
         Generate random samples.
 
@@ -176,38 +171,7 @@ class GenerationStep(
 
         Returns
         -------
-        list[list[float]]
+        list[Sample]
             Generated samples.
         """
-        samples = []
-        for _ in range(count):
-            sample = list(generator.generate(size))
-            samples.append(sample)
-
-        return samples
-
-    def _save_samples_to_storage(self, samples: list[list[float]], experiment_name: str, data: GenerationData) -> None:
-        """
-        Save generated samples to storage.
-
-        Parameters
-        ----------
-        samples : list[list[float]]
-            Generated samples.
-        experiment_name : str
-            Sample size.
-        data : GenerationStepContext
-            Generation task configuration.
-        """
-        data_to_save = [
-            RandomValuesModel(
-                generator_code=data.generator.code(),
-                generator_parameters=data.generator.parameters(),
-                sample_size=len(sample),
-                experiment_name=experiment_name,
-                data=sample,
-            )
-            for sample in samples
-        ]
-
-        self.random_values_storage.bulk_insert_data(data_to_save)
+        return [Sample(values=list(generator.generate(size))) for _ in range(count)]

@@ -37,15 +37,11 @@ def create(name: str) -> None:
         raise BadParameter(f"Experiment with name {name} already exists.")
 
     experiment_data = {
-        "name": name,
-        "config": {
-            "generator_type": "standard",
-            "executor_type": "standard",
-            "report_builder_type": "standard",
-            "run_mode": "reuse",
-            "report_mode": "with-chart",
-            "parallel_workers": 1,
-        },
+        "experiment_name": name,
+        "run_mode": "reuse",
+        "generate": {"generator_type": "standard", "parallel_workers": 1},
+        "execute": {"executor_type": "standard", "parallel_workers": 1, "hypothesis_params": {}},
+        "report": {"report_builder_type": "standard", "report_mode": "with-chart"},
     }  # TODO: default settings to constant?
 
     save_experiment_data(name, experiment_data)

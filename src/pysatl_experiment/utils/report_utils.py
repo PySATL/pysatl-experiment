@@ -10,8 +10,8 @@ from pathlib import Path
 
 from xhtml2pdf import pisa
 
-from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.constants import REPORT_TEMPLATE_DIR
+from pysatl_experiment.experiment_execution.configured_criterion import ConfiguredCriterion
 
 
 def convert_html_to_pdf(html: str, output_path: Path) -> None:
@@ -45,13 +45,13 @@ def convert_html_to_pdf(html: str, output_path: Path) -> None:
         raise RuntimeError(f"PDF generation failed: {pisa_status.err}")
 
 
-def get_criterion_names(criteria_config: list[CriterionConfig]) -> list[str]:
+def get_criterion_names(criteria_config: list[ConfiguredCriterion]) -> list[str]:
     """
     Extract simplified criterion names from configuration objects.
 
     Parameters
     ----------
-    criteria_config : list[CriterionConfig]
+    criteria_config : list[ConfiguredCriterion]
         Criterion configurations.
 
     Returns

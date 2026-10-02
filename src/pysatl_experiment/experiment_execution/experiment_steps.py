@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
-from pysatl_experiment.persistence.models.experiment import IExperimentStorage
+from pysatl_experiment.persistence.contracts.experiment import IExperimentStorage
 
 
 @dataclass
@@ -13,7 +13,7 @@ class ExperimentSteps:
 
     Attributes
     ----------
-    experiment_id : int
+    experiment_name : str
         Experiment identifier in storage.
     experiment_storage : IExperimentStorage
         Experiment metadata storage.
@@ -25,7 +25,7 @@ class ExperimentSteps:
         Report generation step.
     """
 
-    experiment_id: int
+    experiment_name: str
     experiment_storage: IExperimentStorage
     generation_step: IExperimentStep | None
     execution_step: IExperimentStep | None

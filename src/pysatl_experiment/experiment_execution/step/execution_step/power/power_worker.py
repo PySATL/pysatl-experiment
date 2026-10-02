@@ -14,6 +14,7 @@ from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDist
 from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 
 from pysatl_experiment.experiment_execution.step.execution_step.abstract_worker import IWorker, WorkerResult
+from pysatl_experiment.types import SampleBatch
 
 
 @dataclass
@@ -43,7 +44,7 @@ class PowerWorker(IWorker[PowerWorkerResult]):
     ----------
     statistics : AbstractGoodnessOfFitStatistic
         Statistic used in hypothesis testing.
-    sample_data : list[list[float]]
+    sample_data : SampleBatch
         Generated samples for evaluation.
     significance_level : float
         Significance level (alpha) used for hypothesis testing.
@@ -54,7 +55,7 @@ class PowerWorker(IWorker[PowerWorkerResult]):
     ----------
     statistics : AbstractGoodnessOfFitStatistic
         Statistic instance used in testing.
-    sample_data : list[list[float]]
+    sample_data : SampleBatch
         Input samples.
     significance_level : float
         Alpha level for tests.
@@ -65,7 +66,7 @@ class PowerWorker(IWorker[PowerWorkerResult]):
     def __init__(
         self,
         statistics: AbstractGoodnessOfFitStatistic,
-        sample_data: list[list[float]],
+        sample_data: SampleBatch,
         significance_level: float,
         storage_connection: str,
     ):
@@ -76,7 +77,7 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         ----------
         statistics : AbstractGoodnessOfFitStatistic
             Statistic used in testing.
-        sample_data : list[list[float]]
+        sample_data : SampleBatch
             Input datasets.
         significance_level : float
             Alpha level for hypothesis testing.
@@ -104,7 +105,8 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         decision_method = CriticalValueDecisionMethod()
 
         results_criteria = [
-            gof_test.test(sample, self.significance_level, decision_method).rejected for sample in self.sample_data
+            gof_test.test(sample.values, self.significance_level, decision_method).rejected
+            for sample in self.sample_data.samples
         ]
 
         worker_result = PowerWorkerResult(results_criteria=results_criteria)

@@ -1,74 +1,40 @@
-"""Time complexity report statistics."""
+"""Prepared chart and table points grouped by structured report-series identity."""
 
 from collections.abc import ItemsView
 from dataclasses import dataclass, field
 from typing import TypeAlias
 
+from .time_complexity_report_series import TimeComplexityReportSeries
+
 
 TimeComplexityPoint: TypeAlias = tuple[int, float]
 TimeComplexityCriterionStatistic: TypeAlias = list[TimeComplexityPoint]
-TimeComplexityReportStatisticData: TypeAlias = dict[str, TimeComplexityCriterionStatistic]
+TimeComplexityReportStatisticData: TypeAlias = dict[TimeComplexityReportSeries, TimeComplexityCriterionStatistic]
 
 
 @dataclass
 class TimeComplexityReportStatistic:
-    """
-    Average execution times grouped by criterion code.
-
-    Parameters
-    ----------
-    values : TimeComplexityReportStatisticData
-        Mapping of criterion code to pairs of sample size and average execution time.
-    """
+    """Average execution times in seconds, separated by complete series identity."""
 
     values: TimeComplexityReportStatisticData = field(default_factory=dict)
 
     def add_criterion_statistic(
         self,
-        criterion_code: str,
+        series: TimeComplexityReportSeries,
         sample_size: int,
         statistic: float,
     ) -> None:
-        """
-        Store average execution time for a criterion and sample size.
+        """Add a point, rejecting duplicate sizes instead of replacing measurements."""
+        points = self.values.setdefault(series, [])
+        if any(size == sample_size for size, _ in points):
+            raise ValueError(f"Duplicate sample size {sample_size} for report series {series}")
+        points.append((sample_size, statistic))
+        points.sort(key=lambda point: point[0])
 
-        Parameters
-        ----------
-        criterion_code : str
-            Criterion identifier.
-        sample_size : int
-            Sample size.
-        statistic : float
-            Average execution time.
-        """
-        criterion_statistic = self.values.setdefault(criterion_code, [])
-
-        for idx, (existing_sample_size, _) in enumerate(criterion_statistic):
-            if existing_sample_size == sample_size:
-                criterion_statistic[idx] = (sample_size, statistic)
-                break
-        else:
-            criterion_statistic.append((sample_size, statistic))
-            criterion_statistic.sort(key=lambda point: point[0])
-
-    def items(self) -> ItemsView[str, TimeComplexityCriterionStatistic]:
-        """
-        Return criterion statistics grouped by criterion code.
-
-        Returns
-        -------
-        ItemsView[str, TimeComplexityCriterionStatistic]
-            Criterion statistics items.
-        """
-        return self.values.items()
+    def items(self) -> ItemsView[TimeComplexityReportSeries, TimeComplexityCriterionStatistic]:
+        """Return series in a stable order for chart construction."""
+        return self.as_dict().items()
 
     def as_dict(self) -> TimeComplexityReportStatisticData:
-        """
-        Return statistics as a plain dictionary.
-
-        Returns
-        -------
-        TimeComplexityReportStatisticData
-            Mapping of criterion code to average execution time points.
-        """
-        return self.values
+        """Return sorted structured series and their sample-size points."""
+        return dict(sorted(self.values.items()))

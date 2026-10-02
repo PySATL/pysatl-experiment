@@ -1,48 +1,83 @@
 {
-  "name": "laplace_time_complexity",
-  "experiment_type": "time_complexity",
+  "experiment_name": "laplace_time_complexity",
   "storage_connection": "sqlite:///pysatl.sqlite",
-  "config": {
+  "experiment_type": "time_complexity",
+  "run_mode": "reuse",
+  "generate": {
+    "distributions": [
+      {
+        "distribution_type": "normal",
+        "distribution_params": {
+          "mean": [
+            0,
+            1
+          ],
+          "var": [
+            1,
+            2
+          ]
+        }
+      },
+      {
+        "distribution_type": "normal",
+        "distribution_params": {
+          "mean": [
+            2,
+            3
+          ],
+          "var": [
+            2,
+            4
+          ]
+        }
+      }
+    ],
+    "samples_count": 1000,
+    "parallel_workers": 10,
+    "generator_type": "standard",
+    "sample_sizes": [
+      1000,
+      2000,
+      5000
+    ]
+  },
+  "report": {
+    "report_builder_type": "standard",
+    "report_mode": "with-chart",
+    "results_path": "user_data/.results"
+  },
+  "execute": {
     "hypothesis": "laplace",
     "hypothesis_params": {},
     "criteria": [
       {
         "criterion_code": "KS",
-        "parameters": []
+        "parameters": {}
       },
       {
         "criterion_code": "AD",
-        "parameters": []
+        "parameters": {}
       },
       {
         "criterion_code": "KUI",
-        "parameters": []
+        "parameters": {}
       },
       {
         "criterion_code": "GRW",
-        "parameters": []
+        "parameters": {}
       },
       {
         "criterion_code": "CVM",
-        "parameters": []
+        "parameters": {}
       },
       {
         "criterion_code": "WAT",
-        "parameters": []
+        "parameters": {}
       }
     ],
     "executor_type": "standard",
-    "generator_type": "standard",
-    "report_builder_type": "standard",
-    "report_mode": "with-chart",
-    "run_mode": "reuse",
     "monte_carlo_count": 1000,
     "parallel_workers": 1,
-    "sample_sizes": [
-      1000,
-      2000,
-      5000
-    ],
     "significance_levels": [
       0.05
     ]

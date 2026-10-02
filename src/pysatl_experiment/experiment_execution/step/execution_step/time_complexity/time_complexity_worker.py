@@ -11,6 +11,7 @@ from time import perf_counter
 from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 
 from pysatl_experiment.experiment_execution.step.execution_step.abstract_worker import IWorker, WorkerResult
+from pysatl_experiment.types import SampleBatch
 
 
 @dataclass
@@ -38,18 +39,18 @@ class TimeComplexityWorker(IWorker[TimeComplexityWorkerResult]):
     ----------
     statistics : AbstractGoodnessOfFitStatistic
         Statistic function to benchmark.
-    sample_data : list[list[float]]
+    sample_data : SampleBatch
         Input samples used for timing measurements.
 
     Attributes
     ----------
     statistics : AbstractGoodnessOfFitStatistic
         Statistic being benchmarked.
-    sample_data : list[list[float]]
+    sample_data : SampleBatch
         Input dataset for performance evaluation.
     """
 
-    def __init__(self, statistics: AbstractGoodnessOfFitStatistic, sample_data: list[list[float]]):
+    def __init__(self, statistics: AbstractGoodnessOfFitStatistic, sample_data: SampleBatch):
         """
         Initialize time complexity worker.
 
@@ -57,7 +58,7 @@ class TimeComplexityWorker(IWorker[TimeComplexityWorkerResult]):
         ----------
         statistics : AbstractGoodnessOfFitStatistic
             Statistic instance to benchmark.
-        sample_data : list[list[float]]
+        sample_data : SampleBatch
             Input datasets.
         """
         self.statistics = statistics
@@ -73,7 +74,8 @@ class TimeComplexityWorker(IWorker[TimeComplexityWorkerResult]):
             List of execution times (in seconds) for each sample.
         """
         results_times = []
-        for data in self.sample_data:
+        for sample in self.sample_data.samples:
+            data = sample.values
             start = perf_counter()
             _ = self.statistics.execute_statistic(rvs=data)
             end = perf_counter()

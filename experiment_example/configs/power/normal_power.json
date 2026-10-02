@@ -1,32 +1,40 @@
 {
-  "name": "2_evaluate_power",
-  "config": {
-    "experiment_type": "power",
-    "hypothesis": "normal",
-    "alternatives": [
+  "experiment_name": "2_evaluate_power",
+  "storage_connection": "sqlite:///pysatl.sqlite",
+  "experiment_type": "power",
+  "run_mode": "reuse",
+  "generate": {
+    "generator_type": "standard",
+    "parallel_workers": 1,
+    "distributions": [
       {
-        "generator_name": "normal",
-        "parameters": {
-          "mean": 0.5,
+        "distribution_type": "normal",
+        "distribution_params": {
+          "mean": 0,
           "var": 1
         }
       }
-    ],
+    ]
+  },
+  "report": {
+    "report_builder_type": "standard",
+    "report_mode": "with-chart",
+    "results_path": "user_data/.results"
+  },
+  "execute": {
+    "hypothesis": "normal",
+    "hypothesis_params": {},
     "criteria": [
       {
         "criterion_code": "KS",
-        "parameters": []
+        "parameters": {}
       },
       {
         "criterion_code": "AD",
-        "parameters": []
+        "parameters": {}
       }
     ],
     "executor_type": "standard",
-    "generator_type": "standard",
-    "report_builder_type": "standard",
-    "report_mode": "with-chart",
-    "run_mode": "reuse",
     "monte_carlo_count": 1000,
     "parallel_workers": 1,
     "sample_sizes": [
@@ -40,7 +48,6 @@
       0.01,
       0.05,
       0.1
-    ],
-    "storage_connection": "sqlite:///pysatl.sqlite"
+    ]
   }
 }

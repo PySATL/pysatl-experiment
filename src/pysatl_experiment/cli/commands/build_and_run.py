@@ -1,25 +1,25 @@
-"""CLI command for building and executing experiments."""
+"""CLI command using the configuration loading and validation pipeline."""
 
-from typing import Any, cast
-
-from click import BadParameter, argument, command, option
+from click import BadParameter, ClickException, argument, command, option
 from click_loglevel import LogLevel
 
-from pysatl_experiment.cli.validation.commands.build_and_run import validate_build_and_run
-from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
-from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-from pysatl_experiment.experiment_execution.experiment import Experiment
-from pysatl_experiment.experiment_execution.experiment_factory import (
-    CriticalValueExperimentFactory,
-    PowerExperimentFactory,
-    TimeComplexityExperimentFactory,
+from pysatl_experiment.configuration.config_loader import read_raw_experiment_config
+from pysatl_experiment.configuration.validation import (
+    ConfigReadError,
+    ConfigValidationError,
+    validate_experiment_config,
 )
-from pysatl_experiment.experiment_execution.experiment_steps import ExperimentSteps
+from pysatl_experiment.experiment_execution.build import build_experiment
+from pysatl_experiment.experiment_execution.dependencies import ExperimentDependencyError
+from pysatl_experiment.experiment_execution.registry import (
+    ExperimentPluginError,
+    ExperimentRegistryError,
+    create_default_experiment_registry,
+)
+from pysatl_experiment.experiment_execution.runner import Experiment
 from pysatl_experiment.loggers import setup_logging
-from pysatl_experiment.utils.experiment_utils import is_experiment_exists, read_experiment_data
-
-
-# TODO: refactor names!
+from pysatl_experiment.utils.experiment_utils import is_experiment_exists
+from pysatl_experiment.utils.files_utils import ensure_experiment_conf
 
 
 @command()
@@ -27,68 +27,21 @@ from pysatl_experiment.utils.experiment_utils import is_experiment_exists, read_
 @option("-l", "--log-level", type=LogLevel(), default="WARNING", help="Set logging level", show_default=True)
 @option("--log-file", help="Set logging file")
 def build_and_run(name: str, log_level: int, log_file: str) -> None:
-    """
-    Build and execute an experiment.
-
-    Parameters
-    ----------
-    name : str
-        Experiment name. The ``.json`` extension is optional.
-    log_level : int
-        Logging level.
-    log_file : str
-        Logging file name.
-
-    Raises
-    ------
-    click.BadParameter
-        If the experiment does not exist.
-    """
+    """Validate, prepare and plan a named experiment through its registry, then run its steps."""
     if not is_experiment_exists(name):
         raise BadParameter(f"Experiment with name {name} does not exist.")
-
-    experiment_configuration = read_experiment_data(name)
-
-    setup_logging(experiment_configuration, log_level, log_file)
-
-    experiment_data = validate_build_and_run(experiment_configuration)
-    experiment_steps = _build_experiment(experiment_data)
-
-    experiment = Experiment(experiment_steps)
-    experiment.run_experiment()
-
-
-def _build_experiment(experiment_data: ExperimentData) -> ExperimentSteps:
-    """
-    Create experiment steps from validated configuration.
-
-    Parameters
-    ----------
-    experiment_data : ExperimentData
-        Validated experiment configuration.
-
-    Returns
-    -------
-    ExperimentSteps
-        Experiment steps ready for execution.
-    """
-    experiment_type_to_factory = {
-        ExperimentType.POWER: PowerExperimentFactory,
-        ExperimentType.CRITICAL_VALUE: CriticalValueExperimentFactory,
-        ExperimentType.TIME_COMPLEXITY: TimeComplexityExperimentFactory,
-    }
-
-    experiment_type = experiment_data.config.experiment_type
-
-    experiment_factory = experiment_type_to_factory.get(experiment_type)
-
-    if experiment_factory is None:
-        raise BadParameter(f"Unsupported experiment type: {experiment_type}.")
-
-    validated_experiment_data = cast(
-        Any,
-        experiment_data,
-    )
-    return experiment_factory(
-        validated_experiment_data,
-    ).create_experiment_steps()
+    setup_logging({}, log_level, log_file)
+    try:
+        raw = read_raw_experiment_config(ensure_experiment_conf(name))
+        registry = create_default_experiment_registry()
+        config = validate_experiment_config(raw, registry=registry)
+        steps = build_experiment(config, registry=registry)
+    except (
+        ConfigReadError,
+        ConfigValidationError,
+        ExperimentDependencyError,
+        ExperimentPluginError,
+        ExperimentRegistryError,
+    ) as error:
+        raise ClickException(str(error)) from error
+    Experiment(steps).run_experiment()

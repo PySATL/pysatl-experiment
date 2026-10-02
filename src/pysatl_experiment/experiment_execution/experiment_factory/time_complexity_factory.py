@@ -6,47 +6,38 @@ constructing experiment steps required to evaluate computational
 complexity of statistical criteria.
 """
 
-import random
-
-from pysatl_criterion.persistence.models.base import IDataStorage
-from pysatl_criterion.utils.generator import get_available_generator
 from typing_extensions import override
 
-from pysatl_experiment.configuration.experiment_data.time_complexity import TimeComplexityExperimentData
-from pysatl_experiment.configuration.generation_config import GenerationConfig
-from pysatl_experiment.experiment_execution.experiment_factory.abstract_experiment_factory import (
-    AbstractExperimentFactory,
+from pysatl_experiment.configuration import TimeComplexityExperimentConfig
+from pysatl_experiment.experiment_execution.experiment_factory.standard_generation_experiment_factory import (
+    StandardGenerationExperimentFactory,
 )
-from pysatl_experiment.experiment_execution.step.execution_step.execution_step_data import HypothesisGeneratorData
+from pysatl_experiment.experiment_execution.step.execution_step.time_complexity.context import (
+    TimeComplexityExecutionContext,
+)
+from pysatl_experiment.experiment_execution.step.execution_step.time_complexity.task_spec import TimeComplexityTask
 from pysatl_experiment.experiment_execution.step.execution_step.time_complexity.time_complexity_execution_step import (
     TimeComplexityExecutionStep,
-    TimeComplexityStepData,
 )
-from pysatl_experiment.experiment_execution.step.generation_step.generation_step import (
-    GenerationData,
-    GenerationStep,
-    GenerationStepContext,
+from pysatl_experiment.experiment_execution.step.report_step import ReportBuildingStep, ReportStepContext
+from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_builder import (
+    TimeComplexityReportBuilder,
 )
-from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_step import (
-    TimeComplexityReportBuildingStep,
-)
-from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_step_context import (
-    TimeComplexityReportData,
-    TimeComplexityReportStepContext,
-)
-from pysatl_experiment.persistence.models.experiment import IExperimentStorage
-from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
-from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
-from pysatl_experiment.persistence.time_complexity_storage import AlchemyTimeComplexityStorage
+from pysatl_experiment.persistence.contracts.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.contracts.time_complexity import ITimeComplexityStorage
+from pysatl_experiment.persistence.sqlalchemy.time_complexity import AlchemyTimeComplexityStorage
+from pysatl_experiment.persistence.time_complexity_results import TimeComplexityResults
+from pysatl_experiment.sample_loading.sqlalchemy_source import SqlAlchemySampleSourceFactory
+from pysatl_experiment.utils.report_utils import get_report_template_dir
 
 
 class TimeComplexityExperimentFactory(
-    AbstractExperimentFactory[
-        TimeComplexityExperimentData,
-        GenerationStep,
+    StandardGenerationExperimentFactory[
+        TimeComplexityExperimentConfig,
         TimeComplexityExecutionStep,
-        TimeComplexityReportBuildingStep,
+        ReportBuildingStep,
         ITimeComplexityStorage,
+        TimeComplexityTask,
     ]
 ):
     """
@@ -57,186 +48,39 @@ class TimeComplexityExperimentFactory(
     sample sizes.
     """
 
-    def __init__(self, experiment_data: TimeComplexityExperimentData):
-        """
-        Initialize the factory.
-
-        Parameters
-        ----------
-        experiment_data : TimeComplexityExperimentData
-            Time complexity experiment configuration and execution
-            metadata.
-        """
-        super().__init__(experiment_data)
-
-    @override
-    def _create_generation_step(self, random_values_storage: IRandomValuesStorage) -> GenerationStep:
-        """
-        Create a sample generation step.
-
-        Determines which samples generated under the configured null
-        hypothesis are missing from storage and creates generation
-        tasks only for the required number of additional samples.
-
-        Parameters
-        ----------
-        random_values_storage : IRandomValuesStorage
-            Random values storage.
-
-        Returns
-        -------
-        GenerationStep
-            Configured generation step.
-        """
-        config: GenerationConfig = self.experiment_data.config
-
-        data_list = []
-        for sample_size in config.sample_sizes:
-            for distribution_config in config.distributions:
-                distribution_params = distribution_config.distribution_params
-                distribution_type = distribution_config.distribution_type
-
-                random_params = {k: v for k, v in distribution_params.items() if isinstance(v, list)}
-                const_params: dict[str, float] = {
-                    k: v for k, v in distribution_params.items() if isinstance(v, float | int)
-                }
-                if len(random_params) == 0:
-                    data_list.append(
-                        GenerationData(
-                            generator=get_available_generator(distribution_type, const_params),
-                            sample_size=sample_size,
-                            samples_count=config.samples_count,
-                        )
-                    )
-                else:
-                    for i in range(config.samples_count):
-                        random_const_params = {key: random.uniform(a, b) for key, (a, b) in random_params.items()}
-                        data_list.append(
-                            GenerationData(
-                                generator=get_available_generator(
-                                    distribution_type, const_params | random_const_params
-                                ),
-                                sample_size=sample_size,
-                                samples_count=1,
-                            )
-                        )
-
-        ctx = GenerationStepContext(
-            data_list=data_list,
-            experiment_name=self.experiment_data.name,
-            parallel_workers=config.parallel_workers,
-        )
-        return GenerationStep(ctx=ctx, random_values_storage=random_values_storage)
-
     @override
     def _create_execution_step(
         self,
         data_storage: IRandomValuesStorage,
         result_storage: ITimeComplexityStorage,
-        experiment_storage: IExperimentStorage,
+        step_config: list[TimeComplexityTask],
     ) -> TimeComplexityExecutionStep:
-        """
-        Create a time complexity execution step.
-
-        Determines which criterion and sample-size combinations do not
-        yet have stored timing measurements and prepares execution tasks
-        for those combinations.
-
-        Parameters
-        ----------
-        data_storage : IRandomValuesStorage
-            Random values storage.
-        result_storage : ITimeComplexityStorage
-            Time complexity result storage.
-
-        Returns
-        -------
-        TimeComplexityExecutionStep
-            Configured execution step.
-        """
-        config = self.experiment_data.config
-        experiment_id = self._get_experiment_id(experiment_storage)
-        monte_carlo_count = config.monte_carlo_count
-        criteria_config = self._get_criteria_config()
-
-        step_config: list[TimeComplexityStepData] = []
-        for criterion_config in criteria_config:
-            for sample_size in config.sample_sizes:
-                query = TimeComplexityQuery(
-                    experiment_name=self.experiment_data.experiment_name,
-                    criterion_code=criterion_config.criterion_code,
-                    criterion_parameters=criterion_config.criterion.parameters,
-                    sample_size=sample_size,
-                    samples_count=monte_carlo_count,
-                )
-                result = result_storage.get_data(query)
-                if result is None:
-                    statistics = criterion_config.statistics_class_object
-                    step_data = TimeComplexityStepData(
-                        statistics=statistics,
-                        sample_size=sample_size,
-                        criterion_parameters=criterion_config.criterion.parameters,
-                    )
-                    step_config.append(step_data)
-
-        hypothesis_generator_name, hypothesis_generator_parameters, _ = self._get_hypothesis_generator_metadata()
-        hypothesis_generator_data = HypothesisGeneratorData(
-            generator_name=hypothesis_generator_name,
-            parameters=hypothesis_generator_parameters,
-        )
-
-        execution_step = TimeComplexityExecutionStep(
-            experiment_id=experiment_id,
-            experiment_name=self.experiment_data.experiment_name,
-            hypothesis_generator_data=hypothesis_generator_data,
-            step_config=step_config,
-            monte_carlo_count=monte_carlo_count,
-            data_storage=data_storage,
+        """Assemble an execution step from the prepared tasks and dependencies."""
+        return TimeComplexityExecutionStep(
+            context=TimeComplexityExecutionContext(
+                experiment_name=self.config.experiment_name,
+                parallel_workers=self.config.execute.parallel_workers,
+                tasks=tuple(step_config),
+                write_batch_size=self.config.execute.write_batch_size,
+            ),
+            sample_source=SqlAlchemySampleSourceFactory(self.config.storage_connection),
             result_storage=result_storage,
-            storage_connection=config.storage_connection,
-            parallel_workers=config.parallel_workers,
         )
-
-        return execution_step
 
     @override
-    def _create_report_building_step(self, result_storage: ITimeComplexityStorage) -> TimeComplexityReportBuildingStep:
-        """
-        Create a report-building step.
-
-        Configures report generation using stored execution time
-        measurements and configured sample sizes.
-
-        Parameters
-        ----------
-        result_storage : ITimeComplexityStorage
-            Time complexity result storage.
-
-        Returns
-        -------
-        TimeComplexityReportBuildingStep
-            Configured report-building step.
-        """
-        data_list = [
-            TimeComplexityReportData(
-                sample_size=sample_size,
-            )
-            for sample_size in self.experiment_data.config.sample_sizes
-        ]
-
-        ctx = TimeComplexityReportStepContext(
-            report_name=self.experiment_data.experiment_name,
-            experiment_name=self.experiment_data.experiment_name,
-            data_list=data_list,
-            monte_carlo_count=self.experiment_data.config.monte_carlo_count,
-            results_path=self.experiment_data.results_path,
-            report_mode=self.experiment_data.config.report_mode,
+    def _create_report_building_step(self, result_storage: ITimeComplexityStorage) -> ReportBuildingStep:
+        """Assemble the shared report step with a selected source and concrete builder."""
+        context = ReportStepContext(
+            report_name=self.config.experiment_name,
+            template_path=get_report_template_dir() / "tc_template.html",
+            results_path=self.config.report.results_path,
+            report_mode=self.config.report.report_mode,
         )
-
-        return TimeComplexityReportBuildingStep(
-            ctx=ctx,
-            result_storage=result_storage,
+        results = TimeComplexityResults(
+            result_storage, self.config.experiment_name, self.config_adapter.result_queries()
         )
+        builder = TimeComplexityReportBuilder()
+        return ReportBuildingStep(context=context, result_storage=results, report_builder=builder)
 
     @override
     def _init_result_storage(self) -> AlchemyTimeComplexityStorage:
@@ -256,50 +100,7 @@ class TimeComplexityExperimentFactory(
         ValueError
             If the experiment type is unsupported.
         """
-        storage_connection = self.experiment_data.config.storage_connection
+        storage_connection = self.config.storage_connection
         time_complexity_storage = AlchemyTimeComplexityStorage(storage_connection)
         time_complexity_storage.init()
         return time_complexity_storage
-
-    @override
-    def _delete_sample_data(self, data_storage: IRandomValuesStorage) -> None:
-        """
-        Delete generated sample data.
-
-        Selects an appropriate cleanup strategy depending on the current
-        experiment type and removes stored random samples.
-
-        Parameters
-        ----------
-        data_storage : IRandomValuesStorage
-            Random values storage.
-        """
-        self._delete_hypothesis_sample_data(data_storage)
-
-    @override
-    def _delete_results_from_storage(self, result_storage: IDataStorage) -> None:
-        """
-        Delete experiment results from storage.
-
-        Creates storage queries corresponding to the current experiment
-        configuration and removes all matching result records.
-
-        Parameters
-        ----------
-        result_storage : IDataStorage
-            Experiment result storage.
-        """
-        statistics_codes = []
-        criteria_config = self._get_criteria_config()
-        for criterion_config in criteria_config:
-            statistics_codes.append(criterion_config.criterion_code)
-
-        queries = self._create_time_complexity_queries(
-            experiment_name=self.experiment_data.experiment_name,
-            statistics_codes=statistics_codes,
-            sample_sizes=self.experiment_data.config.sample_sizes,
-            monte_carlo_count=self.experiment_data.config.monte_carlo_count,
-        )
-
-        for query in queries:
-            result_storage.delete_data(query)

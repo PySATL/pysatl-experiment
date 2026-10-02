@@ -8,13 +8,9 @@ This is a test framework for goodness-of-fit statistic tests.
 
 ## Architecture
 
-Framework consists of 5 modules
-
-1. Core module - provides distributions, cdf, pdf etc.
-2. Persistence module - provides different stores to store data.
-3. Experiment module - provides pipeline for experiment and default components for pipeline.
-4. Expert system module - provides expert system for goodness-of-fit testing.
-5. Tests module - provides different goodness-of-fit tests.
+The package separates configuration, experiment orchestration, sample processing,
+storage contracts, and SQLAlchemy implementations. See [project structure and
+module responsibilities](docs/architecture.md).
 
 ### Experiment architecture
 
@@ -25,11 +21,16 @@ Framework consists of 5 modules
 ### Generators
 
 ### Storages
-***CriticalValueSqLiteStore*** - store critical values and target distributions in SQLite.  
-***CriticalValueFileStore*** - store critical values and target distributions in JSON and CSV.  
-***RvsSqLiteStore*** - store generated rvs in SQLite. 
-***RvsFileStore*** - store generated rvs in CSV.  
-***PowerResultSqLiteStore*** - store PowerCalculationWorker result in SQLite
+SQLAlchemy implementations live in `persistence/sqlalchemy`:
+
+- `AlchemyRandomValuesStorage` — experiment-owned samples.
+- `AlchemyExperimentStorage` — configuration signatures and run progress.
+- `AlchemyPowerStorage` — power estimates.
+- `AlchemyTimeComplexityStorage` — timing measurements.
+
+Storage contracts live in `persistence/contracts`; records and queries live in
+`persistence/models`. Critical value distributions use the implementation from
+`pysatl-criterion`.
 
 ### Workers
 

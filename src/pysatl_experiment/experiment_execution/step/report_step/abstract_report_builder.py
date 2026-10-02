@@ -6,9 +6,13 @@ builders responsible for generating report files.
 """
 
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
 
 
-class IReportBuilder(ABC):
+ContextT = TypeVar("ContextT")
+
+
+class IReportBuilder(ABC, Generic[ContextT]):
     """
     Abstract interface for report builders.
 
@@ -17,9 +21,9 @@ class IReportBuilder(ABC):
     """
 
     @abstractmethod
-    def build(self) -> None:
+    def build(self, context: ContextT) -> None:
         """
-        Generate and save the report.
+        Generate and save the report from prepared data and output settings.
 
         Notes
         -----

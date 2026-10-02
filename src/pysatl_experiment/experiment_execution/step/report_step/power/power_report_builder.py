@@ -11,18 +11,21 @@ Charts may optionally be included in the report.
 import tempfile
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.figure import Figure
 
-from pysatl_experiment.configuration.criteria_config import CriterionConfig
-from pysatl_experiment.configuration.models.alternative import Alternative
-from pysatl_experiment.configuration.models.report_mode import ReportMode
+from pysatl_experiment.experiment_execution.configured_criterion import ConfiguredCriterion
+from pysatl_experiment.experiment_execution.step.report_step.abstract_report_builder import IReportBuilder
+from pysatl_experiment.experiment_execution.step.report_step.report_context import ReportBuilderContext
+from pysatl_experiment.persistence.models.power import PowerModel
+from pysatl_experiment.types import Alternative, ReportMode
 from pysatl_experiment.utils.report_utils import convert_html_to_pdf, get_criterion_names
 
 
-class PowerReportBuilder:
+class PowerReportBuilder(IReportBuilder[ReportBuilderContext[PowerModel]]):
     """
     Builder for statistical power reports.
 
@@ -34,59 +37,29 @@ class PowerReportBuilder:
 
     def __init__(
         self,
-        report_name: str,
-        criteria_config: list[CriterionConfig],
+        criteria_config: list[ConfiguredCriterion],
         sample_sizes: list[int],
-        alternatives: list[Alternative],
         significance_levels: list[float],
-        power_result: dict[str, dict[tuple[str, float], dict[int, list[bool]]]],
-        results_path: Path,
-        with_chart: ReportMode,
-    ):
-        """
-        Initialize power report builder.
-
-        Parameters
-        ----------
-        report_name : str
-            Name of the generated report.
-        criteria_config : list[CriterionConfig]
-            Criteria included in the report.
-        sample_sizes : list[int]
-            Evaluated sample sizes.
-        alternatives : list[Alternative]
-            Alternative hypotheses.
-        significance_levels : list[float]
-            Significance levels.
-        power_result : dict
-            Computed power results.
-        results_path : Path
-            Output directory.
-        with_chart : ReportMode
-            Determines whether charts should be generated.
-        """
+        alternatives: list[Alternative],
+    ) -> None:
         self.criteria_config = criteria_config
-        self.sample_sizes = sample_sizes
-        self.alternatives = alternatives
         self.significance_levels = significance_levels
-        self.power_result = power_result
-        self.results_path = results_path
-        self.with_chart = with_chart
+        self.sample_sizes = sorted(sample_sizes)
+        self.alternatives = alternatives
 
-        template_dir = Path(__file__).parent / "report_templates"  # TODO: common constant?
-        self.pdf_path = self.results_path / f"{report_name}.pdf"
-
-        self.template_env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
-
-    def build(self) -> None:
-        """
-        Generate and save the power report.
-
-        Notes
-        -----
-        Temporary chart files are created during report generation
-        and deleted automatically afterward.
-        """
+    def build(self, context: ReportBuilderContext[PowerModel]) -> None:
+        """Prepare statistics from loaded results and render the selected template."""
+        self.report_name = context.report_name
+        self.results_path = context.results_path
+        self.with_chart = context.report_mode
+        self.pdf_path = context.results_path / f"{context.report_name}.pdf"
+        self.template_name = context.template_path.name
+        self.template_env = Environment(loader=FileSystemLoader(context.template_path.parent), autoescape=True)
+        self.power_result: dict[str, dict[tuple[str, float], dict[int, list[bool]]]] = {}
+        for result in context.data:
+            criterion_data = self.power_result.setdefault(result.criterion_code, {})
+            series = criterion_data.setdefault((result.alternative_code, result.significance_level), {})
+            series[result.sample_size] = result.results_criteria
         with tempfile.TemporaryDirectory(prefix="power_charts_") as temp_dir:
             charts_dir = Path(temp_dir) / "charts"
 
@@ -131,7 +104,8 @@ class PowerReportBuilder:
                     }
                 )
 
-        html = self.template_env.get_template("power_template.html").render(
+        html = self.template_env.get_template(self.template_name).render(
+            report_name=self.report_name,
             tables=tables,
             criteria=get_criterion_names(self.criteria_config),
             sample_sizes=self.sample_sizes,
@@ -202,7 +176,9 @@ class PowerReportBuilder:
 
         chart_path = charts_dir / f"{alternative.distribution_type}_{significance_level}.png"
 
-        plt.figure(figsize=(10, 6), dpi=100)
+        figure = Figure(figsize=(10, 6), dpi=100)
+        FigureCanvasAgg(figure)
+        axes = figure.subplots()
 
         for config in self.criteria_config:
             sizes = []
@@ -214,16 +190,15 @@ class PowerReportBuilder:
                     sizes.append(size)
                     powers.append(np.mean(results))
             if sizes:
-                plt.plot(sizes, powers, marker="o", linestyle="-", label=config.criterion_code)
+                axes.plot(sizes, powers, marker="o", linestyle="-", label=config.criterion_code)
 
-        plt.xlabel("Sample size")
-        plt.ylabel("Power")
-        plt.title(f"Power vs Sample Size — {alternative.distribution_type}, α={significance_level}")
-        plt.grid(True, linestyle="--", alpha=0.5)
-        plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize="small")
-        plt.tight_layout(rect=(0, 0, 0.85, 1))
+        axes.set_xlabel("Sample size")
+        axes.set_ylabel("Power")
+        axes.set_title(f"Power vs Sample Size — {alternative.distribution_type}, α={significance_level}")
+        axes.grid(True, linestyle="--", alpha=0.5)
+        axes.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize="small")
+        figure.tight_layout(rect=(0, 0, 0.85, 1))
 
-        plt.savefig(chart_path, format="png", dpi=100, bbox_inches="tight")
-        plt.close()
+        figure.savefig(chart_path, format="png", dpi=100, bbox_inches="tight")
 
         return str(chart_path.resolve().as_posix())
