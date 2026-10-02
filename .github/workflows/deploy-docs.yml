@@ -9,7 +9,7 @@ on:
       - main
     types: [ opened, synchronize, reopened, closed, review_requested ]
   release:
-    types: [published]
+    types: [ published ]
 
 
 # disable permissions for all of the available permissions
@@ -41,7 +41,7 @@ jobs:
 
       - name: Install dependencies with Poetry
         run: |
-          poetry install --with dev
+          poetry install --with docs
 
       - name: Fetch gh-pages branch
         run: |

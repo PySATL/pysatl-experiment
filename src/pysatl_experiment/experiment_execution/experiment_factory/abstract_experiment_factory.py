@@ -115,7 +115,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         G
             Configured generation step.
         """
-        pass
+        pass  # pragma: no cover — abstract method, implemented by subclasses
 
     @abstractmethod
     def _create_execution_step(
@@ -144,7 +144,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             Configured execution step.
 
         """
-        pass
+        pass  # pragma: no cover — abstract method, implemented by subclasses
 
     @abstractmethod
     def _create_report_building_step(self, result_storage: RS) -> R:
@@ -164,7 +164,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             Configured report-building step.
 
         """
-        pass
+        pass  # pragma: no cover — abstract method, implemented by subclasses
 
     @abstractmethod
     def _init_result_storage(self) -> RS:
@@ -184,7 +184,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         ValueError
             If the experiment type is unsupported.
         """
-        pass
+        pass  # pragma: no cover — abstract method, implemented by subclasses
 
     @abstractmethod
     def _delete_sample_data(self, data_storage: IRandomValuesStorage) -> None:
@@ -199,7 +199,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         data_storage : IRandomValuesStorage
             Random values storage.
         """
-        pass
+        pass  # pragma: no cover — abstract method, implemented by subclasses
 
     @abstractmethod
     def _delete_results_from_storage(self, result_storage: IDataStorage) -> None:
@@ -214,7 +214,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         result_storage : IDataStorage
             Experiment result storage.
         """
-        pass
+        pass  # pragma: no cover — abstract method, implemented by subclasses
 
     def _delete_hypothesis_sample_data(self, data_storage: IRandomValuesStorage) -> None:
         """

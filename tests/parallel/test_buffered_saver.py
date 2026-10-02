@@ -63,3 +63,45 @@ class TestBufferedSaver:
 
         assert all(len(batch) <= buffer_size for batch in saved_batches[:-1])
         assert len(saved_batches[-1]) <= buffer_size
+
+    # Checks that a buffer size below one is rejected at construction time.
+    @pytest.mark.parametrize("buffer_size", [0, -1, -100])
+    def test_invalid_buffer_size_is_rejected(self, buffer_size):
+        with pytest.raises(ValueError, match="Size of buffer must be at least 1."):
+            BufferedSaver(save_func=Mock(), buffer_size=buffer_size)
+
+    # Checks that a rejected construction leaves no saver instance behind.
+    def test_invalid_buffer_size_does_not_call_save_func(self):
+        with pytest.raises(ValueError, match="Size of buffer must be at least 1."):
+            BufferedSaver(save_func=Mock(), buffer_size=0)
+
+    # Checks that the constructor keeps the default buffer size of ten.
+    def test_default_buffer_size_is_ten(self):
+        saver = BufferedSaver(save_func=Mock())
+
+        assert saver.buffer_size == 10
+        assert saver.buffer == []
+
+    # Checks that a single item flushes immediately when the buffer size is one.
+    def test_buffer_size_one_flushes_on_every_add(self):
+        mock_save = Mock()
+        saver = BufferedSaver(save_func=mock_save, buffer_size=1)
+
+        saver.add("a")
+        saver.add("b")
+
+        assert mock_save.call_count == 2
+        assert [call[0][0] for call in mock_save.call_args_list] == [["a"], ["b"]]
+
+    # Checks that the flush hands over a copy that later mutation cannot alter.
+    def test_flush_passes_a_defensive_copy(self):
+        captured = []
+        saver = BufferedSaver(save_func=captured.append, buffer_size=3)
+
+        saver.add(1)
+        saver.add(2)
+        saver.add(3)
+
+        captured[0].append(99)
+
+        assert saver.buffer == []

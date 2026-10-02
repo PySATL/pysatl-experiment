@@ -24,6 +24,9 @@ from rich.console import Console
 from rich.text import Text
 
 
+# TODO: currently not used anywhere
+
+
 class FtRichHandler(Handler):
     """
     Custom Rich-based logging handler for colorized console output.

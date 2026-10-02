@@ -5,10 +5,12 @@ import sys
 import types
 from pathlib import Path
 from typing import Any
+from unittest.mock import MagicMock, call
 
 import pytest
 from numpy import float64
 from pysatl_criterion import DistributionType
+from pysatl_criterion.persistence.models.limit_distribution import LimitDistributionQuery
 from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
@@ -30,7 +32,7 @@ from pysatl_experiment.experiment_execution.step.report_step.critical_value.crit
     CriticalValueReportBuildingStep,
 )
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
-from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
 
 
 # Provide a stub for line_profiler to avoid optional dependency during imports
@@ -280,3 +282,63 @@ def test_report_building_step_sets_expected_fields(tmp_results_path: Path):
     assert rb_step.result_storage is limit_storage
     assert rb_step.results_path == data.results_path
     assert rb_step.with_chart == data.config.report_mode
+
+
+def test_init_result_storage_builds_and_inits_limit_distribution_storage(tmp_results_path: Path, monkeypatch):
+    data = build_cv_data(tmp_results_path)
+    factory = CriticalValueExperimentFactory(data)
+
+    created_storage = MagicMock()
+    storage_cls = MagicMock(return_value=created_storage)
+    monkeypatch.setattr(
+        "pysatl_experiment.experiment_execution.experiment_factory.critical_value_factory"
+        ".AlchemyLimitDistributionStorage",
+        storage_cls,
+    )
+
+    result = factory._init_result_storage()
+
+    storage_cls.assert_called_once_with(data.config.storage_connection)
+    created_storage.init.assert_called_once_with()
+    assert result is created_storage
+
+
+def test_delete_sample_data_deletes_hypothesis_samples(tmp_results_path: Path):
+    data = build_cv_data(tmp_results_path)
+    factory = DeterministicCVFactory(data, FakeGenerator())
+
+    data_storage = MagicMock(spec=IRandomValuesStorage)
+    factory._delete_sample_data(data_storage)
+
+    assert data_storage.delete_all_data.call_args_list == [
+        call(
+            RandomValuesAllQuery(
+                generator_code="FAKEGENERATOR",
+                sample_size=sample_size,
+                experiment_name=data.experiment_name,
+                generator_parameters=[1.0],
+            )
+        )
+        for sample_size in data.config.sample_sizes
+    ]
+    data_storage.delete_data.assert_not_called()
+
+
+def test_delete_results_from_storage_deletes_queries_for_all_sizes(tmp_results_path: Path):
+    data = build_cv_data(tmp_results_path)
+    factory = DeterministicCVFactory(data, FakeGenerator())
+
+    result_storage = MagicMock()
+    factory._delete_results_from_storage(result_storage)
+
+    assert result_storage.delete_data.call_args_list == [
+        call(
+            LimitDistributionQuery(
+                criterion_code=FakeStatistics.code(),
+                criterion_parameters=[],
+                sample_size=sample_size,
+                monte_carlo_count=data.config.monte_carlo_count,
+            )
+        )
+        for sample_size in data.config.sample_sizes
+    ]

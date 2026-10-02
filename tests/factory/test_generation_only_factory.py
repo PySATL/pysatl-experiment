@@ -3,6 +3,7 @@
 from dataclasses import replace
 from pathlib import Path
 
+import pytest
 from pysatl_criterion import DistributionType
 
 from pysatl_experiment.configuration.experiment_config.generation_only import GenerationOnlyExperimentConfig
@@ -16,6 +17,7 @@ from pysatl_experiment.experiment_execution.experiment_factory.generation_only_f
 )
 from pysatl_experiment.experiment_execution.step.generation_only import GenerationOnlyStep
 from pysatl_experiment.persistence.generated_samples_storage import GeneratedSamplesStorage
+from pysatl_experiment.persistence.models.generated_samples import GenerationRunModel
 
 
 def test_factory_creates_reusable_generation_pipeline(tmp_path: Path) -> None:
@@ -94,3 +96,42 @@ def test_factory_overwrite_clears_only_matching_generation_run(tmp_path: Path) -
         )
         == set()
     )
+
+
+def test_factory_rejects_overwrite_of_persisted_run_without_id(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = GenerationOnlyExperimentConfig(
+        experiment_type=ExperimentType.GENERATION_ONLY,
+        storage_connection=f"sqlite:///{tmp_path / 'samples.sqlite'}",
+        run_mode=RunMode.OVERWRITE,
+        distribution=DistributionType.NORMAL,
+        sample_sizes=[10],
+        samples_count=1,
+        parameter_config={"mean": {"type": "fixed", "value": 0.0}},
+        seed=42,
+    )
+    data = ExperimentData(
+        experiment_name="normal_training_samples",
+        config=config,
+        steps_done=StepsDone(False, False, False),
+        results_path=Path(),
+    )
+    detached_run = GenerationRunModel(
+        name="normal_training_samples",
+        distribution=DistributionType.NORMAL.value,
+        sample_sizes=[10],
+        samples_count=1,
+        parameter_config=config.parameter_config,
+        seed=42,
+        config_fingerprint="detached-run",
+        id=None,
+    )
+    monkeypatch.setattr(
+        "pysatl_experiment.persistence.generated_samples_storage.GeneratedSamplesStorage.get_run_by_fingerprint",
+        lambda self, fingerprint: detached_run,
+    )
+
+    with pytest.raises(RuntimeError, match="Persisted generation run has no id"):
+        GenerationOnlyExperimentFactory(data).create_experiment_steps()

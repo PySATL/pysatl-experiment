@@ -131,6 +131,36 @@ def test_mark_run_complete_updates_only_run_state(storage: GeneratedSamplesStora
     assert stored.is_complete is True
 
 
+def test_mark_run_complete_rejects_unknown_run(storage: GeneratedSamplesStorage) -> None:
+    run_id = storage.create_run(_run())
+    missing_run_id = run_id + 1000
+
+    with pytest.raises(ValueError, match=f"Generation run {missing_run_id} does not exist"):
+        storage.mark_run_complete(missing_run_id)
+
+    stored = storage.get_run(run_id)
+    assert stored is not None
+    assert stored.is_complete is False
+
+
+def test_insert_samples_ignores_empty_batch(storage: GeneratedSamplesStorage) -> None:
+    run_id = storage.create_run(_run())
+    storage.insert_sample(
+        GeneratedSampleModel(
+            generation_run_id=run_id,
+            sample_size=3,
+            sample_num=1,
+            parameters={"mean": 0.0, "var": 1.0},
+            sample_seed=123,
+            data=[1.0, 2.0, 3.0],
+        )
+    )
+
+    storage.insert_samples([])
+
+    assert storage.get_existing_sample_numbers(run_id, sample_size=3) == {1}
+
+
 def test_generation_run_status_storage_marks_only_generation_step(storage: GeneratedSamplesStorage) -> None:
     run_id = storage.create_run(_run())
     status_storage = GenerationRunStatusStorage(storage)
@@ -142,6 +172,8 @@ def test_generation_run_status_storage_marks_only_generation_step(storage: Gener
     assert stored.is_complete is True
     with pytest.raises(RuntimeError, match="do not have an execution step"):
         status_storage.set_execution_done(run_id)
+    with pytest.raises(RuntimeError, match="do not have a report-building step"):
+        status_storage.set_report_building_done(run_id)
 
 
 def test_delete_run_removes_only_its_generated_samples(storage: GeneratedSamplesStorage) -> None:

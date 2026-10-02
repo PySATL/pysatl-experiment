@@ -5,6 +5,7 @@ import sys
 import types
 from pathlib import Path
 from typing import Any, cast
+from unittest.mock import MagicMock, call
 
 import pytest
 from numpy import float64
@@ -30,8 +31,8 @@ from pysatl_experiment.experiment_execution.step.report_step.time_complexity.tim
     TimeComplexityReportBuildingStep,
 )
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
-from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
-from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
+from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage, TimeComplexityQuery
 
 
 # Provide a stub for line_profiler to avoid optional dependency during imports
@@ -284,3 +285,64 @@ def test_create_report_building_step_sets_expected_fields(tmp_results_path: Path
     assert rb_step.result_storage is tc_storage
     assert rb_step.results_path == data.results_path
     assert rb_step.with_chart == data.config.report_mode
+
+
+def test_init_result_storage_builds_and_inits_time_complexity_storage(tmp_results_path: Path, monkeypatch):
+    data = build_time_complexity_data(tmp_results_path)
+    factory = TimeComplexityExperimentFactory(data)
+
+    created_storage = MagicMock()
+    storage_cls = MagicMock(return_value=created_storage)
+    monkeypatch.setattr(
+        "pysatl_experiment.experiment_execution.experiment_factory.time_complexity_factory"
+        ".AlchemyTimeComplexityStorage",
+        storage_cls,
+    )
+
+    result = factory._init_result_storage()
+
+    storage_cls.assert_called_once_with(data.config.storage_connection)
+    created_storage.init.assert_called_once_with()
+    assert result is created_storage
+
+
+def test_delete_sample_data_deletes_hypothesis_samples(tmp_results_path: Path):
+    data = build_time_complexity_data(tmp_results_path)
+    factory = DeterministicTCFactory(data, FakeGenerator())
+
+    data_storage = MagicMock(spec=IRandomValuesStorage)
+    factory._delete_sample_data(data_storage)
+
+    assert data_storage.delete_all_data.call_args_list == [
+        call(
+            RandomValuesAllQuery(
+                generator_code="FAKEGENERATOR",
+                sample_size=sample_size,
+                experiment_name=data.experiment_name,
+                generator_parameters=[1.0],
+            )
+        )
+        for sample_size in data.config.sample_sizes
+    ]
+    data_storage.delete_data.assert_not_called()
+
+
+def test_delete_results_from_storage_deletes_queries_for_all_sizes(tmp_results_path: Path):
+    data = build_time_complexity_data(tmp_results_path)
+    factory = DeterministicTCFactory(data, FakeGenerator())
+
+    result_storage = MagicMock()
+    factory._delete_results_from_storage(result_storage)
+
+    assert result_storage.delete_data.call_args_list == [
+        call(
+            TimeComplexityQuery(
+                experiment_name=data.experiment_name,
+                criterion_code=FakeStatistics.code(),
+                criterion_parameters={},
+                sample_size=sample_size,
+                samples_count=data.config.monte_carlo_count,
+            )
+        )
+        for sample_size in data.config.sample_sizes
+    ]
