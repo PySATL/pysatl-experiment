@@ -365,6 +365,14 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
 
     config_dict = cast(Data, pydantic_config.model_dump(mode="json"))
 
+    # TODO: plumb `hypothesis_params` through the CLI. The Pydantic schema has
+    # no such field, so `model_dump()` never contains it and the legacy
+    # dataclass falls back to its default (empty dict). Distributions with
+    # mandatory parameters need explicit values: add `hypothesis_params` to
+    # `BaseExperimentConfig`, a `--hypothesis-params` option to `configure`,
+    # and pass it through here. Until then, only default-parameter
+    # distributions work end-to-end via the CLI.
+
     enum_mapping: dict[type[Any], Callable[[Any], Any]] = {
         ExperimentType: lambda x: ExperimentType(x),
         RunMode: lambda x: RunMode(x),
