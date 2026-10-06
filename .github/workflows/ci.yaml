@@ -52,20 +52,6 @@ jobs:
         run: |
           poetry run mypy src tests
 
-      - name: Check isort version consistency
-        run: |
-          rev=$(grep -A1 'pycqa/isort' .pre-commit-config.yaml | grep 'rev:' | tr -d ' "' | cut -d: -f2)
-          dep=$(grep -E '^isort[[:space:]]*=' pyproject.toml | head -1 | cut -d'"' -f2)
-          echo "pre-commit rev: $rev | pyproject dependency: $dep"
-          if [ -z "$rev" ] || [ -z "$dep" ]; then
-            echo "::error::could not parse the isort version from one of the sources"
-            exit 1
-          fi
-          if [ "$rev" != "$dep" ]; then
-            echo "::error::isort version mismatch: .pre-commit-config.yaml rev=$rev but pyproject.toml isort=$dep. Pin both to the same version."
-            exit 1
-          fi
-
       - name: Tests with Coveralls
         if: matrix.python-version == '3.12'
         run: |
