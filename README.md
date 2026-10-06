@@ -6,6 +6,12 @@
 
 This is a test framework for goodness-of-fit statistic tests.
 
+## Docker
+
+Run experiments without installing dependencies locally — see
+[docs/docker.md](docs/docker.md) for the full guide (quick start, data
+layout in `user_data/`, database, image tags).
+
 ## Architecture
 
 Framework consists of 5 modules
@@ -135,7 +141,7 @@ poetry run experiment configure NAME \
 -c 154 \
 -h normal \
 -expt critical_value \
--con sqlite:///pysatl.sqlite
+-con sqlite:///user_data/pysatl.sqlite
 ```
 
 3. Running the experiment.

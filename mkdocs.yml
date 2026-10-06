@@ -6,6 +6,7 @@ edit_uri: edit/main/docs/
 use_directory_urls: True
 nav:
     - Home: index.md
+    - Docker: docker.md
 theme:
   name: material
   logo: "images/logo.png"
