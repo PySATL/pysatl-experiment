@@ -9,6 +9,9 @@ from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_builder import (
     TimeComplexityReportBuilder,
 )
+from pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_statistic import (
+    TimeComplexityReportStatistic,
+)
 
 
 class TestTimeComplexityReportBuilder:
@@ -168,3 +171,28 @@ class TestTimeComplexityReportBuilder:
             mock_gen_html.assert_called_once()
             mock_convert.assert_called_once_with("<html>Content</html>", results_path / "test.pdf")
             assert (results_path / "time_complexity_report.pdf").parent.exists()
+
+    @patch("pysatl_experiment.experiment_execution.step.report_step.time_complexity.time_complexity_report_builder.plt")
+    def test_generate_chart_skips_criteria_without_measurements(self, mock_plt, results_path):
+        statistic = TimeComplexityReportStatistic(
+            {
+                "KS_": [(10, 0.001), (20, 0.002)],
+                "AD_": [],
+            }
+        )
+        builder = TimeComplexityReportBuilder(
+            report_name="test",
+            sample_sizes=[10, 20],
+            statistic=statistic,
+            results_path=results_path,
+            report_mode=ReportMode.WITH_CHART,
+        )
+
+        result = builder._generate_chart()
+
+        # Only the criterion that actually has measurements is plotted.
+        assert mock_plt.plot.call_count == 1
+        assert mock_plt.plot.call_args[1]["label"] == "KS_"
+        mock_plt.savefig.assert_called_once()
+        mock_plt.close.assert_called_once()
+        assert result.startswith("data:image/png;base64,")

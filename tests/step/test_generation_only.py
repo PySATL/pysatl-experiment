@@ -271,3 +271,56 @@ def test_generation_supports_selected_distributions(
     assert sample.parameters == parameters
     assert len(sample.data) == 10
     assert np.isfinite(sample.data).all()
+
+
+def test_generation_rejects_unsupported_parameter_rule(tmp_path: Path) -> None:
+    storage, run_id = _storage_and_run(tmp_path / "unsupported-rule.sqlite", count=1)
+
+    step = GenerationOnlyStep(
+        GenerationOnlyStepData(
+            generation_run_id=run_id,
+            distribution=DistributionType.NORMAL,
+            sample_sizes=[10],
+            samples_count=1,
+            parameter_config={"mean": {"type": "grid", "value": 1.0}},
+            seed=42,
+        ),
+        storage,
+    )
+
+    with pytest.raises(ValueError, match="Unsupported parameter rule: grid"):
+        step.run()
+
+    assert storage.get_existing_sample_numbers(run_id, sample_size=10) == set()
+
+
+def test_results_are_flushed_in_batches_of_one_hundred(tmp_path: Path) -> None:
+    class RecordingStorage:
+        def __init__(self) -> None:
+            self.batches: list[list[GeneratedSampleModel]] = []
+
+        def get_existing_sample_numbers(self, run_id: int, sample_size: int) -> set[int]:
+            return set()
+
+        def insert_samples(self, models: list[GeneratedSampleModel]) -> None:
+            self.batches.append(list(models))
+
+    storage, run_id = _storage_and_run(tmp_path / "batched.sqlite", count=150)
+    recording = RecordingStorage()
+    step = GenerationOnlyStep(
+        GenerationOnlyStepData(
+            generation_run_id=run_id,
+            distribution=DistributionType.NORMAL,
+            sample_sizes=[10],
+            samples_count=150,
+            parameter_config=PARAMETERS,
+            seed=42,
+        ),
+        recording,  # type: ignore[arg-type]
+    )
+
+    step.run()
+
+    assert [len(batch) for batch in recording.batches] == [100, 50]
+    assert [model.sample_num for model in recording.batches[0]] == list(range(1, 101))
+    assert [model.sample_num for model in recording.batches[1]] == list(range(101, 151))
