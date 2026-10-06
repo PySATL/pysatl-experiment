@@ -200,6 +200,6 @@
     "significance_levels": [
       0.05
     ],
-    "storage_connection": "sqlite:///pysatl.sqlite"
+    "storage_connection": "sqlite:///user_data/pysatl.sqlite"
   }
 }
