@@ -23,6 +23,8 @@ from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
 from pysatl_experiment.experiment_execution.experiment_factory import AbstractExperimentFactory
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
+from pysatl_experiment.persistence.models.experiment import IExperimentStorage
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 
 
 # Stub line_profiler to avoid optional dependency issues in imports
@@ -40,43 +42,82 @@ sys.modules.setdefault("line_profiler", _lp)
 # ----------------- Fakes / helpers -----------------
 
 
-class FakeRandomValuesStorage:
-    def __init__(self):
-        self.deleted_all_queries = []
+class FakeRandomValuesStorage(IRandomValuesStorage):
+    def __init__(self) -> None:
+        self.deleted_all_queries: list[Any] = []
 
-    def init(self):  # pragma: no cover
+    def init(self) -> None:  # pragma: no cover
         pass
 
-    def delete_all_data(self, query):
+    def get_data(self, query: Any) -> None:  # pragma: no cover
+        return None
+
+    def insert_data(self, model: Any) -> None:  # pragma: no cover
+        pass
+
+    def delete_data(self, query: Any) -> None:  # pragma: no cover
+        pass
+
+    def get_rvs_count(self, query: Any) -> int:  # pragma: no cover
+        return 0
+
+    def bulk_insert_data(self, models: Any) -> None:  # pragma: no cover
+        pass
+
+    def get_all_data(self, query: Any) -> Any:  # pragma: no cover
+        return None
+
+    def delete_all_data(self, query: Any) -> None:
         self.deleted_all_queries.append(query)
+
+    def get_count_data(self, query: Any) -> Any:  # pragma: no cover
+        return None
 
 
 class FakeResultStorage:
-    def __init__(self):
-        self.deleted_queries = []
+    def __init__(self) -> None:
+        self.deleted_queries: list[Any] = []
 
-    def init(self):  # pragma: no cover
+    def init(self) -> None:  # pragma: no cover
         pass
 
-    def delete_data(self, query):
+    def delete_data(self, query: Any) -> None:
         self.deleted_queries.append(query)
 
-    def get_data(self, query):  # pragma: no cover
+    def get_data(self, query: Any) -> None:  # pragma: no cover
         return None
 
-    def insert_data(self, data):  # pragma: no cover
+    def insert_data(self, data: Any) -> None:  # pragma: no cover
         pass
 
 
-class FakeExperimentStorage:
-    def __init__(self, experiment_id: int = 123):
+class FakeExperimentStorage(IExperimentStorage):
+    def __init__(self, experiment_id: int | None = 123) -> None:
         self._id = experiment_id
 
-    def init(self):  # pragma: no cover
+    def init(self) -> None:  # pragma: no cover
         pass
 
-    def get_experiment_id(self, query):
+    def get_data(self, query: Any) -> None:  # pragma: no cover
+        return None
+
+    def insert_data(self, data: Any) -> None:  # pragma: no cover
+        pass
+
+    def delete_data(self, query: Any) -> None:  # pragma: no cover
+        pass
+
+    def get_experiment_id(self, query: Any) -> int | None:
         return self._id
+
+    def set_generation_done(self, experiment_id: int) -> None:  # pragma: no cover
+        pass
+
+    def set_execution_done(self, experiment_id: int) -> None:  # pragma: no cover
+        pass
+
+    def set_report_building_done(self, experiment_id: int) -> None:  # pragma: no cover
+        pass
 
 
 class FakeStatistics(AbstractGoodnessOfFitStatistic):  # TODO!!!!!!!!!!!
@@ -148,6 +189,28 @@ class ConcreteFactory(
     def _delete_results_from_storage(self, result_storage):  # type: ignore[override]
         for sample_size in self.experiment_data.config.sample_sizes:
             result_storage.delete_data(sample_size)
+
+
+class MinimalConcreteFactory(AbstractExperimentFactory[Any, DummyStep, DummyStep, DummyStep, FakeResultStorage]):
+    """Factory subclass preserving default concrete methods for testing."""
+
+    def _create_generation_step(self, random_values_storage: Any) -> DummyStep:  # type: ignore[override]
+        return DummyStep("generation")
+
+    def _create_execution_step(self, data_storage: Any, result_storage: Any, experiment_storage: Any) -> DummyStep:  # type: ignore[override]
+        return DummyStep("execution")
+
+    def _create_report_building_step(self, result_storage: Any) -> DummyStep:  # type: ignore[override]
+        return DummyStep("report")
+
+    def _init_result_storage(self) -> FakeResultStorage:  # type: ignore[override]
+        return FakeResultStorage()
+
+    def _delete_sample_data(self, data_storage: Any) -> None:  # type: ignore[override]
+        pass
+
+    def _delete_results_from_storage(self, result_storage: Any) -> None:  # type: ignore[override]
+        pass
 
 
 def build_tc_data(
@@ -235,3 +298,332 @@ def test_create_experiment_steps_partial_steps_done(tmp_results_path: Path):
     assert steps.generation_step is None
     assert steps.execution_step is not None
     assert steps.report_building_step is not None
+
+
+# Checks that _init_data_storage instantiates and initializes AlchemyRandomValuesStorage.
+def test_init_data_storage(tmp_results_path: Path):
+    data = build_tc_data(tmp_results_path, RunMode.REUSE, is_gen_done=False, is_exec_done=False)
+    data.config.storage_connection = "sqlite://"
+    factory = MinimalConcreteFactory(experiment_data=data)
+    storage = factory._init_data_storage()
+    assert storage is not None
+    assert storage._initialized is True
+
+
+# Checks that _init_experiment_storage instantiates and initializes AlchemyExperimentStorage.
+def test_init_experiment_storage(tmp_results_path: Path):
+    data = build_tc_data(tmp_results_path, RunMode.REUSE, is_gen_done=False, is_exec_done=False)
+    data.config.storage_connection = "sqlite://"
+    factory = MinimalConcreteFactory(experiment_data=data)
+    storage = factory._init_experiment_storage()
+    assert storage is not None
+    assert storage._initialized is True
+
+
+# Checks that _get_experiment_id correctly resolves an existing time complexity experiment.
+def test_get_experiment_id_time_complexity(tmp_results_path: Path):
+    data = build_tc_data(tmp_results_path, RunMode.REUSE, is_gen_done=False, is_exec_done=False)
+    factory = MinimalConcreteFactory(experiment_data=data)
+    mock_storage = FakeExperimentStorage(experiment_id=42)
+    exp_id = factory._get_experiment_id(mock_storage)
+    assert exp_id == 42
+
+
+# Checks that _get_experiment_id correctly resolves an existing critical value experiment.
+def test_get_experiment_id_critical_value(tmp_results_path: Path):
+    from pysatl_experiment.configuration.experiment_config.critical_value_experiment_config import (
+        CriticalValueExperimentConfig,
+    )
+    from pysatl_experiment.configuration.experiment_data.critical_value import CriticalValueExperimentData
+
+    config = CriticalValueExperimentConfig(
+        experiment_type=ExperimentType.CRITICAL_VALUE,
+        storage_connection=os.fspath(tmp_results_path / "test.sqlite"),
+        run_mode=RunMode.REUSE,
+        hypothesis=DistributionType.EXPONENTIAL,
+        hypothesis_params={},
+        generator_type=StepType.STANDARD,
+        executor_type=StepType.STANDARD,
+        report_builder_type=StepType.STANDARD,
+        sample_sizes=[10, 20],
+        monte_carlo_count=5,
+        criteria=[Criterion(criterion_code="FAKE", parameters=[])],
+        report_mode=ReportMode.WITH_CHART,
+        parallel_workers=1,
+        significance_levels=[0.05, 0.01],
+    )
+    steps_done = type("StepsDone", (), {"is_generation_step_done": False, "is_execution_step_done": False})()
+    data = CriticalValueExperimentData(
+        experiment_name="cv_test",
+        config=config,
+        steps_done=steps_done,
+        results_path=tmp_results_path,
+    )
+    factory = MinimalConcreteFactory(experiment_data=data)
+    mock_storage = FakeExperimentStorage(experiment_id=55)
+    exp_id = factory._get_experiment_id(mock_storage)
+    assert exp_id == 55
+
+
+# Checks that _get_experiment_id correctly resolves an existing power experiment.
+def test_get_experiment_id_power(tmp_results_path: Path):
+    from pysatl_experiment.configuration.experiment_config.power_experiment_config import PowerExperimentConfig
+    from pysatl_experiment.configuration.experiment_data.power import PowerExperimentData
+    from pysatl_experiment.configuration.models.alternative import Alternative
+
+    config = PowerExperimentConfig(
+        experiment_type=ExperimentType.POWER,
+        storage_connection=os.fspath(tmp_results_path / "test.sqlite"),
+        run_mode=RunMode.REUSE,
+        hypothesis=DistributionType.EXPONENTIAL,
+        hypothesis_params={},
+        generator_type=StepType.STANDARD,
+        executor_type=StepType.STANDARD,
+        report_builder_type=StepType.STANDARD,
+        sample_sizes=[10, 20],
+        monte_carlo_count=5,
+        criteria=[Criterion(criterion_code="FAKE", parameters=[])],
+        report_mode=ReportMode.WITH_CHART,
+        parallel_workers=1,
+        significance_levels=[0.05],
+        alternatives=[Alternative(distribution_type=DistributionType.NORMAL, parameters={"loc": 0.0, "scale": 1.0})],
+    )
+    steps_done = type("StepsDone", (), {"is_generation_step_done": False, "is_execution_step_done": False})()
+    data = PowerExperimentData(
+        experiment_name="power_test",
+        config=config,
+        steps_done=steps_done,
+        results_path=tmp_results_path,
+    )
+    factory = MinimalConcreteFactory(experiment_data=data)
+    mock_storage = FakeExperimentStorage(experiment_id=77)
+    exp_id = factory._get_experiment_id(mock_storage)
+    assert exp_id == 77
+
+
+# Checks that _get_experiment_id raises ValueError when experiment is not found in storage.
+def test_get_experiment_id_not_found_raises(tmp_results_path: Path):
+    data = build_tc_data(tmp_results_path, RunMode.REUSE, is_gen_done=False, is_exec_done=False)
+    factory = MinimalConcreteFactory(experiment_data=data)
+    mock_storage = FakeExperimentStorage(experiment_id=None)
+    with pytest.raises(ValueError, match="Experiment not found"):
+        factory._get_experiment_id(mock_storage)
+
+
+# Checks that _get_criteria_config filters unknown criteria and maps known criteria to statistics subclasses.
+def test_get_criteria_config(tmp_results_path: Path):
+    data = build_tc_data(tmp_results_path, RunMode.REUSE, is_gen_done=False, is_exec_done=False)
+    data.config.hypothesis = DistributionType.NORMAL
+    data.config.criteria = [
+        Criterion(criterion_code="UNKNOWN_CRIT", parameters=[]),
+        Criterion(criterion_code="KS", parameters=[]),
+    ]
+    factory = MinimalConcreteFactory(experiment_data=data)
+    criteria_configs = factory._get_criteria_config()
+    assert len(criteria_configs) == 1
+    assert criteria_configs[0].criterion.criterion_code == "KS"
+    assert criteria_configs[0].criterion_code == "KS_NORMALITY_GOODNESS_OF_FIT"
+    assert criteria_configs[0].statistics_class_object is not None
+
+
+# Checks that _create_critical_value_queries produces product of statistics and sample sizes (2x3=6).
+def test_create_critical_value_queries():
+    statistics_codes = ["STAT_A", "STAT_B"]
+    sample_sizes = [10, 20, 50]
+    monte_carlo_count = 100
+    queries = AbstractExperimentFactory._create_critical_value_queries(
+        statistics_codes=statistics_codes,
+        sample_sizes=sample_sizes,
+        monte_carlo_count=monte_carlo_count,
+    )
+    assert len(queries) == 6
+    assert queries[0].criterion_code == "STAT_A"
+    assert queries[0].sample_size == 10
+    assert queries[0].monte_carlo_count == 100
+    assert queries[-1].criterion_code == "STAT_B"
+    assert queries[-1].sample_size == 50
+
+
+# Checks that _create_time_complexity_queries produces product of statistics and sample sizes (2x3=6).
+def test_create_time_complexity_queries():
+    statistics_codes = ["STAT_A", "STAT_B"]
+    sample_sizes = [10, 20, 50]
+    monte_carlo_count = 100
+    queries = AbstractExperimentFactory._create_time_complexity_queries(
+        experiment_name="tc_exp",
+        statistics_codes=statistics_codes,
+        sample_sizes=sample_sizes,
+        monte_carlo_count=monte_carlo_count,
+    )
+    assert len(queries) == 6
+    assert queries[0].experiment_name == "tc_exp"
+    assert queries[0].criterion_code == "STAT_A"
+    assert queries[0].sample_size == 10
+    assert queries[0].samples_count == 100
+    assert queries[-1].criterion_code == "STAT_B"
+    assert queries[-1].sample_size == 50
+
+
+# Checks that _create_power_queries produces product of stats, sample sizes, sig levels, and alts (2x2x2x2=16).
+def test_create_power_queries(tmp_results_path: Path):
+    from pysatl_experiment.configuration.experiment_config.power_experiment_config import PowerExperimentConfig
+    from pysatl_experiment.configuration.experiment_data.power import PowerExperimentData
+    from pysatl_experiment.configuration.models.alternative import Alternative
+
+    config = PowerExperimentConfig(
+        experiment_type=ExperimentType.POWER,
+        storage_connection=os.fspath(tmp_results_path / "test.sqlite"),
+        run_mode=RunMode.REUSE,
+        hypothesis=DistributionType.EXPONENTIAL,
+        hypothesis_params={},
+        generator_type=StepType.STANDARD,
+        executor_type=StepType.STANDARD,
+        report_builder_type=StepType.STANDARD,
+        sample_sizes=[10, 20],
+        monte_carlo_count=5,
+        criteria=[Criterion(criterion_code="FAKE", parameters=[])],
+        report_mode=ReportMode.WITH_CHART,
+        parallel_workers=1,
+        significance_levels=[0.05, 0.01],
+        alternatives=[
+            Alternative(distribution_type=DistributionType.NORMAL, parameters={"loc": 0.0}),
+            Alternative(distribution_type=DistributionType.WEIBULL, parameters={"c": 1.5}),
+        ],
+    )
+    steps_done = type("StepsDone", (), {"is_generation_step_done": False, "is_execution_step_done": False})()
+    data = PowerExperimentData(
+        experiment_name="power_exp",
+        config=config,
+        steps_done=steps_done,
+        results_path=tmp_results_path,
+    )
+    factory = MinimalConcreteFactory(experiment_data=data)
+    queries = factory._create_power_queries(
+        statistics_codes=["STAT_1", "STAT_2"],
+        sample_sizes=[10, 20],
+        monte_carlo_count=50,
+    )
+    assert len(queries) == 16
+    assert queries[0].criterion_code == "STAT_1"
+    assert queries[0].sample_size == 10
+    assert queries[0].significance_level == 0.05
+    assert queries[0].alternative_code == DistributionType.NORMAL
+    assert queries[0].monte_carlo_count == 50
+
+
+# Checks that _delete_hypothesis_sample_data issues delete_all_data for each sample size.
+def test_delete_hypothesis_sample_data(tmp_results_path: Path):
+    data = build_tc_data(tmp_results_path, RunMode.REUSE, is_gen_done=False, is_exec_done=False)
+    factory = MinimalConcreteFactory(experiment_data=data)
+    fake_storage = FakeRandomValuesStorage()
+    factory._get_hypothesis_generator_metadata = lambda: ("EXP_GEN", {"scale": 1.0}, None)  # type: ignore[method-assign]
+    factory._delete_hypothesis_sample_data(fake_storage)
+
+    assert len(fake_storage.deleted_all_queries) == len(data.config.sample_sizes)
+    assert fake_storage.deleted_all_queries[0].generator_code == "EXP_GEN"
+    assert fake_storage.deleted_all_queries[0].sample_size == data.config.sample_sizes[0]
+    assert fake_storage.deleted_all_queries[0].experiment_name == data.experiment_name
+
+
+# Checks that _delete_alternatives_sample_data issues delete_all_data for every alternative and sample size.
+def test_delete_alternatives_sample_data(tmp_results_path: Path):
+    from pysatl_experiment.configuration.experiment_config.power_experiment_config import PowerExperimentConfig
+    from pysatl_experiment.configuration.experiment_data.power import PowerExperimentData
+    from pysatl_experiment.configuration.models.alternative import Alternative
+
+    config = PowerExperimentConfig(
+        experiment_type=ExperimentType.POWER,
+        storage_connection=os.fspath(tmp_results_path / "test.sqlite"),
+        run_mode=RunMode.REUSE,
+        hypothesis=DistributionType.EXPONENTIAL,
+        hypothesis_params={},
+        generator_type=StepType.STANDARD,
+        executor_type=StepType.STANDARD,
+        report_builder_type=StepType.STANDARD,
+        sample_sizes=[10, 20],
+        monte_carlo_count=5,
+        criteria=[Criterion(criterion_code="FAKE", parameters=[])],
+        report_mode=ReportMode.WITH_CHART,
+        parallel_workers=1,
+        significance_levels=[0.05],
+        alternatives=[
+            Alternative(distribution_type=DistributionType.NORMAL, parameters={"loc": 0.0}),
+            Alternative(distribution_type=DistributionType.WEIBULL, parameters={"c": 1.5}),
+        ],
+    )
+    steps_done = type("StepsDone", (), {"is_generation_step_done": False, "is_execution_step_done": False})()
+    data = PowerExperimentData(
+        experiment_name="power_alt_del",
+        config=config,
+        steps_done=steps_done,
+        results_path=tmp_results_path,
+    )
+    factory = MinimalConcreteFactory(experiment_data=data)
+    fake_storage = FakeRandomValuesStorage()
+    factory._delete_alternatives_sample_data(fake_storage)
+
+    assert len(fake_storage.deleted_all_queries) == 4
+    assert fake_storage.deleted_all_queries[0].generator_code == DistributionType.NORMAL
+    assert fake_storage.deleted_all_queries[0].sample_size == 10
+    assert fake_storage.deleted_all_queries[1].generator_code == DistributionType.WEIBULL
+    assert fake_storage.deleted_all_queries[1].sample_size == 10
+
+
+# Checks that _get_generator_class_object successfully instantiates a known generator subclass.
+def test_get_generator_class_object_found(tmp_results_path: Path):
+    data = build_tc_data(tmp_results_path, RunMode.REUSE, is_gen_done=False, is_exec_done=False)
+    factory = MinimalConcreteFactory(experiment_data=data)
+
+    class CustomTestGenerator(AbstractRVSGenerator):
+        def __init__(self, param1: float = 1.0, param2: float = 2.0):
+            self.param1 = param1
+            self.param2 = param2
+
+        @classmethod
+        def code(cls) -> str:
+            return "CUSTOM"
+
+        @classmethod
+        def distribution_type(cls) -> DistributionType:
+            return DistributionType.NORMAL
+
+        def parameters(self) -> dict[str, float]:
+            return {"param1": self.param1, "param2": self.param2}
+
+        def generate(self, size: int):
+            return []
+
+    gen = factory._get_generator_class_object("CUSTOMTESTGENERATOR", {"param1": 10.0, "param2": 20.0})
+    assert isinstance(gen, CustomTestGenerator)
+    assert gen.param1 == 10.0
+    assert gen.param2 == 20.0
+
+
+# Checks that _get_generator_class_object raises ValueError for unknown generator names.
+def test_get_generator_class_object_unknown_raises(tmp_results_path: Path):
+    data = build_tc_data(tmp_results_path, RunMode.REUSE, is_gen_done=False, is_exec_done=False)
+    factory = MinimalConcreteFactory(experiment_data=data)
+    with pytest.raises(ValueError, match="Unknown generator: NONEXISTENT_GEN"):
+        factory._get_generator_class_object("NONEXISTENT_GEN", {})
+
+
+# Checks that _get_hypothesis_generator_metadata retrieves generator code, parameters, and instance.
+def test_get_hypothesis_generator_metadata(tmp_results_path: Path):
+    from unittest.mock import MagicMock, patch
+
+    data = build_tc_data(tmp_results_path, RunMode.REUSE, is_gen_done=False, is_exec_done=False)
+    factory = MinimalConcreteFactory(experiment_data=data)
+
+    mock_gen = MagicMock()
+    mock_gen.code.return_value = "EXP_GEN_CODE"
+    mock_gen.parameters.return_value = {"scale": 1.0}
+
+    with patch(
+        "pysatl_experiment.experiment_execution.experiment_factory.abstract_experiment_factory.get_available_generator",
+        return_value=mock_gen,
+    ) as mock_get_gen:
+        code, params, instance = factory._get_hypothesis_generator_metadata()
+        mock_get_gen.assert_called_once_with(data.config.hypothesis, None)
+        assert code == "EXP_GEN_CODE"
+        assert params == {"scale": 1.0}
+        assert instance is mock_gen

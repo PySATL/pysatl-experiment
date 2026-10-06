@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pysatl-experiment"
-version = "0.2.0"  # TODO: proper version!!
+version = "0.3.0"  # TODO: proper version!!
 description = "package for PySATL math statistics experiments"
 authors = ["PYSATL Team <pysatl@yahoo.com>"]
 license = "Apache License 2.0"
@@ -34,6 +34,22 @@ pydantic = "^2.11.9"
 psycopg2 = "2.9.12"
 pysatl-criterion = { version = "*", source = "testpypi", allow-prereleases = true }
 psutil = "^7.1.1"
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+markdown = "3.10.2"
+mkdocs = "1.6.1"
+mkdocs-material = "9.7.6"
+mdx-truly-sane-lists = "1.3"
+pymdown-extensions = "10.21.3"
+mike = "2.2.0"
+mkdocstrings = ">=0.30.0"
+mkdocstrings-python = "^2.0.3"
+
+[tool.poetry.group.dev]
+optional = true
 
 [tool.poetry.group.dev.dependencies]
 markdown = "3.10.2"
@@ -121,3 +137,9 @@ format-jinja = """
     {{ bump_version(base, -2) }}.dev{{ distance }}
 {%- endif -%}
 """
+
+[tool.coverage.run]
+source = ["pysatl_experiment"]
+omit = [
+  "*/__main__.py",
+]

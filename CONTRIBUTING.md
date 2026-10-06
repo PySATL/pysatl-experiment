@@ -12,6 +12,12 @@ Few pointers for contributions:
 
 ## Before sending the PR
 
+Install the development dependencies first (pytest, ruff, pre-commit, etc.):
+
+```bash
+poetry install --with dev
+```
+
 ### 1. Run unit tests
 
 All unit tests must pass. If a unit test is broken, change your code to 

@@ -201,3 +201,122 @@ def test_delete_all_data(storage: AlchemyRandomValuesStorage) -> None:
         )
     )
     assert all_data_after == []
+
+
+def test_insert_data_overwrites_existing_sample_in_place(storage: AlchemyRandomValuesStorage) -> None:
+    storage.insert_data(
+        RandomValuesModel(
+            generator_code="gen_F",
+            generator_parameters=[0.4],
+            sample_size=4,
+            experiment_name="1",
+            data=[1.0, 2.0],
+        )
+    )
+
+    storage.insert_data(
+        RandomValuesModel(
+            generator_code="gen_F",
+            generator_parameters=[0.4],
+            sample_size=4,
+            experiment_name="1",
+            data=[9.0, 8.0],
+        )
+    )
+
+    stored = storage.get_data(
+        RandomValuesQuery(
+            generator_code="gen_F",
+            sample_size=4,
+            experiment_name="1",
+        )
+    )
+    assert stored is not None
+    assert stored.data == [9.0, 8.0]
+    assert (
+        storage.get_rvs_count(
+            RandomValuesAllQuery(
+                generator_code="gen_F",
+                sample_size=4,
+                experiment_name="1",
+            )
+        )
+        == 1
+    )
+
+
+@pytest.mark.parametrize(
+    ("experiment_name", "expected"),
+    [
+        (7, 7),
+        ("7", 7),
+        ("run-a", 1),
+    ],
+)
+def test_sample_num_is_derived_from_explicit_numeric_or_text_names(
+    experiment_name: str | int,
+    expected: int,
+) -> None:
+    assert AlchemyRandomValuesStorage._sample_num_from_experiment_name(experiment_name) == expected
+
+
+def test_insert_data_defaults_sample_num_for_non_numeric_experiment_name(
+    storage: AlchemyRandomValuesStorage,
+) -> None:
+    storage.insert_data(
+        RandomValuesModel(
+            generator_code="gen_G",
+            generator_parameters=[0.5],
+            sample_size=3,
+            experiment_name="run-a",
+            data=[1.0],
+        )
+    )
+
+    stored = storage.get_data(
+        RandomValuesQuery(
+            generator_code="gen_G",
+            sample_size=3,
+            experiment_name="run-a",
+        )
+    )
+
+    assert stored is not None
+    assert stored.experiment_name == "run-a"
+    assert stored.data == [1.0]
+
+
+def test_queries_are_scoped_by_non_empty_experiment_name(storage: AlchemyRandomValuesStorage) -> None:
+    for index, experiment_name in enumerate(("run-a", "run-b"), start=1):
+        storage.insert_data(
+            RandomValuesModel(
+                generator_code="gen_H",
+                generator_parameters=[0.6],
+                sample_size=2,
+                experiment_name=experiment_name,
+                data=[float(index)],
+            )
+        )
+
+    def count(experiment_name: str) -> int:
+        return storage.get_rvs_count(
+            RandomValuesAllQuery(
+                generator_code="gen_H",
+                sample_size=2,
+                experiment_name=experiment_name,
+            )
+        )
+
+    assert count("run-a") == 1
+    assert count("run-b") == 1
+    assert count("run-c") == 0
+    assert count("") == 2
+    storage.delete_all_data(
+        RandomValuesAllQuery(
+            generator_code="gen_H",
+            sample_size=2,
+            experiment_name="run-a",
+        )
+    )
+    assert count("run-a") == 0
+    assert count("run-b") == 1

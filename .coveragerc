@@ -1,3 +1,4 @@
 [run]
 omit =
     tests/*
+    src/pysatl_experiment/__main__.py

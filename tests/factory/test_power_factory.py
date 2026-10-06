@@ -5,6 +5,7 @@ import sys
 import types
 from pathlib import Path
 from typing import Any
+from unittest.mock import MagicMock, call
 
 import pytest
 from pysatl_criterion import DistributionType
@@ -23,8 +24,8 @@ from pysatl_experiment.experiment_execution.step.execution_step.power.power_exec
 from pysatl_experiment.experiment_execution.step.generation_step.generation_step import GenerationStep
 from pysatl_experiment.experiment_execution.step.report_step.power.power_report_step import PowerReportBuildingStep
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
-from pysatl_experiment.persistence.models.power import IPowerStorage
-from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
+from pysatl_experiment.persistence.models.power import IPowerStorage, PowerQuery
+from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
 
 
 # Provide a stub for line_profiler to avoid optional dependency during imports
@@ -288,3 +289,70 @@ def test_report_building_step_sets_expected_fields(tmp_results_path: Path):
     assert rb_step.result_storage is power_storage
     assert rb_step.results_path == data.results_path
     assert rb_step.with_chart == data.config.report_mode
+
+
+def test_init_result_storage_builds_and_inits_power_storage(tmp_results_path: Path, monkeypatch):
+    data = build_power_data(tmp_results_path)
+    factory = PowerExperimentFactory(data)
+
+    created_storage = MagicMock()
+    storage_cls = MagicMock(return_value=created_storage)
+    monkeypatch.setattr(
+        "pysatl_experiment.experiment_execution.experiment_factory.power_factory.AlchemyPowerStorage",
+        storage_cls,
+    )
+
+    result = factory._init_result_storage()
+
+    storage_cls.assert_called_once_with(data.config.storage_connection)
+    created_storage.init.assert_called_once_with()
+    assert result is created_storage
+
+
+def test_delete_sample_data_deletes_alternative_samples(tmp_results_path: Path):
+    data = build_power_data(tmp_results_path)
+    factory = DeterministicPowerFactory(data, FakeGenerator())
+
+    data_storage = MagicMock(spec=IRandomValuesStorage)
+    factory._delete_sample_data(data_storage)
+
+    expected_queries = [
+        call(
+            RandomValuesAllQuery(
+                generator_code=alternative.distribution_type,
+                sample_size=sample_size,
+                experiment_name=data.experiment_name,
+                generator_parameters=alternative.parameters,
+            )
+        )
+        for sample_size in data.config.sample_sizes
+        for alternative in data.config.alternatives
+    ]
+    assert data_storage.delete_all_data.call_args_list == expected_queries
+    data_storage.delete_data.assert_not_called()
+
+
+def test_delete_results_from_storage_deletes_queries_for_all_combinations(tmp_results_path: Path):
+    data = build_power_data(tmp_results_path)
+    factory = DeterministicPowerFactory(data, FakeGenerator())
+
+    result_storage = MagicMock()
+    factory._delete_results_from_storage(result_storage)
+
+    expected_queries = [
+        call(
+            PowerQuery(
+                criterion_code=FakeStatistics.code(),
+                criterion_parameters=[],
+                sample_size=sample_size,
+                monte_carlo_count=data.config.monte_carlo_count,
+                significance_level=significance_level,
+                alternative_code=alternative.distribution_type,
+                alternative_parameters=alternative.parameters,
+            )
+        )
+        for sample_size in data.config.sample_sizes
+        for significance_level in data.config.significance_levels
+        for alternative in data.config.alternatives
+    ]
+    assert result_storage.delete_data.call_args_list == expected_queries

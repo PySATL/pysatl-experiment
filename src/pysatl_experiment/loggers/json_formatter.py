@@ -19,6 +19,7 @@ import logging
 
 
 # TODO: replace loosely typed dictionaries with a dedicated TypedDict schema for formatter configuration?
+# TODO: currently not used anywhere
 
 
 class JsonFormatter(logging.Formatter):
