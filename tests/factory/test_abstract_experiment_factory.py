@@ -575,7 +575,12 @@ def test_get_generator_class_object_found(tmp_results_path: Path):
     factory = MinimalConcreteFactory(experiment_data=data)
 
     class CustomTestGenerator(AbstractRVSGenerator):
-        def __init__(self, param1: float = 1.0, param2: float = 2.0):
+        def __init__(
+            self,
+            param1: float = 1.0,
+            param2: float = 2.0,
+            **_: Any,
+        ) -> None:
             self.param1 = param1
             self.param2 = param2
 
