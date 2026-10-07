@@ -53,12 +53,6 @@ class ExperimentConfig:
     storage_connection: str
     run_mode: RunMode
     hypothesis: DistributionType
-    # Default added so the CLI adapter (`_adapt_pydantic_to_dataclass`, which
-    # dumps the Pydantic schema 1-to-1 via dacite) works for experiments
-    # created through `create`/`configure`: the Pydantic layer has no
-    # `hypothesis_params` field yet. `kw_only` keeps positional construction
-    # order intact (all existing call sites use keywords).
-    hypothesis_params: dict[str, float] = field(default_factory=dict, kw_only=True)
     generator_type: StepType
     executor_type: StepType
     report_builder_type: StepType
@@ -67,3 +61,9 @@ class ExperimentConfig:
     criteria: list[Criterion]
     report_mode: ReportMode
     parallel_workers: int
+    # Default added so the CLI adapter (`_adapt_pydantic_to_dataclass`, which
+    # dumps the Pydantic schema 1-to-1 via dacite) works for experiments
+    # created through `create`/`configure`: the Pydantic layer has no
+    # `hypothesis_params` field yet. `kw_only` keeps positional construction
+    # order intact (all existing call sites use keywords).
+    hypothesis_params: dict[str, float] = field(default_factory=dict, kw_only=True)

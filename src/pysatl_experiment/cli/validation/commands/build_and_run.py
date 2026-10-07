@@ -17,7 +17,6 @@ from typing import Any, cast
 
 from click import ClickException
 from dacite import Config, from_dict
-from dacite.data import Data
 from pydantic import ValidationError
 from pysatl_criterion import DistributionType
 
@@ -363,15 +362,22 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
     if legacy_dataclass_type is None:
         raise TypeError(f"No match for Pydantic type: {type(pydantic_config)}")
 
-    config_dict = cast(Data, pydantic_config.model_dump(mode="json"))
+    config_dict = cast(dict, pydantic_config.model_dump(mode="json"))
 
-    # TODO: plumb `hypothesis_params` through the CLI. The Pydantic schema has
-    # no such field, so `model_dump()` never contains it and the legacy
-    # dataclass falls back to its default (empty dict). Distributions with
-    # mandatory parameters need explicit values: add `hypothesis_params` to
-    # `BaseExperimentConfig`, a `--hypothesis-params` option to `configure`,
-    # and pass it through here. Until then, only default-parameter
-    # distributions work end-to-end via the CLI.
+    # hypothesis_params: the Pydantic schema stores it as an optional field.
+    # The legacy dataclass defaults to an empty dict, so we only pass it to
+    # dacite when the user actually configured it. This keeps legacy fixes
+    # working without crashing the adapter.
+    hypothesis_params = config_dict.get("hypothesis_params")
+    if hypothesis_params is not None and not isinstance(hypothesis_params, dict):
+        raise ValidationError("hypothesis_params must be a dict[str, float] or null in the configuration schema.")
+
+    # The legacy dataclass is typed as dict[str, float], but the schema may
+    # store None when the user did not configure distribution parameters.
+    # Since dataclass defaults to an empty dict, drop None instead of
+    # passing it through.
+    if hypothesis_params is None:
+        config_dict.pop("hypothesis_params", None)
 
     enum_mapping: dict[type[Any], Callable[[Any], Any]] = {
         ExperimentType: lambda x: ExperimentType(x),
