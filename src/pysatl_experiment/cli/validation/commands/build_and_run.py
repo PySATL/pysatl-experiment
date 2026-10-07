@@ -351,7 +351,9 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
     Raises
     ------
     TypeError
-        If no matching legacy configuration class exists.
+        If no matching legacy configuration class exists, or if the schema
+        dump carries a ``hypothesis_params`` value that is neither a mapping
+        nor null.
     """
     legacy_dataclass_type = PYDANTIC_TO_LEGACY_MAP.get(
         cast(
@@ -370,7 +372,7 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
     # working without crashing the adapter.
     hypothesis_params = config_dict.get("hypothesis_params")
     if hypothesis_params is not None and not isinstance(hypothesis_params, dict):
-        raise ValidationError("hypothesis_params must be a dict[str, float] or null in the configuration schema.")
+        raise TypeError("hypothesis_params must be a dict[str, float] or null in the configuration schema.")
 
     # The legacy dataclass is typed as dict[str, float], but the schema may
     # store None when the user did not configure distribution parameters.

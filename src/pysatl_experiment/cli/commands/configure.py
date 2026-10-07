@@ -337,9 +337,9 @@ def _configure_hypothesis_params(experiment_config: dict, hypothesis_params: str
     if not isinstance(parsed, dict):
         raise BadParameter(f"--hypothesis-params must be a JSON object, got: {type(parsed).__name__}")
 
+    # json.loads always yields string keys for JSON objects, so only the
+    # parameter values need an explicit numeric check here.
     for key, value in parsed.items():
-        if not isinstance(key, str):
-            raise BadParameter("JSON keys in --hypothesis-params must be strings.")
         if not isinstance(value, (int, float)):
             raise BadParameter(f"Value for key {key!r} must be a number, got {type(value).__name__}.")
 
