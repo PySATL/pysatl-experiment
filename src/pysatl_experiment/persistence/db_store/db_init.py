@@ -6,10 +6,10 @@ from contextvars import ContextVar
 from typing import Any, Final
 
 from sqlalchemy import Engine, create_engine
-from sqlalchemy.exc import ArgumentError, NoSuchModuleError
+from sqlalchemy.exc import ArgumentError, IntegrityError, NoSuchModuleError, OperationalError, ProgrammingError
 from sqlalchemy.pool import StaticPool
 
-from pysatl_experiment.exceptions import OperationalException
+from pysatl_experiment.exceptions import OperationalException, StorageError
 
 
 logger = logging.getLogger(__name__)
@@ -56,6 +56,8 @@ def init_db(db_url: str) -> Engine:
     ------
     OperationalException
         If the database URL is invalid.
+    StorageError
+        If the database driver fails while creating the engine.
     """
     kwargs: dict[str, Any] = {}
 
@@ -81,4 +83,6 @@ def init_db(db_url: str) -> Engine:
         raise OperationalException(
             f"Given value for db_url: '{db_url}' is no valid database URL! (See {_SQL_DOCS_URL})"
         )
+    except (OperationalError, ProgrammingError, IntegrityError) as exc:
+        raise StorageError(f"Storage error while creating the engine: {exc}") from exc
     return engine

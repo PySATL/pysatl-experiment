@@ -17,5 +17,14 @@ class OperationalException(PySatlException):
     """
 
 
+class StorageError(OperationalException):
+    """
+    Storage error raised during database operations.
+
+    Wraps low-level database driver failures such as connection loss,
+    missing tables, or constraint violations.
+    """
+
+
 class ConfigurationError(OperationalException):
     """Configuration error. Usually caused by invalid configuration."""

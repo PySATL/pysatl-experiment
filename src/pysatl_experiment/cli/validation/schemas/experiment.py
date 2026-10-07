@@ -31,6 +31,10 @@ class BaseExperimentConfig(BaseModel):
     ----------
     hypothesis : DistributionType
         Statistical hypothesis being tested.
+    hypothesis_params : dict[str, float] | None
+        Parameters for the hypothesized distribution. `None` means "not
+        configured"; use an empty dict when the distribution has no
+        required parameters.
     run_mode : RunMode
         Execution mode of the experiment.
     report_mode : ReportMode
@@ -59,6 +63,7 @@ class BaseExperimentConfig(BaseModel):
     """
 
     hypothesis: DistributionType
+    hypothesis_params: dict[str, float] | None = None
     run_mode: RunMode
     report_mode: ReportMode
     generator_type: StepType

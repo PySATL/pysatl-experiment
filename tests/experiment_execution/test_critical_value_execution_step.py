@@ -182,4 +182,15 @@ def test_bulk_save_delegates_to_storage() -> None:
 
     step._bulk_save(models)
 
-    storage.bulk_insert_data.assert_called_once_with(models)
+    storage.insert_bulk_data.assert_called_once_with(models)
+
+
+# Checks that the legacy bulk_insert_data alias delegates to the same storage call.
+def test_bulk_insert_data_alias_delegates_to_storage() -> None:
+    storage = MagicMock()
+    step = make_step(result_storage=storage)
+    models = [MagicMock(), MagicMock()]
+
+    step.bulk_insert_data(models)
+
+    storage.insert_bulk_data.assert_called_once_with(models)

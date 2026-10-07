@@ -14,7 +14,7 @@ priority = "explicit"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-numpy = ">=1.25.1"
+numpy = ">=1.25.1,<2.5"
 scipy = ">=1.11.2"
 matplotlib = ">=3.8.0"
 tqdm = ">=4.66.2"

@@ -346,3 +346,16 @@ def test_check_if_experiment_finished_returns_steps(
     result = _check_if_experiment_finished(model)
 
     assert result == StepsDone(is_generation_done, is_execution_done, is_report_building_done)
+
+
+# Checks that a non-mapping hypothesis_params dump is rejected by the adapter.
+def test_adapt_pydantic_to_dataclass_rejects_non_dict_hypothesis_params() -> None:
+    validated = ExperimentInputSchema.model_validate(_raw_config())
+    config = validated.config
+    assert isinstance(config, PydanticTimeComplexityConfig)
+
+    # Simulate a schema dump whose hypothesis_params is neither a mapping nor null.
+    bad_dump = {**config.model_dump(mode="json"), "hypothesis_params": [2.0]}
+    with patch.object(type(config), "model_dump", return_value=bad_dump):
+        with pytest.raises(TypeError, match="hypothesis_params must be a dict"):
+            _adapt_pydantic_to_dataclass(config)

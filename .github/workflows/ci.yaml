@@ -7,7 +7,9 @@ on:
   pull_request:
     branches:
       - main
-    types: [ opened, synchronize, reopened, closed, review_requested ]
+    types: [opened, synchronize, reopened, closed, review_requested]
+  release:
+    types: [published]
 
 jobs:
   build-linux:
@@ -129,7 +131,7 @@ jobs:
     name: "Publish Python 🐍 distribution 📦 to PyPI"
     needs: [ build ]
     runs-on: ubuntu-22.04
-    if: (github.event_name == 'release')
+    if: ${{ github.event_name == 'release' && !github.event.release.prerelease }}
     environment:
       name: pypi
       url: https://pypi.org/p/pysatl-experiment
@@ -185,3 +187,88 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/
           skip-existing: true
+
+  docker-push:
+    name: "Docker 🐳 push edge/main tags"
+    needs: [ build-linux, pre-commit ]
+    runs-on: ubuntu-22.04
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          fetch-tags: true
+
+      # poetry.lock is gitignored, so the Docker build context has no lock file
+      # after checkout. Generate it before `docker build` (plain `poetry lock`
+      # keeps existing pins; the --no-update flag was removed in Poetry 2.x).
+      - name: Generate poetry.lock for the Docker build context
+        run: |
+          pip install poetry==2.1.1
+          poetry lock
+
+      - name: Resolve short commit SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/pysatl-experiment:edge
+            ${{ secrets.DOCKERHUB_USERNAME }}/pysatl-experiment:main-${{ env.SHORT_SHA }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  docker-push-release:
+    name: "Docker 🐳 push release tags"
+    needs: [ build-linux, pre-commit ]
+    runs-on: ubuntu-22.04
+    if: ${{ github.event_name == 'release' && !github.event.release.prerelease }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Generate poetry.lock for the Docker build context
+        run: |
+          pip install poetry==2.1.1
+          poetry lock
+
+      - name: Resolve release tag (vX.Y.Z)
+        run: echo "RELEASE_TAG=v${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/pysatl-experiment:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/pysatl-experiment:${{ env.RELEASE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
