@@ -182,4 +182,4 @@ def test_bulk_save_delegates_to_storage() -> None:
 
     step._bulk_save(models)
 
-    storage.bulk_insert_data.assert_called_once_with(models)
+    storage.insert_bulk_data.assert_called_once_with(models)
