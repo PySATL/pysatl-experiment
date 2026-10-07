@@ -570,11 +570,15 @@ def test_delete_alternatives_sample_data(tmp_results_path: Path):
 
 
 # Checks that _get_generator_class_object successfully instantiates a known generator subclass.
-def test_get_generator_class_object_found(tmp_results_path: Path):
+def test_get_generator_class_object_found(tmp_results_path: Path, monkeypatch: pytest.MonkeyPatch):
     data = build_tc_data(tmp_results_path, RunMode.REUSE, is_gen_done=False, is_exec_done=False)
     factory = MinimalConcreteFactory(experiment_data=data)
 
-    class CustomTestGenerator(AbstractRVSGenerator):
+    # Intentionally NOT a subclass of AbstractRVSGenerator: inheriting would leak this
+    # class into AbstractRVSGenerator.__subclasses__() for the rest of the session and
+    # hijack get_available_generator() selection in other tests. The registry is
+    # patched per-test instead.
+    class CustomTestGenerator:
         def __init__(
             self,
             param1: float = 1.0,
@@ -595,9 +599,10 @@ def test_get_generator_class_object_found(tmp_results_path: Path):
         def parameters(self) -> dict[str, float]:
             return {"param1": self.param1, "param2": self.param2}
 
-        def generate(self, size: int):
+        def generate(self, size: int, random_state=None):
             return []
 
+    monkeypatch.setattr(AbstractRVSGenerator, "__subclasses__", lambda: [CustomTestGenerator])
     gen = factory._get_generator_class_object("CUSTOMTESTGENERATOR", {"param1": 10.0, "param2": 20.0})
     assert isinstance(gen, CustomTestGenerator)
     assert gen.param1 == 10.0
