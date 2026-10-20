@@ -5,13 +5,20 @@ local install needed. You type commands in your host terminal, they execute
 inside the container — the same pattern as trader terminals (e.g. freqtrade):
 host terminal → `docker compose run --rm <service> <subcommand>`.
 
+> **Docker Hub namespace (temporary)** — there is no `pysatl` organization on
+> Docker Hub yet, so the image is temporarily published from a contributor's
+> personal account. Pull commands below use the placeholder
+> `<dockerhub-username>` — do **not** substitute a real account name.
+> Target name after org creation: `pysatl/pysatl-experiment` (see **issue #1**;
+> pull commands by `pysatl/…` appear only after that issue is closed).
+
 ## Quick start
 
 ```bash
-docker pull <namespace>/pysatl-experiment:latest
+docker pull <dockerhub-username>/pysatl-experiment:latest
 mkdir -p user_data
 docker run --rm -v "$PWD/user_data:/app/user_data" \
-  <namespace>/pysatl-experiment:latest --help
+  <dockerhub-username>/pysatl-experiment:latest --help
 ```
 
 With compose (service already mounts `./user_data`):
@@ -20,9 +27,6 @@ With compose (service already mounts `./user_data`):
 mkdir -p user_data
 docker compose run --rm pysatl-experiment --help
 ```
-
-Replace `<namespace>` with the Docker Hub namespace (personal account or the
-PySATL organization) once it is confirmed.
 
 ## Full scenario
 
@@ -39,6 +43,10 @@ docker compose run --rm pysatl-experiment configure my-exp \
 docker compose run --rm pysatl-experiment show my-exp
 docker compose run --rm pysatl-experiment build-and-run my-exp
 ```
+
+> The quick-start scenario above mirrors the local one in `README.md` and
+> `experiment_example/Quick-Start_Template.md`. If you prefer running natively
+> (without Docker), see the local quick start there.
 
 Notes:
 
@@ -102,7 +110,24 @@ mv training_samples.sqlite user_data/ # if present (generation_only runs)
 | `vX.Y.Z` | A specific release. |
 | `main-<sha>` | A specific commit (`edge` builds only). |
 
+## Deployment (TODO)
+
+- [ ] GitHub repository secrets: `DOCKERHUB_USERNAME` (your Docker Hub login)
+    and `DOCKERHUB_TOKEN` (access token with `Read & Write`, not the password).
+    Configure at GitHub → Settings → Secrets and variables → Actions.
+- [ ] CI pushes to `<dockerhub-username>/pysatl-experiment` on push to `main`
+    (`edge`) and on releases (`latest`).
+- [ ] Smoke check (temporary name):
+    `docker pull <dockerhub-username>/pysatl-experiment:latest` +
+    `docker run --rm <dockerhub-username>/pysatl-experiment:latest --help`.
+- [ ] **issue #1** — migrate publish target to `pysatl/pysatl-experiment`
+    after the `pysatl` organization exists on Docker Hub; then update
+    `docs/docker.md` and `README.md` (replace `<dockerhub-username>` with
+    `pysatl`). Until then, do **not** use `pysatl/…` in pull commands.
+
 ## Links
 
 - Design notes and diagrams: see the project docs and `pysatl_flow.png`.
 - CI deploys the image on push to `main` (`edge`) and on releases (`latest`).
+- Local quick start: `README.md` → 🚀 Quickstart; example configs:
+  `experiment_example/Quick-Start_Template.md`.
