@@ -1,10 +1,10 @@
-# Quick-Start Template: A 3-Step Experimental Workflow
+# Quick-Start Template: A 4-Step Experimental Workflow
 
 This directory provides a set of template configuration files for the `pysatl-experiment` framework. It is designed to serve as a starting point for conducting a robust, three-step comparison of statistical goodness-of-fit tests.
 
 The goal of this workflow is to help you make a data-driven decision about which statistical test is best suited for your specific hypothesis and potential alternatives.
 
-## The 3-Step Workflow
+## The 4-Step Workflow
 
 This template follows a complete research cycle. Each step answers a different question, and they are designed to be run in sequence.
 
@@ -57,7 +57,7 @@ poetry run experiment build-and-run 3_measure_time_complexity
 To use these files for your own experiment, copy this directory and modify the JSON configurations. The key is to ensure your parameters are consistent across the files.
 #### 1. Define Your Null Hypothesis
 
-In all three files (`1_...`, `2_...`, `3_...`), change the `hypothesis` object to match the distribution you want to test for.
+In all four files (`1_...`, `2_...`, `3_...`, `4_...`), change the `hypothesis` object to match the distribution you want to test for.
 
 **Example: Changing from `Normal` to `Weibull`**
 ```json
@@ -68,7 +68,7 @@ to
 
 #### 2. Choose the Criteria to Compare
 
-In all three files, update the `criteria` list to include the tests you want to evaluate.
+In all four files, update the `criteria` list to include the tests you want to evaluate.
 
 **Example: Comparing `Liliefos` and `Chi-Squared`**
 ```json
@@ -102,21 +102,26 @@ In `2_evaluate_power.json`, modify the `alternatives` array. This is the specifi
 
 You can also change `sample_sizes`, `monte_carlo_count`, and `significance_levels` to fit the scope of your research. Just ensure the `sample_sizes` and `significance_levels` are consistent between the `critical_value` and `power` experiments.
 
-By following this structured, three-step approach, you can systematically evaluate and select the best statistical test for any given problem.
+By following this structured, four-step approach, you can systematically evaluate and select the best statistical test for any given problem.
 
 ---
 
 ## How to Run This Example Workflow
 
-The `pysatl-experiment` command-line tool is designed to look for experiment configurations in a dedicated `.experiment` directory at the root of the project.
+The `pysatl-experiment` command-line tool is designed to look for experiment configurations in a dedicated `user_data/.experiments` directory at the root of the project.
 
 Therefore, to run these examples, you must first copy the JSON template files into that location.
 
 **1. Copy the configuration files:**
 
-Firstly you need create files
+First, create the experiments directory and copy the configuration files:
+
 ```bash
-poerty run experiment create <1_calculate_critical_values>
+mkdir -p user_data/.experiments
+copy experiment_example\configs\critical_values\normal_critical_values.json user_data\.experiments\1_calculate_critical_values.json
+copy experiment_example\configs\power\normal_power.json user_data\.experiments\2_evaluate_power.json
+copy experiment_example\configs\time_complexity\normal_time_complexity.json user_data\.experiments\3_measure_time_complexity.json
+copy experiment_example\configs\generation_only\normal_generation_only.json user_data\.experiments\4_generation_only.json
 ```
 
 **2. Run the experiments in sequence:**
