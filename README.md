@@ -3,7 +3,7 @@
 [![PySATL CI](https://github.com/PySATL/pysatl-experiment/actions/workflows/ci.yaml/badge.svg)](https://github.com/PySATL/pysatl-experiment/actions)
 [![Coverage Status](https://coveralls.io/repos/github/PySATL/pysatl-experiment/badge.svg?branch=main)](https://coveralls.io/github/PySATL/pysatl-experiment?branch=main)
 [![Documentation](https://readthedocs.org/projects/pysatl-experiment/badge)](https://pysatl-experiment.readthedocs.io)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 CLI framework for goodness-of-fit statistical experiments — critical values, power analysis, time complexity, and sample generation.
 
@@ -177,4 +177,4 @@ poetry run pre-commit run --all-files
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE).
+MIT License — see [LICENSE](LICENSE).
