@@ -172,6 +172,7 @@ poetry run pre-commit run --all-files
   `pysatl` organisation exists on Docker Hub (issue #1).
 - Full architecture page for ReadTheDocs (issue #103).
 - CLI and configuration reference pages (`docs/cli.md`, `docs/configuration.md`).
+- [ ] Switch license from MIT to Apache 2.0 (issue #license-switch) — align LICENSE file with badge once organization is established.
 
 ---
 
