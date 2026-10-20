@@ -26,19 +26,19 @@ make it pass. It means you have introduced a regression.
 #### Test the whole project
 
 ```bash
-pytest
+poetry run pytest --random-order tests
 ```
 
 #### Test only one file
 
 ```bash
-pytest tests/test_<file_name>.py
+poetry run pytest tests/test_<file_name>.py
 ```
 
 #### Test only one method from one file
 
 ```bash
-pytest tests/test_<file_name>.py::test_<method_name>
+poetry run pytest tests/test_<file_name>.py::test_<method_name>
 ```
 
 ### 2. Test if your code is PEP8 compliant
@@ -46,7 +46,13 @@ pytest tests/test_<file_name>.py::test_<method_name>
 #### Run Ruff
 
 ```bash
-ruff check .
+poetry run ruff check src/pysatl_experiment tests --output-format=github
+```
+
+#### Check formatting with Ruff
+
+```bash
+poetry run ruff format --check src/pysatl_experiment tests
 ```
 
 We receive a lot of code that fails the `ruff` checks.
