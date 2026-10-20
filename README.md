@@ -1,153 +1,180 @@
-﻿# statistic-test
+# PySATL Experiment
 
-[![Freqtrade CI](https://github.com/PySATL/pysatl-experiment/workflows/PySATL%20CI/badge.svg)](https://github.com/PySATL/pysatl-experiment/actions)
+[![PySATL CI](https://github.com/PySATL/pysatl-experiment/actions/workflows/ci.yaml/badge.svg)](https://github.com/PySATL/pysatl-experiment/actions)
 [![Coverage Status](https://coveralls.io/repos/github/PySATL/pysatl-experiment/badge.svg?branch=main)](https://coveralls.io/github/PySATL/pysatl-experiment?branch=main)
 [![Documentation](https://readthedocs.org/projects/pysatl-experiment/badge)](https://pysatl-experiment.readthedocs.io)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This is a test framework for goodness-of-fit statistic tests.
+CLI framework for goodness-of-fit statistical experiments — critical values, power analysis, time complexity, and sample generation.
 
-## Docker
+> **Project status** — active development on branch `feature/docker-compose-new`,
+> version 0.3.0.
 
-Run experiments without installing dependencies locally — see
-[docs/docker.md](docs/docker.md) for the full guide (quick start, data
-layout in `user_data/`, database, image tags).
+---
 
-## Architecture
+## ✨ Key features
 
-Framework consists of 5 modules
+- **CLI**: create, configure, show, and run experiments via `experiment <command>`.
+- **Four experiment types**: `critical_value`, `power`, `time_complexity`, `generation_only`.
+- **Parallel execution** with buffering and resume of interrupted runs.
+- **PDF report generation**, storage backends: SQLite, JSON, CSV.
+- **Criteria library**: goodness-of-fit criteria are provided by the external
+  `pysatl-criterion` package — see `experiment criteria` and the
+  [pysatl-criterion docs](https://pysatl-criterion.readthedocs.io).
 
-1. Core module - provides distributions, cdf, pdf etc.
-2. Persistence module - provides different stores to store data.
-3. Experiment module - provides pipeline for experiment and default components for pipeline.
-4. Expert system module - provides expert system for goodness-of-fit testing.
-5. Tests module - provides different goodness-of-fit tests.
+---
 
-### Experiment architecture
+## 📖 Requirements
 
-![PYSATL architecture](pysatl_flow.png "PYSATL architecture")
+| Item | Version |
+|------|---------|
+| Python | `>=3.10,<3.13` |
+| Dependencies | `numpy`, `scipy`, `matplotlib`, `pandas`, `SQLAlchemy`, `click`, `pydantic`, `pysatl-criterion` (TestPyPI), and others — see `pyproject.toml` |
+| Build tool | [Poetry](https://python-poetry.org/) (`>=2.0`) |
 
-## Default components
+---
 
-### Generators
+## 🛠 Installation
 
-### Storages
-***CriticalValueSqLiteStore*** - store critical values and target distributions in SQLite.  
-***CriticalValueFileStore*** - store critical values and target distributions in JSON and CSV.  
-***RvsSqLiteStore*** - store generated rvs in SQLite. 
-***RvsFileStore*** - store generated rvs in CSV.  
-***PowerResultSqLiteStore*** - store PowerCalculationWorker result in SQLite
-
-### Workers
-
-PowerCalculationWorker - calculates goodness-of-fit test power
-
-### Report builders
-
-### Weibull distribution
-
-| №  | Test                                           | Status |
-|----|------------------------------------------------|--------|
-| 1  | Anderson–Darling                               | Done   |
-| 2  | Chi square                                     | Done   |
-| 3  | Kolmogorov–Smirnov                             | Done   |
-| 4  | Lilliefors                                     | Done   |
-| 5  | Cramér–von Mises                               | Done   |
-| 6  | Min-Toshiyuki                                  | Done   |
-| 7  | Smith and Brian                                | Done   |
-| 8  | Ozturk and Korukoglu                           | Done   |
-| 9  | Tiku-Singh                                     | Done   |
-| 10 | Lockhart-O'Reilly-Stephens                     | Done   |
-| 11 | Mann-Scheuer-Fertig                            | Done   |
-| 12 | Evans, Johnson and Green                       | Done   |
-| 13 | Skewness                                       | Done   |
-| 14 | Kurtosis                                       | Done   |
-| 15 | Statistic based on stabilized probability plot | Done   |
-| 16 | Test statistic of Shapiro Wilk                 | Done   |
-
-### Exponential distribution
-
-| Test                 | Second Header |
-|----------------------|---------------|
-| Ozturk and Korukoglu | Content Cell  |
-| Jackson              | Content Cell  |
-| Lewis                | Content Cell  |
-
-### Normal distribution
-
-| Test               | Second Header |
-|--------------------|---------------|
-| Anderson–Darling   | Content Cell  |
-| Kolmogorov–Smirnov | Content Cell  |
-| Chi square         | Content Cell  |
-| skewness           | Content Cell  |
-| kurtosis           | Content Cell  |
-
-## Configuration
-
-### Configuration example
-
-### Installation
+### Option 1: Install from PyPI (recommended for users)
 
 ```bash
-git clone https://github.com/PySATL/pysatl-experiment
+pip install pysatl-experiment
+```
+
+> The package is published to TestPyPI. Use
+> `pip install --index-url https://test.pypi.org/simple/ pysatl-experiment`
+> if the PyPI release is not yet available.
+
+### Option 2: Clone and install via Poetry
+
+```bash
+git clone https://github.com/PySATL/pysatl-experiment.git
 cd pysatl-experiment
-git submodule add https://github.com/PySATL/pysatl-criterion.git pysatl_criterion
-git submodule update --init --recursive
+poetry install --with dev
 ```
 
-Install dependencies:
+### Option 3: Editable install (development)
 
 ```bash
-poetry install
+git clone https://github.com/PySATL/pysatl-experiment.git
+cd pysatl-experiment
+pip install -e .
 ```
 
-### Development
+---
 
-Install requirements
+## 🚀 Quickstart
+
+1. **Create** an experiment:
+
+   ```bash
+   poetry run experiment create my-exp
+   ```
+
+2. **Configure** it (must specify a database connection — SQLite inside the
+   mounted `user_data/` volume when using Docker):
+
+   ```bash
+   poetry run experiment configure my-exp \
+     -cr KS \
+     -l 0.05 -l 0.01 \
+     -s 100 -s 200 \
+     -c 1000 \
+     -h normal \
+     -expt critical_value \
+     -con sqlite:///user_data/pysatl.sqlite
+   ```
+
+3. **Show** the experiment configuration:
+
+   ```bash
+   poetry run experiment show my-exp
+   ```
+
+4. **Run** it:
+
+   ```bash
+   poetry run experiment build-and-run my-exp
+   ```
+
+All artifacts (configs, results, SQLite DBs, logs) land in `./user_data/` on
+the host — see [Where the data lives](#where-the-data-lives).
+
+> Docker is the recommended way to run without installing anything locally:
+> see [docs/docker.md](docs/docker.md) for the full Docker quick start,
+> image tags, and deployment notes.
+
+---
+
+## 📖 Documentation
+
+- [docs/docker.md](docs/docker.md) — running experiments in Docker
+  (quick start, data layout, database, image tags, deployment TODO).
+- [docs/index.md](docs/index.md) — project overview (ReadTheDocs).
+- [pysatl-criterion docs](https://pysatl-criterion.readthedocs.io) —
+  goodness-of-fit criteria library (external dependency).
+- [CONTRIBUTING.md](CONTRIBUTING.md) — how to contribute.
+
+---
+
+## 🛠 Development
+
+Install development dependencies:
 
 ```bash
 poetry install --with dev
 ```
 
-### Pre-commit
+Run the full test suite:
 
-Install pre-commit hooks:
+```bash
+pytest
+```
 
-```shell
+Run a single test file:
+
+```bash
+pytest tests/test_<file_name>.py
+```
+
+Run linting:
+
+```bash
+ruff check src/pysatl_experiment tests
+```
+
+Check formatting:
+
+```bash
+ruff format --check src/pysatl_experiment tests
+```
+
+Type checking:
+
+```bash
+poetry run mypy src tests
+```
+
+Install and run pre-commit hooks:
+
+```bash
 poetry run pre-commit install
+poetry run pre-commit run --all-files
 ```
 
-Starting manually:
+---
 
-```shell
-poetry run pre-commit run --all-files --color always --verbose --show-diff-on-failure
-```
+## 🗺 Roadmap
 
-### Quick Start example
+- Publish Docker images to Docker Hub (`<dockerhub-username>/pysatl-experiment`).
+- Migrate image publish target to `pysatl/pysatl-experiment` after the
+  `pysatl` organisation exists on Docker Hub (issue #1).
+- Full architecture page for ReadTheDocs (issue #103).
+- CLI and configuration reference pages (`docs/cli.md`, `docs/configuration.md`).
 
-1. Creating of experiment.
+---
 
-```shell
-poetry run experiment create NAME
-```
+## License
 
-2. Configure experiment.
-
-```shell
-poetry run experiment configure NAME \
--cr KS \
--l 0.05 -l 0.01 \
--s 23 \
--c 154 \
--h normal \
--expt critical_value \
--con sqlite:///user_data/pysatl.sqlite
-```
-
-3. Running the experiment.
-
-```shell
-poetry run experiment build-and-run NAME 
-```
-
-Parameters experiment-type, hypothesis, sample-sizes, monte-carlo-count, significance-levels, storage-connection required to set values.
+Apache License 2.0 — see [LICENSE](LICENSE).

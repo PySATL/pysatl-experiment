@@ -169,3 +169,5 @@ local_tests.py
 requirements.txt
 requirements-dev.txt
 .codeassistant
+# Nested repo artifact (accidentally created during editing)
+pysatl-experiment/
