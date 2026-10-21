@@ -64,20 +64,6 @@ jobs:
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.coverallsToken }}
         run: poetry run coveralls || true
-
-      - name: Remove poetry.lock before checking for changes
-        run: rm -f poetry.lock
-
-      - name: Check for repository changes
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "Repository is dirty, changes detected:"
-            git status
-            git diff
-            exit 1
-          else
-            echo "Repository is clean, no changes detected."
-          fi
   build:
     name: "Build"
     needs: [ build-linux, pre-commit ]

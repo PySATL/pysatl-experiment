@@ -66,3 +66,11 @@ repos:
         (?x)^(
             poetry\.lock
         )$
+  - repo: local
+    hooks:
+      - id: check-poetry-lock
+        name: Check poetry.lock consistency
+        entry: poetry lock --check
+        language: system
+        always_run: true
+        stages: [push]

@@ -137,3 +137,33 @@ Contributors may be given commit privileges. Preference will be given to those w
 Being a Committer does not grant write permission on `main` or `release` for security reasons.
 
 After being Committer for some time, a Committer may be named Core Committer and given full repository access.
+# Dependency Management Guidelines
+
+When updating dependencies:
+
+1. **Update `pyproject.toml`** first with the new version requirements
+2. **Run `poetry update <package>`** to resolve and update the dependency
+3. **Run `poetry lock`** to regenerate the lock file with updated pins
+4. **Check `poetry lock --diff`** to review what changed
+5. **Commit `poetry.lock`** in a separate commit from code changes
+   - Commit message format: `deps: update <package> to <version>`
+   - This keeps history clean and makes code reviews easier
+6. **Run full test suite** to ensure nothing broke:
+   ```bash
+   poetry run pytest --random-order tests
+   ```
+7. **If tests pass**, push your changes
+8. **If tests fail**, revert `poetry.lock` changes and adjust version requirements
+
+### Why we keep `poetry.lock` in the repository
+
+- **Reproducibility**: Everyone (local, CI, production) uses exactly the same dependencies
+- **Predictability**: `poetry install` is fast and deterministic
+- **Audit trail**: `git log --oneline -- poetry.lock` shows exactly when and why dependencies changed
+- **CI stability**: No surprises when deploying - the lock file ensures exact same environment
+
+### Common scenarios
+
+- **Adding a new dependency**: `poetry add <package> --group dev` then `poetry lock`
+- **Minor version bump**: `poetry update <package>` then `poetry lock`
+- **Major version change**: Review changes carefully, run full test suite, discuss in team if breaking changes are expected
