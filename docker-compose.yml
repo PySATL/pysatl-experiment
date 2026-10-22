@@ -1,0 +1,25 @@
+services:
+  pysatl-experiment:
+    image: pysatl-experiment:latest
+    build:
+      context: .
+    container_name: pysatl-experiment
+    # Pin the workdir so CWD-relative paths (USER_DATA_DIR="user_data" and
+    # sqlite:///user_data/...) always resolve to /app, even if someone
+    # overrides the workdir with `docker run -w`. Must stay in sync with
+    # `WORKDIR /app` in the Dockerfile.
+    working_dir: /app
+    volumes:
+      # Persistent user data: experiment configs (.experiments), results and
+      # reports (.results). The container workdir is /app and USER_DATA_DIR is
+      # relative ("user_data"), so the host directory maps to /app/user_data.
+      - ./user_data:/app/user_data
+      # Optional: example configs from the host (they are excluded from the
+      # image via .dockerignore):
+      # - ./experiment_example:/app/experiment_example:ro
+    # The Dockerfile ENTRYPOINT is ["experiment"], so a `command` here would
+    # only add subcommand arguments (do not repeat "experiment").
+    # The default CMD prints CLI help. Workflow example:
+    #   docker compose run --rm pysatl-experiment create my-experiment
+    #   (edit ./user_data/.experiments/my-experiment.json on the host)
+    #   docker compose run --rm pysatl-experiment build-and-run my-experiment

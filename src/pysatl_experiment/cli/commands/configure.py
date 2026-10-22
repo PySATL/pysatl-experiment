@@ -234,6 +234,13 @@ def _configure_significance_levels(experiment_config: dict, levels: tuple[float,
 )
 @option("-et", "--executor-type", type=Choice(StepType.list()), help="Executor type. Example: standard")
 @option("-cr", "--criteria", multiple=True, help="Criterion codes. Example: KS")
+@option(
+    "-hp",
+    "--hypothesis-params",
+    type=str,
+    default=None,
+    help="Hypothesis distribution parameters as JSON. Example: '{\"beta\": 2.0}'",
+)
 @option("-w", "--workers", type=IntRange(min=1), help="Parallel workers. Example: 2")
 def configure(
     name: str,
@@ -246,6 +253,7 @@ def configure(
     report_builder_type: str,
     count: int,
     hypothesis: str,
+    hypothesis_params: str | None,
     generator_type: str,
     experiment_type: str,
     executor_type: str,
@@ -277,6 +285,8 @@ def configure(
         Monte Carlo iterations count.
     hypothesis : str
         Hypothesis type.
+    hypothesis_params : str | None
+        JSON object with distribution parameters. Example: '{"beta": 2.0}'.
     generator_type : str
         Generator implementation type.
     experiment_type : str
@@ -303,6 +313,7 @@ def configure(
     _configure_report_builder_type(experiment_config, report_builder_type)
     _configure_monte_carlo_count(experiment_config, count)
     _configure_hypothesis(experiment_config, hypothesis)
+    _configure_hypothesis_params(experiment_config, hypothesis_params)
     _configure_generator_type(experiment_config, generator_type)
     _configure_executor_type(experiment_config, executor_type)
     _configure_criteria(experiment_config, criteria)
@@ -312,3 +323,24 @@ def configure(
     save_experiment_config(name, experiment_config)
 
     echo(f"Experiment {name} successfully configured! Configuration: \n {json.dumps(experiment_config, indent=4)}")
+
+
+def _configure_hypothesis_params(experiment_config: dict, hypothesis_params: str | None):
+    if hypothesis_params is None:
+        return
+
+    try:
+        parsed = json.loads(hypothesis_params)
+    except json.JSONDecodeError as error:
+        raise BadParameter(f"--hypothesis-params must be a JSON object, got: {hypothesis_params!r}") from error
+
+    if not isinstance(parsed, dict):
+        raise BadParameter(f"--hypothesis-params must be a JSON object, got: {type(parsed).__name__}")
+
+    # json.loads always yields string keys for JSON objects, so only the
+    # parameter values need an explicit numeric check here.
+    for key, value in parsed.items():
+        if not isinstance(value, (int, float)):
+            raise BadParameter(f"Value for key {key!r} must be a number, got {type(value).__name__}.")
+
+    experiment_config["hypothesis_params"] = parsed

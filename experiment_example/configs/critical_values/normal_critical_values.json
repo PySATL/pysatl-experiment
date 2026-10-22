@@ -1,6 +1,6 @@
 {
   "name": "normal_critical_values",
-  "storage_connection": "sqlite:///pysatl.sqlite",
+  "storage_connection": "sqlite:///user_data/pysatl.sqlite",
   "experiment_type": "critical_value",
   "config": {
     "hypothesis": "normal",

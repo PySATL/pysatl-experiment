@@ -1,7 +1,7 @@
 {
   "name": "laplace_time_complexity",
   "experiment_type": "time_complexity",
-  "storage_connection": "sqlite:///pysatl.sqlite",
+  "storage_connection": "sqlite:///user_data/pysatl.sqlite",
   "config": {
     "hypothesis": "laplace",
     "hypothesis_params": {},

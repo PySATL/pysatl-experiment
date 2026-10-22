@@ -22,14 +22,17 @@ class AbstractDbStore(IStore, ABC):
 
     session: ClassVar[SessionType]
 
-    def __init__(self, db_url="sqlite:///pysatl.sqlite"):
+    def __init__(self, db_url="sqlite:///user_data/pysatl.sqlite"):
         """
         Initialize store configuration.
 
         Parameters
         ----------
-        db_url : str, default="sqlite:///pysatl.sqlite"
-            SQLAlchemy database connection URL.
+        db_url : str, default="sqlite:///user_data/pysatl.sqlite"
+            SQLAlchemy database connection URL. The default SQLite path is
+            relative to the application workdir (``/app`` in Docker), so the
+            database file lands in the mounted ``user_data`` volume and
+            survives container removal.
         """
         super().__init__()
         self.db_url = db_url

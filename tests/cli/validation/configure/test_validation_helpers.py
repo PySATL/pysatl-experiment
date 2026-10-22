@@ -6,7 +6,7 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
-from click import ClickException
+from click import BadParameter, ClickException
 from pydantic import ValidationError
 from pysatl_criterion.generator.generators import NormalGenerator
 
@@ -14,6 +14,7 @@ from pysatl_experiment.cli.commands.configure import (
     _configure_alternatives,
     _configure_experiment_type,
     _configure_hypothesis,
+    _configure_hypothesis_params,
     _configure_monte_carlo_count,
     _configure_sample_sizes,
     _configure_significance_levels,
@@ -30,6 +31,7 @@ from pysatl_experiment.cli.commands.configure import (
         pytest.param(_configure_experiment_type, "experiment_type", id="experiment-type"),
         pytest.param(_configure_monte_carlo_count, "monte_carlo_count", id="monte-carlo-count"),
         pytest.param(_configure_hypothesis, "hypothesis", id="hypothesis"),
+        pytest.param(_configure_hypothesis_params, "hypothesis_params", id="hypothesis-params"),
         pytest.param(_configure_significance_levels, "significance_levels", id="significance-levels"),
         pytest.param(_configure_alternatives, "alternatives", id="alternatives"),
         pytest.param(_configure_workers, "parallel_workers", id="workers"),
@@ -203,3 +205,42 @@ def test_alternatives_are_stored_when_valid(stub_registry: MagicMock) -> None:
     _configure_alternatives(experiment_config, ("NormalG 1.0 0.5",))
 
     assert experiment_config["alternatives"] == [{"generator_name": "NORMALGENERATOR", "parameters": [1.0, 0.5]}]
+
+
+# Checks that a valid JSON object is parsed and stored as hypothesis params.
+def test_hypothesis_params_are_stored_as_parsed_object() -> None:
+    experiment_config: dict[str, Any] = {}
+
+    _configure_hypothesis_params(experiment_config, '{"beta": 2.0, "scale": 3}')
+
+    assert experiment_config["hypothesis_params"] == {"beta": 2.0, "scale": 3}
+
+
+# Checks that malformed JSON input is rejected as a bad parameter.
+def test_hypothesis_params_rejects_invalid_json() -> None:
+    experiment_config: dict[str, Any] = {}
+
+    with pytest.raises(BadParameter, match="must be a JSON object"):
+        _configure_hypothesis_params(experiment_config, "{not json")
+
+    assert "hypothesis_params" not in experiment_config
+
+
+# Checks that valid JSON which is not an object is rejected.
+def test_hypothesis_params_rejects_non_object_json() -> None:
+    experiment_config: dict[str, Any] = {}
+
+    with pytest.raises(BadParameter, match="must be a JSON object, got: list"):
+        _configure_hypothesis_params(experiment_config, "[1.0, 2.0]")
+
+    assert "hypothesis_params" not in experiment_config
+
+
+# Checks that non-numeric distribution parameter values are rejected.
+def test_hypothesis_params_rejects_non_numeric_values() -> None:
+    experiment_config: dict[str, Any] = {}
+
+    with pytest.raises(BadParameter, match="must be a number, got str"):
+        _configure_hypothesis_params(experiment_config, '{"beta": "2.0"}')
+
+    assert "hypothesis_params" not in experiment_config

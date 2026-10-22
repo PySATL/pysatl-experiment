@@ -19,6 +19,6 @@
     },
     "seed": 20260912,
     "run_mode": "reuse",
-    "storage_connection": "sqlite:///training_samples.sqlite"
+    "storage_connection": "sqlite:///user_data/training_samples.sqlite"
   }
 }

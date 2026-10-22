@@ -112,4 +112,13 @@ class CriticalValueExecutionStep(
 
     @override
     def _bulk_save(self, models: list[LimitDistributionModel]) -> None:
-        self.result_storage.bulk_insert_data(models)  # TODO: actual implementation
+        # Method name follows the external ILimitDistributionStorage interface
+        # (pysatl-criterion), which spells it `insert_bulk_data` — unlike our
+        # internal storages with `bulk_insert_data`.
+        self.result_storage.insert_bulk_data(models)
+
+    # Compatibility alias for tests and external callers that expect the
+    # legacy `bulk_insert_data` name. The real data layer keeps `insert_bulk_data`.
+    def bulk_insert_data(self, models: list[LimitDistributionModel]) -> None:
+        """Delegate bulk insertion to the underlying result storage."""
+        self.result_storage.insert_bulk_data(models)

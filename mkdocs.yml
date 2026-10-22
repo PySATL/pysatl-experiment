@@ -6,6 +6,8 @@ edit_uri: edit/main/docs/
 use_directory_urls: True
 nav:
     - Home: index.md
+    - Docker: docker.md
+    - Experiments: experiment_example/Quick-Start_Template.md
 theme:
   name: material
   logo: "images/logo.png"
