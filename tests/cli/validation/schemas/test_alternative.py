@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
 from typing import Any
 from unittest.mock import patch
 
@@ -47,6 +49,27 @@ def test_get_available_generator_classes_is_sorted() -> None:
     classes = _get_available_generator_classes()
 
     assert classes == sorted(classes, key=lambda cls: cls.__name__)
+
+
+# Checks that a fresh process discovers pysatl-criterion generators without prior imports.
+def test_generators_are_discovered_in_fresh_process(tmp_path: Any) -> None:
+    script = "\n".join(
+        [
+            "from pysatl_experiment.cli.validation.schemas.alternative import Alternative",
+            "alternative = Alternative(generator_name='NormalGenerator', parameters=[1.0, 0.5])",
+            "print(alternative.generator_name)",
+        ]
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "NORMALGENERATOR"
 
 
 # Checks that the cached base parameter names exclude the concrete parameters.
