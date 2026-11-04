@@ -15,7 +15,7 @@ from pysatl_experiment.experiment_execution.step.execution_step.multithreading_e
 from pysatl_experiment.experiment_execution.step.execution_step.power.power_worker import PowerWorker, PowerWorkerResult
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerModel
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
-
+from pysatl_experiment.utils.experiment_utils import get_alternative_code
 
 @dataclass
 class PowerStepData(ExecutionStepData):
@@ -32,6 +32,7 @@ class PowerStepData(ExecutionStepData):
 
     alternative: Alternative
     significance_level: float
+    generator_code: str = ""
 
 
 PowerExecutionResult = ExecutionTaskResult[PowerWorkerResult]
@@ -72,6 +73,7 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
         task_specs = []
         for step_data in self.step_config:
             alternative = step_data.alternative
+            alternative_code = get_alternative_code(alternative.distribution_type)
             spec = TaskSpec(
                 experiment_type=ExperimentType.POWER,
                 experiment_name=self.experiment_name,
@@ -82,9 +84,9 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
                 sample_size=step_data.sample_size,
                 monte_carlo_count=self.monte_carlo_count,
                 db_path=self.storage_connection,
-                sample_generator_code=alternative.distribution_type,
+                sample_generator_code=step_data.generator_code or alternative_code,
                 sample_generator_parameters=alternative.parameters,
-                alternative_generator=alternative.distribution_type,
+                alternative_generator=alternative_code,
                 alternative_parameters=alternative.parameters,
                 significance_level=step_data.significance_level,
             )
@@ -116,7 +118,7 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
             criterion_code=spec.criterion_code,
             criterion_parameters=spec.criterion_parameters,
             sample_size=spec.sample_size,
-            alternative_code=spec.alternative_generator,
+            alternative_code=get_alternative_code(spec.alternative_generator),
             alternative_parameters=spec.alternative_parameters,
             monte_carlo_count=spec.monte_carlo_count,
             significance_level=float(spec.significance_level),

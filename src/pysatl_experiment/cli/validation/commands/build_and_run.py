@@ -12,13 +12,14 @@ experiment execution pipeline.
 
 from collections.abc import Callable
 from enum import Enum
+import importlib
 from pathlib import Path
 from typing import Any, cast
 
 from click import ClickException
 from dacite import Config, from_dict
 from pydantic import ValidationError
-from pysatl_criterion import DistributionType
+from pysatl_criterion import DistributionType, AbstractRVSGenerator
 
 from pysatl_experiment.cli.validation.commands.checker import SQLiteCriticalValueChecker
 from pysatl_experiment.cli.validation.schemas.experiment import BaseExperimentConfig as PydanticBaseExperiment
@@ -46,6 +47,24 @@ from pysatl_experiment.persistence.models.experiment import ExperimentModel, Exp
 from pysatl_experiment.utils.experiment_utils import parameters_to_list
 from pysatl_experiment.utils.files_utils import ensure_result_dir
 
+_GENERATORS_MODULE = "pysatl_criterion.generator.generators"
+
+def _get_generator_name_to_distribution_type() -> dict[str, DistributionType]:
+    importlib.import_module(_GENERATORS_MODULE)
+
+    mapping: dict[str, DistributionType] = {}
+    for cls in AbstractRVSGenerator.__subclasses__():
+        if getattr(cls, "__abstractmethods__", None):
+            continue
+        try:
+            distribution_type = cls.distribution_type()
+        except (AttributeError, NotImplementedError):
+            continue
+
+        mapping[cls.__name__.upper()] = distribution_type
+        mapping[distribution_type.value.upper()] = distribution_type
+
+    return mapping
 
 def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
     """
@@ -365,6 +384,28 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
         raise TypeError(f"No match for Pydantic type: {type(pydantic_config)}")
 
     config_dict = cast(dict, pydantic_config.model_dump(mode="json"))
+
+    alternatives = config_dict.get("alternatives")
+    if alternatives is not None:
+        name_to_distribution = _get_generator_name_to_distribution_type()
+
+        for alternative_dict in alternatives:
+            generator_name = alternative_dict.pop("generator_name", None)
+
+            if "distribution_type" not in alternative_dict:
+                if generator_name is None:
+                    raise TypeError(
+                        "Alternative must contain either 'generator_name' or "
+                        "'distribution_type'."
+                    )
+
+                distribution_type = name_to_distribution.get(str(generator_name).upper())
+                if distribution_type is None:
+                    raise TypeError(
+                        f"Unknown generator name in alternatives: {generator_name!r}"
+                    )
+
+                alternative_dict["distribution_type"] = distribution_type.value
 
     # hypothesis_params: the Pydantic schema stores it as an optional field.
     # The legacy dataclass defaults to an empty dict, so we only pass it to

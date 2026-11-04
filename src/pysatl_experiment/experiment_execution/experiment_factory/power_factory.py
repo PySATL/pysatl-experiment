@@ -27,6 +27,7 @@ from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerSt
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerQuery
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
+from pysatl_experiment.utils.experiment_utils import get_alternative_code
 
 
 class PowerExperimentFactory(
@@ -79,12 +80,17 @@ class PowerExperimentFactory(
 
         data_list = []
         for alternative in config.alternatives:
-            generator = self._get_generator_class_object(alternative.distribution_type, alternative.parameters)
+            generator = self._get_generator_class_object(
+                alternative.distribution_type,
+                alternative.parameters,
+            )
+            generator_code = generator.code()
             for sample_size in config.sample_sizes:
                 rvs_query = RandomValuesAllQuery(
-                    generator_code=alternative.distribution_type,
+                    generator_code=generator_code,
                     generator_parameters=alternative.parameters,
                     sample_size=sample_size,
+                    experiment_name=self.experiment_data.experiment_name,
                 )
                 existing_count = random_values_storage.get_rvs_count(rvs_query)
                 missing_count = max(0, config.monte_carlo_count - existing_count)
@@ -145,19 +151,25 @@ class PowerExperimentFactory(
                             criterion_parameters=criterion_config.criterion.parameters,
                             sample_size=sample_size,
                             monte_carlo_count=monte_carlo_count,
-                            alternative_code=alternative.distribution_type,
+                            alternative_code = get_alternative_code(alternative.distribution_type),
                             alternative_parameters=alternative.parameters,
                             significance_level=significance_level,
                         )
                         result = result_storage.get_data(query)
                         if result is None:
                             statistics = criterion_config.statistics_class_object
+                            generator = self._get_generator_class_object(
+                                alternative.distribution_type,
+                                alternative.parameters,
+                            )
+
                             step_data = PowerStepData(
                                 statistics=statistics,
                                 sample_size=sample_size,
                                 criterion_parameters=criterion_config.criterion.parameters,
                                 alternative=alternative,
                                 significance_level=significance_level,
+                                generator_code=generator.code(),
                             )
                             step_config.append(step_data)
 
