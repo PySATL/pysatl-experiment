@@ -10,6 +10,15 @@ from pysatl_experiment.persistence.models.random_values import IRandomValuesStor
 from pysatl_experiment.utils.experiment_names import normalize_experiment_name
 from pysatl_experiment.utils.files_utils import ensure_experiment_conf, ensure_experiment_dir
 
+from pysatl_criterion import DistributionType
+
+def get_alternative_code(distribution_type: DistributionType | str) -> str:
+    """
+    Return storage-safe alternative code as a string.
+    """
+    if isinstance(distribution_type, DistributionType):
+        return distribution_type.value
+    return str(distribution_type)
 
 def parameters_to_list(parameters: NumericParameters) -> list[float]:
     """

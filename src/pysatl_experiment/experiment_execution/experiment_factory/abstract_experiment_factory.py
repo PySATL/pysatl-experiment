@@ -9,6 +9,7 @@ types and provides extension points for experiment-specific step creation.
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar, cast
 
+import importlib
 from pysatl_criterion import DistributionType
 from pysatl_criterion.generator.model import AbstractRVSGenerator
 from pysatl_criterion.persistence.models.base import IDataStorage
@@ -39,8 +40,7 @@ from pysatl_experiment.persistence.models.power import PowerQuery
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
 from pysatl_experiment.persistence.models.time_complexity import TimeComplexityQuery
 from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
-from pysatl_experiment.utils.experiment_utils import parameters_to_list
-
+from pysatl_experiment.utils.experiment_utils import parameters_to_list, get_alternative_code
 
 D = TypeVar("D", contravariant=True, bound=ExperimentData)
 G = TypeVar("G", covariant=True, bound=IExperimentStep)
@@ -257,10 +257,14 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         for sample_size in sample_sizes:
             for alternative in alternatives_config:
-                generator_name = alternative.distribution_type
+                generator = self._get_generator_class_object(
+                    alternative.distribution_type,
+                    alternative.parameters,
+                )
+                generator_code = generator.code()
                 generator_parameters = alternative.parameters
                 all_data_query = RandomValuesAllQuery(
-                    generator_code=generator_name,
+                    generator_code=generator_code,
                     sample_size=sample_size,
                     experiment_name=self.experiment_data.experiment_name,
                     generator_parameters=generator_parameters,
@@ -425,7 +429,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             for size in sample_sizes:
                 for significance_level in significance_levels:
                     for alternative in alternatives:
-                        alternative_code = alternative.distribution_type
+                        alternative_code = get_alternative_code(alternative.distribution_type)
                         alternative_parameters = alternative.parameters
                         query = PowerQuery(
                             criterion_code=code,
@@ -474,7 +478,8 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         elif experiment_type == ExperimentType.POWER:
             significance_levels = config.significance_levels
             alternatives = {
-                alternative.distribution_type: alternative.parameters for alternative in config.alternatives
+                get_alternative_code(alternative.distribution_type): alternative.parameters
+                for alternative in config.alternatives
             }
 
         query = ExperimentQuery(
@@ -530,41 +535,46 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         return data_storage
 
+    def _get_generator_classes(self) -> list[type[AbstractRVSGenerator]]:
+        importlib.import_module("pysatl_criterion.generator.generators")
+        return [
+            cls
+            for cls in AbstractRVSGenerator.__subclasses__()
+            if not getattr(cls, "__abstractmethods__", None)
+        ]
+
     def _get_generator_class_object(
-        self, generator_name: str, generator_parameters: NumericParameters
+            self,
+            generator_name: DistributionType | str,
+            generator_parameters: NumericParameters,
     ) -> AbstractRVSGenerator:
-        """
-        Create a generator instance by name.
+        requested = (
+            generator_name
+            if isinstance(generator_name, DistributionType)
+            else str(generator_name).upper()
+        )
 
-        Parameters
-        ----------
-        generator_name : str
-            Generator class name.
-        generator_parameters : NumericParameters
-            Generator constructor parameters.
+        for sub in self._get_generator_classes():
+            try:
+                sub_distribution = sub.distribution_type()
+            except (AttributeError, NotImplementedError):
+                continue
 
-        Returns
-        -------
-        AbstractRVSGenerator
-            Configured generator instance.
+            candidates = {
+                sub.__name__.upper(),
+                sub_distribution.value.upper(),
+                str(sub_distribution).upper(),
+            }
 
-        Raises
-        ------
-        ValueError
-            If the generator implementation cannot be found.
+            if isinstance(requested, DistributionType):
+                matched = sub_distribution == requested
+            else:
+                matched = requested in candidates
 
-        Notes
-        -----
-        Parameters are passed to the constructor in the same order as
-        specified by the experiment configuration.
-        """
-        subclasses = AbstractRVSGenerator.__subclasses__()
-        for sub in subclasses:
-            sub_name = sub.__name__.upper()
-            if sub_name == generator_name:
-                # Arguments are passed in the order of the parameters list,
-                # which is set by the user in CLI
-                return cast(type[AbstractRVSGenerator], sub)(*parameters_to_list(generator_parameters))
+            if matched:
+                return cast(type[AbstractRVSGenerator], sub)(
+                    *parameters_to_list(generator_parameters)
+                )
 
         raise ValueError(f"Unknown generator: {generator_name}")
 

@@ -10,15 +10,18 @@ available generator implementations.
 import inspect
 from functools import lru_cache
 from typing import Any
+import importlib
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 from pysatl_criterion.generator.model import AbstractRVSGenerator
 
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 
+_GENERATORS_MODULE = "pysatl_criterion.generator.generators"
 
 def _get_available_generator_classes() -> list[type[AbstractRVSGenerator]]:
     """Return all registered RVS generator subclasses."""
+    importlib.import_module(_GENERATORS_MODULE)
     return sorted(AbstractRVSGenerator.__subclasses__(), key=lambda cls: cls.__name__)
 
 
