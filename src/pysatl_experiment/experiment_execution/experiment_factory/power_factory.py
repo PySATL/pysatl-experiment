@@ -27,7 +27,7 @@ from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerSt
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerQuery
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
-from pysatl_experiment.utils.experiment_utils import get_alternative_code
+from pysatl_experiment.configuration.generator_registry import to_code
 
 
 class PowerExperimentFactory(
@@ -151,7 +151,7 @@ class PowerExperimentFactory(
                             criterion_parameters=criterion_config.criterion.parameters,
                             sample_size=sample_size,
                             monte_carlo_count=monte_carlo_count,
-                            alternative_code = get_alternative_code(alternative.distribution_type),
+                            alternative_code = to_code(alternative.distribution_type),
                             alternative_parameters=alternative.parameters,
                             significance_level=significance_level,
                         )

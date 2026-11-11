@@ -8,9 +8,8 @@ and precomputed critical values stored in a database.
 
 from dataclasses import dataclass
 
-from pysatl_criterion import GoodnessOfFitTest
-from pysatl_criterion.hypothesis_testing.goodness_of_fit_test.goodness_of_fit_test import CriticalValueDecisionMethod
-from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDistributionStorage
+from pysatl_criterion.hypothesis_testing.alternative_factory.alternative_factories import AbstractAlternativeFactory
+from pysatl_criterion.persistence.models.limit_distribution import CriticalValueQuery, ILimitDistributionStorage
 from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 
 from pysatl_experiment.experiment_execution.step.execution_step.abstract_worker import IWorker, WorkerResult
@@ -47,8 +46,8 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         Generated samples for evaluation.
     significance_level : float
         Significance level (alpha) used for hypothesis testing.
-    storage_connection : str
-        Connection string to SQLite database containing critical values.
+    limit_distribution_storage : ILimitDistributionStorage
+        Storage that provides the statistic's limit distribution.
 
     Attributes
     ----------
@@ -58,8 +57,8 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         Input samples.
     significance_level : float
         Alpha level for tests.
-    storage_connection : str
-        Database connection string.
+    limit_distribution_storage : ILimitDistributionStorage
+        Storage that provides the statistic's limit distribution.
     """
 
     def __init__(
@@ -67,7 +66,7 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         statistics: AbstractGoodnessOfFitStatistic,
         sample_data: list[list[float]],
         significance_level: float,
-        storage_connection: str,
+        limit_distribution_storage: ILimitDistributionStorage,
     ):
         """
         Initialize power worker.
@@ -80,13 +79,13 @@ class PowerWorker(IWorker[PowerWorkerResult]):
             Input datasets.
         significance_level : float
             Alpha level for hypothesis testing.
-        storage_connection : str
-            SQLAlchemy database connection string.
+        limit_distribution_storage : ILimitDistributionStorage
+            Storage that provides the statistic's limit distribution.
         """
         self.statistics = statistics
         self.sample_data = sample_data
         self.significance_level = significance_level
-        self.storage_connection = storage_connection
+        self.limit_distribution_storage = limit_distribution_storage
 
     def execute(self) -> PowerWorkerResult:
         """
@@ -97,19 +96,30 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         PowerWorkerResult
             Results indicating whether hypothesis was rejected for each sample.
         """
-        storage = AlchemyLimitDistributionStorage(self.storage_connection)
-        storage.init()
+        statistic = self.statistics
+        sample_size = len(self.sample_data[0])
 
-        gof_test = GoodnessOfFitTest(statistic=self.statistics)
-        decision_method = CriticalValueDecisionMethod()
+        model = self.limit_distribution_storage.get_data_for_cv(
+            CriticalValueQuery(criterion_code=statistic.code(), sample_size=sample_size)
+        )
+        if model is None:
+            raise ValueError(
+                f"Limit distribution for {statistic.code()} at n={sample_size} not found in storage. "
+                "Run the critical_value experiment first."
+            )
+
+        factory = AbstractAlternativeFactory.get_concrete_factory(statistic.alternative().type())
+        critical_value = factory.get_critical_value_calculator().calculate(
+            model.results_statistics, self.significance_level
+        )
+        region = factory.get_critical_area(critical_value)
 
         results_criteria = [
-            gof_test.test(sample, self.significance_level, decision_method).rejected for sample in self.sample_data
+            not region.contains(statistic.execute_statistic(sample))
+            for sample in self.sample_data
         ]
 
-        worker_result = PowerWorkerResult(results_criteria=results_criteria)
-
-        return worker_result
+        return PowerWorkerResult(results_criteria=results_criteria)
 
 
 # TODO: wrong types, should be fixed!!!!!!!

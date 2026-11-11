@@ -8,7 +8,8 @@ alternative hypotheses and significance levels.
 Charts may optionally be included in the report.
 """
 
-import tempfile
+import base64
+import io
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -17,6 +18,7 @@ import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
+from pysatl_experiment.configuration.generator_registry import to_code
 from pysatl_experiment.configuration.models.alternative import Alternative
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.utils.report_utils import convert_html_to_pdf, get_criterion_names, get_report_template_dir
@@ -84,25 +86,17 @@ class PowerReportBuilder:
 
         Notes
         -----
-        Temporary chart files are created during report generation
-        and deleted automatically afterward.
+        Charts are embedded directly into the HTML as base64 data URIs,
+        so no temporary files are created.
         """
-        with tempfile.TemporaryDirectory(prefix="power_charts_") as temp_dir:
-            charts_dir = Path(temp_dir) / "charts"
+        html_content = self._generate_html()
 
-            html_content = self._generate_html(charts_dir)
+        self.results_path.mkdir(parents=True, exist_ok=True)
+        convert_html_to_pdf(html_content, self.pdf_path)
 
-            self.results_path.mkdir(parents=True, exist_ok=True)
-            convert_html_to_pdf(html_content, self.pdf_path)
-
-    def _generate_html(self, charts_dir: Path) -> str:
+    def _generate_html(self) -> str:
         """
         Generate HTML report content.
-
-        Parameters
-        ----------
-        charts_dir : Path
-            Directory containing generated charts.
 
         Returns
         -------
@@ -116,7 +110,7 @@ class PowerReportBuilder:
                 chart_data = None
                 if self.with_chart == ReportMode.WITH_CHART:
                     try:
-                        chart_data = self._generate_chart_data(alternative, significance_level, charts_dir)
+                        chart_data = self._generate_chart_data(alternative, significance_level)
                     except Exception as e:
                         print(
                             f"Failed to generate chart for {alternative.distribution_type}, α={significance_level}: {e}"
@@ -125,6 +119,7 @@ class PowerReportBuilder:
                 tables.append(
                     {
                         "alternative": alternative,
+                        "alternative_code": to_code(alternative.distribution_type),
                         "significance_level": significance_level,
                         "table": table_data,
                         "chart": chart_data,
@@ -179,7 +174,6 @@ class PowerReportBuilder:
         self,
         alternative: Alternative,
         significance_level: float,
-        charts_dir: Path,
     ) -> str:
         """
         Generate power chart.
@@ -190,18 +184,12 @@ class PowerReportBuilder:
             Alternative hypothesis.
         significance_level : float
             Significance level.
-        charts_dir : Path
-            Directory for chart files.
 
         Returns
         -------
         str
-            Absolute path to generated chart image.
+            Base64 data URI of the generated chart image.
         """
-        charts_dir.mkdir(parents=True, exist_ok=True)
-
-        chart_path = charts_dir / f"{alternative.distribution_type}_{significance_level}.png"
-
         plt.figure(figsize=(10, 6), dpi=100)
 
         for config in self.criteria_config:
@@ -218,12 +206,14 @@ class PowerReportBuilder:
 
         plt.xlabel("Sample size")
         plt.ylabel("Power")
-        plt.title(f"Power vs Sample Size — {alternative.distribution_type}, α={significance_level}")
+        plt.title(f"Power vs Sample Size — {to_code(alternative.distribution_type)}, α={significance_level}")
         plt.grid(True, linestyle="--", alpha=0.5)
         plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left", fontsize="small")
         plt.tight_layout(rect=(0, 0, 0.85, 1))
 
-        plt.savefig(chart_path, format="png", dpi=100, bbox_inches="tight")
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format="png", dpi=100, bbox_inches="tight")
         plt.close()
 
-        return str(chart_path.resolve().as_posix())
+        encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
+        return f"data:image/png;base64,{encoded}"

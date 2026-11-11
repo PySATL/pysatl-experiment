@@ -4,6 +4,8 @@ from dataclasses import dataclass
 
 from typing_extensions import override
 
+from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDistributionStorage
+
 from pysatl_experiment.configuration.models.alternative import Alternative
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
@@ -15,7 +17,7 @@ from pysatl_experiment.experiment_execution.step.execution_step.multithreading_e
 from pysatl_experiment.experiment_execution.step.execution_step.power.power_worker import PowerWorker, PowerWorkerResult
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerModel
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
-from pysatl_experiment.utils.experiment_utils import get_alternative_code
+from pysatl_experiment.configuration.generator_registry import to_code
 
 @dataclass
 class PowerStepData(ExecutionStepData):
@@ -73,7 +75,7 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
         task_specs = []
         for step_data in self.step_config:
             alternative = step_data.alternative
-            alternative_code = get_alternative_code(alternative.distribution_type)
+            alternative_code = to_code(alternative.distribution_type)
             spec = TaskSpec(
                 experiment_type=ExperimentType.POWER,
                 experiment_name=self.experiment_name,
@@ -100,13 +102,18 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
         if spec.significance_level is None:
             raise ValueError("Significance level is required for power experiment.")
 
+        storage = AlchemyLimitDistributionStorage(spec.db_path)
+        storage.init()
+
         worker = PowerWorker(
             statistics=statistics,
             sample_data=sample_data,
             significance_level=spec.significance_level,
-            storage_connection=spec.db_path,
+            limit_distribution_storage=storage,
         )
         return ExecutionTaskResult(spec=spec, worker_result=worker.execute())
+        res = worker.execute()
+        return ExecutionTaskResult(spec=spec, worker_result=res)
 
     @override
     def _to_model(self, result: PowerExecutionResult) -> PowerModel:
@@ -118,7 +125,7 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
             criterion_code=spec.criterion_code,
             criterion_parameters=spec.criterion_parameters,
             sample_size=spec.sample_size,
-            alternative_code=get_alternative_code(spec.alternative_generator),
+            alternative_code=to_code(spec.alternative_generator),
             alternative_parameters=spec.alternative_parameters,
             monte_carlo_count=spec.monte_carlo_count,
             significance_level=float(spec.significance_level),

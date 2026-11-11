@@ -12,7 +12,7 @@ from pysatl_experiment.experiment_execution.step.abstract_experiment_step import
 from pysatl_experiment.experiment_execution.step.report_step.power.power_report_builder import PowerReportBuilder
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerQuery
 
-from pysatl_experiment.utils.experiment_utils import get_alternative_code
+from pysatl_experiment.configuration.generator_registry import to_code
 
 
 class PowerReportBuildingStep(IExperimentStep):
@@ -148,7 +148,7 @@ class PowerReportBuildingStep(IExperimentStep):
             criterion_code=criterion_config.criterion_code,
             criterion_parameters=criterion_config.criterion.parameters,
             sample_size=sample_size,
-            alternative_code=get_alternative_code(alternative.distribution_type),
+            alternative_code=to_code(alternative.distribution_type),
             alternative_parameters=alternative.parameters,
             monte_carlo_count=self.monte_carlo_count,
             significance_level=significance_level,

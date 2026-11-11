@@ -9,7 +9,6 @@ types and provides extension points for experiment-specific step creation.
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar, cast
 
-import importlib
 from pysatl_criterion import DistributionType
 from pysatl_criterion.generator.model import AbstractRVSGenerator
 from pysatl_criterion.persistence.models.base import IDataStorage
@@ -40,7 +39,8 @@ from pysatl_experiment.persistence.models.power import PowerQuery
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
 from pysatl_experiment.persistence.models.time_complexity import TimeComplexityQuery
 from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
-from pysatl_experiment.utils.experiment_utils import parameters_to_list, get_alternative_code
+from pysatl_experiment.configuration.generator_registry import get_generator_classes, to_code
+from pysatl_experiment.utils.experiment_utils import parameters_to_list
 
 D = TypeVar("D", contravariant=True, bound=ExperimentData)
 G = TypeVar("G", covariant=True, bound=IExperimentStep)
@@ -429,7 +429,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             for size in sample_sizes:
                 for significance_level in significance_levels:
                     for alternative in alternatives:
-                        alternative_code = get_alternative_code(alternative.distribution_type)
+                        alternative_code = to_code(alternative.distribution_type)
                         alternative_parameters = alternative.parameters
                         query = PowerQuery(
                             criterion_code=code,
@@ -478,7 +478,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         elif experiment_type == ExperimentType.POWER:
             significance_levels = config.significance_levels
             alternatives = {
-                get_alternative_code(alternative.distribution_type): alternative.parameters
+                to_code(alternative.distribution_type): alternative.parameters
                 for alternative in config.alternatives
             }
 
@@ -535,14 +535,6 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
         return data_storage
 
-    def _get_generator_classes(self) -> list[type[AbstractRVSGenerator]]:
-        importlib.import_module("pysatl_criterion.generator.generators")
-        return [
-            cls
-            for cls in AbstractRVSGenerator.__subclasses__()
-            if not getattr(cls, "__abstractmethods__", None)
-        ]
-
     def _get_generator_class_object(
             self,
             generator_name: DistributionType | str,
@@ -554,7 +546,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             else str(generator_name).upper()
         )
 
-        for sub in self._get_generator_classes():
+        for sub in get_generator_classes():
             try:
                 sub_distribution = sub.distribution_type()
             except (AttributeError, NotImplementedError):
