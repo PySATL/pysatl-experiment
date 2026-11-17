@@ -11,6 +11,7 @@ import importlib
 from pysatl_criterion import DistributionType
 from pysatl_criterion.generator.model import AbstractRVSGenerator
 
+
 _GENERATORS_MODULE = "pysatl_criterion.generator.generators"
 
 

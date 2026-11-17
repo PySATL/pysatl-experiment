@@ -10,6 +10,7 @@ from pysatl_criterion.persistence.models.base import IDataStorage
 from typing_extensions import override
 
 from pysatl_experiment.configuration.experiment_data.power import PowerExperimentData
+from pysatl_experiment.configuration.generator_registry import to_code
 from pysatl_experiment.experiment_execution.experiment_factory.abstract_experiment_factory import (
     AbstractExperimentFactory,
 )
@@ -27,7 +28,6 @@ from pysatl_experiment.persistence.criterion_power_storage import AlchemyPowerSt
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerQuery
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
-from pysatl_experiment.configuration.generator_registry import to_code
 
 
 class PowerExperimentFactory(

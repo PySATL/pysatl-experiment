@@ -6,13 +6,12 @@ from line_profiler import profile
 from typing_extensions import override
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
+from pysatl_experiment.configuration.generator_registry import to_code
 from pysatl_experiment.configuration.models.alternative import Alternative
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
 from pysatl_experiment.experiment_execution.step.report_step.power.power_report_builder import PowerReportBuilder
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerQuery
-
-from pysatl_experiment.configuration.generator_registry import to_code
 
 
 class PowerReportBuildingStep(IExperimentStep):

@@ -28,6 +28,7 @@ from pysatl_criterion.utils.generator import get_available_generator
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
+from pysatl_experiment.configuration.generator_registry import get_generator_classes, to_code
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.configuration.models.parameters import NumericParameters
 from pysatl_experiment.configuration.models.run_mode import RunMode
@@ -39,8 +40,8 @@ from pysatl_experiment.persistence.models.power import PowerQuery
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage, RandomValuesAllQuery
 from pysatl_experiment.persistence.models.time_complexity import TimeComplexityQuery
 from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
-from pysatl_experiment.configuration.generator_registry import get_generator_classes, to_code
 from pysatl_experiment.utils.experiment_utils import parameters_to_list
+
 
 D = TypeVar("D", contravariant=True, bound=ExperimentData)
 G = TypeVar("G", covariant=True, bound=IExperimentStep)

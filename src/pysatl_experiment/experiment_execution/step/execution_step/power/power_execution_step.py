@@ -1,11 +1,12 @@
 """Power experiment execution step implementation."""
 
+import time
 from dataclasses import dataclass
 
+from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDistributionStorage
 from typing_extensions import override
 
-from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDistributionStorage
-
+from pysatl_experiment.configuration.generator_registry import to_code
 from pysatl_experiment.configuration.models.alternative import Alternative
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
@@ -17,7 +18,7 @@ from pysatl_experiment.experiment_execution.step.execution_step.multithreading_e
 from pysatl_experiment.experiment_execution.step.execution_step.power.power_worker import PowerWorker, PowerWorkerResult
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerModel
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
-from pysatl_experiment.configuration.generator_registry import to_code
+
 
 @dataclass
 class PowerStepData(ExecutionStepData):
@@ -98,6 +99,10 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
     @staticmethod
     @override
     def _execute_task(spec: TaskSpec) -> PowerExecutionResult:
+        task_id = (f"{spec.criterion_code}|n={spec.sample_size}|alt={spec.alternative_generator}"
+                   f"|alpha={spec.significance_level}|M={spec.monte_carlo_count}")
+        print(f"[TASK START] {task_id}")
+        t0 = time.perf_counter()
         sample_data, statistics = PowerExecutionStep._load_samples_and_statistics(spec)
         if spec.significance_level is None:
             raise ValueError("Significance level is required for power experiment.")
@@ -111,8 +116,10 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
             significance_level=spec.significance_level,
             limit_distribution_storage=storage,
         )
-        return ExecutionTaskResult(spec=spec, worker_result=worker.execute())
+
         res = worker.execute()
+        dt = time.perf_counter() - t0
+        print(f"[TASK END]   {task_id} | elapsed={dt:.2f}s")
         return ExecutionTaskResult(spec=spec, worker_result=res)
 
     @override

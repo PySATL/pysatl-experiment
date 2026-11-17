@@ -37,15 +37,16 @@ from pysatl_experiment.configuration.experiment_config.time_complexity_experimen
     TimeComplexityExperimentConfig as LegacyTimeComplexityExperimentConfig,
 )
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
+from pysatl_experiment.configuration.generator_registry import generator_name_to_distribution
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
 from pysatl_experiment.configuration.models.steps_done import StepsDone
 from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
 from pysatl_experiment.persistence.models.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
-from pysatl_experiment.configuration.generator_registry import generator_name_to_distribution
 from pysatl_experiment.utils.experiment_utils import parameters_to_list
 from pysatl_experiment.utils.files_utils import ensure_result_dir
+
 
 def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
     """
