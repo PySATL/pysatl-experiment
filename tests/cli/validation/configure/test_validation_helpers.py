@@ -196,7 +196,7 @@ def test_non_alternatives_error_names_the_field(alternatives_config: MagicMock) 
 
 # Checks that a validated alternatives payload is stored on the config.
 @patch(
-    "pysatl_experiment.cli.validation.schemas.alternative._get_available_generator_classes",
+    "pysatl_experiment.cli.validation.schemas.alternative.get_generator_classes",
     return_value=[NormalGenerator],
 )
 def test_alternatives_are_stored_when_valid(stub_registry: MagicMock) -> None:

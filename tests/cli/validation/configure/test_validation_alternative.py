@@ -193,7 +193,7 @@ def test_alternatives_fails_with_non_numeric_parameters(
 
 
 @patch(
-    "pysatl_experiment.cli.validation.schemas.alternative._get_available_generator_classes",
+    "pysatl_experiment.cli.validation.schemas.alternative.get_generator_classes",
     return_value=[NormalGenerator, CauchyRVSGenerator, NormalGenerator],
 )
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
@@ -251,7 +251,7 @@ def test_alternatives_fails_with_ambiguous_generator_name(
 
 
 @patch(
-    "pysatl_experiment.cli.validation.schemas.alternative._get_available_generator_classes",
+    "pysatl_experiment.cli.validation.schemas.alternative.get_generator_classes",
     return_value=[NormalGenerator, CauchyRVSGenerator],
 )
 @patch("pysatl_experiment.cli.commands.configure.save_experiment_config")
