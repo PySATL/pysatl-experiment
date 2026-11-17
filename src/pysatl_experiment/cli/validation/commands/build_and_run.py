@@ -375,9 +375,7 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
             generator_name = alternative_dict.pop("generator_name")
             distribution_type = name_to_distribution.get(generator_name.upper())
             if distribution_type is None:
-                raise TypeError(
-                    f"Unknown generator name in alternatives: {generator_name!r}"
-                )
+                raise TypeError(f"Unknown generator name in alternatives: {generator_name!r}")
 
             alternative_dict["distribution_type"] = distribution_type.value
 

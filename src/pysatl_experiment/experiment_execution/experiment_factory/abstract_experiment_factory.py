@@ -479,8 +479,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         elif experiment_type == ExperimentType.POWER:
             significance_levels = config.significance_levels
             alternatives = {
-                to_code(alternative.distribution_type): alternative.parameters
-                for alternative in config.alternatives
+                to_code(alternative.distribution_type): alternative.parameters for alternative in config.alternatives
             }
 
         query = ExperimentQuery(
@@ -561,11 +560,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         ValueError
             If no generator matches the requested distribution type or name.
         """
-        requested = (
-            generator_name
-            if isinstance(generator_name, DistributionType)
-            else str(generator_name).upper()
-        )
+        requested = generator_name if isinstance(generator_name, DistributionType) else str(generator_name).upper()
 
         for sub in get_generator_classes():
             try:
@@ -584,9 +579,7 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
                 matched = requested in candidates
 
             if matched:
-                return cast(type[AbstractRVSGenerator], sub)(
-                    *parameters_to_list(generator_parameters)
-                )
+                return cast(type[AbstractRVSGenerator], sub)(*parameters_to_list(generator_parameters))
 
         raise ValueError(f"Unknown generator: {generator_name}")
 

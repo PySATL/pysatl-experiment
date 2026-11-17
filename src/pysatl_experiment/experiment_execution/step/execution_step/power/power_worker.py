@@ -117,10 +117,7 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         )
         region = factory.get_critical_area(critical_value)
 
-        results_criteria = [
-            not region.contains(statistic.execute_statistic(sample))
-            for sample in self.sample_data
-        ]
+        results_criteria = [not region.contains(statistic.execute_statistic(sample)) for sample in self.sample_data]
 
         return PowerWorkerResult(results_criteria=results_criteria)
 

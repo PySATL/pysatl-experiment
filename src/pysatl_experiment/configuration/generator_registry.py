@@ -6,6 +6,7 @@ subclasses and maps between generator names and distribution types. Both the
 CLI validation layer and the experiment factories rely on it, so the discovery
 and mapping logic lives in one place instead of being duplicated.
 """
+
 import importlib
 
 from pysatl_criterion import DistributionType

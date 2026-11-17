@@ -151,7 +151,7 @@ class PowerExperimentFactory(
                             criterion_parameters=criterion_config.criterion.parameters,
                             sample_size=sample_size,
                             monte_carlo_count=monte_carlo_count,
-                            alternative_code = to_code(alternative.distribution_type),
+                            alternative_code=to_code(alternative.distribution_type),
                             alternative_parameters=alternative.parameters,
                             significance_level=significance_level,
                         )
