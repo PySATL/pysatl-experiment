@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import functools
 import importlib
-import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Generic, TypeVar
@@ -107,12 +106,6 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
     @staticmethod
     def _load_samples_and_statistics(spec: TaskSpec) -> tuple[list[list[float]], AbstractGoodnessOfFitStatistic]:
         """Load random samples and instantiate the statistic described by a task spec."""
-        print(
-            f"[DB READ]   loading samples | gen={spec.sample_generator_code} "
-            f"n={spec.sample_size} exp={spec.experiment_name} M={spec.monte_carlo_count}"
-        )
-        t0 = time.perf_counter()
-
         storage = AlchemyRandomValuesStorage(spec.db_path)
         storage.init()
 
@@ -126,9 +119,6 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
         )
 
         rows = storage.get_count_data(query)
-
-        dt = time.perf_counter() - t0
-        print(f"[DB READ OK] loaded {len(rows)} rows | elapsed={dt:.3f}s")
 
         if rows is None or len(rows) < spec.monte_carlo_count:
             raise ValueError("Not enough data in storage.")

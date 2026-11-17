@@ -1,6 +1,5 @@
 """Power experiment execution step implementation."""
 
-import time
 from dataclasses import dataclass
 
 from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDistributionStorage
@@ -99,10 +98,6 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
     @staticmethod
     @override
     def _execute_task(spec: TaskSpec) -> PowerExecutionResult:
-        task_id = (f"{spec.criterion_code}|n={spec.sample_size}|alt={spec.alternative_generator}"
-                   f"|alpha={spec.significance_level}|M={spec.monte_carlo_count}")
-        print(f"[TASK START] {task_id}")
-        t0 = time.perf_counter()
         sample_data, statistics = PowerExecutionStep._load_samples_and_statistics(spec)
         if spec.significance_level is None:
             raise ValueError("Significance level is required for power experiment.")
@@ -117,10 +112,7 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
             limit_distribution_storage=storage,
         )
 
-        res = worker.execute()
-        dt = time.perf_counter() - t0
-        print(f"[TASK END]   {task_id} | elapsed={dt:.2f}s")
-        return ExecutionTaskResult(spec=spec, worker_result=res)
+        return ExecutionTaskResult(spec=spec, worker_result=worker.execute())
 
     @override
     def _to_model(self, result: PowerExecutionResult) -> PowerModel:

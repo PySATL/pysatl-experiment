@@ -372,22 +372,14 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
         name_to_distribution = generator_name_to_distribution()
 
         for alternative_dict in alternatives:
-            generator_name = alternative_dict.pop("generator_name", None)
+            generator_name = alternative_dict.pop("generator_name")
+            distribution_type = name_to_distribution.get(generator_name.upper())
+            if distribution_type is None:
+                raise TypeError(
+                    f"Unknown generator name in alternatives: {generator_name!r}"
+                )
 
-            if "distribution_type" not in alternative_dict:
-                if generator_name is None:
-                    raise TypeError(
-                        "Alternative must contain either 'generator_name' or "
-                        "'distribution_type'."
-                    )
-
-                distribution_type = name_to_distribution.get(str(generator_name).upper())
-                if distribution_type is None:
-                    raise TypeError(
-                        f"Unknown generator name in alternatives: {generator_name!r}"
-                    )
-
-                alternative_dict["distribution_type"] = distribution_type.value
+            alternative_dict["distribution_type"] = distribution_type.value
 
     # hypothesis_params: the Pydantic schema stores it as an optional field.
     # The legacy dataclass defaults to an empty dict, so we only pass it to

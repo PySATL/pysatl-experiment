@@ -96,6 +96,9 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         PowerWorkerResult
             Results indicating whether hypothesis was rejected for each sample.
         """
+        if not self.sample_data:
+            return PowerWorkerResult(results_criteria=[])
+
         statistic = self.statistics
         sample_size = len(self.sample_data[0])
 

@@ -1,6 +1,5 @@
 """Parallel task scheduling utilities."""
 
-import time
 from collections.abc import Callable, Iterator, Sequence
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Any
@@ -111,9 +110,6 @@ class Scheduler:
         total = len(tasks)
         completed = 0  # TODO: not used??
 
-        print(f"[SCHEDULER] Starting execution: {total} task(s), max_workers={self.max_workers}")
-        t_start = time.perf_counter()
-
         for _ in range(min(self.max_workers, total)):
             try:
                 task = next(task_iter)
@@ -121,25 +117,17 @@ class Scheduler:
             except StopIteration:
                 break
 
-        print(f"[SCHEDULER] Initially submitted {len(futures)} task(s), waiting for results...")
-
         while futures:
             try:
                 for future in as_completed(futures):
                     try:
                         result = future.result()
                         completed += 1
-                        elapsed_total = time.perf_counter() - t_start
-                        print(
-                            f"[SCHEDULER] Progress: {completed}/{total} completed "
-                            f"({completed / total * 100:.1f}%) | elapsed={elapsed_total:.1f}s"
-                        )
                         yield result
 
                         try:
                             next_task = next(task_iter)
                             futures[self.submit(next_task)] = next_task
-                            print(f"[SCHEDULER] Submitted next task, active={len(futures)}")
                         except StopIteration:
                             pass
 
@@ -148,9 +136,6 @@ class Scheduler:
 
             except TimeoutError:  # TODO: ??
                 continue
-
-        elapsed_total = time.perf_counter() - t_start
-        print(f"[SCHEDULER] All tasks finished. Total time: {elapsed_total:.1f}s")
 
     def run(self, tasks: Sequence[Callable[[], Any]]) -> list[Any]:
         """

@@ -28,8 +28,8 @@ def generator_name_to_distribution() -> dict[str, DistributionType]:
     """
     Map generator names (and distribution values) to their DistributionType.
 
-    Both the generator class name and the distribution
-    value are accepted as keys and resolved to the same:     class:`DistributionType`.
+    Both the generator class name and the distribution value are accepted as
+    keys and resolve to the same :class:`DistributionType`.
     """
     mapping: dict[str, DistributionType] = {}
     for cls in get_generator_classes():
@@ -48,10 +48,10 @@ def to_code(distribution_type: DistributionType | str) -> str:
 
     Normalizes any representation to a single lowercase value::
 
-        DistributionType.NORMAL -> "normal"
+        DistributionType.NORMAL   -> "normal"
         "DistributionType.NORMAL" -> "normal"
-        "NORMAL" -> "normal"
-        "normal" -> "normal"
+        "NORMAL"                  -> "normal"
+        "normal"                  -> "normal"
     """
     if isinstance(distribution_type, DistributionType):
         return distribution_type.value

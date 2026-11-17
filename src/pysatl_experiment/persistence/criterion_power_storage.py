@@ -11,7 +11,6 @@ constraint and provides CRUD operations over these results.
 from __future__ import annotations
 
 import json
-import time
 from collections.abc import Iterable
 from typing import ClassVar
 
@@ -203,11 +202,6 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
         This makes exact match required; semantically equivalent but differently
         serialized inputs will not match.
         """
-        print(
-            f"[POWER READ] crit={query.criterion_code} n={query.sample_size} alt={query.alternative_code} "
-            f"alpha={query.significance_level} M={query.monte_carlo_count}")
-        t0 = time.perf_counter()
-
         params_json = json.dumps(query.criterion_parameters)
         alt_params_json = json.dumps(query.alternative_parameters)
         row: AlchemyPower | None = (
@@ -224,12 +218,8 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
             )
             .one_or_none()
         )
-        dt = time.perf_counter() - t0
         if row is None:
-            print(f"[POWER READ] not found | elapsed={dt:.3f}s")
             return None
-        else:
-            print(f"[POWER READ] found existing | elapsed={dt:.3f}s")
         return PowerModel(
             experiment_id=int(row.experiment_id),
             criterion_code=query.criterion_code,
@@ -311,13 +301,9 @@ class AlchemyPowerStorage(AbstractDbStore, IPowerStorage):
         Uses the same UPSERT-like behavior as :meth:`insert_data`, but
         commits once after all records are processed.
         """
-        print("[POWER WRITE] saving power results to DB")
-        t0 = time.perf_counter()
         for data in data_list:
             self._upsert_data(data)
         self._get_session().commit()
-        dt = time.perf_counter() - t0
-        print(f"[POWER WRITE OK] committed in {dt:.3f}s")
 
     def delete_data(self, query: PowerQuery) -> None:
         """

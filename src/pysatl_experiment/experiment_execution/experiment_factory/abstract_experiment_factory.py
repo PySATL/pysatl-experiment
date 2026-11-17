@@ -537,10 +537,30 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
         return data_storage
 
     def _get_generator_class_object(
-            self,
-            generator_name: DistributionType | str,
-            generator_parameters: NumericParameters,
+        self,
+        generator_name: DistributionType | str,
+        generator_parameters: NumericParameters,
     ) -> AbstractRVSGenerator:
+        """
+        Create a generator instance for the given distribution type or name.
+
+        Parameters
+        ----------
+        generator_name : DistributionType | str
+            Distribution type or generator name/code identifying the generator.
+        generator_parameters : NumericParameters
+            Generator constructor parameters, passed positionally in order.
+
+        Returns
+        -------
+        AbstractRVSGenerator
+            Configured generator instance.
+
+        Raises
+        ------
+        ValueError
+            If no generator matches the requested distribution type or name.
+        """
         requested = (
             generator_name
             if isinstance(generator_name, DistributionType)
@@ -556,7 +576,6 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             candidates = {
                 sub.__name__.upper(),
                 sub_distribution.value.upper(),
-                str(sub_distribution).upper(),
             }
 
             if isinstance(requested, DistributionType):
