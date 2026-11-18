@@ -105,6 +105,9 @@ class PowerWorker(IWorker[PowerWorkerResult]):
         model = self.limit_distribution_storage.get_data_for_cv(
             CriticalValueQuery(criterion_code=statistic.code(), sample_size=sample_size)
         )
+        # TODO: get_data_for_cv matches only (criterion_code, sample_size) and ignores
+        #  criterion_parameters.
+
         if model is None:
             raise ValueError(
                 f"Limit distribution for {statistic.code()} at n={sample_size} not found in storage. "
