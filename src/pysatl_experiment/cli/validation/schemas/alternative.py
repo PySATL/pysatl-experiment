@@ -14,12 +14,8 @@ from typing import Any
 from pydantic import BaseModel, Field, field_validator, model_validator
 from pysatl_criterion.generator.model import AbstractRVSGenerator
 
+from pysatl_experiment.configuration.generator_registry import get_generator_classes
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
-
-
-def _get_available_generator_classes() -> list[type[AbstractRVSGenerator]]:
-    """Return all registered RVS generator subclasses."""
-    return sorted(AbstractRVSGenerator.__subclasses__(), key=lambda cls: cls.__name__)
 
 
 @lru_cache(maxsize=1)
@@ -83,7 +79,7 @@ class Alternative(BaseModel):
         ValueError
             If no generator matches or multiple ambiguous matches exist.
         """
-        available_generators: list[str] = [gen_cls.__name__.upper() for gen_cls in _get_available_generator_classes()]
+        available_generators: list[str] = [gen_cls.__name__.upper() for gen_cls in get_generator_classes()]
 
         user_prefix = value.upper()
 
@@ -162,7 +158,7 @@ class Alternative(BaseModel):
             If generator is not found or parameter count mismatches.
         """
         generator_by_name: dict[str, type[AbstractRVSGenerator]] = {
-            gen_cls.__name__.upper(): gen_cls for gen_cls in _get_available_generator_classes()
+            gen_cls.__name__.upper(): gen_cls for gen_cls in get_generator_classes()
         }
 
         generator_cls = generator_by_name.get(self.generator_name.upper())

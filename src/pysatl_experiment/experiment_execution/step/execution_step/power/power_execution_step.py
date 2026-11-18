@@ -2,8 +2,10 @@
 
 from dataclasses import dataclass
 
+from pysatl_criterion.persistence.sqlalchemy.datastorage import AlchemyLimitDistributionStorage
 from typing_extensions import override
 
+from pysatl_experiment.configuration.generator_registry import to_code
 from pysatl_experiment.configuration.models.alternative import Alternative
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
@@ -32,6 +34,7 @@ class PowerStepData(ExecutionStepData):
 
     alternative: Alternative
     significance_level: float
+    generator_code: str = ""
 
 
 PowerExecutionResult = ExecutionTaskResult[PowerWorkerResult]
@@ -72,6 +75,7 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
         task_specs = []
         for step_data in self.step_config:
             alternative = step_data.alternative
+            alternative_code = to_code(alternative.distribution_type)
             spec = TaskSpec(
                 experiment_type=ExperimentType.POWER,
                 experiment_name=self.experiment_name,
@@ -82,9 +86,9 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
                 sample_size=step_data.sample_size,
                 monte_carlo_count=self.monte_carlo_count,
                 db_path=self.storage_connection,
-                sample_generator_code=alternative.distribution_type,
+                sample_generator_code=step_data.generator_code or alternative_code,
                 sample_generator_parameters=alternative.parameters,
-                alternative_generator=alternative.distribution_type,
+                alternative_generator=alternative_code,
                 alternative_parameters=alternative.parameters,
                 significance_level=step_data.significance_level,
             )
@@ -98,12 +102,16 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
         if spec.significance_level is None:
             raise ValueError("Significance level is required for power experiment.")
 
+        storage = AlchemyLimitDistributionStorage(spec.db_path)
+        storage.init()
+
         worker = PowerWorker(
             statistics=statistics,
             sample_data=sample_data,
             significance_level=spec.significance_level,
-            storage_connection=spec.db_path,
+            limit_distribution_storage=storage,
         )
+
         return ExecutionTaskResult(spec=spec, worker_result=worker.execute())
 
     @override
@@ -116,7 +124,7 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
             criterion_code=spec.criterion_code,
             criterion_parameters=spec.criterion_parameters,
             sample_size=spec.sample_size,
-            alternative_code=spec.alternative_generator,
+            alternative_code=to_code(spec.alternative_generator),
             alternative_parameters=spec.alternative_parameters,
             monte_carlo_count=spec.monte_carlo_count,
             significance_level=float(spec.significance_level),

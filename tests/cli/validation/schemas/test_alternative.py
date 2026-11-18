@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
 from typing import Any
 from unittest.mock import patch
 
@@ -13,8 +15,8 @@ from pysatl_experiment.cli.validation.schemas.alternative import (
     Alternative,
     AlternativesConfig,
     _base_generator_params,
-    _get_available_generator_classes,
 )
+from pysatl_experiment.configuration.generator_registry import get_generator_classes
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 
 
@@ -26,7 +28,7 @@ class NakiGenerator(NormalGenerator):
 def stub_generators() -> Any:
     """Expose a stable generator registry for the validation tests."""
     with patch(
-        "pysatl_experiment.cli.validation.schemas.alternative._get_available_generator_classes",
+        "pysatl_experiment.cli.validation.schemas.alternative.get_generator_classes",
         return_value=[NormalGenerator, CauchyRVSGenerator],
     ):
         yield
@@ -36,17 +38,38 @@ def stub_generators() -> Any:
 def ambiguous_generators() -> Any:
     """Expose a registry whose two generator names share a common prefix."""
     with patch(
-        "pysatl_experiment.cli.validation.schemas.alternative._get_available_generator_classes",
+        "pysatl_experiment.cli.validation.schemas.alternative.get_generator_classes",
         return_value=[NormalGenerator, NakiGenerator],
     ):
         yield
 
 
 # Checks that the registry lookup returns the generators sorted by class name.
-def test_get_available_generator_classes_is_sorted() -> None:
-    classes = _get_available_generator_classes()
+def test_get_generator_classes_is_sorted() -> None:
+    classes = get_generator_classes()
 
     assert classes == sorted(classes, key=lambda cls: cls.__name__)
+
+
+# Checks that a fresh process discovers pysatl-criterion generators without prior imports.
+def test_generators_are_discovered_in_fresh_process(tmp_path: Any) -> None:
+    script = "\n".join(
+        [
+            "from pysatl_experiment.cli.validation.schemas.alternative import Alternative",
+            "alternative = Alternative(generator_name='NormalGenerator', parameters=[1.0, 0.5])",
+            "print(alternative.generator_name)",
+        ]
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "NORMALGENERATOR"
 
 
 # Checks that the cached base parameter names exclude the concrete parameters.

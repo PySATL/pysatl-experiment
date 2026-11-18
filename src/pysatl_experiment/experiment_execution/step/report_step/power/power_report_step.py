@@ -6,6 +6,7 @@ from line_profiler import profile
 from typing_extensions import override
 
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
+from pysatl_experiment.configuration.generator_registry import to_code
 from pysatl_experiment.configuration.models.alternative import Alternative
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
@@ -146,7 +147,7 @@ class PowerReportBuildingStep(IExperimentStep):
             criterion_code=criterion_config.criterion_code,
             criterion_parameters=criterion_config.criterion.parameters,
             sample_size=sample_size,
-            alternative_code=alternative.distribution_type,
+            alternative_code=to_code(alternative.distribution_type),
             alternative_parameters=alternative.parameters,
             monte_carlo_count=self.monte_carlo_count,
             significance_level=significance_level,

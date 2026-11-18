@@ -128,8 +128,8 @@ def test_collect_tasks_maps_step_data_into_spec() -> None:
     assert spec.sample_size == 42
     assert spec.monte_carlo_count == 7
     assert spec.db_path == "sqlite:///db.sqlite"
-    assert spec.sample_generator_code == DistributionType.NORMAL
-    assert spec.alternative_generator == DistributionType.NORMAL
+    assert spec.sample_generator_code == "normal"
+    assert spec.alternative_generator == "normal"
     assert spec.alternative_parameters == [1.0, 2.0]
     assert spec.significance_level == 0.01
 
@@ -142,16 +142,21 @@ def test_execute_task_builds_worker_and_returns_result() -> None:
     worker_result = PowerWorkerResult(results_criteria=[True, False])
 
     with patch.object(PowerExecutionStep, "_load_samples_and_statistics", return_value=(samples, statistics)):
-        with patch.object(power_execution_step, "PowerWorker") as worker_factory:
+        with (
+            patch.object(power_execution_step, "PowerWorker") as worker_factory,
+            patch.object(power_execution_step, "AlchemyLimitDistributionStorage") as storage_factory,
+        ):
             worker_factory.return_value.execute.return_value = worker_result
 
             result = PowerExecutionStep._execute_task(spec)
 
+    storage_factory.assert_called_once_with("sqlite:///db.sqlite")
+    storage_factory.return_value.init.assert_called_once_with()
     worker_factory.assert_called_once_with(
         statistics=statistics,
         sample_data=samples,
         significance_level=0.05,
-        storage_connection="sqlite:///db.sqlite",
+        limit_distribution_storage=storage_factory.return_value,
     )
     assert result.spec is spec
     assert result.worker_result is worker_result
@@ -176,7 +181,7 @@ def test_to_model_builds_power_model() -> None:
     assert model.criterion_code == "KS"
     assert model.criterion_parameters == [0.0, 1.0]
     assert model.sample_size == 10
-    assert model.alternative_code == "NORMAL"
+    assert model.alternative_code == "normal"
     assert model.alternative_parameters == [0.0, 1.0]
     assert model.monte_carlo_count == 5
     assert model.significance_level == 0.05

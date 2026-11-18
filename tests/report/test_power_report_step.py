@@ -189,7 +189,7 @@ def test_get_power_result_from_storage_builds_query(
             criterion_code="KS_",
             criterion_parameters=[],
             sample_size=sample_size,
-            alternative_code=DistributionType.NORMAL,
+            alternative_code="normal",
             alternative_parameters={"mean": 0.0, "std": 1.0},
             monte_carlo_count=7,
             significance_level=significance_level,

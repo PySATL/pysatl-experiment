@@ -1,7 +1,6 @@
 """Tests for power report builder."""
 
-import tempfile
-from pathlib import Path
+import io
 from typing import cast
 from unittest.mock import MagicMock, patch
 
@@ -96,7 +95,7 @@ class TestPowerReportBuilder:
 
     @patch("pysatl_experiment.experiment_execution.step.report_step.power.power_report_builder.plt.savefig")
     @patch("pysatl_experiment.experiment_execution.step.report_step.power.power_report_builder.plt.close")
-    def test_generate_chart_data_creates_file_and_returns_path(
+    def test_generate_chart_data_returns_base64_data_uri(
         self,
         mock_close,
         mock_savefig,
@@ -116,19 +115,13 @@ class TestPowerReportBuilder:
             with_chart=ReportMode.WITH_CHART,
         )
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            charts_dir = Path(temp_dir)
-            chart_path = charts_dir / "test_chart.png"
+        result = builder._generate_chart_data(mock_alternative, 0.05)
 
-            with (
-                patch.object(Path, "resolve", return_value=chart_path),
-                patch.object(Path, "as_posix", return_value=str(chart_path)),
-            ):
-                result_path = builder._generate_chart_data(mock_alternative, 0.05, charts_dir)
-
-                mock_savefig.assert_called_once()
-                assert isinstance(result_path, str)
-                assert result_path == str(chart_path)
+        mock_savefig.assert_called_once()
+        buffer = mock_savefig.call_args.args[0]
+        assert isinstance(buffer, io.BytesIO)
+        assert isinstance(result, str)
+        assert result.startswith("data:image/png;base64,")
 
     @pytest.mark.parametrize("chart_mode", [ReportMode.WITH_CHART, ReportMode.WITHOUT_CHART])
     @patch("pysatl_experiment.experiment_execution.step.report_step.power.power_report_builder.convert_html_to_pdf")
@@ -220,7 +213,7 @@ class TestPowerReportBuilder:
         mock_savefig.assert_called_once()
         assert html.count("<img") == 1
         assert 'alt="Power vs Sample Size"' in html
-        assert "DistributionType.NORMAL_0.05.png" in html
+        assert 'src="data:image/png;base64,' in html
         assert "<td>0.667</td>" in html
 
     # Checks that a failing chart generation is reported and leaves the table chart-free.

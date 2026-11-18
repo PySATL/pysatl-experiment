@@ -119,6 +119,7 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
         )
 
         rows = storage.get_count_data(query)
+
         if rows is None or len(rows) < spec.monte_carlo_count:
             raise ValueError("Not enough data in storage.")
 

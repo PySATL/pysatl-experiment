@@ -507,7 +507,7 @@ def test_create_power_queries(tmp_results_path: Path):
     assert queries[0].criterion_code == "STAT_1"
     assert queries[0].sample_size == 10
     assert queries[0].significance_level == 0.05
-    assert queries[0].alternative_code == DistributionType.NORMAL
+    assert queries[0].alternative_code == "normal"
     assert queries[0].monte_carlo_count == 50
 
 
@@ -527,6 +527,8 @@ def test_delete_hypothesis_sample_data(tmp_results_path: Path):
 
 # Checks that _delete_alternatives_sample_data issues delete_all_data for every alternative and sample size.
 def test_delete_alternatives_sample_data(tmp_results_path: Path):
+    from pysatl_criterion.generator.generators import NormalGenerator, WeibullGenerator
+
     from pysatl_experiment.configuration.experiment_config.power_experiment_config import PowerExperimentConfig
     from pysatl_experiment.configuration.experiment_data.power import PowerExperimentData
     from pysatl_experiment.configuration.models.alternative import Alternative
@@ -563,9 +565,9 @@ def test_delete_alternatives_sample_data(tmp_results_path: Path):
     factory._delete_alternatives_sample_data(fake_storage)
 
     assert len(fake_storage.deleted_all_queries) == 4
-    assert fake_storage.deleted_all_queries[0].generator_code == DistributionType.NORMAL
+    assert fake_storage.deleted_all_queries[0].generator_code == NormalGenerator(0.0).code()
     assert fake_storage.deleted_all_queries[0].sample_size == 10
-    assert fake_storage.deleted_all_queries[1].generator_code == DistributionType.WEIBULL
+    assert fake_storage.deleted_all_queries[1].generator_code == WeibullGenerator(1.5).code()
     assert fake_storage.deleted_all_queries[1].sample_size == 10
 
 

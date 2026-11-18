@@ -37,6 +37,7 @@ from pysatl_experiment.configuration.experiment_config.time_complexity_experimen
     TimeComplexityExperimentConfig as LegacyTimeComplexityExperimentConfig,
 )
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
+from pysatl_experiment.configuration.generator_registry import generator_name_to_distribution
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
@@ -365,6 +366,18 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
         raise TypeError(f"No match for Pydantic type: {type(pydantic_config)}")
 
     config_dict = cast(dict, pydantic_config.model_dump(mode="json"))
+
+    alternatives = config_dict.get("alternatives")
+    if alternatives is not None:
+        name_to_distribution = generator_name_to_distribution()
+
+        for alternative_dict in alternatives:
+            generator_name = alternative_dict.pop("generator_name")
+            distribution_type = name_to_distribution.get(generator_name.upper())
+            if distribution_type is None:
+                raise TypeError(f"Unknown generator name in alternatives: {generator_name!r}")
+
+            alternative_dict["distribution_type"] = distribution_type.value
 
     # hypothesis_params: the Pydantic schema stores it as an optional field.
     # The legacy dataclass defaults to an empty dict, so we only pass it to

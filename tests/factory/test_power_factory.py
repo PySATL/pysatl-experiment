@@ -13,6 +13,7 @@ from pysatl_criterion import DistributionType
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.experiment_config import PowerExperimentConfig
 from pysatl_experiment.configuration.experiment_data.power import PowerExperimentData
+from pysatl_experiment.configuration.generator_registry import to_code
 from pysatl_experiment.configuration.models.alternative import Alternative
 from pysatl_experiment.configuration.models.criterion import Criterion
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
@@ -46,6 +47,10 @@ sys.modules.setdefault("line_profiler", _lp)
 class FakeGenerator:
     def __init__(self):
         self.called = []
+        self.code_value = "FAKE_GEN"
+
+    def code(self) -> str:
+        return self.code_value
 
     def generate(self, n):  # pragma: no cover - we don't run steps in these tests
         self.called.append(n)
@@ -174,7 +179,8 @@ class DeterministicPowerFactory(PowerExperimentFactory):
         ]
 
     def _get_generator_class_object(self, generator_name: str, generator_parameters: list[float]):  # type: ignore[override]
-        # Ignore input and return our fake generator
+        # Ignore parameters and return our fake generator, echoing the requested name as its code
+        self._fake_generator.code_value = str(generator_name)
         return self._fake_generator
 
 
@@ -248,9 +254,9 @@ def test_execution_step_includes_missing_results_combinations(tmp_results_path: 
 
     rvs_storage = FakeRandomValuesStorage(counts_by_key={})
 
-    # build present results for one combination only: (FAKE_CODE, 10, 5, ALT_A, [0.1], 0.05)
+    # build present results for one combination only: (FAKE_CODE, 10, 5, alt_a, [0.1], 0.05)
     present: set[tuple[str, int, int, str, tuple[float, ...], float]] = {
-        (FakeStatistics.code(), 10, 5, "ALT_A", (0.1,), 0.05)
+        (FakeStatistics.code(), 10, 5, "alt_a", (0.1,), 0.05)
     }
     power_storage = FakePowerStorage(has_result=present)
     exp_storage = FakeExperimentStorage(experiment_id=7)
@@ -347,7 +353,7 @@ def test_delete_results_from_storage_deletes_queries_for_all_combinations(tmp_re
                 sample_size=sample_size,
                 monte_carlo_count=data.config.monte_carlo_count,
                 significance_level=significance_level,
-                alternative_code=alternative.distribution_type,
+                alternative_code=to_code(alternative.distribution_type),
                 alternative_parameters=alternative.parameters,
             )
         )
