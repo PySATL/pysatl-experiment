@@ -17,7 +17,17 @@ _GENERATORS_MODULE = "pysatl_criterion.generator.generators"
 
 
 def get_generator_classes() -> list[type[AbstractRVSGenerator]]:
-    """Return all concrete (non-abstract) RVS generator subclasses."""
+    """
+    Return all concrete (non-abstract) RVS generator subclasses.
+
+    Imports the generator module first, so the subclasses are registered even
+    in a fresh process, and returns them sorted by class name.
+
+    Returns
+    -------
+    list[type[AbstractRVSGenerator]]
+        Concrete generator classes sorted by class name.
+    """
     importlib.import_module(_GENERATORS_MODULE)
     return sorted(
         (cls for cls in AbstractRVSGenerator.__subclasses__() if not getattr(cls, "__abstractmethods__", None)),
@@ -31,6 +41,12 @@ def generator_name_to_distribution() -> dict[str, DistributionType]:
 
     Both the generator class name and the distribution value are accepted as
     keys and resolve to the same :class:`DistributionType`.
+
+    Returns
+    -------
+    dict[str, DistributionType]
+        Mapping from uppercase generator class names and uppercase distribution
+        values to the corresponding :class:`DistributionType`.
     """
     mapping: dict[str, DistributionType] = {}
     for cls in get_generator_classes():
@@ -53,6 +69,17 @@ def to_code(distribution_type: DistributionType | str) -> str:
         "DistributionType.NORMAL" -> "normal"
         "NORMAL"                  -> "normal"
         "normal"                  -> "normal"
+
+    Parameters
+    ----------
+    distribution_type : DistributionType | str
+        Distribution type or its string representation (enum member name,
+        ``"DistributionType.NORMAL"``, ``"NORMAL"`` or ``"normal"``).
+
+    Returns
+    -------
+    str
+        Lowercase storage-safe distribution code, e.g. ``"normal"``.
     """
     if isinstance(distribution_type, DistributionType):
         return distribution_type.value
