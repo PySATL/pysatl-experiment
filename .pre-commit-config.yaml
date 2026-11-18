@@ -70,7 +70,7 @@ repos:
     hooks:
       - id: check-poetry-lock
         name: Check poetry.lock consistency
-        entry: poetry lock --check
+        entry: poetry check --lock
         language: system
         always_run: true
         stages: [push]

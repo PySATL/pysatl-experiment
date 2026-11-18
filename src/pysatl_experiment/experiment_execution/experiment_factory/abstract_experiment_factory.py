@@ -570,7 +570,9 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
 
     def _get_hypothesis_generator_metadata(self) -> tuple[str, dict[str, float], AbstractRVSGenerator]:
         """Resolve the null-hypothesis generator metadata."""
-        generator = get_available_generator(self.experiment_data.config.hypothesis, None)
+        generator = get_available_generator(
+            self.experiment_data.config.hypothesis, self.experiment_data.config.hypothesis_params
+        )
         return generator.code(), generator.parameters(), generator
 
 

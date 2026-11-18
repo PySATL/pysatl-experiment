@@ -633,7 +633,7 @@ def test_get_hypothesis_generator_metadata(tmp_results_path: Path):
         return_value=mock_gen,
     ) as mock_get_gen:
         code, params, instance = factory._get_hypothesis_generator_metadata()
-        mock_get_gen.assert_called_once_with(data.config.hypothesis, None)
+        mock_get_gen.assert_called_once_with(data.config.hypothesis, {})
         assert code == "EXP_GEN_CODE"
         assert params == {"scale": 1.0}
         assert instance is mock_gen
