@@ -111,6 +111,18 @@ def test_setup_logging_sets_root_level():
     assert passed_config["root"]["level"] == "DEBUG"
 
 
+def test_setup_logging_quiets_noisy_third_party_loggers():
+    config = {}
+
+    with patch("logging.config.dictConfig") as dict_config:
+        setup_logging(config, level="DEBUG")
+
+    passed_config = dict_config.call_args.args[0]
+
+    for noisy in ("matplotlib", "PIL", "numexpr"):
+        assert passed_config["loggers"][noisy]["level"] == "WARNING"
+
+
 def test_setup_logging_adds_file_handler_to_user_config():
     custom_config = {
         "version": 1,

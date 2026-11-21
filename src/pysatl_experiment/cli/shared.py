@@ -2,6 +2,7 @@
 
 from click import group, version_option
 
+from pysatl_experiment.loggers import setup_exception_logging
 from pysatl_experiment.system.gc_setup import gc_set_threshold
 from pysatl_experiment.utils.files_utils import ensure_experiment_dir
 
@@ -15,3 +16,4 @@ def cli() -> None:
     """PySATL experiments command-line interface."""
     gc_set_threshold()
     ensure_experiment_dir()
+    setup_exception_logging()

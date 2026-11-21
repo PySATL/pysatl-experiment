@@ -13,6 +13,7 @@ rotating file handler and applies the requested verbosity level.
 
 import logging
 import logging.config
+import sys
 from copy import deepcopy
 from typing import Any
 
@@ -35,6 +36,13 @@ LOGGING_CONFIG: dict[str, Any] = {
     },
     "root": {
         "handlers": ["console"],
+    },
+    # Keep noisy third-party loggers at WARNING even when the root level
+    # is lowered (e.g. via --log-level DEBUG).
+    "loggers": {
+        "matplotlib": {"level": "WARNING"},
+        "PIL": {"level": "WARNING"},
+        "numexpr": {"level": "WARNING"},
     },
 }
 
@@ -95,3 +103,31 @@ def setup_logging(config: Any, level: int | str | None = None, filename: str | N
         log_config.setdefault("root", {})["level"] = level
 
     logging.config.dictConfig(log_config)
+
+
+def setup_exception_logging() -> None:
+    """
+    Route uncaught exceptions into the logging system.
+
+    Installs a ``sys.excepthook`` that logs uncaught exceptions at
+    CRITICAL level with a full traceback, so crashes leave a trace in
+    configured log destinations (e.g. the log file) instead of only
+    appearing on stderr.
+
+    Notes
+    -----
+    ``KeyboardInterrupt`` is still delegated to the default hook so
+    that interactive interruption keeps its standard behavior.
+    """
+    exception_logger = logging.getLogger("pysatl_experiment")
+
+    def _log_uncaught_exception(exc_type, exc_value, exc_traceback) -> None:
+        if issubclass(exc_type, KeyboardInterrupt):
+            sys.__excepthook__(exc_type, exc_value, exc_traceback)
+            return
+        exception_logger.critical(
+            "Uncaught exception",
+            exc_info=(exc_type, exc_value, exc_traceback),
+        )
+
+    sys.excepthook = _log_uncaught_exception

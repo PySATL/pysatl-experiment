@@ -15,6 +15,7 @@ import logging
 import pytest
 
 from pysatl_experiment.loggers import setup_logging
+from pysatl_experiment.loggers.context import ExperimentContextAdapter
 
 
 @pytest.fixture
@@ -122,3 +123,22 @@ def test_file_handler_writes_json_lines(tmp_path):
     assert payload["level"] == "WARNING"
     assert payload["logger"] == "pysatl_experiment.json_probe"
     assert "timestamp" in payload
+
+
+@pytest.mark.usefixtures("preserve_logging_state")
+def test_file_handler_exports_experiment_context_as_json_fields(tmp_path):
+    """Context attached via ExperimentContextAdapter must land in JSON fields."""
+    log_file = tmp_path / "exp_ctx.log"
+
+    setup_logging({}, level="INFO", filename=str(log_file))
+
+    adapter = ExperimentContextAdapter(logging.getLogger("pysatl_experiment.ctx_probe"), {"experiment_id": 42})
+    adapter.info("ctx json probe", extra={"step": "generation"})
+
+    for handler in logging.root.handlers:
+        handler.flush()
+
+    payload = json.loads(log_file.read_text(encoding="utf-8").splitlines()[0])
+    assert payload["experiment_id"] == 42
+    assert payload["step"] == "generation"
+    assert "[experiment_id=42, step=generation]" in payload["message"]

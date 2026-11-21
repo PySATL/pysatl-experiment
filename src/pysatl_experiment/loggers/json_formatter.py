@@ -21,6 +21,11 @@ import logging
 # TODO: replace loosely typed dictionaries with a dedicated TypedDict schema for formatter configuration?
 
 
+# Attributes every LogRecord carries plus the ones derived during formatting;
+# everything else on ``record.__dict__`` is caller-supplied context.
+_STANDARD_RECORD_ATTRS = frozenset(logging.makeLogRecord({}).__dict__) | {"message", "asctime"}
+
+
 class JsonFormatter(logging.Formatter):
     """
     Structured JSON formatter for Python logging.
@@ -45,6 +50,12 @@ class JsonFormatter(logging.Formatter):
         Millisecond formatting template appended to formatted
         timestamps.
 
+    include_extra : bool, default=True
+        When enabled, non-standard ``LogRecord`` attributes (typically
+        supplied via the ``extra`` argument of logging calls, e.g. by
+        ``ExperimentContextAdapter``) are exported as additional JSON
+        fields. Mapped fields take precedence over extra attributes.
+
     Notes
     -----
         The formatter follows the standard ``logging.Formatter`` lifecycle
@@ -56,6 +67,7 @@ class JsonFormatter(logging.Formatter):
         fmt_dict: dict | None = None,
         time_format: str = "%Y-%m-%dT%H:%M:%S",
         msec_format: str = "%s.%03dZ",
+        include_extra: bool = True,
     ):
         """
         Initialize the JSON formatter.
@@ -70,6 +82,9 @@ class JsonFormatter(logging.Formatter):
 
         msec_format : str, default="%s.%03dZ"
             Format string used for millisecond formatting.
+
+        include_extra : bool, default=True
+            Export non-standard record attributes as additional fields.
         """
         super().__init__(fmt=None, datefmt=time_format)
 
@@ -84,6 +99,7 @@ class JsonFormatter(logging.Formatter):
             }
         )
 
+        self.include_extra = include_extra
         self.default_time_format = time_format
         self.default_msec_format = msec_format
         self.datefmt = None
@@ -202,6 +218,11 @@ class JsonFormatter(logging.Formatter):
             record.asctime = self.formatTime(record, self.datefmt)
 
         message_dict = self.format_message_dict(record)
+
+        if self.include_extra:
+            for attr, value in record.__dict__.items():
+                if attr not in _STANDARD_RECORD_ATTRS and attr not in message_dict:
+                    message_dict[attr] = value
 
         if record.exc_info:
             # Cache the traceback text to avoid converting it multiple times

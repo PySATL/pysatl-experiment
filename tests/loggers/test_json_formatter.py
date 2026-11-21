@@ -226,7 +226,39 @@ def test_format_serializes_non_serializable_values_with_str_fallback() -> None:
     record.object_value = Path("some/dir")  # type: ignore[attr-defined]
     payload = json.loads(JsonFormatter({"value": "object_value"}).format(record))
 
-    assert payload == {"value": str(Path("some/dir"))}
+    assert payload["value"] == str(Path("some/dir"))
+
+
+# Checks that caller-supplied extra attributes are exported by default.
+def test_format_includes_extra_attributes_by_default() -> None:
+    record = make_record()
+    record.experiment_id = 42
+    record.step = "generation"
+
+    payload = json.loads(JsonFormatter().format(record))
+
+    assert payload["experiment_id"] == 42
+    assert payload["step"] == "generation"
+
+
+# Checks that include_extra=False suppresses caller-supplied attributes.
+def test_format_excludes_extra_attributes_when_disabled() -> None:
+    record = make_record()
+    record.experiment_id = 42
+
+    payload = json.loads(JsonFormatter(include_extra=False).format(record))
+
+    assert "experiment_id" not in payload
+
+
+# Checks that explicitly mapped fields take precedence over extra attributes.
+def test_format_mapped_fields_take_precedence_over_extras() -> None:
+    record = make_record()
+    record.custom_value = "extra"
+
+    payload = json.loads(JsonFormatter({"custom_value": "levelname"}).format(record))
+
+    assert payload["custom_value"] == "INFO"
 
 
 # Checks that the result is a single line JSON string.
