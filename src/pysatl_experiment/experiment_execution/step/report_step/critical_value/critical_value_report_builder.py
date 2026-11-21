@@ -8,6 +8,7 @@ sample sizes and significance levels.
 Optional visualizations may be included as charts.
 """
 
+import logging
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -19,6 +20,9 @@ from matplotlib import pyplot as plt
 from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.utils.report_utils import convert_html_to_pdf, get_report_template_dir
+
+
+logger = logging.getLogger(__name__)
 
 
 class CriticalValueReportBuilder:
@@ -112,8 +116,8 @@ class CriticalValueReportBuilder:
             if self.with_chart == ReportMode.WITH_CHART:
                 try:
                     chart_data = self._generate_chart_data(config.criterion_code, charts_dir)
-                except Exception as e:
-                    print(f"Failed to generate chart for {config.criterion_code}: {e}")
+                except Exception:
+                    logger.exception("Failed to generate chart for %s", config.criterion_code)
                     chart_data = None
 
             tables.append(

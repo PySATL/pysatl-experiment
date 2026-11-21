@@ -1,5 +1,6 @@
 """Tests for time complexity report builder."""
 
+import logging
 from io import BytesIO
 from unittest.mock import MagicMock, patch
 
@@ -127,7 +128,7 @@ class TestTimeComplexityReportBuilder:
             assert render_kwargs["report_data"] == time_data.as_dict()
             assert html_content == "<html>Without Chart</html>"
 
-    def test_generate_html_handles_chart_generation_failure(self, time_data, results_path):
+    def test_generate_html_handles_chart_generation_failure(self, time_data, results_path, caplog):
         builder = TimeComplexityReportBuilder(
             report_name="test",
             sample_sizes=[10, 20],
@@ -139,6 +140,11 @@ class TestTimeComplexityReportBuilder:
         mock_template = MagicMock()
         mock_template.render.return_value = "<html>Chart Failed</html>"
         with (
+            caplog.at_level(
+                logging.ERROR,
+                logger="pysatl_experiment.experiment_execution.step.report_step.time_complexity."
+                "time_complexity_report_builder",
+            ),
             patch.object(builder.template_env, "get_template", return_value=mock_template),
             patch.object(builder, "_generate_chart", side_effect=Exception("Chart gen failed")),
         ):
@@ -150,6 +156,11 @@ class TestTimeComplexityReportBuilder:
             assert render_kwargs["plot_image"] is None
             assert render_kwargs["report_data"] == time_data.as_dict()
             assert html_content == "<html>Chart Failed</html>"
+
+        assert "Failed to generate plot" in caplog.text
+        error_records = [record for record in caplog.records if record.levelno == logging.ERROR]
+        assert len(error_records) == 1
+        assert error_records[0].exc_info is not None
 
     @pytest.mark.parametrize("chart_mode", [ReportMode.WITH_CHART, ReportMode.WITHOUT_CHART])
     @patch(

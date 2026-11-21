@@ -1,9 +1,14 @@
 """Experiment orchestration logic."""
 
+import logging
+
 from line_profiler import profile
 
 from pysatl_experiment.experiment_execution.experiment_steps import ExperimentSteps
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
+
+
+logger = logging.getLogger(__name__)
 
 
 class Experiment:
@@ -38,19 +43,19 @@ class Experiment:
         experiment_storage = self.experiment_steps.experiment_storage
 
         if generation_step is not None:
-            print("Running generation step...")
+            logger.info("Running generation step...")
             generation_step.run()
             experiment_storage.set_generation_done(experiment_id)
-            print("Generation step finished.")
+            logger.info("Generation step finished.")
 
         if execution_step is not None:
-            print("Running execution step...")
+            logger.info("Running execution step...")
             execution_step.run()
             experiment_storage.set_execution_done(experiment_id)
-            print("Execution step finished.")
+            logger.info("Execution step finished.")
 
         if report_building_step is not None:
-            print("Running report building step...")
+            logger.info("Running report building step...")
             report_building_step.run()
             experiment_storage.set_report_building_done(experiment_id)
-            print("Report building step finished.")
+            logger.info("Report building step finished.")

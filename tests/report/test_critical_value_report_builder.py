@@ -1,5 +1,6 @@
 """Tests for critical value report builder."""
 
+import logging
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
@@ -116,7 +117,7 @@ class TestCriticalValueReportBuilder:
         mock_criterion_config,
         cv_values,
         results_path,
-        capsys,
+        caplog,
     ):
         builder = CriticalValueReportBuilder(
             report_name="test",
@@ -129,6 +130,11 @@ class TestCriticalValueReportBuilder:
         )
 
         with (
+            caplog.at_level(
+                logging.ERROR,
+                logger="pysatl_experiment.experiment_execution.step.report_step.critical_value."
+                "critical_value_report_builder",
+            ),
             patch.object(
                 builder,
                 "_generate_chart_data",
@@ -146,5 +152,8 @@ class TestCriticalValueReportBuilder:
         html_content = mock_convert.call_args[0][0]
         assert "KS_" in html_content
 
-        captured = capsys.readouterr()
-        assert "Failed to generate chart for KS_: chart boom" in captured.out
+        assert "Failed to generate chart for KS_" in caplog.text
+        error_records = [record for record in caplog.records if record.levelno == logging.ERROR]
+        assert len(error_records) == 1
+        assert error_records[0].exc_info is not None
+        assert isinstance(error_records[0].exc_info[1], RuntimeError)
