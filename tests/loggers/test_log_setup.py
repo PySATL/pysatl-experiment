@@ -86,3 +86,48 @@ def test_setup_logging_does_not_mutate_global_logging_config():
 
     assert LOGGING_CONFIG == original
     assert "file" not in LOGGING_CONFIG["handlers"]
+
+
+def test_setup_logging_keeps_existing_loggers_enabled():
+    config = {}
+
+    with patch("logging.config.dictConfig") as dict_config:
+        setup_logging(config)
+
+    passed_config = dict_config.call_args.args[0]
+
+    assert passed_config["disable_existing_loggers"] is False
+
+
+def test_setup_logging_sets_root_level():
+    config = {}
+
+    with patch("logging.config.dictConfig") as dict_config:
+        setup_logging(config, level="DEBUG")
+
+    passed_config = dict_config.call_args.args[0]
+
+    assert passed_config["root"]["level"] == "DEBUG"
+
+
+def test_setup_logging_adds_file_handler_to_user_config():
+    custom_config = {
+        "version": 1,
+        "handlers": {},
+        "root": {},
+    }
+
+    config = {
+        "log_config": custom_config,
+    }
+
+    with patch("logging.config.dictConfig") as dict_config:
+        setup_logging(config, filename="test.log")
+
+    passed_config = dict_config.call_args.args[0]
+
+    assert "file" in passed_config["handlers"]
+    assert passed_config["handlers"]["file"]["filename"] == "test.log"
+    assert "file" in passed_config["root"]["handlers"]
+    # User config has no "standard" formatter - it must not be referenced.
+    assert "formatter" not in passed_config["handlers"]["file"]
