@@ -106,10 +106,14 @@ def test_uses_time_is_false_without_asctime_mapping(fmt_dict: dict[str, str]) ->
     assert JsonFormatter(fmt_dict).usesTime() is False
 
 
-# Checks that the string based formatting hook is intentionally disabled.
-def test_format_message_raises_not_implemented_error() -> None:
-    with pytest.raises(NotImplementedError):
-        JsonFormatter().formatMessage(make_record())
+# Checks that the message formatting hook returns a JSON serialization of the record.
+def test_format_message_returns_json_string() -> None:
+    payload = json.loads(JsonFormatter().formatMessage(make_record()))
+
+    assert payload["level"] == "INFO"
+    assert payload["logger"] == "test_logger"
+    assert payload["message"] == "hello world"
+    assert TIMESTAMP_PATTERN.match(payload["timestamp"])
 
 
 # Checks that the record dictionary maps configured keys onto record attributes.

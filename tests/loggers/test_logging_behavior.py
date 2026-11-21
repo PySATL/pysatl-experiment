@@ -9,6 +9,7 @@ test uses the ``preserve_logging_state`` fixture to restore handlers,
 levels and disabled flags afterwards.
 """
 
+import json
 import logging
 
 import pytest
@@ -99,3 +100,25 @@ def test_file_handler_writes_message_and_traceback(tmp_path):
     content = log_file.read_text(encoding="utf-8")
     assert "file probe failure" in content
     assert "ValueError: boom-probe" in content
+
+
+@pytest.mark.usefixtures("preserve_logging_state")
+def test_file_handler_writes_json_lines(tmp_path):
+    """File logs must be machine-readable JSON records."""
+    log_file = tmp_path / "exp_json.log"
+
+    setup_logging({}, filename=str(log_file))
+
+    logging.getLogger("pysatl_experiment.json_probe").warning("json probe message")
+
+    for handler in logging.root.handlers:
+        handler.flush()
+
+    lines = log_file.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+
+    payload = json.loads(lines[0])
+    assert payload["message"] == "json probe message"
+    assert payload["level"] == "WARNING"
+    assert payload["logger"] == "pysatl_experiment.json_probe"
+    assert "timestamp" in payload

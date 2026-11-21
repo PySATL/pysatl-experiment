@@ -19,7 +19,6 @@ import logging
 
 
 # TODO: replace loosely typed dictionaries with a dedicated TypedDict schema for formatter configuration?
-# TODO: currently not used anywhere
 
 
 class JsonFormatter(logging.Formatter):
@@ -111,7 +110,7 @@ class JsonFormatter(logging.Formatter):
 
     def formatMessage(self, record) -> str:
         """
-        Disable string-based message formatting.
+        Format the record message as a JSON string.
 
         Parameters
         ----------
@@ -121,20 +120,25 @@ class JsonFormatter(logging.Formatter):
         Returns
         -------
         str
-            This method never returns successfully.
-
-        Raises
-        ------
-        NotImplementedError
-            Always raised because JSON formatting relies on dictionary
-            serialization instead of string-based message formatting.
+            JSON serialization of the configured record fields.
 
         Notes
         -----
-        The standard ``logging.Formatter`` interface requires this method,
-        but it is intentionally not used by this implementation.
+        The standard ``logging.Formatter`` interface requires this method.
+        Unlike string-based formatters, the message is serialized together
+        with the other configured fields as JSON.
+
+        The method is not used by ``format`` itself, but is implemented
+        honestly so that third-party integrations calling it directly
+        receive a meaningful result instead of an exception. Missing
+        derived attributes (``asctime``, ``message``) are computed on
+        demand.
         """
-        raise NotImplementedError()
+        if self.usesTime() and not hasattr(record, "asctime"):
+            record.asctime = self.formatTime(record, self.datefmt)
+        if "message" in self.fmt_dict.values() and not hasattr(record, "message"):
+            record.message = record.getMessage()
+        return json.dumps(self.format_message_dict(record), default=str)
 
     def format_message_dict(self, record) -> dict:
         """

@@ -46,6 +46,7 @@ def test_setup_logging_adds_file_handler():
 
     assert file_handler["class"] == "logging.handlers.RotatingFileHandler"
     assert file_handler["filename"] == "test.log"
+    assert file_handler["formatter"] == "json"
 
     assert "file" in passed_config["root"]["handlers"]
 
@@ -129,5 +130,6 @@ def test_setup_logging_adds_file_handler_to_user_config():
     assert "file" in passed_config["handlers"]
     assert passed_config["handlers"]["file"]["filename"] == "test.log"
     assert "file" in passed_config["root"]["handlers"]
-    # User config has no "standard" formatter - it must not be referenced.
-    assert "formatter" not in passed_config["handlers"]["file"]
+    # The JSON formatter must be defined even in a bare user config.
+    assert passed_config["handlers"]["file"]["formatter"] == "json"
+    assert "json" in passed_config["formatters"]

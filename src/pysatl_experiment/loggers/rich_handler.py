@@ -23,8 +23,7 @@ from rich._null_file import NullFile
 from rich.console import Console
 from rich.text import Text
 
-
-# TODO: currently not used anywhere
+from pysatl_experiment.loggers.rich_console import get_rich_console
 
 
 class FtRichHandler(Handler):
@@ -36,8 +35,11 @@ class FtRichHandler(Handler):
 
     Parameters
     ----------
-    console : Console
-        Rich console instance used for rendering output.
+    console : Console or None, optional
+        Rich console instance used for rendering output. When omitted,
+        a default console writing to ``sys.stderr`` is created, which
+        allows the handler to be instantiated from ``dictConfig``-style
+        configurations without arguments.
 
     Notes
     -----
@@ -45,21 +47,23 @@ class FtRichHandler(Handler):
     standard logging formatters.
     """
 
-    def __init__(self, console: Console, *args, **kwargs) -> None:
+    def __init__(self, console: Console | None = None, *args, **kwargs) -> None:
         """
         Initialize Rich logging handler.
 
         Parameters
         ----------
-        console : Console
-            Rich console used for output rendering.
+        console : Console or None, optional
+            Rich console used for output rendering. When ``None``, a
+            default stderr-bound console is created via
+            ``get_rich_console``.
 
         Notes
         -----
         The console instance is stored internally and used during emit.
         """
         super().__init__(*args, **kwargs)
-        self._console = console  # TODO: validate console instance type explicitly for robustness?
+        self._console = console if console is not None else get_rich_console(stderr=True)
 
     def emit(self, record):
         """

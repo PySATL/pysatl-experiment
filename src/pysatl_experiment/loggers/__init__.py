@@ -30,9 +30,7 @@ LOGGING_CONFIG: dict[str, Any] = {
     },
     "handlers": {
         "console": {
-            "class": "logging.StreamHandler",
-            "stream": "ext://sys.stderr",
-            "formatter": "standard",
+            "class": "pysatl_experiment.loggers.rich_handler.FtRichHandler",
         }
     },
     "root": {
@@ -75,18 +73,18 @@ def setup_logging(config: Any, level: int | str | None = None, filename: str | N
 
     if filename:
         handlers = log_config.setdefault("handlers", {})
-        file_handler: dict[str, Any] = {
+        formatters = log_config.setdefault("formatters", {})
+        # File logs are JSON-formatted for machine processing; the console
+        # output stays human-readable.
+        formatters.setdefault("json", {"()": "pysatl_experiment.loggers.json_formatter.JsonFormatter"})
+        handlers["file"] = {
             "class": "logging.handlers.RotatingFileHandler",
             "filename": filename,
             "maxBytes": 10 * 1024 * 1024,
             "backupCount": 5,
             "encoding": "utf-8",
+            "formatter": "json",
         }
-        # Only reference the standard formatter when it is actually defined
-        # (it is absent from arbitrary user-supplied configurations).
-        if "standard" in log_config.get("formatters", {}):
-            file_handler["formatter"] = "standard"
-        handlers["file"] = file_handler
         log_config.setdefault("root", {}).setdefault("handlers", []).append("file")
 
     if level:
