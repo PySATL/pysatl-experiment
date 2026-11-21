@@ -17,3 +17,4 @@ Follow the 4-step experimental workflow in `experiment_example/Quick-Start_Templ
 
 - [Docker Deployment](docker.md)
 - [Quick-Start Template](experiment_example/Quick-Start_Template.md)
+- [Logging](logging.md)
