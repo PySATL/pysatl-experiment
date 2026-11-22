@@ -2,6 +2,7 @@
 
 from collections.abc import Callable, Iterator, Sequence
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from multiprocessing.context import BaseContext
 from typing import Any
 
 
@@ -18,6 +19,10 @@ class Scheduler:
         (e.g. ``configure_worker_logging``).
     worker_initargs : tuple, default=()
         Arguments passed to ``worker_initializer``.
+    mp_context : multiprocessing.context.BaseContext | None, optional
+        Multiprocessing context for the executor (e.g. ``spawn``).
+        When worker logging is used, the same context must be passed
+        to ``WorkerLogListener``. Defaults to the platform default.
     """
 
     def __init__(
@@ -25,6 +30,7 @@ class Scheduler:
         max_workers: int,
         worker_initializer: Callable | None = None,
         worker_initargs: tuple = (),
+        mp_context: BaseContext | None = None,
     ) -> None:
         """
         Initialize scheduler.
@@ -37,10 +43,14 @@ class Scheduler:
             Initializer run once in each worker process at startup.
         worker_initargs : tuple, default=()
             Arguments passed to ``worker_initializer``.
+        mp_context : multiprocessing.context.BaseContext | None, optional
+            Multiprocessing context for the executor; defaults to the
+            platform default context.
         """
         self.max_workers = max_workers
         self._worker_initializer = worker_initializer
         self._worker_initargs = worker_initargs
+        self._mp_context = mp_context
         self._executor: ProcessPoolExecutor | None = None
         self._active = False
 
@@ -71,6 +81,7 @@ class Scheduler:
 
         self._executor = ProcessPoolExecutor(
             max_workers=self.max_workers,
+            mp_context=self._mp_context,
             initializer=self._worker_initializer,
             initargs=self._worker_initargs,
         )

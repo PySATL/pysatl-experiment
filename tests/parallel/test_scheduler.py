@@ -51,8 +51,9 @@ class InlineExecutor:
 
     instances: ClassVar[list["InlineExecutor"]] = []
 
-    def __init__(self, max_workers: int | None = None, initializer=None, initargs=()) -> None:
+    def __init__(self, max_workers: int | None = None, mp_context=None, initializer=None, initargs=()) -> None:
         self.max_workers = max_workers
+        self.mp_context = mp_context
         self.initializer = initializer
         self.initargs = initargs
         self.submitted: list[tuple[Any, ...]] = []
@@ -212,7 +213,7 @@ def test_scheduler_forwards_max_workers(monkeypatch):
     class RecordingExecutor:
         """Executor stub recording the configured worker count."""
 
-        def __init__(self, max_workers=None, initializer=None, initargs=()):
+        def __init__(self, max_workers=None, mp_context=None, initializer=None, initargs=()):
             created.append(max_workers)
 
         def submit(self, fn, *args, **kwargs):
@@ -237,8 +238,9 @@ def test_scheduler_forwards_worker_initializer(monkeypatch):
     class RecordingExecutor:
         """Executor stub recording the initializer wiring."""
 
-        def __init__(self, max_workers=None, initializer=None, initargs=()):
+        def __init__(self, max_workers=None, mp_context=None, initializer=None, initargs=()):
             recorded["max_workers"] = max_workers
+            recorded["mp_context"] = mp_context
             recorded["initializer"] = initializer
             recorded["initargs"] = initargs
 
@@ -257,7 +259,12 @@ def test_scheduler_forwards_worker_initializer(monkeypatch):
     scheduler.start()
     scheduler.shutdown()
 
-    assert recorded == {"max_workers": 3, "initializer": _noop_initializer, "initargs": ("a", 1)}
+    assert recorded == {
+        "max_workers": 3,
+        "mp_context": None,
+        "initializer": _noop_initializer,
+        "initargs": ("a", 1),
+    }
 
 
 # Checks that a TimeoutError raised while collecting results is retried.

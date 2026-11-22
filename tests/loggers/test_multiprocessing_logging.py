@@ -102,7 +102,7 @@ def test_spawned_worker_records_reach_parent_handlers() -> None:
     root.setLevel(logging.INFO)
 
     ctx = mp.get_context("spawn")
-    with WorkerLogListener() as log_ctx:
+    with WorkerLogListener(mp_context=ctx) as log_ctx:
         with ProcessPoolExecutor(
             max_workers=1,
             mp_context=ctx,

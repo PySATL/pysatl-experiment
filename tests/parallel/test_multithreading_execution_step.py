@@ -57,10 +57,12 @@ class InlineExecutor:
     def __init__(
         self,
         max_workers: int | None = None,
+        mp_context: Any = None,
         initializer: Any = None,
         initargs: tuple[Any, ...] = (),
     ) -> None:
         self.max_workers = max_workers
+        self.mp_context = mp_context
         self.initializer = initializer
         self.initargs = initargs
         self.submitted: list[tuple[Any, ...]] = []

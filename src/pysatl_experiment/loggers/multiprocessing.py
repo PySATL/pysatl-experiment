@@ -25,6 +25,7 @@ import logging
 import multiprocessing as mp
 import os
 from logging.handlers import QueueHandler, QueueListener
+from multiprocessing.context import BaseContext
 from multiprocessing.queues import Queue as MpQueue
 
 
@@ -100,10 +101,28 @@ class WorkerLogListener:
                 worker_initargs=(log_ctx.queue, log_ctx.level),
             ) as scheduler:
                 ...
+
+    Parameters
+    ----------
+    mp_context : multiprocessing.context.BaseContext | None, optional
+        Multiprocessing context used to create the queue. Must match the
+        context of the ``ProcessPoolExecutor`` consuming it — a queue
+        created in one context cannot be shared with processes started
+        in another (e.g. fork queue + spawn executor fails at runtime).
+        Defaults to the platform default context.
     """
 
-    def __init__(self) -> None:
-        """Initialize the listener (no resources are allocated until start)."""
+    def __init__(self, mp_context: BaseContext | None = None) -> None:
+        """
+        Initialize the listener (no resources are allocated until start).
+
+        Parameters
+        ----------
+        mp_context : multiprocessing.context.BaseContext | None, optional
+            Multiprocessing context for the queue; defaults to the
+            platform default context.
+        """
+        self._mp_context = mp_context or mp.get_context()
         self._queue: MpQueue[logging.LogRecord] | None = None
         self._listener: QueueListener | None = None
         self.level: int = logging.WARNING
@@ -138,7 +157,7 @@ class WorkerLogListener:
         """
         root = logging.getLogger()
         self.level = root.getEffectiveLevel()
-        self._queue = mp.Queue()
+        self._queue = self._mp_context.Queue()
         self._listener = QueueListener(self._queue, *root.handlers[:], respect_handler_level=True)
         self._listener.start()
         return self

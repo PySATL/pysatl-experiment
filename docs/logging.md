@@ -105,3 +105,5 @@ The setup is thread-safe by construction (stdlib logging guarantee). For multipr
 Execution steps based on `MultithreadingExecutionStep` get this wiring automatically.
 
 Records emitted in a worker are stamped with a `worker_id` field (the worker's PID; exported to JSON logs like other context fields). A caller-supplied `worker_id` (e.g. a logical index passed via `extra`) is never overwritten by the automatic stamp.
+
+When a non-default multiprocessing context is used (e.g. `spawn` on POSIX), pass the same context to both `WorkerLogListener(mp_context=...)` and `Scheduler(mp_context=...)` — a queue created in one context cannot be shared with processes started in another.
