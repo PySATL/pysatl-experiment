@@ -8,6 +8,7 @@ nav:
     - Home: index.md
     - Docker: docker.md
     - Experiments: experiment_example/Quick-Start_Template.md
+    - Logging: logging.md
 theme:
   name: material
   logo: "images/logo.png"

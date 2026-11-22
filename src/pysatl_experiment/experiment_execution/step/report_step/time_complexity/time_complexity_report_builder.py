@@ -9,6 +9,7 @@ of execution time versus sample size.
 """
 
 import base64
+import logging
 from io import BytesIO
 from pathlib import Path
 
@@ -22,6 +23,9 @@ from pysatl_experiment.experiment_execution.step.report_step.time_complexity.tim
     TimeComplexityReportStatistic,
 )
 from pysatl_experiment.utils.report_utils import convert_html_to_pdf, get_report_template_dir
+
+
+logger = logging.getLogger(__name__)
 
 
 class TimeComplexityReportBuilder:
@@ -151,8 +155,8 @@ class TimeComplexityReportBuilder:
         if self.report_mode == ReportMode.WITH_CHART:
             try:
                 plot_data = self._generate_chart()
-            except Exception as e:
-                print(f"Failed to generate plot: {e}")
+            except Exception:
+                logger.exception("Failed to generate plot")
                 plot_data = None
 
         return self.template_env.get_template("tc_template.html").render(

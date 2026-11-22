@@ -46,6 +46,7 @@ def test_setup_logging_adds_file_handler():
 
     assert file_handler["class"] == "logging.handlers.RotatingFileHandler"
     assert file_handler["filename"] == "test.log"
+    assert file_handler["formatter"] == "json"
 
     assert "file" in passed_config["root"]["handlers"]
 
@@ -86,3 +87,61 @@ def test_setup_logging_does_not_mutate_global_logging_config():
 
     assert LOGGING_CONFIG == original
     assert "file" not in LOGGING_CONFIG["handlers"]
+
+
+def test_setup_logging_keeps_existing_loggers_enabled():
+    config = {}
+
+    with patch("logging.config.dictConfig") as dict_config:
+        setup_logging(config)
+
+    passed_config = dict_config.call_args.args[0]
+
+    assert passed_config["disable_existing_loggers"] is False
+
+
+def test_setup_logging_sets_root_level():
+    config = {}
+
+    with patch("logging.config.dictConfig") as dict_config:
+        setup_logging(config, level="DEBUG")
+
+    passed_config = dict_config.call_args.args[0]
+
+    assert passed_config["root"]["level"] == "DEBUG"
+
+
+def test_setup_logging_quiets_noisy_third_party_loggers():
+    config = {}
+
+    with patch("logging.config.dictConfig") as dict_config:
+        setup_logging(config, level="DEBUG")
+
+    passed_config = dict_config.call_args.args[0]
+
+    for noisy in ("matplotlib", "PIL", "numexpr"):
+        assert passed_config["loggers"][noisy]["level"] == "WARNING"
+
+
+def test_setup_logging_adds_file_handler_to_user_config():
+    custom_config = {
+        "version": 1,
+        "handlers": {},
+        "root": {},
+    }
+
+    config = {
+        "log_config": custom_config,
+    }
+
+    with patch("logging.config.dictConfig") as dict_config:
+        setup_logging(config, filename="test.log")
+
+    passed_config = dict_config.call_args.args[0]
+
+    assert "file" in passed_config["handlers"]
+    assert passed_config["handlers"]["file"]["filename"] == "test.log"
+    assert "file" in passed_config["root"]["handlers"]
+    # The JSON formatter must be defined even in a bare user config.
+    assert passed_config["handlers"]["file"]["formatter"] == "json"
+    assert "json" in passed_config["formatters"]

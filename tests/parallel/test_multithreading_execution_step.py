@@ -20,6 +20,7 @@ from pysatl_experiment.experiment_execution.step.execution_step.multithreading_e
     ExecutionTaskResult,
     MultithreadingExecutionStep,
 )
+from pysatl_experiment.loggers.multiprocessing import configure_worker_logging
 from pysatl_experiment.persistence.models.random_values import RandomValuesModel
 from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
 
@@ -53,8 +54,17 @@ class InlineExecutor:
 
     instances: ClassVar[list[InlineExecutor]] = []
 
-    def __init__(self, max_workers: int | None = None) -> None:
+    def __init__(
+        self,
+        max_workers: int | None = None,
+        mp_context: Any = None,
+        initializer: Any = None,
+        initargs: tuple[Any, ...] = (),
+    ) -> None:
         self.max_workers = max_workers
+        self.mp_context = mp_context
+        self.initializer = initializer
+        self.initargs = initargs
         self.submitted: list[tuple[Any, ...]] = []
         self.shutdown_calls: int = 0
         InlineExecutor.instances.append(self)
@@ -280,6 +290,20 @@ def test_run_uses_configured_parallel_workers(inline_executor: type[InlineExecut
 
     assert [executor.max_workers for executor in inline_executor.instances] == [3]
     assert inline_executor.instances[0].shutdown_calls == 1
+
+
+# Checks that worker logging is wired into the scheduler: the logging
+# initializer plus the shared queue and the parent's level are forwarded.
+def test_run_wires_worker_logging_into_scheduler(inline_executor: type[InlineExecutor]) -> None:
+    step = make_step([make_spec()], parallel_workers=2)
+
+    step.run()
+
+    executor = inline_executor.instances[0]
+    assert executor.initializer is configure_worker_logging
+    log_queue, level = executor.initargs
+    assert log_queue is not None
+    assert isinstance(level, int)
 
 
 # Checks that a failing task propagates and already buffered results are saved.

@@ -118,6 +118,9 @@ lines-after-imports = 2
 plugins = ["pydantic.mypy"]
 mypy_path = "src"
 ignore_missing_imports = true
+# Same-named modules in different test directories (e.g. conftest.py)
+# must not collide: resolve module names against the directory tree.
+explicit_package_bases = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true

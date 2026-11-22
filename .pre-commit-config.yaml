@@ -7,6 +7,10 @@ repos:
     hooks:
       - id: mypy
         exclude: build_helpers
+        # Check the whole source and test trees on every run: with the
+        # default (staged files only) mypy misses cross-module errors.
+        pass_filenames: false
+        args: [src, tests]
         additional_dependencies:
           - types-cachetools==5.5.0.20240820
           - types-filelock==3.2.7

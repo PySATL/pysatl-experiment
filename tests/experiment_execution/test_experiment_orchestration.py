@@ -1,6 +1,7 @@
 """Tests for experiment orchestration logic."""
 
 import itertools
+import logging
 from unittest.mock import MagicMock, call
 
 import pytest
@@ -13,12 +14,23 @@ from pysatl_experiment.persistence.models.experiment import IExperimentStorage
 
 EXPERIMENT_ID = 42
 
+EXPERIMENT_LOGGER = "pysatl_experiment.experiment_execution.experiment"
+
 STEP_PRESENCE_COMBINATIONS = list(itertools.product([False, True], repeat=3))
 
+
+def _expected_messages(step: str, start: str, finish: str) -> tuple[str, str]:
+    """Build expected log messages with the experiment context prefix."""
+    prefix = f"[experiment_id={EXPERIMENT_ID}, step={step}]"
+    return f"{prefix} {start}", f"{prefix} {finish}"
+
+
 EXPECTED_STEP_MESSAGES = {
-    "generation": ("Running generation step...", "Generation step finished."),
-    "execution": ("Running execution step...", "Execution step finished."),
-    "report_building": ("Running report building step...", "Report building step finished."),
+    "generation": _expected_messages("generation", "Running generation step...", "Generation step finished."),
+    "execution": _expected_messages("execution", "Running execution step...", "Execution step finished."),
+    "report_building": _expected_messages(
+        "report_building", "Running report building step...", "Report building step finished."
+    ),
 }
 
 STORAGE_METHODS = {
@@ -152,41 +164,60 @@ def test_steps_and_statuses_are_executed_sequentially() -> None:
     ]
 
 
-# Checks that progress messages are printed around each enabled step.
-def test_messages_are_printed_for_each_enabled_step(capsys: pytest.CaptureFixture[str]) -> None:
+# Checks that progress messages are logged around each enabled step.
+def test_messages_are_logged_for_each_enabled_step(caplog: pytest.LogCaptureFixture) -> None:
     generation_step = make_step()
     execution_step = make_step()
     experiment = build_experiment(generation_step, execution_step)
 
-    experiment.run_experiment()
+    with caplog.at_level(logging.INFO, logger=EXPERIMENT_LOGGER):
+        experiment.run_experiment()
 
-    assert capsys.readouterr().out.splitlines() == [
-        "Running generation step...",
-        "Generation step finished.",
-        "Running execution step...",
-        "Execution step finished.",
+    assert [record.message for record in caplog.records] == [
+        EXPECTED_STEP_MESSAGES["generation"][0],
+        EXPECTED_STEP_MESSAGES["generation"][1],
+        EXPECTED_STEP_MESSAGES["execution"][0],
+        EXPECTED_STEP_MESSAGES["execution"][1],
     ]
+    assert all(record.levelno == logging.INFO for record in caplog.records)
+
+
+# Checks that context fields are attached to every emitted record.
+def test_log_records_carry_experiment_context(caplog: pytest.LogCaptureFixture) -> None:
+    generation_step = make_step()
+    experiment = build_experiment(generation_step=generation_step)
+
+    with caplog.at_level(logging.INFO, logger=EXPERIMENT_LOGGER):
+        experiment.run_experiment()
+
+    assert len(caplog.records) == 2
+    for record in caplog.records:
+        # Context fields are attached dynamically via the extra mechanism.
+        assert record.experiment_id == EXPERIMENT_ID  # type: ignore[attr-defined]
+        assert record.step == "generation"  # type: ignore[attr-defined]
 
 
 # Checks that every step of the pipeline produces its start and finish message.
 @pytest.mark.parametrize("step_name", list(EXPECTED_STEP_MESSAGES))
-def test_each_step_prints_expected_messages(step_name: str, capsys: pytest.CaptureFixture[str]) -> None:
+def test_each_step_logs_expected_messages(step_name: str, caplog: pytest.LogCaptureFixture) -> None:
     flags = {name: name == step_name for name in EXPECTED_STEP_MESSAGES}
     experiment, _, _, _ = build_presence_case(flags["generation"], flags["execution"], flags["report_building"])
 
-    experiment.run_experiment()
+    with caplog.at_level(logging.INFO, logger=EXPERIMENT_LOGGER):
+        experiment.run_experiment()
 
     start_message, finish_message = EXPECTED_STEP_MESSAGES[step_name]
-    assert capsys.readouterr().out == f"{start_message}\n{finish_message}\n"
+    assert [record.message for record in caplog.records] == [start_message, finish_message]
 
 
 # Checks that an experiment without steps runs silently and touches no storage.
-def test_empty_pipeline_runs_silently(capsys: pytest.CaptureFixture[str]) -> None:
+def test_empty_pipeline_runs_silently(caplog: pytest.LogCaptureFixture) -> None:
     experiment, storage, _, _ = build_presence_case(False, False, False)
 
-    assert experiment.run_experiment() is None
+    with caplog.at_level(logging.INFO, logger=EXPERIMENT_LOGGER):
+        assert experiment.run_experiment() is None
 
-    assert capsys.readouterr().out == ""
+    assert caplog.records == []
     assert storage.mock_calls == []
 
 
@@ -198,24 +229,27 @@ def test_run_experiment_returns_none() -> None:
 
 
 # Checks that a failing step propagates and prevents the remaining pipeline from running.
-def test_failing_generation_step_stops_the_pipeline(capsys: pytest.CaptureFixture[str]) -> None:
+def test_failing_generation_step_stops_the_pipeline(caplog: pytest.LogCaptureFixture) -> None:
     generation_step = make_step()
     execution_step = make_step()
     storage = make_storage()
     generation_step.run.side_effect = RuntimeError("generation failed")
     experiment = build_experiment(generation_step, execution_step, storage=storage)
 
-    with pytest.raises(RuntimeError, match="generation failed"):
+    with (
+        caplog.at_level(logging.INFO, logger=EXPERIMENT_LOGGER),
+        pytest.raises(RuntimeError, match="generation failed"),
+    ):
         experiment.run_experiment()
 
-    assert capsys.readouterr().out == "Running generation step...\n"
+    assert [record.message for record in caplog.records] == [EXPECTED_STEP_MESSAGES["generation"][0]]
     storage.set_generation_done.assert_not_called()
     execution_step.run.assert_not_called()
     storage.set_execution_done.assert_not_called()
 
 
 # Checks that a failing execution step still keeps the generation status persisted.
-def test_failing_execution_step_keeps_generation_status(capsys: pytest.CaptureFixture[str]) -> None:
+def test_failing_execution_step_keeps_generation_status() -> None:
     generation_step = make_step()
     execution_step = make_step()
     report_building_step = make_step()

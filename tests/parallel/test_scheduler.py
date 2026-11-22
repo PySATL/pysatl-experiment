@@ -51,8 +51,11 @@ class InlineExecutor:
 
     instances: ClassVar[list["InlineExecutor"]] = []
 
-    def __init__(self, max_workers: int | None = None) -> None:
+    def __init__(self, max_workers: int | None = None, mp_context=None, initializer=None, initargs=()) -> None:
         self.max_workers = max_workers
+        self.mp_context = mp_context
+        self.initializer = initializer
+        self.initargs = initargs
         self.submitted: list[tuple[Any, ...]] = []
         self.shutdown_calls: int = 0
         InlineExecutor.instances.append(self)
@@ -210,7 +213,7 @@ def test_scheduler_forwards_max_workers(monkeypatch):
     class RecordingExecutor:
         """Executor stub recording the configured worker count."""
 
-        def __init__(self, max_workers=None):
+        def __init__(self, max_workers=None, mp_context=None, initializer=None, initargs=()):
             created.append(max_workers)
 
         def submit(self, fn, *args, **kwargs):
@@ -226,6 +229,42 @@ def test_scheduler_forwards_max_workers(monkeypatch):
     scheduler.shutdown()
 
     assert created == [7]
+
+
+# Checks that the worker initializer and its arguments are forwarded to the executor factory.
+def test_scheduler_forwards_worker_initializer(monkeypatch):
+    recorded = {}
+
+    class RecordingExecutor:
+        """Executor stub recording the initializer wiring."""
+
+        def __init__(self, max_workers=None, mp_context=None, initializer=None, initargs=()):
+            recorded["max_workers"] = max_workers
+            recorded["mp_context"] = mp_context
+            recorded["initializer"] = initializer
+            recorded["initargs"] = initargs
+
+        def submit(self, fn, *args, **kwargs):
+            raise NotImplementedError
+
+        def shutdown(self, wait=True):
+            pass
+
+    def _noop_initializer():
+        pass
+
+    monkeypatch.setattr(scheduler_module, "ProcessPoolExecutor", RecordingExecutor)
+
+    scheduler = Scheduler(max_workers=3, worker_initializer=_noop_initializer, worker_initargs=("a", 1))
+    scheduler.start()
+    scheduler.shutdown()
+
+    assert recorded == {
+        "max_workers": 3,
+        "mp_context": None,
+        "initializer": _noop_initializer,
+        "initargs": ("a", 1),
+    }
 
 
 # Checks that a TimeoutError raised while collecting results is retried.

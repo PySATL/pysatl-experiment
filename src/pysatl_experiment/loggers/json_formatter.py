@@ -19,7 +19,11 @@ import logging
 
 
 # TODO: replace loosely typed dictionaries with a dedicated TypedDict schema for formatter configuration?
-# TODO: currently not used anywhere
+
+
+# Attributes every LogRecord carries plus the ones derived during formatting;
+# everything else on ``record.__dict__`` is caller-supplied context.
+_STANDARD_RECORD_ATTRS = frozenset(logging.makeLogRecord({}).__dict__) | {"message", "asctime"}
 
 
 class JsonFormatter(logging.Formatter):
@@ -46,6 +50,12 @@ class JsonFormatter(logging.Formatter):
         Millisecond formatting template appended to formatted
         timestamps.
 
+    include_extra : bool, default=True
+        When enabled, non-standard ``LogRecord`` attributes (typically
+        supplied via the ``extra`` argument of logging calls, e.g. by
+        ``ExperimentContextAdapter``) are exported as additional JSON
+        fields. Mapped fields take precedence over extra attributes.
+
     Notes
     -----
         The formatter follows the standard ``logging.Formatter`` lifecycle
@@ -57,6 +67,7 @@ class JsonFormatter(logging.Formatter):
         fmt_dict: dict | None = None,
         time_format: str = "%Y-%m-%dT%H:%M:%S",
         msec_format: str = "%s.%03dZ",
+        include_extra: bool = True,
     ):
         """
         Initialize the JSON formatter.
@@ -71,6 +82,9 @@ class JsonFormatter(logging.Formatter):
 
         msec_format : str, default="%s.%03dZ"
             Format string used for millisecond formatting.
+
+        include_extra : bool, default=True
+            Export non-standard record attributes as additional fields.
         """
         super().__init__(fmt=None, datefmt=time_format)
 
@@ -85,6 +99,7 @@ class JsonFormatter(logging.Formatter):
             }
         )
 
+        self.include_extra = include_extra
         self.default_time_format = time_format
         self.default_msec_format = msec_format
         self.datefmt = None
@@ -111,7 +126,7 @@ class JsonFormatter(logging.Formatter):
 
     def formatMessage(self, record) -> str:
         """
-        Disable string-based message formatting.
+        Format the record message as a JSON string.
 
         Parameters
         ----------
@@ -121,20 +136,25 @@ class JsonFormatter(logging.Formatter):
         Returns
         -------
         str
-            This method never returns successfully.
-
-        Raises
-        ------
-        NotImplementedError
-            Always raised because JSON formatting relies on dictionary
-            serialization instead of string-based message formatting.
+            JSON serialization of the configured record fields.
 
         Notes
         -----
-        The standard ``logging.Formatter`` interface requires this method,
-        but it is intentionally not used by this implementation.
+        The standard ``logging.Formatter`` interface requires this method.
+        Unlike string-based formatters, the message is serialized together
+        with the other configured fields as JSON.
+
+        The method is not used by ``format`` itself, but is implemented
+        honestly so that third-party integrations calling it directly
+        receive a meaningful result instead of an exception. Missing
+        derived attributes (``asctime``, ``message``) are computed on
+        demand.
         """
-        raise NotImplementedError()
+        if self.usesTime() and not hasattr(record, "asctime"):
+            record.asctime = self.formatTime(record, self.datefmt)
+        if "message" in self.fmt_dict.values() and not hasattr(record, "message"):
+            record.message = record.getMessage()
+        return json.dumps(self.format_message_dict(record), default=str)
 
     def format_message_dict(self, record) -> dict:
         """
@@ -198,6 +218,11 @@ class JsonFormatter(logging.Formatter):
             record.asctime = self.formatTime(record, self.datefmt)
 
         message_dict = self.format_message_dict(record)
+
+        if self.include_extra:
+            for attr, value in record.__dict__.items():
+                if attr not in _STANDARD_RECORD_ATTRS and attr not in message_dict:
+                    message_dict[attr] = value
 
         if record.exc_info:
             # Cache the traceback text to avoid converting it multiple times

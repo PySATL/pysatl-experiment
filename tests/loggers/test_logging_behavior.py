@@ -1,0 +1,113 @@
+"""Behavioral tests for logging setup on the real logging infrastructure.
+
+Unlike ``test_log_setup.py`` (which mocks ``dictConfig`` and checks the
+configuration shape), these tests apply the configuration for real and
+assert that log records actually flow to their destinations.
+
+Because ``logging.config.dictConfig`` mutates process-global state, every
+test uses the ``preserve_logging_state`` fixture to restore handlers,
+levels and disabled flags afterwards.
+"""
+
+import json
+import logging
+
+import pytest
+
+from pysatl_experiment.loggers import setup_logging
+from pysatl_experiment.loggers.context import ExperimentContextAdapter
+
+
+@pytest.mark.usefixtures("preserve_logging_state")
+def test_debug_records_reach_stderr(capsys):
+    """Regression test: DEBUG records must pass filtering after setup.
+
+    Previously the level was applied to handlers only, leaving the root
+    logger at WARNING and silently dropping DEBUG/INFO records.
+    """
+    setup_logging({}, level="DEBUG")
+
+    logging.getLogger("pysatl_experiment.behavior_probe").debug("debug probe message")
+
+    captured = capsys.readouterr()
+    assert "debug probe message" in captured.err
+
+
+@pytest.mark.usefixtures("preserve_logging_state")
+def test_preexisting_logger_survives_setup(capsys):
+    """Regression test: loggers created before setup must stay enabled.
+
+    Previously dictConfig defaulted to disable_existing_loggers=True,
+    which disabled module loggers created at import time before setup.
+    """
+    preexisting = logging.getLogger("pysatl_experiment.preexisting_probe")
+    preexisting.info("warmup")  # ensure the logger is registered before setup
+
+    setup_logging({})
+
+    assert not preexisting.disabled
+
+    preexisting.warning("preexisting warning probe")
+    captured = capsys.readouterr()
+    assert "preexisting warning probe" in captured.err
+
+
+@pytest.mark.usefixtures("preserve_logging_state")
+def test_file_handler_writes_message_and_traceback(tmp_path):
+    log_file = tmp_path / "exp.log"
+
+    setup_logging({}, filename=str(log_file))
+
+    probe = logging.getLogger("pysatl_experiment.file_probe")
+    try:
+        raise ValueError("boom-probe")
+    except ValueError:
+        probe.exception("file probe failure")
+
+    for handler in logging.root.handlers:
+        handler.flush()
+
+    content = log_file.read_text(encoding="utf-8")
+    assert "file probe failure" in content
+    assert "ValueError: boom-probe" in content
+
+
+@pytest.mark.usefixtures("preserve_logging_state")
+def test_file_handler_writes_json_lines(tmp_path):
+    """File logs must be machine-readable JSON records."""
+    log_file = tmp_path / "exp_json.log"
+
+    setup_logging({}, filename=str(log_file))
+
+    logging.getLogger("pysatl_experiment.json_probe").warning("json probe message")
+
+    for handler in logging.root.handlers:
+        handler.flush()
+
+    lines = log_file.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1
+
+    payload = json.loads(lines[0])
+    assert payload["message"] == "json probe message"
+    assert payload["level"] == "WARNING"
+    assert payload["logger"] == "pysatl_experiment.json_probe"
+    assert "timestamp" in payload
+
+
+@pytest.mark.usefixtures("preserve_logging_state")
+def test_file_handler_exports_experiment_context_as_json_fields(tmp_path):
+    """Context attached via ExperimentContextAdapter must land in JSON fields."""
+    log_file = tmp_path / "exp_ctx.log"
+
+    setup_logging({}, level="INFO", filename=str(log_file))
+
+    adapter = ExperimentContextAdapter(logging.getLogger("pysatl_experiment.ctx_probe"), {"experiment_id": 42})
+    adapter.info("ctx json probe", extra={"step": "generation"})
+
+    for handler in logging.root.handlers:
+        handler.flush()
+
+    payload = json.loads(log_file.read_text(encoding="utf-8").splitlines()[0])
+    assert payload["experiment_id"] == 42
+    assert payload["step"] == "generation"
+    assert "[experiment_id=42, step=generation]" in payload["message"]

@@ -8,6 +8,7 @@ alternative hypotheses and significance levels.
 Charts may optionally be included in the report.
 """
 
+import logging
 import tempfile
 from pathlib import Path
 
@@ -20,6 +21,9 @@ from pysatl_experiment.configuration.criteria_config import CriterionConfig
 from pysatl_experiment.configuration.models.alternative import Alternative
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.utils.report_utils import convert_html_to_pdf, get_criterion_names, get_report_template_dir
+
+
+logger = logging.getLogger(__name__)
 
 
 class PowerReportBuilder:
@@ -117,9 +121,11 @@ class PowerReportBuilder:
                 if self.with_chart == ReportMode.WITH_CHART:
                     try:
                         chart_data = self._generate_chart_data(alternative, significance_level, charts_dir)
-                    except Exception as e:
-                        print(
-                            f"Failed to generate chart for {alternative.distribution_type}, α={significance_level}: {e}"
+                    except Exception:
+                        logger.exception(
+                            "Failed to generate chart for %s, alpha=%s",
+                            alternative.distribution_type,
+                            significance_level,
                         )
                         chart_data = None
                 tables.append(

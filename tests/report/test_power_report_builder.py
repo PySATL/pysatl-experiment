@@ -1,5 +1,6 @@
 """Tests for power report builder."""
 
+import logging
 import tempfile
 from pathlib import Path
 from typing import cast
@@ -223,10 +224,10 @@ class TestPowerReportBuilder:
         assert "DistributionType.NORMAL_0.05.png" in html
         assert "<td>0.667</td>" in html
 
-    # Checks that a failing chart generation is reported and leaves the table chart-free.
+    # Checks that a failing chart generation is logged and leaves the table chart-free.
     @patch(f"{BUILDER_PATH}.convert_html_to_pdf")
     def test_build_handles_chart_generation_failure(
-        self, mock_convert, mock_criterion_config, power_data, results_path, capsys
+        self, mock_convert, mock_criterion_config, power_data, results_path, caplog
     ) -> None:
         alternative = make_alternative(DistributionType.NORMAL)
         builder = PowerReportBuilder(
@@ -240,16 +241,24 @@ class TestPowerReportBuilder:
             with_chart=ReportMode.WITH_CHART,
         )
 
-        with patch.object(builder, "_generate_chart_data", side_effect=RuntimeError("no matplotlib")):
+        with (
+            caplog.at_level(
+                logging.ERROR,
+                logger="pysatl_experiment.experiment_execution.step.report_step.power.power_report_builder",
+            ),
+            patch.object(builder, "_generate_chart_data", side_effect=RuntimeError("no matplotlib")),
+        ):
             builder.build()
 
         html = mock_convert.call_args.args[0]
-        captured = capsys.readouterr()
 
         assert "<img" not in html
         assert "<td>0.667</td>" in html
-        assert "Failed to generate chart for DistributionType.NORMAL" in captured.out
-        assert "no matplotlib" in captured.out
+        assert "Failed to generate chart for DistributionType.NORMAL" in caplog.text
+        error_records = [record for record in caplog.records if record.levelno == logging.ERROR]
+        assert len(error_records) == 1
+        assert error_records[0].exc_info is not None
+        assert str(error_records[0].exc_info[1]) == "no matplotlib"
 
     # Checks that the rendered report carries the generation date as the timestamp.
     @patch(f"{BUILDER_PATH}.convert_html_to_pdf")
