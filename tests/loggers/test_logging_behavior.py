@@ -18,37 +18,6 @@ from pysatl_experiment.loggers import setup_logging
 from pysatl_experiment.loggers.context import ExperimentContextAdapter
 
 
-@pytest.fixture
-def preserve_logging_state():
-    """Snapshot and restore global logging state around a test."""
-    root = logging.root
-    old_root_level = root.level
-    old_root_handlers = root.handlers[:]
-    old_loggers = {
-        name: (existing.level, existing.disabled, existing.handlers[:], existing.propagate)
-        for name, existing in logging.Logger.manager.loggerDict.items()
-        if isinstance(existing, logging.Logger)
-    }
-
-    yield
-
-    root.setLevel(old_root_level)
-    for handler in root.handlers[:]:
-        root.removeHandler(handler)
-    for handler in old_root_handlers:
-        root.addHandler(handler)
-
-    for name, (level, disabled, handlers, propagate) in old_loggers.items():
-        existing = logging.getLogger(name)
-        existing.setLevel(level)
-        existing.disabled = disabled
-        for handler in existing.handlers[:]:
-            existing.removeHandler(handler)
-        for handler in handlers:
-            existing.addHandler(handler)
-        existing.propagate = propagate
-
-
 @pytest.mark.usefixtures("preserve_logging_state")
 def test_debug_records_reach_stderr(capsys):
     """Regression test: DEBUG records must pass filtering after setup.

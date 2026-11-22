@@ -44,7 +44,7 @@ Standard fields: `timestamp`, `level`, `logger`, `message`. Additional fields:
 
 - `exc_info` — full traceback text when the record carries exception information;
 - `stack_info` — stack information when present;
-- **context fields** — any attributes attached via `extra` (see below), e.g. `experiment_id`, `step`.
+- **context fields** — any attributes attached via `extra` (see below), e.g. `experiment_id`, `step`, `worker_id`.
 
 ## Experiment Context
 
@@ -95,6 +95,13 @@ The CLI installs a `sys.excepthook` that logs uncaught exceptions at `CRITICAL` 
 
 Advanced users can supply a full [`dictConfig`](https://docs.python.org/3/library/logging.config.html#logging-config-dictschema) schema via the `log_config` key of the experiment configuration. When `--log-file` is passed, the rotating JSON file handler is added on top of that configuration.
 
-## Future: Parallel Execution
+## Parallel Execution
 
-The current setup is thread-safe by construction (stdlib logging guarantee). For the planned multiprocess execution, workers are expected to log through a `QueueHandler`/`QueueListener` pair so that all records are serialized in the parent process; the context adapter will be extended with a `worker_id` field at that point.
+The setup is thread-safe by construction (stdlib logging guarantee). For multiprocess execution (`Scheduler` / `ProcessPoolExecutor`), logging is forwarded through a `QueueHandler`/`QueueListener` pair (`pysatl_experiment.loggers.multiprocessing`):
+
+- In the parent process, `WorkerLogListener` owns a shared queue and re-emits every incoming record through the parent's configured handlers (rich console and/or JSON file), so handlers stay single-process.
+- In each worker process, `configure_worker_logging` (passed to `Scheduler` as `worker_initializer`) replaces the root handlers with a single `QueueHandler` and applies the parent's root level, so `--log-level DEBUG` also affects workers.
+
+Execution steps based on `MultithreadingExecutionStep` get this wiring automatically.
+
+Records emitted in a worker are stamped with a `worker_id` field (the worker's PID; exported to JSON logs like other context fields). A caller-supplied `worker_id` (e.g. a logical index passed via `extra`) is never overwritten by the automatic stamp.

@@ -18,6 +18,7 @@ from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
 from pysatl_experiment.experiment_execution.step.execution_step.abstract_worker import WorkerResult
 from pysatl_experiment.experiment_execution.step.execution_step.execution_step_data import ExecutionStepData
+from pysatl_experiment.loggers.multiprocessing import WorkerLogListener, configure_worker_logging
 from pysatl_experiment.persistence.models.random_values import RandomValuesCountQuery
 from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
 
@@ -70,9 +71,14 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
         saver = BufferedSaver(save_func=self.save_batch, buffer_size=buffer_size)
 
         try:
-            with Scheduler(max_workers=self.parallel_workers) as scheduler:
-                for result in scheduler.iterate_results(tasks):
-                    saver.add(result)
+            with WorkerLogListener() as log_ctx:
+                with Scheduler(
+                    max_workers=self.parallel_workers,
+                    worker_initializer=configure_worker_logging,
+                    worker_initargs=(log_ctx.queue, log_ctx.level),
+                ) as scheduler:
+                    for result in scheduler.iterate_results(tasks):
+                        saver.add(result)
         finally:
             saver.flush()
 

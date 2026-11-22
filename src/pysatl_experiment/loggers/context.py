@@ -40,6 +40,11 @@ class ExperimentContextAdapter(logging.LoggerAdapter):
     The merged context is also stored on the record, so structured
     formatters (such as ``JsonFormatter`` with ``include_extra=True``)
     export it as dedicated fields.
+
+    Any keys are supported; conventional ones are ``experiment_id``,
+    ``step`` and ``worker_id`` (the latter is also stamped automatically
+    on records emitted inside multiprocessing workers — see
+    ``loggers.multiprocessing``).
     """
 
     def process(self, msg: Any, kwargs: MutableMapping[str, Any]) -> tuple[Any, MutableMapping[str, Any]]:
