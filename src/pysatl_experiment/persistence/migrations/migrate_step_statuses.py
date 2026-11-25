@@ -12,6 +12,8 @@ This migration is idempotent:
 1. Adds the status columns when they are missing.
 2. Backfills ``done`` for steps whose boolean flag was set.
 3. Drops the boolean columns once the backfill is applied.
+4. Adds the ``tasks_failed`` / ``tasks_total`` counter columns when they
+   are missing.
 
 Requires SQLite >= 3.35 (``DROP COLUMN`` support).
 
@@ -59,6 +61,10 @@ def migrate_step_statuses(db_path: str) -> None:
                     f"WHERE {flag_column} = 1 AND {status_column} != 'done'"
                 )
                 connection.execute(f"ALTER TABLE experiments DROP COLUMN {flag_column}")
+
+        for counter_column in ("tasks_failed", "tasks_total"):
+            if counter_column not in columns:
+                connection.execute(f"ALTER TABLE experiments ADD COLUMN {counter_column} INTEGER")
 
         connection.commit()
     finally:

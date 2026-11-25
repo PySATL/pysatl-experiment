@@ -356,3 +356,44 @@ def test_set_step_statuses_are_updated_independently(store: AlchemyExperimentSto
     assert stored.generation_status is StepStatus.DONE
     assert stored.report_building_status is StepStatus.RUNNING
     assert stored.execution_status is StepStatus.PENDING
+
+
+# Checks that task counters are persisted and read back.
+def test_set_task_stats(store: AlchemyExperimentStorage) -> None:
+    store.insert_data(make_model())
+    experiment_id = store.get_experiment_id(make_query())
+
+    store.set_task_stats(experiment_id, 2, 10)
+
+    stored = store.get_data(make_query())
+    assert stored is not None
+    assert stored.tasks_failed == 2
+    assert stored.tasks_total == 10
+
+
+# Checks that task counters default to None for a freshly inserted experiment.
+def test_task_stats_default_to_none(store: AlchemyExperimentStorage) -> None:
+    store.insert_data(make_model())
+
+    stored = store.get_data(make_query())
+    assert stored is not None
+    assert stored.tasks_failed is None
+    assert stored.tasks_total is None
+
+
+# Checks that setting task counters for an unknown identifier raises.
+def test_set_task_stats_raises_for_unknown_experiment(store: AlchemyExperimentStorage) -> None:
+    with pytest.raises(ValueError, match="Experiment not found"):
+        store.set_task_stats(404, 1, 1)
+
+
+# Checks that re-inserting a signature updates the stored task counters.
+def test_insert_data_updates_task_counters(store: AlchemyExperimentStorage) -> None:
+    store.insert_data(make_model())
+
+    store.insert_data(make_model(tasks_failed=1, tasks_total=5))
+
+    stored = store.get_data(make_query())
+    assert stored is not None
+    assert stored.tasks_failed == 1
+    assert stored.tasks_total == 5

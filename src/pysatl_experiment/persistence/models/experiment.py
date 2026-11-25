@@ -54,6 +54,10 @@ class ExperimentModel(DataModel):
         Lifecycle status of the execution step.
     report_building_status : StepStatus
         Lifecycle status of the report building step.
+    tasks_failed : int | None
+        Number of failed tasks observed by the execution step.
+    tasks_total : int | None
+        Total number of tasks planned by the execution step.
     """
 
     experiment_type: str
@@ -73,6 +77,8 @@ class ExperimentModel(DataModel):
     generation_status: StepStatus = field(default=StepStatus.PENDING)
     execution_status: StepStatus = field(default=StepStatus.PENDING)
     report_building_status: StepStatus = field(default=StepStatus.PENDING)
+    tasks_failed: int | None = field(default=None)
+    tasks_total: int | None = field(default=None)
 
 
 @dataclass
@@ -146,6 +152,24 @@ class IExperimentStatusStorage(Protocol):
         """
 
 
+class ITaskStatsStorage(Protocol):
+    """Persist task failure counters reported by the execution step."""
+
+    def set_task_stats(self, experiment_id: int, tasks_failed: int, tasks_total: int) -> None:
+        """
+        Set the task failure counters of an experiment run.
+
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        tasks_failed : int
+            Number of failed tasks observed by the execution step.
+        tasks_total : int
+            Total number of tasks planned by the execution step.
+        """
+
+
 class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], ABC):
     """Experiment configuration storage interface."""
 
@@ -177,5 +201,21 @@ class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], ABC):
             Pipeline step to update.
         status : StepStatus
             New lifecycle status.
+        """
+        pass
+
+    @abstractmethod
+    def set_task_stats(self, experiment_id: int, tasks_failed: int, tasks_total: int) -> None:
+        """
+        Set the task failure counters of an experiment run.
+
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        tasks_failed : int
+            Number of failed tasks observed by the execution step.
+        tasks_total : int
+            Total number of tasks planned by the execution step.
         """
         pass

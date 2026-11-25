@@ -14,6 +14,7 @@ from pysatl_experiment.experiment_execution.step.execution_step.multithreading_e
     MultithreadingExecutionStep,
 )
 from pysatl_experiment.experiment_execution.step.execution_step.power.power_worker import PowerWorker, PowerWorkerResult
+from pysatl_experiment.persistence.models.experiment import ITaskStatsStorage
 from pysatl_experiment.persistence.models.power import IPowerStorage, PowerModel
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 
@@ -58,6 +59,7 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
         parallel_workers: int,
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
         failure_threshold: float = 0.01,
+        task_stats_storage: ITaskStatsStorage | None = None,
     ) -> None:
         super().__init__(
             experiment_id=experiment_id,
@@ -69,6 +71,7 @@ class PowerExecutionStep(MultithreadingExecutionStep[PowerStepData, PowerExecuti
             parallel_workers=parallel_workers,
             failure_policy=failure_policy,
             failure_threshold=failure_threshold,
+            task_stats_storage=task_stats_storage,
         )
         self.data_storage = data_storage
 

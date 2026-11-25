@@ -152,6 +152,9 @@ class FakeExperimentStorage(IExperimentStorage):
     def set_step_status(self, experiment_id: int, step: Any, status: Any) -> None:  # pragma: no cover
         pass
 
+    def set_task_stats(self, experiment_id: int, tasks_failed: int, tasks_total: int) -> None:  # pragma: no cover
+        pass
+
 
 class DeterministicPowerFactory(PowerExperimentFactory):
     """Factory overrides to keep behavior deterministic and fast for tests."""

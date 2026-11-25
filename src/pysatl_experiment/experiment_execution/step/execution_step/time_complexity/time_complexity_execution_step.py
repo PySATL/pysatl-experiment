@@ -20,6 +20,7 @@ from pysatl_experiment.experiment_execution.step.execution_step.time_complexity.
     TimeComplexityWorker,
     TimeComplexityWorkerResult,
 )
+from pysatl_experiment.persistence.models.experiment import ITaskStatsStorage
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 from pysatl_experiment.persistence.models.time_complexity import ITimeComplexityStorage, TimeComplexityModel
 
@@ -61,6 +62,7 @@ class TimeComplexityExecutionStep(
         parallel_workers: int,
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
         failure_threshold: float = 0.01,
+        task_stats_storage: ITaskStatsStorage | None = None,
     ) -> None:
         super().__init__(
             experiment_id=experiment_id,
@@ -72,6 +74,7 @@ class TimeComplexityExecutionStep(
             parallel_workers=parallel_workers,
             failure_policy=failure_policy,
             failure_threshold=failure_threshold,
+            task_stats_storage=task_stats_storage,
         )
         self.hypothesis_generator_data = hypothesis_generator_data
         self.data_storage = data_storage

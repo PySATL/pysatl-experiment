@@ -166,6 +166,9 @@ class FakeExperimentStorage(IExperimentStorage):
     def set_step_status(self, experiment_id: int, step: Any, status: Any) -> None:  # pragma: no cover
         pass
 
+    def set_task_stats(self, experiment_id: int, tasks_failed: int, tasks_total: int) -> None:  # pragma: no cover
+        pass
+
 
 class DeterministicCVFactory(CriticalValueExperimentFactory):
     def __init__(self, experiment_data: CriticalValueExperimentData, fake_generator: FakeGenerator):

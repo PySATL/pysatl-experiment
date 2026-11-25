@@ -162,8 +162,9 @@ class Scheduler:
         tasks : Sequence[Callable[[], Any]]
             Tasks to execute.
         failure_policy : TaskFailurePolicy, default=TaskFailurePolicy.FAIL_FAST
-            ``FAIL_FAST`` re-raises the first task exception and aborts
-            the iteration. ``ISOLATE`` logs the exception, records it in
+            ``FAIL_FAST`` records the first task exception in
+            ``self.failures``, re-raises it and aborts the iteration.
+            ``ISOLATE`` logs the exception, records it in
             ``self.failures`` and continues with the remaining tasks.
         failure_threshold : float, default=0.01
             Maximum allowed share of failed tasks under the ``ISOLATE``
@@ -210,10 +211,10 @@ class Scheduler:
                 try:
                     yield future.result()
                 except Exception as exc:
+                    self.failures.append(TaskFailure(index=index, error=exc))
                     if failure_policy is TaskFailurePolicy.FAIL_FAST:
                         raise
                     logger.exception("Task %s failed; continuing with remaining tasks.", index)
-                    self.failures.append(TaskFailure(index=index, error=exc))
 
                 try:
                     next_task = next(task_iter)

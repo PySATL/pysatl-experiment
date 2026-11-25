@@ -86,6 +86,12 @@ class AlchemyExperiment(ModelBase):
     report_building_status : str
         Lifecycle status of the report building step.
 
+    tasks_failed : int | None
+        Number of failed tasks observed by the execution step.
+
+    tasks_total : int | None
+        Total number of tasks planned by the execution step.
+
     Notes
     -----
     Uniqueness is enforced via a composite key over all configuration fields.
@@ -121,6 +127,9 @@ class AlchemyExperiment(ModelBase):
     generation_status: Mapped[str] = mapped_column(String, default=StepStatus.PENDING.value)
     execution_status: Mapped[str] = mapped_column(String, default=StepStatus.PENDING.value)
     report_building_status: Mapped[str] = mapped_column(String, default=StepStatus.PENDING.value)
+
+    tasks_failed: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tasks_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     __table_args__ = (
         UniqueConstraint(
@@ -224,6 +233,8 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
             generation_status=model.generation_status.value,
             execution_status=model.execution_status.value,
             report_building_status=model.report_building_status.value,
+            tasks_failed=model.tasks_failed,
+            tasks_total=model.tasks_total,
         )
 
     @staticmethod
@@ -259,6 +270,8 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
             generation_status=StepStatus(orm.generation_status),
             execution_status=StepStatus(orm.execution_status),
             report_building_status=StepStatus(orm.report_building_status),
+            tasks_failed=orm.tasks_failed,
+            tasks_total=orm.tasks_total,
         )
 
     def insert_data(self, model: ExperimentModel) -> None:
@@ -299,6 +312,8 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
                 existing.execution_status = model.execution_status.value
                 existing.report_building_status = model.report_building_status.value
                 existing.parallel_workers = model.parallel_workers
+                existing.tasks_failed = model.tasks_failed
+                existing.tasks_total = model.tasks_total
             else:
                 session.add(self._to_orm(model))
 
@@ -452,3 +467,25 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
             New lifecycle status.
         """
         self._update_status(experiment_id, self._STEP_STATUS_FIELDS[step], status)
+
+    def set_task_stats(self, experiment_id: int, tasks_failed: int, tasks_total: int) -> None:
+        """
+        Set the task failure counters of an experiment run.
+
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        tasks_failed : int
+            Number of failed tasks observed by the execution step.
+        tasks_total : int
+            Total number of tasks planned by the execution step.
+        """
+        with self.session() as session:
+            obj = session.get(AlchemyExperiment, experiment_id)
+            if not obj:
+                raise ValueError("Experiment not found")
+
+            obj.tasks_failed = tasks_failed
+            obj.tasks_total = tasks_total
+            session.commit()

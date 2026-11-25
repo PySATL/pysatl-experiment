@@ -348,6 +348,16 @@ def test_fail_fast_policy_is_default():
         scheduler.run([_test_success_task, _test_failing_task])
 
 
+# Checks that a fail-fast abort still records the failed task.
+def test_fail_fast_records_failure():
+    with Scheduler(max_workers=2) as scheduler:
+        with pytest.raises(ValueError, match="Task failed"):
+            scheduler.run([_test_success_task, _test_failing_task])
+
+    assert len(scheduler.failures) == 1
+    assert isinstance(scheduler.failures[0].error, ValueError)
+
+
 # Checks that the initial fill stops early when the sequence under-reports its items.
 def test_initial_fill_stops_on_exhausted_iterator(monkeypatch):
     class UnderReportingSequence(Sequence):

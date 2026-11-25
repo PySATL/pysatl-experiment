@@ -21,6 +21,7 @@ from pysatl_experiment.experiment_execution.step.abstract_experiment_step import
 from pysatl_experiment.experiment_execution.step.execution_step.abstract_worker import WorkerResult
 from pysatl_experiment.experiment_execution.step.execution_step.execution_step_data import ExecutionStepData
 from pysatl_experiment.loggers.multiprocessing import WorkerLogListener, configure_worker_logging
+from pysatl_experiment.persistence.models.experiment import ITaskStatsStorage
 from pysatl_experiment.persistence.models.random_values import RandomValuesCountQuery
 from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
 
@@ -57,6 +58,7 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
         parallel_workers: int,
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
         failure_threshold: float = 0.01,
+        task_stats_storage: ITaskStatsStorage | None = None,
     ) -> None:
         self.experiment_id = experiment_id
         self.experiment_name = experiment_name
@@ -67,11 +69,18 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
         self.parallel_workers = parallel_workers
         self.failure_policy = failure_policy
         self.failure_threshold = failure_threshold
+        self.task_stats_storage = task_stats_storage
 
     @profile
     @override
     def run(self) -> None:
-        """Execute all configured tasks and persist worker results in batches."""
+        """
+        Execute all configured tasks and persist worker results in batches.
+
+        The observed task counters (planned and failed) are reported to
+        ``task_stats_storage`` on every outcome, including failures, so
+        that incomplete results remain traceable.
+        """
         task_specs = self._collect_tasks()
         tasks = [functools.partial(type(self)._execute_task, spec) for spec in task_specs]
 
@@ -79,6 +88,7 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
         buffer_size = max(1, min(20, total_tasks // 2))
         saver = BufferedSaver(save_func=self.save_batch, buffer_size=buffer_size)
 
+        failed_tasks = 0
         try:
             with WorkerLogListener() as log_ctx:
                 with Scheduler(
@@ -86,12 +96,15 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
                     worker_initializer=configure_worker_logging,
                     worker_initargs=(log_ctx.queue, log_ctx.level),
                 ) as scheduler:
-                    for result in scheduler.iterate_results(
-                        tasks,
-                        failure_policy=self.failure_policy,
-                        failure_threshold=self.failure_threshold,
-                    ):
-                        saver.add(result)
+                    try:
+                        for result in scheduler.iterate_results(
+                            tasks,
+                            failure_policy=self.failure_policy,
+                            failure_threshold=self.failure_threshold,
+                        ):
+                            saver.add(result)
+                    finally:
+                        failed_tasks = len(scheduler.failures)
                     if scheduler.failures:
                         logger.warning(
                             "Execution step '%s': %d of %d tasks failed; results are incomplete.",
@@ -101,6 +114,8 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
                         )
         finally:
             saver.flush()
+            if self.task_stats_storage is not None:
+                self.task_stats_storage.set_task_stats(self.experiment_id, failed_tasks, total_tasks)
 
     @abstractmethod
     def _collect_tasks(self) -> list[TaskSpec]:
