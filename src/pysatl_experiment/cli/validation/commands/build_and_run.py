@@ -41,6 +41,7 @@ from pysatl_experiment.configuration.models.experiment_type import ExperimentTyp
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
 from pysatl_experiment.configuration.models.steps_done import StepsDone
+from pysatl_experiment.configuration.models.task_failure_policy import TaskFailurePolicy
 from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
 from pysatl_experiment.persistence.models.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
 from pysatl_experiment.utils.experiment_utils import parameters_to_list
@@ -386,6 +387,7 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
         RunMode: lambda x: RunMode(x),
         DistributionType: lambda x: DistributionType(x),
         StepType: lambda x: StepType(x),
+        TaskFailurePolicy: lambda x: TaskFailurePolicy(x),
     }
 
     legacy_config: ExperimentConfig = from_dict(

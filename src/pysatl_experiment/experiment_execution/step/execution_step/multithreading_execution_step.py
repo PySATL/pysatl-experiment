@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import functools
 import importlib
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Generic, TypeVar
@@ -13,6 +14,7 @@ from pysatl_criterion.persistence.models.base import DataModel, IDataStorage
 from pysatl_criterion.statistics import AbstractGoodnessOfFitStatistic
 from typing_extensions import override
 
+from pysatl_experiment.configuration.models.task_failure_policy import TaskFailurePolicy
 from pysatl_experiment.experiment_execution.parallel import BufferedSaver, Scheduler
 from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
@@ -21,6 +23,9 @@ from pysatl_experiment.experiment_execution.step.execution_step.execution_step_d
 from pysatl_experiment.loggers.multiprocessing import WorkerLogListener, configure_worker_logging
 from pysatl_experiment.persistence.models.random_values import RandomValuesCountQuery
 from pysatl_experiment.persistence.random_values_storage import AlchemyRandomValuesStorage
+
+
+logger = logging.getLogger(__name__)
 
 
 StepDataT = TypeVar("StepDataT", bound=ExecutionStepData)
@@ -50,6 +55,8 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
         result_storage: ResultStorageT,
         storage_connection: str,
         parallel_workers: int,
+        failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
+        failure_threshold: float = 0.01,
     ) -> None:
         self.experiment_id = experiment_id
         self.experiment_name = experiment_name
@@ -58,6 +65,8 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
         self.result_storage = result_storage
         self.storage_connection = storage_connection
         self.parallel_workers = parallel_workers
+        self.failure_policy = failure_policy
+        self.failure_threshold = failure_threshold
 
     @profile
     @override
@@ -77,8 +86,19 @@ class MultithreadingExecutionStep(IExperimentStep, Generic[StepDataT, ExecutionR
                     worker_initializer=configure_worker_logging,
                     worker_initargs=(log_ctx.queue, log_ctx.level),
                 ) as scheduler:
-                    for result in scheduler.iterate_results(tasks):
+                    for result in scheduler.iterate_results(
+                        tasks,
+                        failure_policy=self.failure_policy,
+                        failure_threshold=self.failure_threshold,
+                    ):
                         saver.add(result)
+                    if scheduler.failures:
+                        logger.warning(
+                            "Execution step '%s': %d of %d tasks failed; results are incomplete.",
+                            self.experiment_name,
+                            len(scheduler.failures),
+                            total_tasks,
+                        )
         finally:
             saver.flush()
 

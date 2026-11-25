@@ -179,6 +179,8 @@ class CriticalValueExperimentFactory(
             result_storage=result_storage,
             storage_connection=config.storage_connection,
             parallel_workers=config.parallel_workers,
+            failure_policy=config.task_failure_policy,
+            failure_threshold=config.failure_threshold,
         )
 
     def _create_report_building_step(
