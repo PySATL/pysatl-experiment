@@ -10,7 +10,7 @@ from pysatl_experiment.configuration.experiment_config.generation_only import Ge
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.configuration.models.run_mode import RunMode
-from pysatl_experiment.configuration.models.steps_done import StepsDone
+from pysatl_experiment.configuration.models.steps_status import StepsStatus
 from pysatl_experiment.experiment_execution.experiment import Experiment
 from pysatl_experiment.experiment_execution.experiment_factory.generation_only_factory import (
     GenerationOnlyExperimentFactory,
@@ -39,7 +39,7 @@ def test_factory_creates_reusable_generation_pipeline(tmp_path: Path) -> None:
     data = ExperimentData(
         experiment_name="normal_training_samples",
         config=config,
-        steps_done=StepsDone(False, False, False),
+        steps_status=StepsStatus(),
         results_path=Path(),
     )
 
@@ -79,7 +79,7 @@ def test_factory_overwrite_clears_only_matching_generation_run(tmp_path: Path) -
     data = ExperimentData(
         experiment_name="normal_training_samples",
         config=reusable_config,
-        steps_done=StepsDone(False, False, False),
+        steps_status=StepsStatus(),
         results_path=Path(),
     )
     Experiment(GenerationOnlyExperimentFactory(data).create_experiment_steps()).run_experiment()
@@ -115,7 +115,7 @@ def test_factory_rejects_overwrite_of_persisted_run_without_id(
     data = ExperimentData(
         experiment_name="normal_training_samples",
         config=config,
-        steps_done=StepsDone(False, False, False),
+        steps_status=StepsStatus(),
         results_path=Path(),
     )
     detached_run = GenerationRunModel(

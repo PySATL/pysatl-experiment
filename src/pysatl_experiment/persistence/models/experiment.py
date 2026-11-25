@@ -5,10 +5,12 @@ Defines experiment configuration structures and storage contract.
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol
 
 from pysatl_criterion.persistence.models.base import DataModel, DataQuery, IDataStorage
+
+from pysatl_experiment.configuration.models.step_status import ExperimentStep, StepStatus
 
 
 @dataclass
@@ -46,12 +48,12 @@ class ExperimentModel(DataModel):
         Significance levels (alpha values).
     parallel_workers : int
         Number of parallel workers.
-    is_generation_done : bool
-        Whether generation step is completed.
-    is_execution_done : bool
-        Whether execution step is completed.
-    is_report_building_done : bool
-        Whether report building step is completed.
+    generation_status : StepStatus
+        Lifecycle status of the generation step.
+    execution_status : StepStatus
+        Lifecycle status of the execution step.
+    report_building_status : StepStatus
+        Lifecycle status of the report building step.
     """
 
     experiment_type: str
@@ -68,9 +70,9 @@ class ExperimentModel(DataModel):
     alternatives: dict[str, list[float]]
     significance_levels: list[float]
     parallel_workers: int
-    is_generation_done: bool
-    is_execution_done: bool
-    is_report_building_done: bool
+    generation_status: StepStatus = field(default=StepStatus.PENDING)
+    execution_status: StepStatus = field(default=StepStatus.PENDING)
+    report_building_status: StepStatus = field(default=StepStatus.PENDING)
 
 
 @dataclass
@@ -127,16 +129,21 @@ class ExperimentQuery(DataQuery):
 
 
 class IExperimentStatusStorage(Protocol):
-    """Persist completion states for steps run by ``Experiment``."""
+    """Persist lifecycle statuses for steps run by ``Experiment``."""
 
-    def set_generation_done(self, experiment_id: int) -> None:
-        """Mark the generation step as completed."""
+    def set_step_status(self, experiment_id: int, step: ExperimentStep, status: StepStatus) -> None:
+        """
+        Set the lifecycle status of an experiment step.
 
-    def set_execution_done(self, experiment_id: int) -> None:
-        """Mark the execution step as completed."""
-
-    def set_report_building_done(self, experiment_id: int) -> None:
-        """Mark the report-building step as completed."""
+        Parameters
+        ----------
+        experiment_id : int
+            Experiment identifier.
+        step : ExperimentStep
+            Pipeline step to update.
+        status : StepStatus
+            New lifecycle status.
+        """
 
 
 class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], ABC):
@@ -158,34 +165,17 @@ class IExperimentStorage(IDataStorage[ExperimentModel, ExperimentQuery], ABC):
         pass
 
     @abstractmethod
-    def set_generation_done(self, experiment_id: int) -> None:
+    def set_step_status(self, experiment_id: int, step: ExperimentStep, status: StepStatus) -> None:
         """
-        Mark generation step as completed.
+        Set the lifecycle status of an experiment step.
 
         Parameters
         ----------
         experiment_id : int
-        """
-        pass
-
-    @abstractmethod
-    def set_execution_done(self, experiment_id: int) -> None:
-        """
-        Mark execution step as completed.
-
-        Parameters
-        ----------
-        experiment_id : int
-        """
-        pass
-
-    @abstractmethod
-    def set_report_building_done(self, experiment_id: int) -> None:
-        """
-        Mark report building step as completed.
-
-        Parameters
-        ----------
-        experiment_id : int
+            Experiment identifier.
+        step : ExperimentStep
+            Pipeline step to update.
+        status : StepStatus
+            New lifecycle status.
         """
         pass

@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from pysatl_experiment.configuration.models.step_status import ExperimentStep, StepStatus
 from pysatl_experiment.persistence.models.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
 
 
@@ -27,9 +28,6 @@ def make_model(**overrides: Any) -> ExperimentModel:
         "alternatives": {"NORM": [0.0, 1.0]},
         "significance_levels": [0.05],
         "parallel_workers": 1,
-        "is_generation_done": False,
-        "is_execution_done": False,
-        "is_report_building_done": False,
     }
     values.update(overrides)
     return ExperimentModel(**values)
@@ -59,7 +57,7 @@ def make_query(**overrides: Any) -> ExperimentQuery:
 
 # Checks that the experiment model keeps every provided field.
 def test_experiment_model_stores_all_fields() -> None:
-    model = make_model(is_execution_done=True, is_report_building_done=True)
+    model = make_model(execution_status=StepStatus.RUNNING, report_building_status=StepStatus.DONE)
 
     assert model.experiment_type == "power"
     assert model.storage_connection == "sqlite://"
@@ -75,9 +73,9 @@ def test_experiment_model_stores_all_fields() -> None:
     assert model.alternatives == {"NORM": [0.0, 1.0]}
     assert model.significance_levels == [0.05]
     assert model.parallel_workers == 1
-    assert model.is_generation_done is False
-    assert model.is_execution_done is True
-    assert model.is_report_building_done is True
+    assert model.generation_status is StepStatus.PENDING
+    assert model.execution_status is StepStatus.RUNNING
+    assert model.report_building_status is StepStatus.DONE
 
 
 # Checks that the experiment model rejects unknown constructor arguments.
@@ -112,11 +110,9 @@ def test_experiment_query_equality() -> None:
     assert make_query() != make_query(hypothesis="exponential")
 
 
-# Checks that the experiment storage interface declares its four own abstract methods.
+# Checks that the experiment storage interface declares its own abstract methods.
 def test_experiment_storage_declares_expected_abstract_methods() -> None:
-    assert {"get_experiment_id", "set_generation_done", "set_execution_done", "set_report_building_done"} <= set(
-        IExperimentStorage.__abstractmethods__
-    )
+    assert {"get_experiment_id", "set_step_status"} <= set(IExperimentStorage.__abstractmethods__)
 
 
 # Checks that the abstract lookup body is reachable through the base class.
@@ -124,14 +120,6 @@ def test_experiment_storage_get_experiment_id_body_returns_none() -> None:
     assert IExperimentStorage.get_experiment_id(MagicMock(), make_query()) is None
 
 
-# Checks that the abstract progress-marker bodies are reachable through the base class.
-@pytest.mark.parametrize(
-    "method_name",
-    [
-        pytest.param("set_generation_done", id="generation"),
-        pytest.param("set_execution_done", id="execution"),
-        pytest.param("set_report_building_done", id="report-building"),
-    ],
-)
-def test_experiment_storage_progress_marker_bodies_return_none(method_name: str) -> None:
-    assert getattr(IExperimentStorage, method_name)(MagicMock(), 7) is None
+# Checks that the abstract status-marker body is reachable through the base class.
+def test_experiment_storage_status_marker_body_returns_none() -> None:
+    assert IExperimentStorage.set_step_status(MagicMock(), 7, ExperimentStep.GENERATION, StepStatus.DONE) is None

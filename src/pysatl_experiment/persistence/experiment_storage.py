@@ -8,7 +8,9 @@ Notes
 - Experiments are identified by a full configuration signature.
 - JSON-serialized fields are used in equality comparisons.
 - Serialization consistency is critical for correct query behavior.
-- Execution state is tracked via boolean status flags.
+- Execution state is tracked via per-step lifecycle statuses
+  (see ``pysatl_experiment.persistence.migrations`` for upgrading
+  databases created with boolean status flags).
 """
 
 from typing import ClassVar
@@ -16,6 +18,7 @@ from typing import ClassVar
 from sqlalchemy import JSON, Integer, String, UniqueConstraint, select
 from sqlalchemy.orm import Mapped, mapped_column
 
+from pysatl_experiment.configuration.models.step_status import ExperimentStep, StepStatus
 from pysatl_experiment.persistence.db_store import ModelBase, SessionType
 from pysatl_experiment.persistence.db_store.model import AbstractDbStore
 from pysatl_experiment.persistence.models.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
@@ -74,14 +77,14 @@ class AlchemyExperiment(ModelBase):
     parallel_workers : int
         Number of parallel workers used for execution.
 
-    is_generation_done : bool
-        Whether generation step is completed.
+    generation_status : str
+        Lifecycle status of the generation step.
 
-    is_execution_done : bool
-        Whether execution step is completed.
+    execution_status : str
+        Lifecycle status of the execution step.
 
-    is_report_building_done : bool
-        Whether report building step is completed.
+    report_building_status : str
+        Lifecycle status of the report building step.
 
     Notes
     -----
@@ -115,9 +118,9 @@ class AlchemyExperiment(ModelBase):
 
     parallel_workers: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    is_generation_done: Mapped[bool] = mapped_column(Integer, default=0)
-    is_execution_done: Mapped[bool] = mapped_column(Integer, default=0)
-    is_report_building_done: Mapped[bool] = mapped_column(Integer, default=0)
+    generation_status: Mapped[str] = mapped_column(String, default=StepStatus.PENDING.value)
+    execution_status: Mapped[str] = mapped_column(String, default=StepStatus.PENDING.value)
+    report_building_status: Mapped[str] = mapped_column(String, default=StepStatus.PENDING.value)
 
     __table_args__ = (
         UniqueConstraint(
@@ -218,9 +221,9 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
             alternatives=model.alternatives,
             significance_levels=model.significance_levels,
             parallel_workers=model.parallel_workers,
-            is_generation_done=int(model.is_generation_done),
-            is_execution_done=int(model.is_execution_done),
-            is_report_building_done=int(model.is_report_building_done),
+            generation_status=model.generation_status.value,
+            execution_status=model.execution_status.value,
+            report_building_status=model.report_building_status.value,
         )
 
     @staticmethod
@@ -253,9 +256,9 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
             alternatives=orm.alternatives,
             significance_levels=orm.significance_levels,
             parallel_workers=orm.parallel_workers,
-            is_generation_done=bool(orm.is_generation_done),
-            is_execution_done=bool(orm.is_execution_done),
-            is_report_building_done=bool(orm.is_report_building_done),
+            generation_status=StepStatus(orm.generation_status),
+            execution_status=StepStatus(orm.execution_status),
+            report_building_status=StepStatus(orm.report_building_status),
         )
 
     def insert_data(self, model: ExperimentModel) -> None:
@@ -292,9 +295,9 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
             existing = session.execute(stmt).scalar_one_or_none()
 
             if existing:
-                existing.is_generation_done = bool(model.is_generation_done)
-                existing.is_execution_done = bool(model.is_execution_done)
-                existing.is_report_building_done = bool(model.is_report_building_done)
+                existing.generation_status = model.generation_status.value
+                existing.execution_status = model.execution_status.value
+                existing.report_building_status = model.report_building_status.value
                 existing.parallel_workers = model.parallel_workers
             else:
                 session.add(self._to_orm(model))
@@ -408,7 +411,13 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
 
             return result
 
-    def _update_status(self, experiment_id: int, field: str):
+    _STEP_STATUS_FIELDS: ClassVar[dict[ExperimentStep, str]] = {
+        ExperimentStep.GENERATION: "generation_status",
+        ExperimentStep.EXECUTION: "execution_status",
+        ExperimentStep.REPORT_BUILDING: "report_building_status",
+    }
+
+    def _update_status(self, experiment_id: int, field: str, status: StepStatus) -> None:
         """
         Update execution status field for experiment.
 
@@ -417,45 +426,29 @@ class AlchemyExperimentStorage(AbstractDbStore, IExperimentStorage):
         experiment_id : int
             Target experiment identifier.
         field : str
-            Name of boolean status field.
+            Name of the step status column.
+        status : StepStatus
+            New lifecycle status.
         """
         with self.session() as session:
             obj = session.get(AlchemyExperiment, experiment_id)
             if not obj:
                 raise ValueError("Experiment not found")
 
-            setattr(obj, field, 1)
+            setattr(obj, field, status.value)
             session.commit()
 
-    def set_generation_done(self, experiment_id: int):
+    def set_step_status(self, experiment_id: int, step: ExperimentStep, status: StepStatus) -> None:
         """
-        Mark generation step as completed.
+        Set the lifecycle status of an experiment step.
 
         Parameters
         ----------
         experiment_id : int
             Experiment identifier.
+        step : ExperimentStep
+            Pipeline step to update.
+        status : StepStatus
+            New lifecycle status.
         """
-        self._update_status(experiment_id, "is_generation_done")
-
-    def set_execution_done(self, experiment_id: int):
-        """
-        Mark execution step as completed.
-
-        Parameters
-        ----------
-        experiment_id : int
-            Experiment identifier.
-        """
-        self._update_status(experiment_id, "is_execution_done")
-
-    def set_report_building_done(self, experiment_id: int):
-        """
-        Mark report building step as completed.
-
-        Parameters
-        ----------
-        experiment_id : int
-            Experiment identifier.
-        """
-        self._update_status(experiment_id, "is_report_building_done")
+        self._update_status(experiment_id, self._STEP_STATUS_FIELDS[step], status)

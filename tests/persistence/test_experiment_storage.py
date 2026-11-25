@@ -7,6 +7,7 @@ from typing import Any, cast
 import pytest
 from sqlalchemy import Table, UniqueConstraint
 
+from pysatl_experiment.configuration.models.step_status import ExperimentStep, StepStatus
 from pysatl_experiment.persistence.experiment_storage import AlchemyExperiment, AlchemyExperimentStorage
 from pysatl_experiment.persistence.models.experiment import ExperimentModel, ExperimentQuery
 
@@ -27,12 +28,12 @@ SIGNATURE_FIELDS = (
     "significance_levels",
 )
 
-STATUS_FLAGS = ("is_generation_done", "is_execution_done", "is_report_building_done")
+STATUS_FIELDS = ("generation_status", "execution_status", "report_building_status")
 
-FLAG_SETTERS = [
-    pytest.param("set_generation_done", "is_generation_done", id="generation"),
-    pytest.param("set_execution_done", "is_execution_done", id="execution"),
-    pytest.param("set_report_building_done", "is_report_building_done", id="report-building"),
+STEP_SETTERS = [
+    pytest.param(ExperimentStep.GENERATION, "generation_status", id="generation"),
+    pytest.param(ExperimentStep.EXECUTION, "execution_status", id="execution"),
+    pytest.param(ExperimentStep.REPORT_BUILDING, "report_building_status", id="report-building"),
 ]
 
 SIGNATURE_MISMATCHES = [
@@ -77,9 +78,6 @@ def make_model(**overrides: Any) -> ExperimentModel:
         "alternatives": {"EXP": [1.0]},
         "significance_levels": [0.05, 0.01],
         "parallel_workers": 2,
-        "is_generation_done": False,
-        "is_execution_done": False,
-        "is_report_building_done": False,
     }
     values.update(overrides)
     return ExperimentModel(**values)
@@ -148,35 +146,39 @@ def test_to_orm_maps_every_column_from_the_model() -> None:
 
 # Checks that a model survives a conversion to ORM and back unchanged.
 def test_to_orm_and_to_model_roundtrip() -> None:
-    model = make_model(is_generation_done=True, is_execution_done=True, is_report_building_done=True)
+    model = make_model(
+        generation_status=StepStatus.DONE,
+        execution_status=StepStatus.DONE,
+        report_building_status=StepStatus.DONE,
+    )
 
     orm = AlchemyExperimentStorage._to_orm(model)
 
     assert AlchemyExperimentStorage._to_model(orm) == model
 
 
-# Checks that a true status flag is stored as an integer.
-@pytest.mark.parametrize("flag", ["is_generation_done", "is_execution_done", "is_report_building_done"])
-def test_to_orm_converts_flag_to_integer(flag: str) -> None:
-    orm = AlchemyExperimentStorage._to_orm(make_model(**{flag: True}))
+# Checks that a step status is stored as its string value.
+@pytest.mark.parametrize("field", ["generation_status", "execution_status", "report_building_status"])
+def test_to_orm_converts_status_to_string(field: str) -> None:
+    orm = AlchemyExperimentStorage._to_orm(make_model(**{field: StepStatus.RUNNING}))
 
-    assert getattr(orm, flag) == 1
-
-
-# Checks that a false status flag is stored as an integer zero.
-@pytest.mark.parametrize("flag", ["is_generation_done", "is_execution_done", "is_report_building_done"])
-def test_to_orm_converts_unset_flag_to_zero(flag: str) -> None:
-    orm = AlchemyExperimentStorage._to_orm(make_model(**{flag: False}))
-
-    assert getattr(orm, flag) == 0
+    assert getattr(orm, field) == StepStatus.RUNNING.value
 
 
-# Checks that a nonzero integer status column converts back to a boolean.
-@pytest.mark.parametrize("flag", ["is_generation_done", "is_execution_done", "is_report_building_done"])
-def test_to_model_returns_boolean_flags(flag: str) -> None:
-    orm = AlchemyExperimentStorage._to_orm(make_model(**{flag: True}))
+# Checks that an unset step status defaults to pending.
+@pytest.mark.parametrize("field", ["generation_status", "execution_status", "report_building_status"])
+def test_to_orm_defaults_status_to_pending(field: str) -> None:
+    orm = AlchemyExperimentStorage._to_orm(make_model())
 
-    assert getattr(AlchemyExperimentStorage._to_model(orm), flag) is True
+    assert getattr(orm, field) == StepStatus.PENDING.value
+
+
+# Checks that a stored status string converts back to the enum member.
+@pytest.mark.parametrize("field", ["generation_status", "execution_status", "report_building_status"])
+def test_to_model_returns_status_enum(field: str) -> None:
+    orm = AlchemyExperimentStorage._to_orm(make_model(**{field: StepStatus.FAILED}))
+
+    assert getattr(AlchemyExperimentStorage._to_model(orm), field) is StepStatus.FAILED
 
 
 # Checks that a stored experiment is read back with the same configuration.
@@ -206,9 +208,9 @@ def test_get_data_requires_exact_signature_match(store: AlchemyExperimentStorage
 def test_insert_data_updates_existing_experiment_state(store: AlchemyExperimentStorage) -> None:
     store.insert_data(make_model())
     updated = make_model(
-        is_generation_done=True,
-        is_execution_done=True,
-        is_report_building_done=True,
+        generation_status=StepStatus.DONE,
+        execution_status=StepStatus.DONE,
+        report_building_status=StepStatus.DONE,
         parallel_workers=9,
     )
 
@@ -222,7 +224,7 @@ def test_insert_data_updates_existing_experiment_state(store: AlchemyExperimentS
 def test_insert_data_update_keeps_configuration_columns(store: AlchemyExperimentStorage) -> None:
     store.insert_data(make_model())
 
-    store.insert_data(make_model(is_execution_done=True, parallel_workers=4))
+    store.insert_data(make_model(execution_status=StepStatus.DONE, parallel_workers=4))
 
     stored = store.get_data(make_query())
     assert stored is not None
@@ -307,37 +309,50 @@ def test_get_experiment_id_ignores_parallel_workers(store: AlchemyExperimentStor
     assert store.get_experiment_id(make_query(parallel_workers=7)) == store.get_experiment_id(make_query())
 
 
-# Checks that a status flag is set for the experiment and persisted.
-@pytest.mark.parametrize(("setter", "flag"), FLAG_SETTERS)
-def test_set_status_flag(store: AlchemyExperimentStorage, setter: str, flag: str) -> None:
+# Checks that a step status is set for the experiment and persisted.
+@pytest.mark.parametrize(("step", "field"), STEP_SETTERS)
+def test_set_step_status(store: AlchemyExperimentStorage, step: ExperimentStep, field: str) -> None:
     store.insert_data(make_model())
     experiment_id = store.get_experiment_id(make_query())
 
-    assert getattr(store, setter)(experiment_id) is None
+    store.set_step_status(experiment_id, step, StepStatus.DONE)
 
     stored = store.get_data(make_query())
-    assert getattr(stored, flag) is True
-    other_flags = set(STATUS_FLAGS) - {flag}
-    assert all(getattr(stored, other) is False for other in other_flags)
+    assert getattr(stored, field) is StepStatus.DONE
+    other_fields = set(STATUS_FIELDS) - {field}
+    assert all(getattr(stored, other) is StepStatus.PENDING for other in other_fields)
 
 
-# Checks that setting a status flag for an unknown identifier raises.
-@pytest.mark.parametrize(("setter", "flag"), FLAG_SETTERS)
-def test_set_status_flag_raises_for_unknown_experiment(store: AlchemyExperimentStorage, setter: str, flag: str) -> None:
-    with pytest.raises(ValueError, match="Experiment not found"):
-        getattr(store, setter)(404)
-
-
-# Checks that status flags of the same experiment are updated independently.
-def test_set_status_flags_are_updated_independently(store: AlchemyExperimentStorage) -> None:
+# Checks that every lifecycle status value round-trips through the storage.
+@pytest.mark.parametrize("status", [StepStatus.RUNNING, StepStatus.DONE, StepStatus.FAILED])
+def test_set_step_status_round_trips_all_statuses(store: AlchemyExperimentStorage, status: StepStatus) -> None:
     store.insert_data(make_model())
     experiment_id = store.get_experiment_id(make_query())
 
-    store.set_generation_done(experiment_id)
-    store.set_report_building_done(experiment_id)
+    store.set_step_status(experiment_id, ExperimentStep.EXECUTION, status)
 
     stored = store.get_data(make_query())
     assert stored is not None
-    assert stored.is_generation_done is True
-    assert stored.is_report_building_done is True
-    assert stored.is_execution_done is False
+    assert stored.execution_status is status
+
+
+# Checks that setting a step status for an unknown identifier raises.
+@pytest.mark.parametrize("step", [ExperimentStep.GENERATION, ExperimentStep.EXECUTION, ExperimentStep.REPORT_BUILDING])
+def test_set_step_status_raises_for_unknown_experiment(store: AlchemyExperimentStorage, step: ExperimentStep) -> None:
+    with pytest.raises(ValueError, match="Experiment not found"):
+        store.set_step_status(404, step, StepStatus.DONE)
+
+
+# Checks that step statuses of the same experiment are updated independently.
+def test_set_step_statuses_are_updated_independently(store: AlchemyExperimentStorage) -> None:
+    store.insert_data(make_model())
+    experiment_id = store.get_experiment_id(make_query())
+
+    store.set_step_status(experiment_id, ExperimentStep.GENERATION, StepStatus.DONE)
+    store.set_step_status(experiment_id, ExperimentStep.REPORT_BUILDING, StepStatus.RUNNING)
+
+    stored = store.get_data(make_query())
+    assert stored is not None
+    assert stored.generation_status is StepStatus.DONE
+    assert stored.report_building_status is StepStatus.RUNNING
+    assert stored.execution_status is StepStatus.PENDING

@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from pysatl_experiment.configuration.models.step_status import ExperimentStep, StepStatus
 from pysatl_experiment.persistence.generated_samples_storage import GeneratedSamplesStorage
 from pysatl_experiment.persistence.generation_run_status_storage import GenerationRunStatusStorage
 from pysatl_experiment.persistence.models.generated_samples import GeneratedSampleModel, GenerationRunModel
@@ -165,15 +166,15 @@ def test_generation_run_status_storage_marks_only_generation_step(storage: Gener
     run_id = storage.create_run(_run())
     status_storage = GenerationRunStatusStorage(storage)
 
-    status_storage.set_generation_done(run_id)
+    status_storage.set_step_status(run_id, ExperimentStep.GENERATION, StepStatus.DONE)
 
     stored = storage.get_run(run_id)
     assert stored is not None
     assert stored.is_complete is True
-    with pytest.raises(RuntimeError, match="do not have an execution step"):
-        status_storage.set_execution_done(run_id)
-    with pytest.raises(RuntimeError, match="do not have a report-building step"):
-        status_storage.set_report_building_done(run_id)
+    with pytest.raises(RuntimeError, match="do not have the execution step"):
+        status_storage.set_step_status(run_id, ExperimentStep.EXECUTION, StepStatus.DONE)
+    with pytest.raises(RuntimeError, match="do not have the report_building step"):
+        status_storage.set_step_status(run_id, ExperimentStep.REPORT_BUILDING, StepStatus.DONE)
 
 
 def test_delete_run_removes_only_its_generated_samples(storage: GeneratedSamplesStorage) -> None:

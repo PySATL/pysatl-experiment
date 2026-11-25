@@ -31,6 +31,7 @@ from pysatl_experiment.configuration.experiment_data.experiment_data import Expe
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.configuration.models.parameters import NumericParameters
 from pysatl_experiment.configuration.models.run_mode import RunMode
+from pysatl_experiment.configuration.models.step_status import StepStatus
 from pysatl_experiment.experiment_execution.experiment_steps import ExperimentSteps
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
 from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
@@ -82,14 +83,14 @@ class AbstractExperimentFactory(Generic[D, G, E, R, RS], ABC):
             report_building_step=None,
         )
 
-        is_generation_step_done = self.experiment_data.steps_done.is_generation_step_done
-        is_execution_step_done = self.experiment_data.steps_done.is_execution_step_done
+        generation_status = self.experiment_data.steps_status.generation_status
+        execution_status = self.experiment_data.steps_status.execution_status
 
-        if not is_generation_step_done:
+        if generation_status is not StepStatus.DONE:
             generation_step = self._create_generation_step(data_storage)
             experiment_steps.generation_step = generation_step
 
-        if not is_execution_step_done:
+        if execution_status is not StepStatus.DONE:
             execution_step = self._create_execution_step(data_storage, result_storage, experiment_storage)
             experiment_steps.execution_step = execution_step
 

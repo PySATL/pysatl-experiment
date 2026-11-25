@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Generic, TypeVar
 
-from pysatl_experiment.configuration.models.steps_done import StepsDone
+from pysatl_experiment.configuration.models.steps_status import StepsStatus
 
 
 C = TypeVar("C")
@@ -21,15 +21,15 @@ class ExperimentData(Generic[C]):
         Experiment identifier.
     config : C
         Experiment configuration object.
-    steps_done : StepsDone
-        Information about completed experiment stages.
+    steps_status : StepsStatus
+        Lifecycle statuses of experiment steps.
     results_path : Path
         Experiment result artifacts path.
     """
 
     experiment_name: str
     config: C
-    steps_done: StepsDone
+    steps_status: StepsStatus
     results_path: Path
 
     @property
