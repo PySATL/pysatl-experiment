@@ -8,7 +8,8 @@ from typing import Any, ClassVar
 
 import pytest
 
-from pysatl_experiment.experiment_execution.parallel import Scheduler
+from pysatl_experiment.configuration.models.task_failure_policy import TaskFailurePolicy
+from pysatl_experiment.experiment_execution.parallel import Scheduler, TaskFailuresExceededError
 from pysatl_experiment.experiment_execution.parallel import scheduler as scheduler_module
 
 
@@ -267,25 +268,84 @@ def test_scheduler_forwards_worker_initializer(monkeypatch):
     }
 
 
-# Checks that a TimeoutError raised while collecting results is retried.
-def test_timeout_error_is_retried(monkeypatch):
-    real_as_completed = scheduler_module.as_completed
-    calls = []
+# Checks that a task failure is isolated, recorded and does not stop the remaining tasks.
+def test_isolate_policy_records_failure_and_continues(monkeypatch):
+    monkeypatch.setattr(scheduler_module, "ProcessPoolExecutor", InlineExecutor)
 
-    def flaky_as_completed(futures, *args, **kwargs):
-        """Raise TimeoutError once, then delegate to the real implementation."""
-        calls.append(True)
-        if len(calls) == 1:
-            raise TimeoutError
-        return real_as_completed(futures, *args, **kwargs)
-
-    monkeypatch.setattr(scheduler_module, "as_completed", flaky_as_completed)
+    tasks = [_test_success_task, _test_failing_task, _test_task_simple]
 
     with Scheduler(max_workers=2) as scheduler:
-        results = scheduler.run([_test_task_simple, _test_success_task])
+        results = scheduler.run(tasks, failure_policy=TaskFailurePolicy.ISOLATE, failure_threshold=0.5)
 
-    assert sorted(results, key=str) == sorted([42, "ok"], key=str)
-    assert len(calls) == 2
+    assert sorted(results, key=str) == sorted(["ok", 42], key=str)
+    assert len(scheduler.failures) == 1
+    assert scheduler.failures[0].index == 1
+    assert isinstance(scheduler.failures[0].error, ValueError)
+
+
+# Checks that new tasks are still submitted after a failure under the isolate policy.
+def test_isolate_policy_keeps_submitting_after_failure(monkeypatch):
+    monkeypatch.setattr(scheduler_module, "ProcessPoolExecutor", InlineExecutor)
+
+    tasks = [_test_failing_task, _test_success_task, _test_success_task, _test_success_task]
+
+    with Scheduler(max_workers=2) as scheduler:
+        results = scheduler.run(tasks, failure_policy=TaskFailurePolicy.ISOLATE, failure_threshold=1.0)
+
+    assert results == ["ok", "ok", "ok"]
+    assert len(scheduler.failures) == 1
+
+
+# Checks that the failure records are reset between iterate_results calls.
+def test_failures_are_reset_between_runs(monkeypatch):
+    monkeypatch.setattr(scheduler_module, "ProcessPoolExecutor", InlineExecutor)
+
+    with Scheduler(max_workers=2) as scheduler:
+        scheduler.run([_test_failing_task], failure_policy=TaskFailurePolicy.ISOLATE, failure_threshold=1.0)
+        assert len(scheduler.failures) == 1
+
+        scheduler.run([_test_success_task])
+        assert scheduler.failures == []
+
+
+# Checks that exceeding the failure threshold escalates to TaskFailuresExceededError after draining.
+def test_isolate_policy_escalates_when_threshold_exceeded(monkeypatch):
+    monkeypatch.setattr(scheduler_module, "ProcessPoolExecutor", InlineExecutor)
+
+    tasks = [_test_failing_task, _test_failing_task, _test_success_task, _test_success_task]
+
+    with Scheduler(max_workers=2) as scheduler:
+        with pytest.raises(TaskFailuresExceededError, match="2 of 4 tasks failed"):
+            scheduler.run(tasks, failure_policy=TaskFailurePolicy.ISOLATE, failure_threshold=0.25)
+
+    assert len(scheduler.failures) == 2
+
+
+# Checks that a failure share equal to the threshold does not escalate.
+def test_isolate_policy_allows_failures_at_threshold(monkeypatch):
+    monkeypatch.setattr(scheduler_module, "ProcessPoolExecutor", InlineExecutor)
+
+    tasks = [_test_failing_task, _test_success_task, _test_success_task, _test_success_task]
+
+    with Scheduler(max_workers=2) as scheduler:
+        results = scheduler.run(tasks, failure_policy=TaskFailurePolicy.ISOLATE, failure_threshold=0.25)
+
+    assert results == ["ok", "ok", "ok"]
+
+
+# Checks that out-of-range failure thresholds are rejected.
+@pytest.mark.parametrize("threshold", [-0.1, 1.1])
+def test_invalid_failure_threshold_raises_value_error(threshold):
+    scheduler = Scheduler(max_workers=2)
+
+    with pytest.raises(ValueError, match="failure_threshold"):
+        list(scheduler.iterate_results([_test_task_simple], failure_threshold=threshold))
+
+
+# Checks that the fail-fast policy remains the default and re-raises task exceptions.
+def test_fail_fast_policy_is_default():
+    with pytest.raises(ValueError, match="Task failed"), Scheduler(max_workers=2) as scheduler:
+        scheduler.run([_test_success_task, _test_failing_task])
 
 
 # Checks that the initial fill stops early when the sequence under-reports its items.
