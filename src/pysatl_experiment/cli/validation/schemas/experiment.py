@@ -19,6 +19,7 @@ from pysatl_experiment.cli.validation.schemas.criteria import CriteriaConfig, Cr
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
+from pysatl_experiment.configuration.models.task_failure_policy import TaskFailurePolicy
 
 
 class BaseExperimentConfig(BaseModel):
@@ -55,6 +56,11 @@ class BaseExperimentConfig(BaseModel):
         Number of Monte Carlo simulations.
     parallel_workers : int
         Number of parallel workers.
+    task_failure_policy : TaskFailurePolicy
+        Policy for handling individual task failures during parallel
+        execution. Defaults to fail-fast.
+    failure_threshold : float
+        Maximum allowed share of failed tasks under the isolate policy.
 
     Raises
     ------
@@ -74,6 +80,8 @@ class BaseExperimentConfig(BaseModel):
     sample_sizes: list[int]
     monte_carlo_count: int
     parallel_workers: int
+    task_failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST
+    failure_threshold: float = Field(default=0.01, ge=0.0, le=1.0)
 
     @field_validator("generator_type", "executor_type", "report_builder_type")
     @classmethod

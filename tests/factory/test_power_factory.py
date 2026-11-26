@@ -19,6 +19,7 @@ from pysatl_experiment.configuration.models.experiment_type import ExperimentTyp
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
+from pysatl_experiment.configuration.models.steps_status import StepsStatus
 from pysatl_experiment.experiment_execution.experiment_factory import PowerExperimentFactory
 from pysatl_experiment.experiment_execution.step.execution_step.power.power_execution_step import PowerExecutionStep
 from pysatl_experiment.experiment_execution.step.generation_step.generation_step import GenerationStep
@@ -148,13 +149,10 @@ class FakeExperimentStorage(IExperimentStorage):
     def get_experiment_id(self, query):
         return self._id
 
-    def set_generation_done(self, experiment_id: int):  # pragma: no cover
+    def set_step_status(self, experiment_id: int, step: Any, status: Any) -> None:  # pragma: no cover
         pass
 
-    def set_execution_done(self, experiment_id: int):  # pragma: no cover
-        pass
-
-    def set_report_building_done(self, experiment_id: int):  # pragma: no cover
+    def set_task_stats(self, experiment_id: int, tasks_failed: int, tasks_total: int) -> None:  # pragma: no cover
         pass
 
 
@@ -210,7 +208,7 @@ def build_power_data(results_path: Path) -> PowerExperimentData:
     return PowerExperimentData(
         experiment_name="power_test",
         config=config,
-        steps_done=type("StepsDone", (), {"is_generation_step_done": False, "is_execution_step_done": False})(),
+        steps_status=StepsStatus(),
         results_path=results_path,
     )
 

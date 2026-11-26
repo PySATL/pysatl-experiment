@@ -39,8 +39,10 @@ from pysatl_experiment.configuration.experiment_config.time_complexity_experimen
 from pysatl_experiment.configuration.experiment_data.experiment_data import ExperimentData
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.configuration.models.run_mode import RunMode
+from pysatl_experiment.configuration.models.step_status import StepStatus
 from pysatl_experiment.configuration.models.step_type import StepType
-from pysatl_experiment.configuration.models.steps_done import StepsDone
+from pysatl_experiment.configuration.models.steps_status import StepsStatus
+from pysatl_experiment.configuration.models.task_failure_policy import TaskFailurePolicy
 from pysatl_experiment.persistence.experiment_storage import AlchemyExperimentStorage
 from pysatl_experiment.persistence.models.experiment import ExperimentModel, ExperimentQuery, IExperimentStorage
 from pysatl_experiment.utils.experiment_utils import parameters_to_list
@@ -133,16 +135,12 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
         return ExperimentData(
             experiment_name=experiment_name,
             config=generation_config,
-            steps_done=StepsDone(False, False, False),
+            steps_status=StepsStatus(),
             results_path=Path(),
         )
 
     legacy_dataclass_config = _adapt_pydantic_to_dataclass(pydantic_config)
-    steps_done = StepsDone(
-        is_generation_step_done=False,
-        is_execution_step_done=False,
-        is_report_building_step_done=False,
-    )
+    steps_status = StepsStatus()
 
     experiment_storage = AlchemyExperimentStorage(legacy_dataclass_config.storage_connection)
     experiment_storage.init()
@@ -152,7 +150,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
         storage=experiment_storage,
     )
     if experiment_config_from_storage is not None:
-        steps_done = _check_if_experiment_finished(experiment_config_from_storage)
+        steps_status = _check_if_experiment_finished(experiment_config_from_storage)
     else:
         _save_experiment_config_to_storage(
             config=legacy_dataclass_config,
@@ -164,7 +162,7 @@ def validate_build_and_run(experiment_data_dict: dict) -> ExperimentData:
     experiment_data = ExperimentData(
         experiment_name=experiment_name,
         config=legacy_dataclass_config,
-        steps_done=steps_done,
+        steps_status=steps_status,
         results_path=result_path,
     )
 
@@ -279,15 +277,12 @@ def _save_experiment_config_to_storage(config: ExperimentConfig, storage: IExper
         criteria=criteria,
         significance_levels=significance_levels,
         alternatives=alternatives,
-        is_generation_done=False,
-        is_execution_done=False,
-        is_report_building_done=False,
     )
 
     storage.insert_data(query)
 
 
-def _check_if_experiment_finished(experiment_config_from_db: ExperimentModel) -> StepsDone:
+def _check_if_experiment_finished(experiment_config_from_db: ExperimentModel) -> StepsStatus:
     """
     Check experiment completion status.
 
@@ -298,29 +293,32 @@ def _check_if_experiment_finished(experiment_config_from_db: ExperimentModel) ->
 
     Returns
     -------
-    StepsDone
-        Object describing which execution stages have already been
-        completed.
+    StepsStatus
+        Lifecycle statuses of experiment steps.
 
     Raises
     ------
     ClickException
         If all experiment stages have already been completed.
     """
-    is_generation_done = experiment_config_from_db.is_generation_done
-    is_execution_done = experiment_config_from_db.is_execution_done
-    is_report_building_done = experiment_config_from_db.is_report_building_done
+    generation_status = experiment_config_from_db.generation_status
+    execution_status = experiment_config_from_db.execution_status
+    report_building_status = experiment_config_from_db.report_building_status
 
-    if is_generation_done and is_execution_done and is_report_building_done:
+    if (
+        generation_status is StepStatus.DONE
+        and execution_status is StepStatus.DONE
+        and report_building_status is StepStatus.DONE
+    ):
         raise ClickException("Experiment is already finished.")
 
-    steps_done = StepsDone(
-        is_generation_step_done=is_generation_done,
-        is_execution_step_done=is_execution_done,
-        is_report_building_step_done=is_report_building_done,
+    steps_status = StepsStatus(
+        generation_status=generation_status,
+        execution_status=execution_status,
+        report_building_status=report_building_status,
     )
 
-    return steps_done
+    return steps_status
 
 
 # Maps modern Pydantic config classes to their legacy dataclass counterparts.
@@ -386,6 +384,7 @@ def _adapt_pydantic_to_dataclass(pydantic_config: PydanticBaseExperiment) -> Exp
         RunMode: lambda x: RunMode(x),
         DistributionType: lambda x: DistributionType(x),
         StepType: lambda x: StepType(x),
+        TaskFailurePolicy: lambda x: TaskFailurePolicy(x),
     }
 
     legacy_config: ExperimentConfig = from_dict(

@@ -9,6 +9,7 @@ from pysatl_experiment.configuration.models.experiment_type import ExperimentTyp
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
 from pysatl_experiment.configuration.models.step_type import StepType
+from pysatl_experiment.configuration.models.task_failure_policy import TaskFailurePolicy
 
 
 @dataclass
@@ -47,6 +48,11 @@ class ExperimentConfig:
         Report generation mode.
     parallel_workers : int
         Number of parallel worker processes.
+    task_failure_policy : TaskFailurePolicy
+        Policy for handling individual task failures during the execution
+        step. Defaults to fail-fast.
+    failure_threshold : float
+        Maximum allowed share of failed tasks under the isolate policy.
     """
 
     experiment_type: ExperimentType
@@ -67,3 +73,5 @@ class ExperimentConfig:
     # `hypothesis_params` field yet. `kw_only` keeps positional construction
     # order intact (all existing call sites use keywords).
     hypothesis_params: dict[str, float] = field(default_factory=dict, kw_only=True)
+    task_failure_policy: TaskFailurePolicy = field(default=TaskFailurePolicy.FAIL_FAST, kw_only=True)
+    failure_threshold: float = field(default=0.01, kw_only=True)

@@ -1,9 +1,37 @@
 """Parallel task scheduling utilities."""
 
+import logging
 from collections.abc import Callable, Iterator, Sequence
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import Future, ProcessPoolExecutor, as_completed
+from dataclasses import dataclass
 from multiprocessing.context import BaseContext
 from typing import Any
+
+from pysatl_experiment.configuration.models.task_failure_policy import TaskFailurePolicy
+
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class TaskFailure:
+    """
+    Record of a single failed task.
+
+    Attributes
+    ----------
+    index : int
+        Position of the failed task in the submitted task sequence.
+    error : Exception
+        Exception raised by the task.
+    """
+
+    index: int
+    error: Exception
+
+
+class TaskFailuresExceededError(RuntimeError):
+    """Raised when the share of failed tasks exceeds the configured threshold."""
 
 
 class Scheduler:
@@ -53,6 +81,7 @@ class Scheduler:
         self._mp_context = mp_context
         self._executor: ProcessPoolExecutor | None = None
         self._active = False
+        self.failures: list[TaskFailure] = []
 
     def __enter__(self) -> "Scheduler":
         """Start scheduler context."""
@@ -119,67 +148,109 @@ class Scheduler:
 
         return self._executor.submit(fn, *args, **kwargs)
 
-    def iterate_results(self, tasks: Sequence[Callable[[], Any]]) -> Iterator[Any]:
+    def iterate_results(
+        self,
+        tasks: Sequence[Callable[[], Any]],
+        failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
+        failure_threshold: float = 0.01,
+    ) -> Iterator[Any]:
         """
         Execute tasks and yield results as they complete.
 
         Parameters
         ----------
-        tasks : list[Callable[[], Any]]
+        tasks : Sequence[Callable[[], Any]]
             Tasks to execute.
+        failure_policy : TaskFailurePolicy, default=TaskFailurePolicy.FAIL_FAST
+            ``FAIL_FAST`` records the first task exception in
+            ``self.failures``, re-raises it and aborts the iteration.
+            ``ISOLATE`` logs the exception, records it in
+            ``self.failures`` and continues with the remaining tasks.
+        failure_threshold : float, default=0.01
+            Maximum allowed share of failed tasks under the ``ISOLATE``
+            policy. When the observed share is higher, the remaining
+            results are still drained and ``TaskFailuresExceededError``
+            is raised after the iteration completes.
 
         Yields
         ------
         Any
             Task execution results.
+
+        Raises
+        ------
+        ValueError
+            If ``failure_threshold`` is outside the [0, 1] range.
+        TaskFailuresExceededError
+            If the share of failed tasks exceeds ``failure_threshold``
+            under the ``ISOLATE`` policy.
         """
+        if not 0.0 <= failure_threshold <= 1.0:
+            raise ValueError("failure_threshold must be in the [0, 1] range.")
+
         if not self._active:
             raise RuntimeError("Use inside 'with' block.")
 
         task_iter = iter(tasks)
-        futures = {}
+        futures: dict[Future, int] = {}
         total = len(tasks)
-        completed = 0  # TODO: not used??
+        submitted = 0
+        self.failures = []
 
         for _ in range(min(self.max_workers, total)):
             try:
                 task = next(task_iter)
-                futures[self.submit(task)] = task
             except StopIteration:
                 break
+            futures[self.submit(task)] = submitted
+            submitted += 1
 
         while futures:
-            try:
-                for future in as_completed(futures):
-                    try:
-                        result = future.result()
-                        completed += 1
-                        yield result
+            for future in as_completed(futures):
+                index = futures.pop(future)
+                try:
+                    yield future.result()
+                except Exception as exc:
+                    self.failures.append(TaskFailure(index=index, error=exc))
+                    if failure_policy is TaskFailurePolicy.FAIL_FAST:
+                        raise
+                    logger.exception("Task %s failed; continuing with remaining tasks.", index)
 
-                        try:
-                            next_task = next(task_iter)
-                            futures[self.submit(next_task)] = next_task
-                        except StopIteration:
-                            pass
+                try:
+                    next_task = next(task_iter)
+                except StopIteration:
+                    continue
+                futures[self.submit(next_task)] = submitted
+                submitted += 1
 
-                    finally:
-                        del futures[future]
+        failed_count = len(self.failures)
+        if failed_count and failed_count / total > failure_threshold:
+            raise TaskFailuresExceededError(
+                f"{failed_count} of {total} tasks failed ({failed_count / total:.2%}), "
+                f"which exceeds the configured threshold ({failure_threshold:.2%})."
+            )
 
-            except TimeoutError:  # TODO: ??
-                continue
-
-    def run(self, tasks: Sequence[Callable[[], Any]]) -> list[Any]:
+    def run(
+        self,
+        tasks: Sequence[Callable[[], Any]],
+        failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
+        failure_threshold: float = 0.01,
+    ) -> list[Any]:
         """
         Execute all tasks and collect results.
 
         Parameters
         ----------
-        tasks : list[Callable[[], Any]]
+        tasks : Sequence[Callable[[], Any]]
             Tasks to execute.
+        failure_policy : TaskFailurePolicy, default=TaskFailurePolicy.FAIL_FAST
+            Policy for handling individual task failures.
+        failure_threshold : float, default=0.01
+            Maximum allowed share of failed tasks under the ``ISOLATE`` policy.
 
         Returns
         -------
         list[Any]
             Task execution results.
         """
-        return list(self.iterate_results(tasks))
+        return list(self.iterate_results(tasks, failure_policy=failure_policy, failure_threshold=failure_threshold))

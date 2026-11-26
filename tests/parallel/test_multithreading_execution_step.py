@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import sys
 import types
 from concurrent.futures import Future
@@ -12,6 +13,8 @@ from unittest.mock import MagicMock
 import pytest
 
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
+from pysatl_experiment.configuration.models.task_failure_policy import TaskFailurePolicy
+from pysatl_experiment.experiment_execution.parallel import TaskFailuresExceededError
 from pysatl_experiment.experiment_execution.parallel import scheduler as scheduler_module
 from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
 from pysatl_experiment.experiment_execution.step.execution_step import multithreading_execution_step
@@ -315,6 +318,93 @@ def test_run_flushes_buffered_results_when_a_task_fails(inline_executor: type[In
         step.run()
 
     assert saved_batches == [[("OK", "result:OK")]]
+
+
+# Checks that run reports task counters to the stats storage after a successful run.
+def test_run_reports_task_stats_on_success(inline_executor: type[InlineExecutor]) -> None:
+    stats = MagicMock()
+    step = make_step(
+        [make_spec(criterion_code="A"), make_spec(criterion_code="B")],
+        task_stats_storage=stats,
+    )
+
+    step.run()
+
+    stats.set_task_stats.assert_called_once_with(7, 0, 2)
+
+
+# Checks that isolated failures are included in the reported counters.
+def test_run_reports_task_stats_with_isolated_failures(inline_executor: type[InlineExecutor]) -> None:
+    stats = MagicMock()
+    step = make_step(
+        [make_spec(criterion_code="A"), make_spec(criterion_code=BAD_CRITERION_CODE)],
+        task_stats_storage=stats,
+        failure_policy=TaskFailurePolicy.ISOLATE,
+        failure_threshold=1.0,
+    )
+
+    step.run()
+
+    stats.set_task_stats.assert_called_once_with(7, 1, 2)
+
+
+# Checks that counters are reported even when the failure threshold is exceeded.
+def test_run_reports_task_stats_when_threshold_exceeded(inline_executor: type[InlineExecutor]) -> None:
+    stats = MagicMock()
+    step = make_step(
+        [make_spec(criterion_code="A"), make_spec(criterion_code=BAD_CRITERION_CODE)],
+        task_stats_storage=stats,
+        failure_policy=TaskFailurePolicy.ISOLATE,
+        failure_threshold=0.0,
+    )
+
+    with pytest.raises(TaskFailuresExceededError):
+        step.run()
+
+    stats.set_task_stats.assert_called_once_with(7, 1, 2)
+
+
+# Checks that counters are reported even when the run aborts under fail-fast.
+def test_run_reports_task_stats_when_run_fails(inline_executor: type[InlineExecutor]) -> None:
+    stats = MagicMock()
+    step = make_step(
+        [make_spec(criterion_code=BAD_CRITERION_CODE)],
+        task_stats_storage=stats,
+    )
+
+    with pytest.raises(ValueError, match="bad task"):
+        step.run()
+
+    stats.set_task_stats.assert_called_once_with(7, 1, 1)
+
+
+# Checks that run without a stats storage does not require one.
+def test_run_without_stats_storage_still_saves_results(inline_executor: type[InlineExecutor]) -> None:
+    saved_batches: list[list[Any]] = []
+    step = make_step([make_spec(criterion_code="A")], saved_batches)
+
+    step.run()
+
+    assert saved_batches == [[("A", "result:A")]]
+
+
+# Checks that isolated failures produce a summary warning with the counters.
+def test_run_logs_summary_warning_for_isolated_failures(
+    inline_executor: type[InlineExecutor], caplog: pytest.LogCaptureFixture
+) -> None:
+    step = make_step(
+        [make_spec(criterion_code="A"), make_spec(criterion_code=BAD_CRITERION_CODE)],
+        failure_policy=TaskFailurePolicy.ISOLATE,
+        failure_threshold=1.0,
+    )
+
+    with caplog.at_level(
+        logging.WARNING,
+        logger="pysatl_experiment.experiment_execution.step.execution_step.multithreading_execution_step",
+    ):
+        step.run()
+
+    assert any("1 of 2 tasks failed" in record.message for record in caplog.records)
 
 
 # Checks that save_batch converts buffered results and persists the models.

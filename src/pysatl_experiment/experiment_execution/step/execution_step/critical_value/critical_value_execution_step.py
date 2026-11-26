@@ -6,6 +6,7 @@ from pysatl_criterion.persistence.models.limit_distribution import ILimitDistrib
 from typing_extensions import override
 
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
+from pysatl_experiment.configuration.models.task_failure_policy import TaskFailurePolicy
 from pysatl_experiment.experiment_execution.parallel.task_spec import TaskSpec
 from pysatl_experiment.experiment_execution.step.execution_step.critical_value.critical_value_worker import (
     CriticalValueWorker,
@@ -19,6 +20,7 @@ from pysatl_experiment.experiment_execution.step.execution_step.multithreading_e
     ExecutionTaskResult,
     MultithreadingExecutionStep,
 )
+from pysatl_experiment.persistence.models.experiment import ITaskStatsStorage
 from pysatl_experiment.persistence.models.random_values import IRandomValuesStorage
 
 
@@ -56,6 +58,9 @@ class CriticalValueExecutionStep(
         result_storage: ILimitDistributionStorage,
         storage_connection: str,
         parallel_workers: int,
+        failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
+        failure_threshold: float = 0.01,
+        task_stats_storage: ITaskStatsStorage | None = None,
     ) -> None:
         super().__init__(
             experiment_id=experiment_id,
@@ -65,6 +70,9 @@ class CriticalValueExecutionStep(
             result_storage=result_storage,
             storage_connection=storage_connection,
             parallel_workers=parallel_workers,
+            failure_policy=failure_policy,
+            failure_threshold=failure_threshold,
+            task_stats_storage=task_stats_storage,
         )
         self.hypothesis_generator_data = hypothesis_generator_data
         self.data_storage = data_storage

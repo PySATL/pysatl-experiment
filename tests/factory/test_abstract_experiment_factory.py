@@ -20,7 +20,9 @@ from pysatl_experiment.configuration.models.criterion import Criterion
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
+from pysatl_experiment.configuration.models.step_status import StepStatus
 from pysatl_experiment.configuration.models.step_type import StepType
+from pysatl_experiment.configuration.models.steps_status import StepsStatus
 from pysatl_experiment.experiment_execution.experiment_factory import AbstractExperimentFactory
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
 from pysatl_experiment.persistence.models.experiment import IExperimentStorage
@@ -110,13 +112,10 @@ class FakeExperimentStorage(IExperimentStorage):
     def get_experiment_id(self, query: Any) -> int | None:
         return self._id
 
-    def set_generation_done(self, experiment_id: int) -> None:  # pragma: no cover
+    def set_step_status(self, experiment_id: int, step: Any, status: Any) -> None:  # pragma: no cover
         pass
 
-    def set_execution_done(self, experiment_id: int) -> None:  # pragma: no cover
-        pass
-
-    def set_report_building_done(self, experiment_id: int) -> None:  # pragma: no cover
+    def set_task_stats(self, experiment_id: int, tasks_failed: int, tasks_total: int) -> None:  # pragma: no cover
         pass
 
 
@@ -231,13 +230,14 @@ def build_tc_data(
         report_mode=ReportMode.WITH_CHART,
         parallel_workers=1,
     )
-    steps_done = type(
-        "StepsDone", (), {"is_generation_step_done": is_gen_done, "is_execution_step_done": is_exec_done}
-    )()
+    steps_status = StepsStatus(
+        generation_status=StepStatus.DONE if is_gen_done else StepStatus.PENDING,
+        execution_status=StepStatus.DONE if is_exec_done else StepStatus.PENDING,
+    )
     return TimeComplexityExperimentData(
         experiment_name="abstract_test",
         config=config,
-        steps_done=steps_done,
+        steps_status=steps_status,
         results_path=results_path,
     )
 
@@ -280,7 +280,7 @@ def test_create_experiment_steps_overwrite_deletes_and_respects_steps_done(tmp_r
     # Overwrite triggers deletion of result queries (1 criterion code × sizes)
     assert len(rs.deleted_queries) == len(data.config.sample_sizes)
 
-    # Since steps_done indicates both done, generation/execution should be None; report present
+    # Since statuses indicate both steps done, generation/execution should be None; report present
     assert steps.generation_step is None
     assert steps.execution_step is None
     assert steps.report_building_step is not None
@@ -352,11 +352,11 @@ def test_get_experiment_id_critical_value(tmp_results_path: Path):
         parallel_workers=1,
         significance_levels=[0.05, 0.01],
     )
-    steps_done = type("StepsDone", (), {"is_generation_step_done": False, "is_execution_step_done": False})()
+    steps_status = StepsStatus()
     data = CriticalValueExperimentData(
         experiment_name="cv_test",
         config=config,
-        steps_done=steps_done,
+        steps_status=steps_status,
         results_path=tmp_results_path,
     )
     factory = MinimalConcreteFactory(experiment_data=data)
@@ -388,11 +388,11 @@ def test_get_experiment_id_power(tmp_results_path: Path):
         significance_levels=[0.05],
         alternatives=[Alternative(distribution_type=DistributionType.NORMAL, parameters={"loc": 0.0, "scale": 1.0})],
     )
-    steps_done = type("StepsDone", (), {"is_generation_step_done": False, "is_execution_step_done": False})()
+    steps_status = StepsStatus()
     data = PowerExperimentData(
         experiment_name="power_test",
         config=config,
-        steps_done=steps_done,
+        steps_status=steps_status,
         results_path=tmp_results_path,
     )
     factory = MinimalConcreteFactory(experiment_data=data)
@@ -490,11 +490,11 @@ def test_create_power_queries(tmp_results_path: Path):
             Alternative(distribution_type=DistributionType.WEIBULL, parameters={"c": 1.5}),
         ],
     )
-    steps_done = type("StepsDone", (), {"is_generation_step_done": False, "is_execution_step_done": False})()
+    steps_status = StepsStatus()
     data = PowerExperimentData(
         experiment_name="power_exp",
         config=config,
-        steps_done=steps_done,
+        steps_status=steps_status,
         results_path=tmp_results_path,
     )
     factory = MinimalConcreteFactory(experiment_data=data)
@@ -551,11 +551,11 @@ def test_delete_alternatives_sample_data(tmp_results_path: Path):
             Alternative(distribution_type=DistributionType.WEIBULL, parameters={"c": 1.5}),
         ],
     )
-    steps_done = type("StepsDone", (), {"is_generation_step_done": False, "is_execution_step_done": False})()
+    steps_status = StepsStatus()
     data = PowerExperimentData(
         experiment_name="power_alt_del",
         config=config,
-        steps_done=steps_done,
+        steps_status=steps_status,
         results_path=tmp_results_path,
     )
     factory = MinimalConcreteFactory(experiment_data=data)

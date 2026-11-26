@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, call
 
 import pytest
 
+from pysatl_experiment.configuration.models.step_status import ExperimentStep, StepStatus
 from pysatl_experiment.experiment_execution.experiment import Experiment
 from pysatl_experiment.experiment_execution.experiment_steps import ExperimentSteps
 from pysatl_experiment.experiment_execution.step.abstract_experiment_step import IExperimentStep
@@ -17,6 +18,14 @@ EXPERIMENT_ID = 42
 EXPERIMENT_LOGGER = "pysatl_experiment.experiment_execution.experiment"
 
 STEP_PRESENCE_COMBINATIONS = list(itertools.product([False, True], repeat=3))
+
+STEP_ORDER = ("generation", "execution", "report_building")
+
+STORAGE_STEPS = {
+    "generation": ExperimentStep.GENERATION,
+    "execution": ExperimentStep.EXECUTION,
+    "report_building": ExperimentStep.REPORT_BUILDING,
+}
 
 
 def _expected_messages(step: str, start: str, finish: str) -> tuple[str, str]:
@@ -33,10 +42,10 @@ EXPECTED_STEP_MESSAGES = {
     ),
 }
 
-STORAGE_METHODS = {
-    "generation": "set_generation_done",
-    "execution": "set_execution_done",
-    "report_building": "set_report_building_done",
+EXPECTED_FAILURE_MESSAGES = {
+    "generation": f"[experiment_id={EXPERIMENT_ID}, step=generation] Generation step failed.",
+    "execution": f"[experiment_id={EXPERIMENT_ID}, step=execution] Execution step failed.",
+    "report_building": f"[experiment_id={EXPERIMENT_ID}, step=report_building] Report building step failed.",
 }
 
 
@@ -96,6 +105,14 @@ def build_presence_case(
     return experiment, storage, present_steps, flags
 
 
+def expected_status_calls(step_name: str) -> list:
+    """Build the expected RUNNING -> DONE status call sequence for a step."""
+    return [
+        call(EXPERIMENT_ID, STORAGE_STEPS[step_name], StepStatus.RUNNING),
+        call(EXPERIMENT_ID, STORAGE_STEPS[step_name], StepStatus.DONE),
+    ]
+
+
 # Checks that the constructor stores the provided steps container as-is.
 def test_constructor_stores_experiment_steps() -> None:
     steps = ExperimentSteps(
@@ -128,14 +145,15 @@ def test_only_enabled_steps_run_and_report_status(
 
     experiment.run_experiment()
 
-    for name, step in present_steps.items():
-        storage_method = getattr(storage, STORAGE_METHODS[name])
+    expected_storage_calls: list = []
+    for name in STEP_ORDER:
         if flags[name]:
-            step.run.assert_called_once_with()
-            storage_method.assert_called_once_with(EXPERIMENT_ID)
+            present_steps[name].run.assert_called_once_with()
+            expected_storage_calls.extend(expected_status_calls(name))
         else:
-            step.run.assert_not_called()
-            storage_method.assert_not_called()
+            present_steps[name].run.assert_not_called()
+
+    assert storage.set_step_status.call_args_list == expected_storage_calls
 
 
 # Checks the exact order of step execution and status persistence.
@@ -155,12 +173,15 @@ def test_steps_and_statuses_are_executed_sequentially() -> None:
     experiment.run_experiment()
 
     assert manager.mock_calls == [
+        call.storage.set_step_status(EXPERIMENT_ID, ExperimentStep.GENERATION, StepStatus.RUNNING),
         call.generation_step.run(),
-        call.storage.set_generation_done(EXPERIMENT_ID),
+        call.storage.set_step_status(EXPERIMENT_ID, ExperimentStep.GENERATION, StepStatus.DONE),
+        call.storage.set_step_status(EXPERIMENT_ID, ExperimentStep.EXECUTION, StepStatus.RUNNING),
         call.execution_step.run(),
-        call.storage.set_execution_done(EXPERIMENT_ID),
+        call.storage.set_step_status(EXPERIMENT_ID, ExperimentStep.EXECUTION, StepStatus.DONE),
+        call.storage.set_step_status(EXPERIMENT_ID, ExperimentStep.REPORT_BUILDING, StepStatus.RUNNING),
         call.report_building_step.run(),
-        call.storage.set_report_building_done(EXPERIMENT_ID),
+        call.storage.set_step_status(EXPERIMENT_ID, ExperimentStep.REPORT_BUILDING, StepStatus.DONE),
     ]
 
 
@@ -242,10 +263,16 @@ def test_failing_generation_step_stops_the_pipeline(caplog: pytest.LogCaptureFix
     ):
         experiment.run_experiment()
 
-    assert [record.message for record in caplog.records] == [EXPECTED_STEP_MESSAGES["generation"][0]]
-    storage.set_generation_done.assert_not_called()
+    assert [record.message for record in caplog.records] == [
+        EXPECTED_STEP_MESSAGES["generation"][0],
+        EXPECTED_FAILURE_MESSAGES["generation"],
+    ]
+    assert caplog.records[-1].levelno == logging.ERROR
+    assert storage.set_step_status.call_args_list == [
+        call(EXPERIMENT_ID, ExperimentStep.GENERATION, StepStatus.RUNNING),
+        call(EXPERIMENT_ID, ExperimentStep.GENERATION, StepStatus.FAILED),
+    ]
     execution_step.run.assert_not_called()
-    storage.set_execution_done.assert_not_called()
 
 
 # Checks that a failing execution step still keeps the generation status persisted.
@@ -260,8 +287,11 @@ def test_failing_execution_step_keeps_generation_status() -> None:
     with pytest.raises(ValueError, match="execution failed"):
         experiment.run_experiment()
 
-    storage.set_generation_done.assert_called_once_with(EXPERIMENT_ID)
-    storage.set_execution_done.assert_not_called()
+    assert storage.set_step_status.call_args_list == [
+        *expected_status_calls("generation"),
+        call(EXPERIMENT_ID, ExperimentStep.EXECUTION, StepStatus.RUNNING),
+        call(EXPERIMENT_ID, ExperimentStep.EXECUTION, StepStatus.FAILED),
+    ]
     report_building_step.run.assert_not_called()
 
 
@@ -277,6 +307,9 @@ def test_failing_report_building_step_keeps_previous_statuses() -> None:
     with pytest.raises(KeyError):
         experiment.run_experiment()
 
-    storage.set_generation_done.assert_called_once_with(EXPERIMENT_ID)
-    storage.set_execution_done.assert_called_once_with(EXPERIMENT_ID)
-    storage.set_report_building_done.assert_not_called()
+    assert storage.set_step_status.call_args_list == [
+        *expected_status_calls("generation"),
+        *expected_status_calls("execution"),
+        call(EXPERIMENT_ID, ExperimentStep.REPORT_BUILDING, StepStatus.RUNNING),
+        call(EXPERIMENT_ID, ExperimentStep.REPORT_BUILDING, StepStatus.FAILED),
+    ]

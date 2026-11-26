@@ -107,3 +107,39 @@ Execution steps based on `MultithreadingExecutionStep` get this wiring automatic
 Records emitted in a worker are stamped with a `worker_id` field (the worker's PID; exported to JSON logs like other context fields). A caller-supplied `worker_id` (e.g. a logical index passed via `extra`) is never overwritten by the automatic stamp.
 
 When a non-default multiprocessing context is used (e.g. `spawn` on POSIX), pass the same context to both `WorkerLogListener(mp_context=...)` and `Scheduler(mp_context=...)` — a queue created in one context cannot be shared with processes started in another.
+
+## Failure Handling
+
+### Error classification
+
+The project follows a single error-handling policy. Errors are classified by
+where they are detected, and each class has a fixed rule:
+
+| Class | Examples | Rule |
+| --- | --- | --- |
+| A. Configuration/validation | broken YAML, unknown criterion | fail before the experiment starts |
+| B. Programming errors (bugs) | `TypeError`, `KeyError` in our code | propagate unmasked; the uncaught-exception hook logs them at CRITICAL |
+| C. Environment errors of a step | no database, disk full, "Not enough data in storage" | the whole step fails: ERROR log with context, `failed` status, non-zero exit |
+| D. Failures of individual independent elements | one Monte Carlo task, one chart | isolate: log with context, continue the rest, summary at the end; above `failure_threshold` escalate to class C |
+| E. Idempotent write conflicts | duplicate key (`IntegrityError`) | intentionally ignored (idempotent insert) |
+
+The subsections below describe where each rule is enforced.
+
+### Pipeline steps
+
+`Experiment` tracks the lifecycle of every pipeline step (`generation`, `execution`, `report_building`) in experiment storage: a step is marked `running` before it starts, `done` after it finishes and `failed` when it raises. The failure is logged at `ERROR` level with the experiment context and the full traceback, then re-raised, so subsequent steps are not executed. On the next run, steps marked `done` are skipped and everything else is rerun.
+
+### Individual tasks
+
+Inside the execution step, the policy for individual task failures is controlled by `task_failure_policy` (experiment configuration, or the `--task-failure-policy` CLI flag, which takes precedence):
+
+- `fail_fast` (default): the first failing task aborts the execution step with the original exception.
+- `isolate`: the exception is logged with the traceback, the task is skipped and the remaining tasks continue. A summary warning (`N of M tasks failed; results are incomplete`) is emitted at the end. When the share of failed tasks exceeds `failure_threshold` (default `0.01`, CLI flag `--failure-threshold`), the step still drains all results and then fails with `TaskFailuresExceededError`.
+
+Regardless of the outcome, the counters `tasks_failed` / `tasks_total` observed by the execution step are persisted to experiment storage, so partial results stay traceable and reports can detect incomplete runs.
+
+Databases created before step statuses existed can be upgraded with:
+
+```bash
+python -m pysatl_experiment.persistence.migrations.migrate_step_statuses <db_path>
+```

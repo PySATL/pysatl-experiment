@@ -34,8 +34,9 @@ from pysatl_experiment.configuration.models.criterion import Criterion
 from pysatl_experiment.configuration.models.experiment_type import ExperimentType
 from pysatl_experiment.configuration.models.report_mode import ReportMode
 from pysatl_experiment.configuration.models.run_mode import RunMode
+from pysatl_experiment.configuration.models.step_status import StepStatus
 from pysatl_experiment.configuration.models.step_type import StepType
-from pysatl_experiment.configuration.models.steps_done import StepsDone
+from pysatl_experiment.configuration.models.steps_status import StepsStatus
 from pysatl_experiment.persistence.models.experiment import ExperimentModel
 
 
@@ -113,9 +114,9 @@ def _experiment_model(**overrides: Any) -> ExperimentModel:
         "alternatives": {},
         "significance_levels": [],
         "parallel_workers": 1,
-        "is_generation_done": False,
-        "is_execution_done": False,
-        "is_report_building_done": False,
+        "generation_status": StepStatus.PENDING,
+        "execution_status": StepStatus.PENDING,
+        "report_building_status": StepStatus.PENDING,
     }
     model.update(overrides)
     return ExperimentModel(**model)
@@ -138,7 +139,7 @@ def test_validate_build_and_run_creates_new_experiment(
     assert isinstance(result, ExperimentData)
     assert result.experiment_name == "exp"
     assert result.config is legacy_config
-    assert result.steps_done == StepsDone(False, False, False)
+    assert result.steps_status == StepsStatus()
     assert result.results_path == Path("results")
     storage.init.assert_called_once()
     storage.insert_data.assert_called_once()
@@ -153,11 +154,11 @@ def test_validate_build_and_run_resumes_existing_experiment(
     adapt: MagicMock, storage_cls: MagicMock, ensure_result_dir: MagicMock
 ) -> None:
     adapt.return_value = _legacy_time_complexity_config()
-    storage_cls.return_value.get_data.return_value = _experiment_model(is_generation_done=True)
+    storage_cls.return_value.get_data.return_value = _experiment_model(generation_status=StepStatus.DONE)
 
     result = validate_build_and_run(_raw_config())
 
-    assert result.steps_done == StepsDone(True, False, False)
+    assert result.steps_status == StepsStatus(generation_status=StepStatus.DONE)
     storage_cls.return_value.insert_data.assert_not_called()
 
 
@@ -170,7 +171,9 @@ def test_validate_build_and_run_rejects_finished_experiment(
 ) -> None:
     adapt.return_value = _legacy_time_complexity_config()
     storage_cls.return_value.get_data.return_value = _experiment_model(
-        is_generation_done=True, is_execution_done=True, is_report_building_done=True
+        generation_status=StepStatus.DONE,
+        execution_status=StepStatus.DONE,
+        report_building_status=StepStatus.DONE,
     )
 
     with pytest.raises(ClickException, match="already finished"):
@@ -305,9 +308,9 @@ def test_save_experiment_config_to_storage_inserts_model(config_factory, expecte
     assert model.experiment_type == expected_type
     assert model.criteria == {"KS": []}
     assert model.storage_connection == "sqlite://"
-    assert model.is_generation_done is False
-    assert model.is_execution_done is False
-    assert model.is_report_building_done is False
+    assert model.generation_status is StepStatus.PENDING
+    assert model.execution_status is StepStatus.PENDING
+    assert model.report_building_status is StepStatus.PENDING
 
 
 # Checks that power alternatives are converted when persisting a new experiment.
@@ -323,29 +326,41 @@ def test_save_experiment_config_to_storage_maps_power_alternatives() -> None:
 
 # Checks that a fully completed experiment raises a ClickException.
 def test_check_if_experiment_finished_raises_when_done() -> None:
-    model = _experiment_model(is_generation_done=True, is_execution_done=True, is_report_building_done=True)
+    model = _experiment_model(
+        generation_status=StepStatus.DONE,
+        execution_status=StepStatus.DONE,
+        report_building_status=StepStatus.DONE,
+    )
 
     with pytest.raises(ClickException, match="already finished"):
         _check_if_experiment_finished(model)
 
 
-# Checks that partial completion is reported through a StepsDone snapshot.
+# Checks that partial completion is reported through a StepsStatus snapshot.
 @pytest.mark.parametrize(
-    ("is_generation_done", "is_execution_done", "is_report_building_done"),
-    [(True, False, False), (True, True, False), (False, True, True)],
+    ("generation_status", "execution_status", "report_building_status"),
+    [
+        (StepStatus.DONE, StepStatus.PENDING, StepStatus.PENDING),
+        (StepStatus.DONE, StepStatus.DONE, StepStatus.PENDING),
+        (StepStatus.FAILED, StepStatus.DONE, StepStatus.DONE),
+    ],
 )
 def test_check_if_experiment_finished_returns_steps(
-    is_generation_done: bool, is_execution_done: bool, is_report_building_done: bool
+    generation_status: StepStatus, execution_status: StepStatus, report_building_status: StepStatus
 ) -> None:
     model = _experiment_model(
-        is_generation_done=is_generation_done,
-        is_execution_done=is_execution_done,
-        is_report_building_done=is_report_building_done,
+        generation_status=generation_status,
+        execution_status=execution_status,
+        report_building_status=report_building_status,
     )
 
     result = _check_if_experiment_finished(model)
 
-    assert result == StepsDone(is_generation_done, is_execution_done, is_report_building_done)
+    assert result == StepsStatus(
+        generation_status=generation_status,
+        execution_status=execution_status,
+        report_building_status=report_building_status,
+    )
 
 
 # Checks that a non-mapping hypothesis_params dump is rejected by the adapter.
